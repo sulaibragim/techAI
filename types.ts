@@ -23,7 +23,7 @@ export interface Client {
 export interface Message {
   id: string;
   timestamp: string;
-  sender: 'technician' | 'system' | 'client';
+  sender: 'technician' | 'system' | 'client' | 'assistant';
   content: string;
   method: 'sms' | 'email' | 'voice';
 }

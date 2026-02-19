@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, Modality, Type, LiveServerMessage } from "@google/genai";
 
 export function decode(base64: string) {
@@ -38,19 +39,22 @@ export function encode(bytes: Uint8Array) {
   return btoa(binary);
 }
 
-export async function getBusinessInsights(prompt: string, context: { jobCount: number, revenue: number, financials?: any }) {
+/**
+ * Generates business insights using Gemini 3 Pro.
+ */
+export async function getBusinessInsights(prompt: string, context: { jobCount: number; revenue: number; financials: any }) {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const response = await ai.models.generateContent({
-    model: 'gemini-3-flash-preview',
-    contents: `Analyze my appliance repair business performance.
-    Context:
-    - Jobs: ${context.jobCount}
-    - Revenue: $${context.revenue}
-    - Metrics: ${JSON.stringify(context.financials || {})}
-    
-    Query: ${prompt}`,
+    model: "gemini-3-pro-preview",
+    contents: prompt,
     config: {
-      systemInstruction: "You are Durachok, the strategic assistant for Sultan. Provide concise, high-level business insights.",
+      systemInstruction: `You are a world-class strategic consultant for Salem AI.
+Context:
+- Jobs: ${context.jobCount}
+- Revenue: $${context.revenue}
+- Detailed Metrics: ${JSON.stringify(context.financials)}
+
+Tone: Elite, Actionable, Data-driven.`,
     },
   });
   return response.text;
@@ -58,123 +62,109 @@ export async function getBusinessInsights(prompt: string, context: { jobCount: n
 
 const SYSTEM_INSTRUCTION_VOICE = `
 ЛИЧНОСТЬ:
-- Твое имя — "Дурачок". Ты элитный напарник и верный бро Султана. 
-- Твой голос — Puck. Ты быстрый, четкий и очень полезный.
+- Твое имя — "Дурачок". Ты элитный напарник Султана. 
+- Твой голос — Puck. Ты быстрый, четкий и очень полезный. Говоришь по-русски.
 
-ОБЯЗАТЕЛЬНЫЕ ФРАЗЫ (СТРОГО):
-1. Когда Султан позвал тебя или начал разговор: СРАЗУ скажи "Хорошо, слушаю".
-2. Когда Султан диктует адрес, телефон, имя клиента или детали поломки: СРАЗУ скажи "Записываю информацию".
-3. Когда действие выполнено успешно: "Готово, Султан" или "Все сделал, брат".
+ОБЯЗАТЕЛЬНЫЕ ФРАЗЫ:
+1. "Хорошо, слушаю" — начало разговора.
+2. "Записываю информацию" — прием данных.
+3. "Готово, Султан" или "Все сделал, брат" — успех.
 
-ЛОГИКА ИМЕН (КРИТИЧЕСКИ ВАЖНО):
-Султан говорит по-русски, но ты должен преобразовывать имена в ENGLISH перед вызовом инструментов.
-Таблица соответствия:
-- "Мартин Иден" -> Martin Eden
-- "Джейсон Резинсмит" -> Jason Resinsmit
-- "Илон Маск" -> Elon Musk
-- "Амелия Крал" -> Amelia Kral
-
-ПРАВИЛА ОТПРАВКИ СООБЩЕНИЙ:
-- Если Султан просит отправить сообщение Мартину, используй 'recipientName': "Martin Eden".
-- Текст сообщения Султана ВСЕГДА переводи на идеальный английский для клиента.
-- Пример: Султан говорит "Напиши Мартину Идену, буду через час".
-- Ты вызываешь send_message(recipientName: "Martin Eden", content: "Hi Martin, this is Sultan. I will be at your location in about an hour. See you then!")
-- Султану голосом говоришь: "Принял, отправил вежливое сообщение Мартину на английском."
-
-ТЕХНИЧЕСКИЕ ПРАВИЛА:
-- Жди 0.9 сек тишины перед ответом.
-- Говори с Султаном по-русски.
-- Все данные в create_job и send_message — ТОЛЬКО НА АНГЛИЙСКОМ.
+ИНСТРУМЕНТЫ:
+- 'change_job_status': Изменяет статус (completed/cancelled/diagnosed).
+- 'update_job_details': Обновляет бренд, имена, телефоны.
+- 'send_message': Шлет SMS клиенту на английском.
+- 'find_job_by_client_name': Ищет запись по имени.
 `;
 
 const TOOLS_VOICE = [
   {
     functionDeclarations: [
       {
-        name: 'send_message',
-        description: 'Sends a professional English message to a specific client. Use English recipientName.',
+        name: 'change_job_status',
+        description: 'Changes the workflow status of a job record.',
         parameters: {
           type: Type.OBJECT,
           properties: {
-            recipientName: { type: Type.STRING, description: 'The English full name of the client (e.g., Martin Eden)' },
-            content: { type: Type.STRING, description: 'The polished English message content' }
+            clientName: { type: Type.STRING },
+            newStatus: { type: Type.STRING, enum: ['diagnosed', 'waitingParts', 'completed', 'cancelled'] }
+          },
+          required: ['clientName', 'newStatus']
+        }
+      },
+      {
+        name: 'find_job_by_client_name',
+        description: 'Locates a job by searching for the client name.',
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            clientName: { type: Type.STRING }
+          },
+          required: ['clientName']
+        }
+      },
+      {
+        name: 'update_job_details',
+        description: 'Modifies specific fields of an existing record.',
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            clientName: { type: Type.STRING },
+            brand: { type: Type.STRING },
+            newFirstName: { type: Type.STRING },
+            newLastName: { type: Type.STRING },
+            newPhone: { type: Type.STRING }
+          },
+          required: ['clientName']
+        }
+      },
+      {
+        name: 'send_message',
+        description: 'Sends a system notification SMS to a client.',
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            recipientName: { type: Type.STRING },
+            content: { type: Type.STRING }
           },
           required: ['recipientName', 'content']
         }
-      },
-      {
-        name: 'create_job',
-        description: 'Records a new task. All fields must be in English.',
-        parameters: {
-          type: Type.OBJECT,
-          properties: {
-            firstName: { type: Type.STRING },
-            lastName: { type: Type.STRING },
-            phone: { type: Type.STRING },
-            address: { type: Type.STRING },
-            applianceType: { type: Type.STRING },
-            complaint: { type: Type.STRING },
-            scheduledDate: { type: Type.STRING },
-            scheduledTime: { type: Type.STRING }
-          },
-          required: ['firstName', 'lastName', 'address', 'complaint', 'scheduledDate']
-        }
-      },
-      {
-        name: 'get_todays_jobs',
-        description: 'Shows today\'s schedule.',
-        parameters: { type: Type.OBJECT, properties: {} }
       }
     ]
   }
 ];
 
 export class GeminiVoiceAssistant {
-  private ai: any;
   private sessionPromise: Promise<any> | null = null;
   private nextStartTime = 0;
   private audioContext: AudioContext | null = null;
   private inputAudioContext: AudioContext | null = null;
   private sources = new Set<AudioBufferSourceNode>();
+  private currentInputTranscription = '';
+  private currentOutputTranscription = '';
   
-  constructor() {
-    this.ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  }
-
-  private createAudioContext(sampleRate?: number): AudioContext {
-    const AudioContextClass = (window.AudioContext || (window as any).webkitAudioContext);
-    try {
-      return sampleRate ? new AudioContextClass({ sampleRate }) : new AudioContextClass();
-    } catch (e) {
-      return new AudioContextClass();
-    }
-  }
+  constructor() {}
 
   async connect(callbacks: {
-    onTranscript: (text: string, role: 'user' | 'assistant') => void;
+    onTranscript: (text: string, role: 'user' | 'assistant', isFinal: boolean) => void;
     onAction: (action: string, data: any) => any | Promise<any>;
   }) {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     if (!this.audioContext) {
-      this.audioContext = this.createAudioContext(24000);
-      this.inputAudioContext = this.createAudioContext(16000);
+      this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
+      this.inputAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
     }
-
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-    this.sessionPromise = this.ai.live.connect({
+    this.sessionPromise = ai.live.connect({
       model: 'gemini-2.5-flash-native-audio-preview-12-2025',
       config: {
         responseModalities: [Modality.AUDIO],
         systemInstruction: SYSTEM_INSTRUCTION_VOICE,
         tools: TOOLS_VOICE,
-        // Удалены transcription параметры для исправления ошибки "Operation not implemented"
-        speechConfig: { 
-          voiceConfig: { 
-            prebuiltVoiceConfig: { 
-              voiceName: 'Puck' 
-            } 
-          } 
-        },
+        outputAudioTranscription: {},
+        inputAudioTranscription: {},
+        speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Puck' } } },
       },
       callbacks: {
         onopen: () => {
@@ -184,25 +174,27 @@ export class GeminiVoiceAssistant {
             const inputData = e.inputBuffer.getChannelData(0);
             const int16 = new Int16Array(inputData.length);
             for (let i = 0; i < inputData.length; i++) int16[i] = inputData[i] * 32768;
-            const blobData = { data: encode(new Uint8Array(int16.buffer)), mimeType: 'audio/pcm;rate=16000' };
-            this.sessionPromise?.then(session => session.sendRealtimeInput({ media: blobData }));
+            this.sessionPromise?.then(session => session.sendRealtimeInput({ media: { data: encode(new Uint8Array(int16.buffer)), mimeType: 'audio/pcm;rate=16000' } }));
           };
           source.connect(scriptProcessor);
           scriptProcessor.connect(this.inputAudioContext!.destination);
         },
         onmessage: async (message: LiveServerMessage) => {
-          const interrupted = message.serverContent?.interrupted;
-          if (interrupted) {
-            for (const source of this.sources.values()) {
-              try { source.stop(); } catch(e) {}
-              this.sources.delete(source);
-            }
-            this.nextStartTime = 0;
+          if (message.serverContent?.outputTranscription) {
+            this.currentOutputTranscription += message.serverContent.outputTranscription.text;
+            callbacks.onTranscript(this.currentOutputTranscription, 'assistant', false);
+          } else if (message.serverContent?.inputTranscription) {
+            this.currentInputTranscription += message.serverContent.inputTranscription.text;
+            callbacks.onTranscript(this.currentInputTranscription, 'user', false);
           }
-
-          const audioData = message.serverContent?.modelTurn?.parts[0]?.inlineData?.data;
+          if (message.serverContent?.turnComplete) {
+            callbacks.onTranscript(this.currentInputTranscription, 'user', true);
+            callbacks.onTranscript(this.currentOutputTranscription, 'assistant', true);
+            this.currentInputTranscription = '';
+            this.currentOutputTranscription = '';
+          }
+          const audioData = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
           if (audioData) this.playAudio(audioData);
-
           if (message.toolCall) {
             for (const fc of message.toolCall.functionCalls) {
               const result = await Promise.resolve(callbacks.onAction(fc.name, fc.args));
@@ -212,8 +204,8 @@ export class GeminiVoiceAssistant {
             }
           }
         },
-        onerror: (e) => { console.error("Live API Error", e); },
-        onclose: () => { console.log("Live API Closed"); },
+        onerror: (e) => console.error(e),
+        onclose: () => console.log("Voice Offline"),
       }
     });
   }
@@ -225,20 +217,11 @@ export class GeminiVoiceAssistant {
     const source = this.audioContext.createBufferSource();
     source.buffer = audioBuffer;
     source.connect(this.audioContext.destination);
-    source.addEventListener('ended', () => {
-      this.sources.delete(source);
-    });
     source.start(this.nextStartTime);
     this.nextStartTime += audioBuffer.duration;
-    this.sources.add(source);
   }
 
   stop() {
     this.sessionPromise?.then(s => s.close());
-    for (const source of this.sources.values()) {
-      try { source.stop(); } catch (e) {}
-    }
-    this.sources.clear();
-    this.nextStartTime = 0;
   }
 }
