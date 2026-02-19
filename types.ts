@@ -73,6 +73,7 @@ export interface Job {
   photos: string[]; 
   messages?: Message[];
   distance?: number; // Miles for Kanban card
+  warranty?: string;
 }
 
 export interface MissedInteraction {
