@@ -50,7 +50,7 @@ export interface Appliance {
 
 export interface LineItem {
   id: string;
-  type: 'part' | 'labor' | 'service_call' | 'maintenance';
+  type: 'part' | 'labor' | 'service_call' | 'maintenance' | 'installation';
   description: string;
   quantity: number;
   unitPrice: number;

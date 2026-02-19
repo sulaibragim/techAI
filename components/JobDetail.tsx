@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   X, MapPin, Phone, Mail, Wrench, Trash2, 
   Save, Package, Clock, User, Refrigerator, Stethoscope, 
@@ -8,7 +8,8 @@ import {
   PenTool, CreditCard, Zap, Thermometer, Droplets, Microwave, Settings,
   ClipboardList, AirVent, Bot,
   Globe, Building2, Navigation, ChevronRight, MessageSquare, Image as ImageIcon,
-  Calendar as CalIcon, AlertTriangle, Edit2
+  Calendar as CalIcon, AlertTriangle, Edit2, Check, LayoutGrid, Pen, DollarSign,
+  Briefcase, Hammer
 } from 'lucide-react';
 import { Job, LineItem, STATUS_COLORS, Appliance, JobStatus, Client } from '../types';
 import { useAppStore } from '../store';
@@ -34,18 +35,16 @@ const TIME_WINDOWS = [
 ];
 
 const STATUS_OPTIONS: { id: JobStatus; label: string }[] = [
-  { id: 'scheduled', label: 'Scheduled' },
-  { id: 'enRoute', label: 'En Route' },
   { id: 'diagnosed', label: 'Diagnosed' },
-  { id: 'sold', label: 'Sold' },
-  { id: 'coffee', label: 'Coffee Break' },
-  { id: 'waitingParts', label: 'Waiting Parts' },
+  { id: 'waitingParts', label: 'Part Waiting' },
   { id: 'completed', label: 'Completed' },
+  { id: 'enRoute', label: 'En Route' },
+  { id: 'scheduled', label: 'Scheduled' },
   { id: 'cancelled', label: 'Cancelled' }
 ];
 
 export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: initialJob, onClose }) => {
-  const { updateJob, jobs, callHistory } = useAppStore();
+  const { updateJob, jobs } = useAppStore();
   const [localJob, setLocalJob] = useState<Job>({ ...initialJob });
   const [isModified, setIsModified] = useState(false);
   
@@ -57,6 +56,12 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
   const [isEditingClient, setIsEditingClient] = useState(false);
   const [addingItemType, setAddingItemType] = useState<LineItem['type'] | null>(null);
   const [newItemDetails, setNewItemDetails] = useState({ description: '', price: 0 });
+
+  // Payment Workflow States
+  const [paymentStep, setPaymentStep] = useState<'idle' | 'options' | 'signature'>('idle');
+  const [paymentAmountType, setPaymentAmountType] = useState<'full' | 'half'>('full');
+  const [paymentMethod, setPaymentMethod] = useState<'tap' | 'card' | 'check' | 'cash' | null>(null);
+  const [tipPercentage, setTipPercentage] = useState<number | null>(null);
 
   // Temporary state for client editing
   const [editClientData, setEditClientData] = useState<Client>({ ...localJob.client });
@@ -158,7 +163,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
             {/* LEFT COLUMN: DOSSIER (Client, Technical, Communication) (4/12) */}
             <div className="lg:col-span-4 flex flex-col space-y-10">
               
-              {/* 1. CLIENT DOSSIER - ARCHITECTURE V4 (Editable) */}
+              {/* 1. CLIENT DOSSIER (Editable) */}
               <section className="bg-[#0F172A] p-10 rounded-[3.5rem] border border-white/5 space-y-8 shadow-inner relative group">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
@@ -317,144 +322,129 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                    </div>
                 </div>
               </section>
-
-              {/* 3. ASSISTANT THREAD */}
-              <section className="bg-[#0F172A] p-10 rounded-[3.5rem] border border-white/5 flex flex-col min-h-[400px] shadow-inner">
-                <div className="flex items-center justify-between mb-8">
-                  <h3 className="text-[10px] font-bold text-gray-600 uppercase tracking-[0.4em] flex items-center">
-                    <Bot size={16} className="mr-3 text-blue-500" /> System Liaison
-                  </h3>
-                </div>
-                <div className="flex-1 overflow-y-auto pr-2 scrollbar-hide space-y-6 mb-8">
-                  {clientMessages.map(m => (
-                    <div key={m.id} className={`max-w-[85%] p-5 rounded-[2rem] text-[13px] leading-relaxed font-medium shadow-xl ${m.sender === 'client' ? 'bg-[#111827] text-gray-300 mr-auto border border-white/5 rounded-bl-none' : 'bg-blue-600 text-white ml-auto rounded-br-none shadow-blue-900/40'}`}>
-                      {m.content}
-                    </div>
-                  ))}
-                  {clientMessages.length === 0 && <div className="h-full flex flex-col items-center justify-center opacity-10 py-10 space-y-4"><MessageSquare size={48}/><p className="text-[10px] font-black uppercase tracking-widest">Quiet Thread</p></div>}
-                </div>
-                <div className="relative mt-auto">
-                  <input className="w-full bg-[#111827] border border-white/5 rounded-3xl px-8 py-5 text-sm font-bold text-white outline-none focus:border-blue-500 shadow-inner" placeholder="Message client..." />
-                  <button className="absolute right-3 top-1/2 -translate-y-1/2 p-3 bg-blue-600 text-white rounded-2xl shadow-xl active:scale-90 transition-transform"><Plus size={20}/></button>
-                </div>
-              </section>
             </div>
 
-            {/* RIGHT COLUMN: INVOICE & LOGS (8/12) */}
+            {/* RIGHT COLUMN: INVOICE & SETTLEMENT (8/12) */}
             <div className="lg:col-span-8 flex flex-col space-y-12">
               
-              {/* WHITE A4 PRINTABLE INVOICE */}
+              {/* WHITE PRINTABLE INVOICE AREA */}
               <div className="bg-white text-slate-900 rounded-[4rem] shadow-2xl flex flex-col min-h-[1000px] overflow-hidden relative border border-slate-200">
                 <div className="h-4 bg-blue-600" />
                 
-                <div className="p-16 flex flex-col h-full space-y-24">
+                <div className="p-16 flex flex-col h-full space-y-12">
                   
-                  <header className="flex justify-between items-start">
-                    <div className="pt-4">
-                       <h5 className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-300 mb-8">Service Recipient</h5>
-                       <h3 className="text-8xl font-black uppercase tracking-tighter text-slate-900 leading-none">
-                         {localJob.client.firstName}<br/>{localJob.client.lastName}
+                  {/* INVOICE HEADER: Symmetrical Symmetry */}
+                  <header className="flex justify-between items-start pt-4">
+                    <div className="flex-1">
+                       <h3 className="text-4xl font-black uppercase tracking-tighter text-slate-900 leading-none">
+                         {localJob.client.firstName} {localJob.client.lastName}
                        </h3>
+                       <div className="mt-4 space-y-1">
+                         <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{localJob.client.phone}</p>
+                         <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{localJob.client.address}</p>
+                         <p className="text-[10px] font-black text-blue-600 uppercase tracking-[0.4em] pt-1">Record #{localJob.jobNumber}</p>
+                       </div>
                     </div>
 
-                    <div className="text-right flex flex-col items-end pt-4">
-                       <div className="flex items-center space-x-5 mb-8">
-                          <div className="w-16 h-16 bg-slate-900 rounded-3xl flex items-center justify-center text-white shadow-2xl"><Building2 size={32} /></div>
+                    <div className="text-right flex flex-col items-end flex-1">
+                       <div className="flex items-center space-x-5">
+                          <div className="w-14 h-14 bg-slate-900 rounded-2xl flex items-center justify-center text-white shadow-xl"><Building2 size={24} /></div>
                           <div className="text-left">
                             <h4 className="text-4xl font-black uppercase tracking-tighter text-slate-900 leading-none">Salem Online</h4>
-                            <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest mt-2">Certified OS Node</p>
+                            <p className="text-[9px] font-black text-blue-500 uppercase tracking-widest mt-1.5">Enterprise OS Node</p>
                           </div>
                        </div>
-                       <div className="space-y-2 text-right opacity-40">
-                         <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">salem-online.ai</p>
-                         <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">service@salem-online.ai</p>
+                       <div className="mt-4 space-y-1 opacity-50">
+                         <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">salem-online.ai</p>
+                         <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">(888) 777-0099</p>
                        </div>
                     </div>
                   </header>
 
-                  <div className="py-14 border-y-2 border-slate-100 flex justify-between items-center bg-slate-50/20 px-14 rounded-[4rem]">
-                     <div>
-                        <h5 className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-300 mb-2">Record Hash</h5>
-                        <p className="text-4xl font-black uppercase text-slate-900 tracking-tight">#{localJob.jobNumber}</p>
-                     </div>
-                     <div className="text-right">
-                        <h5 className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-300 mb-2">Finalization Date</h5>
-                        <p className="text-2xl font-bold text-slate-900 uppercase tracking-tight">{new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
-                     </div>
+                  {/* BILLING ACTION ROW: 5 Buttons */}
+                  <div className="py-6 border-y border-slate-100 flex items-center justify-between gap-4">
+                    {[
+                      { id: 'labor', label: 'Labor', icon: Hammer, color: 'text-blue-600' },
+                      { id: 'part', label: 'Part', icon: Package, color: 'text-amber-600' },
+                      { id: 'service_call', label: 'Diagnostic', icon: Activity, color: 'text-red-600' },
+                      { id: 'maintenance', label: 'Maint.', icon: Wrench, color: 'text-indigo-600' },
+                      { id: 'installation', label: 'Install', icon: Zap, color: 'text-green-600' }
+                    ].map((btn) => (
+                      <button 
+                        key={btn.id}
+                        onClick={() => setAddingItemType(btn.id as LineItem['type'])}
+                        className="flex-1 py-4 px-2 rounded-2xl border border-slate-100 bg-slate-50/50 hover:bg-slate-900 hover:text-white transition-all flex flex-col items-center justify-center space-y-2 group shadow-sm active:scale-95"
+                      >
+                         <btn.icon size={20} className={`${btn.color} group-hover:text-white transition-colors`} />
+                         <span className="text-[9px] font-black uppercase tracking-widest">{btn.label}</span>
+                      </button>
+                    ))}
                   </div>
 
-                  <div className="flex-1 flex flex-col space-y-10">
-                    <div className="flex text-[13px] font-black uppercase tracking-[0.4em] text-slate-300 px-14">
-                      <span className="flex-1">Detailed Itemization</span>
-                      <span className="w-56 text-right">Settlement Amount</span>
+                  {/* COMPACT LINE ITEMS TABLE */}
+                  <div className="flex-1 flex flex-col space-y-6">
+                    <div className="flex text-[11px] font-black uppercase tracking-[0.4em] text-slate-300 px-6">
+                      <span className="flex-1">Description</span>
+                      <span className="w-32 text-right">Value</span>
                     </div>
                     
-                    <div className="space-y-6 flex-1 overflow-y-auto pr-4 scrollbar-hide">
+                    <div className="space-y-2 flex-1 overflow-y-auto pr-2 scrollbar-hide">
                       {localJob.lineItems.map(item => (
-                        <div key={item.id} className="flex items-center space-x-12 py-10 px-14 bg-slate-50 rounded-[3.5rem] border border-slate-100 group transition-all hover:bg-slate-100/50">
+                        <div key={item.id} className="flex items-center space-x-8 py-3 px-6 bg-slate-50/50 rounded-2xl border border-slate-100 group transition-all hover:bg-slate-100">
                            <div className="flex-1 min-w-0">
-                              <p className="text-3xl font-black text-slate-900 uppercase truncate leading-none mb-4 tracking-tighter">{item.description}</p>
-                              <span className="text-[12px] font-bold text-blue-600 uppercase tracking-[0.4em]">{item.type}</span>
+                              <p className="text-base font-black text-slate-900 uppercase truncate leading-none mb-1">{item.description}</p>
+                              <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">{item.type}</span>
                            </div>
-                           <div className="flex items-center space-x-12">
-                              <span className="text-5xl font-black text-slate-900 tabular-nums tracking-tighter">${item.unitPrice.toLocaleString()}</span>
-                              <button onClick={() => handleLocalChange({ lineItems: localJob.lineItems.filter(li => li.id !== item.id) })} className="p-5 text-slate-200 hover:text-red-500 transition-colors hover:scale-110 active:scale-90"><Trash2 size={28} /></button>
+                           <div className="flex items-center space-x-6">
+                              <span className="text-xl font-black text-slate-900 tabular-nums">${item.unitPrice.toLocaleString()}</span>
+                              <button onClick={() => handleLocalChange({ lineItems: localJob.lineItems.filter(li => li.id !== item.id) })} className="p-2 text-slate-200 hover:text-red-500 transition-colors"><Trash2 size={16} /></button>
                            </div>
                         </div>
                       ))}
                       
-                      <div className="grid grid-cols-3 gap-10 pt-16">
-                         <button onClick={() => setAddingItemType('labor')} className="py-12 border-2 border-dashed border-slate-200 rounded-[4rem] flex flex-col items-center justify-center space-y-4 text-slate-300 hover:text-blue-500 hover:border-blue-400 transition-all bg-slate-50/30 group">
-                            <PenTool size={32} className="group-hover:scale-110 transition-transform" /> 
-                            <span className="text-[12px] font-black uppercase tracking-widest">Labor Ops</span>
-                         </button>
-                         <button onClick={() => setAddingItemType('part')} className="py-12 border-2 border-dashed border-slate-200 rounded-[4rem] flex flex-col items-center justify-center space-y-4 text-slate-300 hover:text-amber-500 hover:border-amber-400 transition-all bg-slate-50/30 group">
-                            <Package size={32} className="group-hover:scale-110 transition-transform" /> 
-                            <span className="text-[12px] font-black uppercase tracking-widest">Assets</span>
-                         </button>
-                         <button onClick={() => setAddingItemType('service_call')} className="py-12 border-2 border-dashed border-slate-200 rounded-[4rem] flex flex-col items-center justify-center space-y-4 text-slate-300 hover:text-green-500 hover:border-green-400 transition-all bg-slate-50/30 group">
-                            <Activity size={32} className="group-hover:scale-110 transition-transform" /> 
-                            <span className="text-[12px] font-black uppercase tracking-widest">Fees</span>
-                         </button>
-                      </div>
+                      {localJob.lineItems.length === 0 && (
+                        <div className="flex flex-col items-center justify-center py-20 opacity-10">
+                           <ClipboardList size={48} className="mb-4" />
+                           <p className="text-[10px] font-black uppercase tracking-widest">Awaiting Line Entry</p>
+                        </div>
+                      )}
                     </div>
                   </div>
 
-                  <footer className="pt-20 border-t-2 border-slate-100 mt-auto flex justify-between items-end">
-                    <div className="w-2/5">
-                       <button onClick={handleSave} className="w-full bg-slate-900 text-white py-12 rounded-[4rem] font-black uppercase tracking-[0.5em] text-[16px] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.4)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center">
-                         <CreditCard size={32} className="mr-6" /> COMMENCE AUTHORIZATION
+                  {/* INVOICE FOOTER */}
+                  <footer className="pt-8 border-t border-slate-100 mt-auto flex justify-between items-end">
+                    <div className="w-1/3">
+                       <button onClick={() => setPaymentStep('options')} className="w-full bg-slate-900 text-white py-8 rounded-[3rem] font-black uppercase tracking-[0.4em] text-[13px] shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center">
+                         <CreditCard size={24} className="mr-4" /> PROCESS PAY
                        </button>
                     </div>
                     <div className="text-right">
-                       <p className="text-[18px] font-black uppercase tracking-[0.6em] text-blue-600 mb-6">Aggregate Settlement</p>
-                       <p className="text-9xl font-black text-slate-900 tracking-tighter leading-none tabular-nums">${subtotal.toLocaleString()}</p>
+                       <p className="text-[12px] font-black uppercase tracking-[0.4em] text-blue-600 mb-2">Total Outstanding</p>
+                       <p className="text-7xl font-black text-slate-900 tracking-tighter leading-none tabular-nums">${subtotal.toLocaleString()}</p>
                     </div>
                   </footer>
                 </div>
               </div>
 
               {/* LOGS: COMPLAINT & DIAGNOSIS */}
-              <section className="grid grid-cols-2 gap-12 pb-12">
-                 <div className="flex flex-col space-y-8 bg-[#0F172A] p-12 rounded-[4rem] border border-white/5 shadow-2xl">
-                    <div className="flex items-center space-x-5 px-4">
-                       <div className="w-16 h-16 bg-blue-600/10 rounded-3xl flex items-center justify-center text-blue-500 border border-blue-500/20"><ClipboardList size={32} /></div>
-                       <h3 className="text-[12px] font-black text-white uppercase tracking-[0.4em]">Inbound Complaint</h3>
-                    </div>
-                    <div className="flex-1 bg-[#111827] border border-white/5 rounded-[3.5rem] p-12 text-[15px] font-medium text-gray-500 italic shadow-inner overflow-y-auto scrollbar-hide">
+              <section className="grid grid-cols-2 gap-8 pb-8">
+                 <div className="flex flex-col space-y-4 bg-[#0F172A] p-8 rounded-[3rem] border border-white/5 shadow-2xl">
+                    <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.4em] flex items-center px-2">
+                       <ClipboardList size={14} className="mr-2 text-blue-500" /> Intake Summary
+                    </h3>
+                    <div className="flex-1 bg-[#111827] border border-white/5 rounded-[2rem] p-6 text-[13px] font-medium text-gray-500 italic shadow-inner overflow-y-auto scrollbar-hide">
                       "{localJob.complaint}"
                     </div>
                  </div>
-                 <div className="flex flex-col space-y-8 bg-[#0F172A] p-12 rounded-[4rem] border border-white/5 shadow-2xl">
-                    <div className="flex items-center space-x-5 px-4">
-                       <div className="w-16 h-16 bg-green-600/10 rounded-3xl flex items-center justify-center text-green-500 border border-green-500/20"><Stethoscope size={32} /></div>
-                       <h3 className="text-[12px] font-black text-white uppercase tracking-[0.4em]">Operational Diagnosis</h3>
-                    </div>
+                 <div className="flex flex-col space-y-4 bg-[#0F172A] p-8 rounded-[3rem] border border-white/5 shadow-2xl">
+                    <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.4em] flex items-center px-2">
+                       <Stethoscope size={14} className="mr-2 text-green-500" /> Verified Data
+                    </h3>
                     <textarea 
-                      className="flex-1 bg-[#111827] border border-white/5 rounded-[3.5rem] p-12 text-[15px] font-black text-white leading-relaxed resize-none outline-none focus:border-blue-500 transition-all shadow-xl placeholder:text-gray-800"
+                      className="flex-1 bg-[#111827] border border-white/5 rounded-[2rem] p-6 text-[13px] font-black text-white leading-relaxed resize-none outline-none focus:border-blue-500 transition-all shadow-xl placeholder:text-gray-800"
                       value={localJob.diagnosisNotes}
                       onChange={e => handleLocalChange({ diagnosisNotes: e.target.value })}
-                      placeholder="Input verified technical findings..."
+                      placeholder="Input diagnostic findings..."
                     />
                  </div>
               </section>
@@ -463,6 +453,152 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
           </div>
         </div>
       </div>
+
+      {/* PAYMENT WORKFLOW MODAL */}
+      {paymentStep !== 'idle' && (
+        <div className="fixed inset-0 bg-black/95 z-[700] flex items-center justify-center p-4 backdrop-blur-3xl animate-in fade-in duration-300">
+          <div className="bg-[#111827] w-full max-w-2xl rounded-[4rem] p-16 border border-white/10 space-y-12 shadow-2xl animate-in zoom-in-95 overflow-hidden">
+            
+            {paymentStep === 'options' ? (
+              <>
+                <div className="text-center space-y-2">
+                  <h3 className="text-2xl font-black uppercase text-white tracking-[0.3em]">Operational Settlement</h3>
+                  <p className="text-[10px] text-gray-500 uppercase tracking-widest">Select methodology and tranche</p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-8">
+                  <div className="space-y-4">
+                     <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest pl-4">Amount Configuration</p>
+                     <div className="flex flex-col gap-3">
+                        <button 
+                          onClick={() => setPaymentAmountType('full')}
+                          className={`p-6 rounded-[2.5rem] border transition-all text-left group ${paymentAmountType === 'full' ? 'bg-blue-600 border-blue-400' : 'bg-white/5 border-white/5'}`}
+                        >
+                           <p className={`text-[10px] font-black uppercase tracking-widest ${paymentAmountType === 'full' ? 'text-white' : 'text-gray-500'}`}>Full Settlement</p>
+                           <p className="text-2xl font-black text-white mt-1">${subtotal.toLocaleString()}</p>
+                        </button>
+                        <button 
+                          onClick={() => setPaymentAmountType('half')}
+                          className={`p-6 rounded-[2.5rem] border transition-all text-left group ${paymentAmountType === 'half' ? 'bg-blue-600 border-blue-400' : 'bg-white/5 border-white/5'}`}
+                        >
+                           <p className={`text-[10px] font-black uppercase tracking-widest ${paymentAmountType === 'half' ? 'text-white' : 'text-gray-500'}`}>50% Deposit</p>
+                           <p className="text-2xl font-black text-white mt-1">${(subtotal/2).toLocaleString()}</p>
+                        </button>
+                     </div>
+                  </div>
+
+                  <div className="space-y-4">
+                     <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest pl-4">Payment Vector</p>
+                     <div className="grid grid-cols-2 gap-3">
+                        {[
+                          { id: 'tap', label: 'Tap to Pay', icon: Smartphone },
+                          { id: 'card', label: 'Card', icon: CreditCard },
+                          { id: 'check', label: 'Check', icon: Pen },
+                          { id: 'cash', label: 'Cash', icon: DollarSign }
+                        ].map(method => (
+                          <button 
+                            key={method.id}
+                            onClick={() => setPaymentMethod(method.id as any)}
+                            className={`p-6 rounded-3xl border transition-all flex flex-col items-center justify-center space-y-2 ${paymentMethod === method.id ? 'bg-blue-600 border-blue-400' : 'bg-white/5 border-white/5'}`}
+                          >
+                             <method.icon size={20} className={paymentMethod === method.id ? 'text-white' : 'text-blue-500'} />
+                             <span className="text-[9px] font-black uppercase tracking-widest">{method.label}</span>
+                          </button>
+                        ))}
+                     </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-8 pt-4">
+                  <button onClick={() => setPaymentStep('idle')} className="flex-1 py-8 text-gray-600 font-black uppercase text-[12px] tracking-widest">Discard</button>
+                  <button 
+                    disabled={!paymentMethod}
+                    onClick={() => setPaymentStep('signature')} 
+                    className={`flex-1 py-8 rounded-[3rem] font-black uppercase tracking-widest shadow-xl active:scale-95 transition-all ${paymentMethod ? 'bg-blue-600 text-white' : 'bg-white/5 text-gray-800'}`}
+                  >
+                    Proceed to Authorization
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="text-center space-y-2">
+                  <h3 className="text-2xl font-black uppercase text-white tracking-[0.3em]">Client Authorization</h3>
+                  <p className="text-[10px] text-gray-500 uppercase tracking-widest">Sign below and select appreciation</p>
+                </div>
+
+                {/* Signature Pad Placeholder */}
+                <div className="bg-white rounded-[3rem] h-[220px] relative overflow-hidden group border-4 border-slate-900 shadow-inner">
+                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
+                      <p className="text-slate-900 text-xl font-black uppercase tracking-[0.5em] italic">Electronic Signature Required</p>
+                   </div>
+                   <div className="absolute bottom-6 inset-x-10 border-t border-slate-200" />
+                </div>
+
+                {/* Tips Section */}
+                <div className="space-y-4">
+                   <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest pl-4 text-center">Service Appreciation (Tips)</p>
+                   <div className="flex items-center justify-center gap-4">
+                      {[10, 15, 20, 0].map(val => (
+                        <button 
+                          key={val}
+                          onClick={() => setTipPercentage(val)}
+                          className={`px-8 py-5 rounded-2xl border transition-all font-black text-sm ${tipPercentage === val ? 'bg-blue-600 border-blue-400 text-white' : 'bg-white/5 border-white/5 text-gray-500'}`}
+                        >
+                           {val === 0 ? 'No Tip' : `${val}%`}
+                        </button>
+                      ))}
+                   </div>
+                </div>
+
+                <div className="flex gap-8 pt-4">
+                  <button onClick={() => setPaymentStep('options')} className="flex-1 py-8 text-gray-600 font-black uppercase text-[12px] tracking-widest">Back</button>
+                  <button 
+                    onClick={() => {
+                      handleLocalChange({ status: 'completed', paymentStatus: 'paid' });
+                      setPaymentStep('idle');
+                    }} 
+                    className="flex-1 bg-green-600 text-white py-8 rounded-[3rem] font-black uppercase tracking-widest shadow-[0_32px_64px_-16px_rgba(16,185,129,0.5)] active:scale-95 transition-transform"
+                  >
+                    Done
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ITEM ADD OVERLAY */}
+      {addingItemType && (
+        <div className="fixed inset-0 bg-black/95 z-[800] flex items-center justify-center p-4 backdrop-blur-3xl animate-in fade-in duration-300">
+          <div className="bg-[#111827] w-full max-w-lg rounded-[4rem] p-20 border border-white/10 space-y-12 shadow-2xl animate-in zoom-in-95">
+            <h3 className="text-2xl font-black uppercase text-white tracking-[0.3em] text-center">Append {addingItemType}</h3>
+            <div className="space-y-8">
+              <div className="bg-white/5 p-8 rounded-[2.5rem] border border-white/10">
+                <label className="text-[10px] font-black uppercase tracking-widest text-gray-600 mb-3 block">Service Summary</label>
+                <input autoFocus className="w-full bg-transparent text-2xl font-black text-white outline-none placeholder:text-gray-800" placeholder="Summary..." value={newItemDetails.description} onChange={e => setNewItemDetails({...newItemDetails, description: e.target.value})} />
+              </div>
+              <div className="relative bg-white/5 p-10 rounded-[3rem] border border-white/10">
+                <label className="text-[10px] font-black uppercase tracking-widest text-gray-600 mb-3 block">Settlement Value</label>
+                <div className="flex items-center">
+                  <span className="text-blue-500 text-6xl font-black mr-4">$</span>
+                  <input type="number" className="w-full bg-transparent text-8xl font-black text-blue-500 outline-none" placeholder="0" value={newItemDetails.price} onChange={e => setNewItemDetails({...newItemDetails, price: Number(e.target.value)})} />
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-8">
+              <button onClick={() => setAddingItemType(null)} className="flex-1 py-8 text-gray-600 font-black uppercase text-[14px] tracking-widest">Discard</button>
+              <button onClick={() => {
+                const item: LineItem = { id: Math.random().toString(), type: addingItemType, description: newItemDetails.description || addingItemType, quantity: 1, unitPrice: newItemDetails.price };
+                handleLocalChange({ lineItems: [...localJob.lineItems, item] });
+                setAddingItemType(null);
+                setNewItemDetails({ description: '', price: 0 });
+              }} className="flex-1 bg-blue-600 text-white py-8 rounded-[3rem] font-black uppercase tracking-widest shadow-xl active:scale-95 transition-transform">Confirm Append</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* EDIT CLIENT OVERLAY */}
       {isEditingClient && (
@@ -579,37 +715,6 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
               >
                 Apply Changes
               </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ITEM ADD OVERLAY */}
-      {addingItemType && (
-        <div className="fixed inset-0 bg-black/95 z-[700] flex items-center justify-center p-4 backdrop-blur-3xl animate-in fade-in duration-300">
-          <div className="bg-[#111827] w-full max-w-lg rounded-[4rem] p-20 border border-white/10 space-y-12 shadow-2xl animate-in zoom-in-95">
-            <h3 className="text-2xl font-black uppercase text-white tracking-[0.3em] text-center">Append {addingItemType}</h3>
-            <div className="space-y-8">
-              <div className="bg-white/5 p-8 rounded-[2.5rem] border border-white/10">
-                <label className="text-[10px] font-black uppercase tracking-widest text-gray-600 mb-3 block">Service Summary</label>
-                <input autoFocus className="w-full bg-transparent text-2xl font-black text-white outline-none placeholder:text-gray-800" placeholder="Summary..." value={newItemDetails.description} onChange={e => setNewItemDetails({...newItemDetails, description: e.target.value})} />
-              </div>
-              <div className="relative bg-white/5 p-10 rounded-[3rem] border border-white/10">
-                <label className="text-[10px] font-black uppercase tracking-widest text-gray-600 mb-3 block">Settlement Value</label>
-                <div className="flex items-center">
-                  <span className="text-blue-500 text-6xl font-black mr-4">$</span>
-                  <input type="number" className="w-full bg-transparent text-8xl font-black text-blue-500 outline-none" placeholder="0" value={newItemDetails.price} onChange={e => setNewItemDetails({...newItemDetails, price: Number(e.target.value)})} />
-                </div>
-              </div>
-            </div>
-            <div className="flex gap-8">
-              <button onClick={() => setAddingItemType(null)} className="flex-1 py-8 text-gray-600 font-black uppercase text-[14px] tracking-widest">Dismiss</button>
-              <button onClick={() => {
-                const item: LineItem = { id: Math.random().toString(), type: addingItemType, description: newItemDetails.description || addingItemType, quantity: 1, unitPrice: newItemDetails.price };
-                handleLocalChange({ lineItems: [...localJob.lineItems, item] });
-                setAddingItemType(null);
-                setNewItemDetails({ description: '', price: 0 });
-              }} className="flex-1 bg-blue-600 text-white py-8 rounded-[3rem] font-black uppercase tracking-widest shadow-[0_32px_64px_-16px_rgba(59,130,246,0.5)] active:scale-95 transition-transform">Confirm Append</button>
             </div>
           </div>
         </div>
