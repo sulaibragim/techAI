@@ -1,0 +1,9 @@
+{
+  "name": "FieldTech OS - Voice-First Technician Co-Pilot",
+  "description": "A comprehensive operating system for field technicians featuring a voice-first AI assistant, advanced job management, and financial analytics.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ]
+}
