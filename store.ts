@@ -12,8 +12,14 @@ let globalJobs: Job[] = [
       firstName: 'Martin',
       lastName: 'Eden',
       phone: '(555) 777-8899',
+      secondaryPhone: '(555) 111-2233',
       email: 'martin.eden@writer.com',
-      address: '456 Oakland Ave, CA'
+      secondaryEmail: 'eden.backup@gmail.com',
+      address: '456 Oakland Ave, CA',
+      photo: 'https://i.pravatar.cc/150?u=martin',
+      notes: 'Prefers morning appointments. Gate code: 1234.',
+      preferredContact: 'email',
+      tags: ['VIP', 'Repeat Customer']
     },
     appliance: {
       type: 'Refrigerator',
@@ -43,8 +49,13 @@ let globalJobs: Job[] = [
       firstName: 'Jason',
       lastName: 'Resinsmit',
       phone: '(602) 555-0101',
+      secondaryPhone: '(602) 555-0102',
       email: 'jason.r@example.com',
-      address: '123 Phoenix Way, AZ'
+      address: '123 Phoenix Way, AZ',
+      photo: 'https://i.pravatar.cc/150?u=jason',
+      notes: 'Beware of dog in backyard.',
+      preferredContact: 'phone',
+      tags: ['Residential']
     },
     appliance: {
       type: 'Refrigerator',
@@ -74,8 +85,13 @@ let globalJobs: Job[] = [
       firstName: 'Elon',
       lastName: 'Musk',
       phone: '(555) 001-0001',
+      secondaryPhone: '(555) 001-0002',
       email: 'elon@spacex.com',
-      address: '1 Starship Way, Boca Chica, TX'
+      address: '1 Starship Way, Boca Chica, TX',
+      photo: 'https://i.pravatar.cc/150?u=elon',
+      notes: 'Check in with security at the gate.',
+      preferredContact: 'sms',
+      tags: ['High Priority', 'Commercial']
     },
     appliance: {
       type: 'Oven',
@@ -106,7 +122,11 @@ let globalJobs: Job[] = [
       lastName: 'Kral',
       phone: '(555) 123-4567',
       email: 'amelia.k@kingdom.io',
-      address: '7 Royal Blvd, London, UK'
+      address: '7 Royal Blvd, London, UK',
+      photo: 'https://i.pravatar.cc/150?u=amelia',
+      notes: 'Requires 24h notice.',
+      preferredContact: 'email',
+      tags: ['International']
     },
     appliance: {
       type: 'Washer',

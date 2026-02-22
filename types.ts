@@ -18,6 +18,10 @@ export interface Client {
   email: string;
   secondaryEmail?: string;
   address: string;
+  photo?: string;
+  notes?: string;
+  preferredContact?: 'phone' | 'email' | 'sms';
+  tags?: string[];
 }
 
 export interface Message {

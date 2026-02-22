@@ -198,8 +198,13 @@ export class GeminiVoiceAssistant {
           if (message.toolCall) {
             for (const fc of message.toolCall.functionCalls) {
               const result = await Promise.resolve(callbacks.onAction(fc.name, fc.args));
+              // Corrected sendToolResponse: functionResponses should be an object, not an array, as per GenAI SDK documentation
               this.sessionPromise?.then(s => s.sendToolResponse({
-                functionResponses: [{ id: fc.id, name: fc.name, response: { result: result || { status: "ok" } } }]
+                functionResponses: {
+                  id: fc.id,
+                  name: fc.name,
+                  response: { result: result || { status: "ok" } },
+                }
               }));
             }
           }
