@@ -18,6 +18,7 @@ export interface Client {
   email: string;
   secondaryEmail?: string;
   address: string;
+  secondaryAddress?: string;
   photo?: string;
   notes?: string;
   preferredContact?: 'phone' | 'email' | 'sms';
@@ -48,6 +49,7 @@ export interface Appliance {
   brand?: string;
   modelNumber?: string;
   serialNumber?: string;
+  partWeight?: string;
   age?: number; 
   warrantyMonths?: number;
 }
