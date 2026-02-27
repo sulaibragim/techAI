@@ -127,7 +127,7 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
                 <div className="flex justify-between items-center mb-4">
                   <span className="text-[9px] font-black text-blue-500/60 uppercase tracking-[0.2em]">#{job.jobNumber}</span>
                   <div className="flex items-center space-x-2">
-                    <span className="text-[10px] font-black text-white tracking-tighter">${job.totalAmount || 136}</span>
+                    <span className="text-[10px] font-black text-white tracking-tighter">${job.totalAmount}</span>
                     <div className={`px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest bg-white/5 border border-white/5`} style={{ color: STATUS_COLORS[job.status] }}>
                       {job.status.charAt(0).toUpperCase()}
                     </div>

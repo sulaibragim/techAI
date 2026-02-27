@@ -89,7 +89,13 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
   }, [initialJob.id]);
 
   const handleLocalChange = (updates: Partial<Job>) => {
-    setLocalJob(prev => ({ ...prev, ...updates }));
+    setLocalJob(prev => {
+      const next = { ...prev, ...updates };
+      if (updates.lineItems) {
+        next.totalAmount = next.lineItems.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
+      }
+      return next;
+    });
     setIsModified(true);
   };
 
