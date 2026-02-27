@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Send, Bot, Sparkles, TrendingUp, BrainCircuit } from 'lucide-react';
-import { getBusinessInsights } from '../geminiService';
-import { useAppStore } from '../store';
+import { getStrategicBrainResponse } from '../geminiService';
+import { useAppStore, useAIActions } from '../store';
 import { calculateFinancialMetrics } from '../financialUtils';
 
 export const AIChat: React.FC = () => {
@@ -9,6 +9,7 @@ export const AIChat: React.FC = () => {
   const [messages, setMessages] = useState<{ text: string, role: 'user' | 'assistant' }[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const { jobs } = useAppStore();
+  const { handleAction } = useAIActions();
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -17,17 +18,20 @@ export const AIChat: React.FC = () => {
     setMessages(prev => [...prev, { text: userMsg, role: 'user' }]);
     setIsTyping(true);
 
-    const financials = calculateFinancialMetrics(jobs);
-
     try {
-      const response = await getBusinessInsights(userMsg, { 
-        jobCount: jobs.length, 
-        revenue: financials.totalRevenue,
-        financials 
+      const history = messages.map(m => ({
+        text: m.text,
+        role: (m.role === 'user' ? 'user' : 'model') as 'user' | 'model'
+      }));
+
+      const response = await getStrategicBrainResponse(userMsg, history, {
+        onAction: handleAction
       });
-      setMessages(prev => [...prev, { text: response || 'I am processing your data.', role: 'assistant' }]);
+      
+      setMessages(prev => [...prev, { text: response || 'I have processed your request.', role: 'assistant' }]);
     } catch (error) {
-      setMessages(prev => [...prev, { text: 'I encountered an issue analyzing your business data.', role: 'assistant' }]);
+      console.error(error);
+      setMessages(prev => [...prev, { text: 'I encountered an issue processing your request.', role: 'assistant' }]);
     } finally {
       setIsTyping(false);
     }

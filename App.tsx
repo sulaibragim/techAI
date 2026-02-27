@@ -14,11 +14,10 @@ import { useAppStore } from './store';
 import { Bell, AlertCircle, CheckCircle2, X, Menu } from 'lucide-react';
 
 const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('calendar');
+  const { jobs, addJob, activeTab, setActiveTab } = useAppStore();
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [notification, setNotification] = useState<{msg: string, type: 'info' | 'success'} | null>(null);
-  const { jobs, addJob } = useAppStore();
 
   const selectedJob = jobs.find(j => j.id === selectedJobId);
   const inProgressJob = jobs.find(j => j.status === 'enRoute' || j.status === 'diagnosed');

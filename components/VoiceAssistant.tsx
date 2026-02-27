@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Mic, X, Bot, User, Minimize2, CheckCircle, Calendar, Edit3 } from 'lucide-react';
 import { GeminiVoiceAssistant } from '../geminiService';
-import { useAppStore } from '../store';
+import { useAppStore, useAIActions } from '../store';
 import { Job, Message, JobStatus } from '../types';
 
 export const VoiceAssistant: React.FC = () => {
@@ -14,7 +14,7 @@ export const VoiceAssistant: React.FC = () => {
   
   const assistantRef = useRef<GeminiVoiceAssistant | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { jobs, addMessageToJob, updateJobStatus } = useAppStore();
+  const { handleAction } = useAIActions();
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -26,36 +26,16 @@ export const VoiceAssistant: React.FC = () => {
     setTimeout(() => setShowConfirmation(false), 3000);
   }, []);
 
-  const findClientJob = (searchName: string) => {
-    const search = searchName.toLowerCase().trim();
-    return jobs.find(j => `${j.client.firstName} ${j.client.lastName}`.toLowerCase().includes(search));
-  };
-
-  const handleAction = useCallback((action: string, data: any) => {
-    if (action === 'change_job_status') {
-      const target = findClientJob(data.clientName);
-      if (target) {
-        updateJobStatus(target.id, data.newStatus as JobStatus);
-        triggerConfirmation(`Status: ${data.newStatus}`);
-        return { status: "success" };
-      }
+  const handleActionWithConfirmation = useCallback(async (action: string, data: any) => {
+    const result = await handleAction(action, data);
+    if (result.status === 'success') {
+      if (action === 'create_job') triggerConfirmation('Job Created');
+      if (action === 'update_job') triggerConfirmation('Record Updated');
+      if (action === 'navigate_to') triggerConfirmation(`Navigating to ${data.tab}`);
+      if (action === 'send_message_by_name') triggerConfirmation('Message Sent');
     }
-    if (action === 'send_message') {
-      const target = findClientJob(data.recipientName);
-      if (target) {
-        addMessageToJob(target.id, {
-          id: Math.random().toString(),
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          sender: 'assistant',
-          content: data.content,
-          method: 'sms'
-        });
-        triggerConfirmation('SMS Dispatched');
-        return { status: "sent" };
-      }
-    }
-    return { status: "ok" };
-  }, [jobs, addMessageToJob, updateJobStatus, triggerConfirmation]);
+    return result;
+  }, [handleAction, triggerConfirmation]);
 
   const toggle = async () => {
     if (!isOpen) {
@@ -76,7 +56,7 @@ export const VoiceAssistant: React.FC = () => {
             return [...prev, { text, role }];
           });
         },
-        onAction: handleAction
+        onAction: handleActionWithConfirmation
       });
     } else {
       assistantRef.current?.stop();
