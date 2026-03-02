@@ -48,7 +48,7 @@ export const VoiceAssistant: React.FC = () => {
           if (!text.trim()) return;
           setMessages(prev => {
             const last = prev[prev.length - 1];
-            if (last && last.role === role) {
+            if (last && last.role === role && !isFinal) {
               const updated = [...prev];
               updated[updated.length - 1] = { text, role };
               return updated;

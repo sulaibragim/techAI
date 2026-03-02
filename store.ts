@@ -333,8 +333,8 @@ export function useAIActions() {
           })),
           metrics: {
             totalJobs: jobs.length,
-            revenue: financials.totalRevenue,
-            activeJobs: jobs.filter(j => j.status === 'enRoute' || j.status === 'onSite').length
+            activeJobs: jobs.filter(j => j.status === 'enRoute' || j.status === 'onSite').length,
+            financials: financials
           }
         };
       }

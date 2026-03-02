@@ -31,12 +31,12 @@ export async function decodeAudioData(
 }
 
 export function encode(bytes: Uint8Array) {
-  let binary = '';
-  const len = bytes.byteLength;
-  for (let i = 0; i < len; i++) {
-    binary += String.fromCharCode(bytes[i]);
+  const chunkSize = 0x8000;
+  const chunks = [];
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    chunks.push(String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + chunkSize))));
   }
-  return btoa(binary);
+  return btoa(chunks.join(''));
 }
 
 /**
@@ -56,10 +56,10 @@ export async function getStrategicBrainResponse(
   contents.push({ role: 'user', parts: [{ text: message }] });
 
   const response = await ai.models.generateContent({
-    model: "gemini-3-pro-preview",
+    model: "gemini-3.1-pro-preview",
     contents,
     config: {
-      systemInstruction: SYSTEM_INSTRUCTION_VOICE,
+      systemInstruction: getSystemInstruction(),
       tools: TOOLS_VOICE,
     },
   });
@@ -79,14 +79,14 @@ export async function getStrategicBrainResponse(
     
     // Send back the results to get the final text response
     const secondResponse = await ai.models.generateContent({
-      model: "gemini-3-pro-preview",
+      model: "gemini-3.1-pro-preview",
       contents: [
         ...contents,
         { role: 'model', parts: functionCalls.map(fc => ({ functionCall: fc })) },
         { role: 'user', parts: results }
       ],
       config: {
-        systemInstruction: SYSTEM_INSTRUCTION_VOICE,
+        systemInstruction: getSystemInstruction(),
         tools: TOOLS_VOICE,
       }
     });
@@ -102,7 +102,7 @@ export async function getStrategicBrainResponse(
 export async function getBusinessInsights(prompt: string, context: { jobCount: number; revenue: number; financials: any }) {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const response = await ai.models.generateContent({
-    model: "gemini-3-pro-preview",
+    model: "gemini-3.1-pro-preview",
     contents: prompt,
     config: {
       systemInstruction: `You are a world-class strategic consultant for Salem AI.
@@ -117,11 +117,14 @@ Tone: Elite, Actionable, Data-driven.`,
   return response.text;
 }
 
-const SYSTEM_INSTRUCTION_VOICE = `
+const getSystemInstruction = () => `
 ЛИЧНОСТЬ:
 - Твое имя — "Дурачок". Ты элитный напарник Султана. 
 - Твой голос — Puck. Ты быстрый, четкий и очень полезный. Говоришь по-русски.
 - Ты знаешь всё о бизнесе Султана: работы, клиенты, финансы, звонки.
+- Веди диалог естественно, как живой человек, а не как робот. Будь лаконичным, дружелюбным и логичным.
+- Если Султан с тобой здоровается или спрашивает как дела (например: "Привет, дурачок, как дела?"), отвечай естественно и в образе (например: "Всё отлично, босс! Готов работать!" или "Привет, Султан! Всегда на связи!").
+- Если Султан просто размышляет вслух или говорит что-то, не требующее действия, поддержи беседу или просто подтверди, что слушаешь.
 
 ТВОИ ВОЗМОЖНОСТИ:
 1. СОЗДАНИЕ РАБОТ: Ты можешь создавать новые записи о работах, заполняя все данные (имя клиента, телефон, адрес, техника, жалоба, дата, время).
@@ -130,10 +133,14 @@ const SYSTEM_INSTRUCTION_VOICE = `
 4. НАВИГАЦИЯ: Ты можешь переключать вкладки приложения (Workroom, Jobs, Messages, Calls, Analytics/Finance).
 5. КОММУНИКАЦИЯ: Ты можешь отправлять сообщения клиентам. Если Султан говорит "Отправить сообщение [Имя]", найди этого клиента и отправь вежливое, профессиональное сообщение.
 
-ПРАВИЛА ОБЩЕНИЯ:
-- Будь вежливым, но профессиональным.
-- Сообщения клиентам должны быть безупречными, как от лица элитного сервиса.
-- Используй фразы: "Хорошо, слушаю", "Записываю информацию", "Готово, Султан", "Все сделал, брат".
+ПРАВИЛА ОБЩЕНИЯ И СООБЩЕНИЙ (ОЧЕНЬ ВАЖНО):
+- Ты общаешься с Султаном ТОЛЬКО на русском языке.
+- НО когда ты отправляешь сообщение клиенту через инструмент 'send_message_by_name', само сообщение (параметр content) ДОЛЖНО БЫТЬ ТОЛЬКО НА АНГЛИЙСКОМ ЯЗЫКЕ, так как клиенты американцы.
+- НИКОГДА не повторяй вслух текст отправленного сообщения. Просто скажи Султану, что сообщение успешно отправлено (например: "Всё, я отписал клиенту", "Сообщение Мартину отправлено").
+- Будь вежливым, но профессиональным. Не отвечай слишком длинно, если тебя не просят.
+- Используй живые фразы: "Хорошо, слушаю", "Записываю информацию", "Готово, Султан", "Все сделал, брат", "Понял тебя".
+- Если Султан спрашивает про финансы, выручку, проданные работы, средний чек или статистику, ОБЯЗАТЕЛЬНО сначала используй инструмент 'get_app_state', чтобы получить актуальные данные (metrics.financials), и только потом отвечай, опираясь на эти данные.
+- Текущее время и дата: ${new Date().toLocaleString('ru-RU', { timeZone: 'America/Los_Angeles' })}. Используй это, чтобы понимать, когда клиенту нужно ехать (сегодня, завтра и т.д.).
 
 ИНСТРУМЕНТЫ:
 - 'create_job': Создает новую работу.
@@ -240,10 +247,10 @@ export class GeminiVoiceAssistant {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
     this.sessionPromise = ai.live.connect({
-      model: 'gemini-2.5-flash-native-audio-preview-12-2025',
+      model: 'gemini-2.5-flash-native-audio-preview-09-2025',
       config: {
         responseModalities: [Modality.AUDIO],
-        systemInstruction: SYSTEM_INSTRUCTION_VOICE,
+        systemInstruction: getSystemInstruction(),
         tools: TOOLS_VOICE,
         outputAudioTranscription: {},
         inputAudioTranscription: {},
@@ -270,7 +277,7 @@ export class GeminiVoiceAssistant {
             this.currentInputTranscription += message.serverContent.inputTranscription.text;
             callbacks.onTranscript(this.currentInputTranscription, 'user', false);
           }
-          if (message.serverContent?.turnComplete) {
+          if (message.serverContent?.turnComplete || message.serverContent?.interrupted) {
             callbacks.onTranscript(this.currentInputTranscription, 'user', true);
             callbacks.onTranscript(this.currentOutputTranscription, 'assistant', true);
             this.currentInputTranscription = '';
@@ -283,11 +290,11 @@ export class GeminiVoiceAssistant {
               const result = await Promise.resolve(callbacks.onAction(fc.name, fc.args));
               // Corrected sendToolResponse: functionResponses should be an object, not an array, as per GenAI SDK documentation
               this.sessionPromise?.then(s => s.sendToolResponse({
-                functionResponses: {
+                functionResponses: [{
                   id: fc.id,
                   name: fc.name,
                   response: { result: result || { status: "ok" } },
-                }
+                }]
               }));
             }
           }
