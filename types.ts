@@ -2,6 +2,7 @@
 export type JobStatus = 
   | 'scheduled' 
   | 'enRoute' 
+  | 'onSite'
   | 'diagnosed' 
   | 'sold' 
   | 'coffee' 
@@ -93,6 +94,7 @@ export interface MissedInteraction {
 export const STATUS_COLORS: Record<JobStatus, string> = {
   scheduled: '#94A3B8',   // Slate
   enRoute: '#3B82F6',     // Blue
+  onSite: '#F59E0B',      // Amber (using same as diagnosed for now or similar)
   diagnosed: '#F59E0B',   // Amber
   sold: '#10B981',        // Green
   coffee: '#EF4444',      // Red

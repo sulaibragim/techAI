@@ -16,7 +16,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentTab, onTabChange 
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-[#111827] border-t border-[#1F2937] px-4 py-3 flex justify-between items-center z-40">
+    <nav className="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-[#1F2937] px-4 py-3 flex justify-between items-center z-40">
       {tabs.map((tab) => {
         const Icon = tab.icon;
         const isActive = currentTab === tab.id;
@@ -25,11 +25,11 @@ export const Navigation: React.FC<NavigationProps> = ({ currentTab, onTabChange 
             key={tab.id}
             onClick={() => onTabChange(tab.id)}
             className={`flex flex-col items-center space-y-1 transition-colors ${
-              isActive ? 'text-blue-500' : 'text-gray-400'
+              isActive ? 'text-blue-500' : 'text-slate-300'
             }`}
           >
             <Icon size={18} />
-            <span className="text-[8px] font-bold uppercase tracking-widest">{tab.label}</span>
+            <span className="text-xs font-bold uppercase tracking-widest">{tab.label}</span>
           </button>
         );
       })}

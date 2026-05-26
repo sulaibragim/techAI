@@ -19,7 +19,10 @@ export interface FinancialMetrics {
 }
 
 export function calculateFinancialMetrics(jobs: Job[], monthlyTarget: number = 20000): FinancialMetrics {
-  const completedJobs = jobs.filter(j => j.status === 'completed');
+  const now = new Date();
+  const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  
+  const completedJobs = jobs.filter(j => j.status === 'completed' && j.scheduledDate.startsWith(currentMonthStr));
   
   const totalRevenue = completedJobs.reduce((sum, j) => sum + j.totalAmount, 0);
   
@@ -39,7 +42,6 @@ export function calculateFinancialMetrics(jobs: Job[], monthlyTarget: number = 2
   const averageTicket = jobsSold > 0 ? totalRevenue / jobsSold : 0;
   
   // Real-time Date Logic
-  const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth();
   const daysInMonth = new Date(year, month + 1, 0).getDate();

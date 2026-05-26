@@ -38,15 +38,15 @@ export const AIChat: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto h-[calc(100vh-180px)] flex flex-col bg-[#1F2937]/30 rounded-[2.5rem] border border-white/5 overflow-hidden backdrop-blur-xl">
-      <div className="p-8 border-b border-white/5 flex items-center justify-between bg-gradient-to-r from-blue-600/10 to-transparent">
+    <div className="max-w-4xl mx-auto h-[calc(100vh-180px)] flex flex-col bg-[#1F2937]/30 rounded-[2.5rem] border border-white/10 overflow-hidden backdrop-blur-xl">
+      <div className="p-8 border-b border-white/10 flex items-center justify-between bg-gradient-to-r from-blue-600/10 to-transparent">
         <div className="flex items-center space-x-4">
           <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-blue-600/20">
             <BrainCircuit size={28} className="text-white" />
           </div>
           <div>
             <h2 className="text-xl font-black">Strategic Brain</h2>
-            <p className="text-xs text-gray-500 font-bold uppercase tracking-[0.2em]">Powered by Gemini 3 Pro</p>
+            <p className="text-xs text-slate-400 font-bold uppercase tracking-[0.2em]">Powered by Gemini 3 Pro</p>
           </div>
         </div>
         <div className="flex items-center space-x-2 text-xs font-bold text-blue-500 bg-blue-500/10 px-4 py-2 rounded-full">
@@ -61,7 +61,7 @@ export const AIChat: React.FC = () => {
             <Bot size={64} className="text-blue-500" />
             <div>
               <p className="text-xl font-bold mb-2">Ask about your business</p>
-              <p className="text-sm max-w-xs text-gray-400">"Analyze my revenue trends for the last 30 days" or "How can I increase my average ticket size?"</p>
+              <p className="text-sm max-w-xs text-slate-300">"Analyze my revenue trends for the last 30 days" or "How can I increase my average ticket size?"</p>
             </div>
           </div>
         )}
@@ -70,7 +70,7 @@ export const AIChat: React.FC = () => {
             <div className={`max-w-[80%] p-5 rounded-3xl leading-relaxed text-sm ${
               m.role === 'user' 
                 ? 'bg-blue-600 text-white font-medium shadow-xl' 
-                : 'bg-[#111827] text-gray-300 border border-white/5'
+                : 'bg-slate-900 text-gray-300 border border-white/10'
             }`}>
               {m.text}
             </div>
@@ -78,7 +78,7 @@ export const AIChat: React.FC = () => {
         ))}
         {isTyping && (
           <div className="flex justify-start">
-            <div className="bg-[#111827] p-5 rounded-3xl border border-white/5 flex space-x-2">
+            <div className="bg-slate-900 p-5 rounded-3xl border border-white/10 flex space-x-2">
               <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" />
               <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-100" />
               <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-200" />
@@ -87,7 +87,7 @@ export const AIChat: React.FC = () => {
         )}
       </div>
 
-      <div className="p-8 border-t border-white/5 bg-[#111827]/50">
+      <div className="p-8 border-t border-white/10 bg-slate-900/50">
         <div className="relative flex items-center">
           <input
             type="text"
@@ -95,7 +95,7 @@ export const AIChat: React.FC = () => {
             onChange={e => setInput(e.target.value)}
             onKeyPress={e => e.key === 'Enter' && handleSend()}
             placeholder="Type your strategic question..."
-            className="w-full bg-[#0F172A] border border-white/5 rounded-2xl px-6 py-4 pr-16 focus:border-blue-500 outline-none transition-all font-medium"
+            className="w-full bg-slate-950 border border-white/10 rounded-2xl px-6 py-4 pr-16 focus:border-blue-500 outline-none transition-all font-medium"
           />
           <button 
             onClick={handleSend}

@@ -1,5 +1,5 @@
 
-import { GoogleGenAI, Modality, Type, LiveServerMessage } from "@google/genai";
+import { GoogleGenAI, Modality, Type, LiveServerMessage, ThinkingLevel } from "@google/genai";
 
 export function decode(base64: string) {
   const binaryString = atob(base64);
@@ -61,6 +61,7 @@ export async function getStrategicBrainResponse(
     config: {
       systemInstruction: getSystemInstruction(),
       tools: TOOLS_VOICE,
+      thinkingConfig: { thinkingLevel: ThinkingLevel.HIGH }
     },
   });
 
@@ -71,6 +72,7 @@ export async function getStrategicBrainResponse(
       const result = await Promise.resolve(callbacks.onAction(fc.name, fc.args));
       results.push({
         functionResponse: {
+          id: fc.id,
           name: fc.name,
           response: { result: result || { status: "ok" } }
         }
@@ -88,6 +90,7 @@ export async function getStrategicBrainResponse(
       config: {
         systemInstruction: getSystemInstruction(),
         tools: TOOLS_VOICE,
+        thinkingConfig: { thinkingLevel: ThinkingLevel.HIGH }
       }
     });
     return secondResponse.text;
@@ -120,34 +123,44 @@ Tone: Elite, Actionable, Data-driven.`,
 const getSystemInstruction = () => `
 ЛИЧНОСТЬ:
 - Твое имя — "Дурачок". Ты элитный напарник Султана. 
-- Твой голос — Puck. Ты быстрый, четкий и очень полезный. Говоришь по-русски.
+- Твой голос — Puck. Ты быстрый, четкий и очень полезный. 
+- Ты общаешься с Султаном (работодателем) на русском языке.
+- ТЫ ДОЛЖЕН ДУМАТЬ НА АНГЛИЙСКОМ ЯЗЫКЕ. Вся внутренняя логика, поиск клиентов и работа с данными происходят на английском.
 - Ты знаешь всё о бизнесе Султана: работы, клиенты, финансы, звонки.
-- Веди диалог естественно, как живой человек, а не как робот. Будь лаконичным, дружелюбным и логичным.
-- Если Султан с тобой здоровается или спрашивает как дела (например: "Привет, дурачок, как дела?"), отвечай естественно и в образе (например: "Всё отлично, босс! Готов работать!" или "Привет, Султан! Всегда на связи!").
-- Если Султан просто размышляет вслух или говорит что-то, не требующее действия, поддержи беседу или просто подтверди, что слушаешь.
+- Веди диалог естественно, как живой человек. Будь лаконичным, дружелюбным и логичным.
 
 ТВОИ ВОЗМОЖНОСТИ:
-1. СОЗДАНИЕ РАБОТ: Ты можешь создавать новые записи о работах, заполняя все данные (имя клиента, телефон, адрес, техника, жалоба, дата, время).
+1. СОЗДАНИЕ РАБОТ: Ты можешь создавать новые записи о работах. Все имена клиентов, адреса и описания должны быть на АНГЛИЙСКОМ. Например, если Султан говорит "Джек Лондон", ты записываешь "Jack London".
 2. УПРАВЛЕНИЕ ДАННЫМИ: Ты можешь менять любую информацию в существующих работах.
-3. ПОИСК: Ты можешь находить информацию о работах и клиентах.
-4. НАВИГАЦИЯ: Ты можешь переключать вкладки приложения (Workroom, Jobs, Messages, Calls, Analytics/Finance).
-5. КОММУНИКАЦИЯ: Ты можешь отправлять сообщения клиентам. Если Султан говорит "Отправить сообщение [Имя]", найди этого клиента и отправь вежливое, профессиональное сообщение.
+3. ПОИСК: Ты можешь находить информацию о работах и клиентах. Поиск имен ведется на АНГЛИЙСКОМ. Если Султан просит найти "Джека Лондона", ты ищешь "Jack London".
+4. НАВИГАЦИЯ: Ты можешь переключать вкладки приложения.
+5. КОММУНИКАЦИЯ: Ты можешь отправлять сообщения клиентам. 
 
-ПРАВИЛА ОБЩЕНИЯ И СООБЩЕНИЙ (ОЧЕНЬ ВАЖНО):
-- Ты общаешься с Султаном ТОЛЬКО на русском языке.
-- НО когда ты отправляешь сообщение клиенту через инструмент 'send_message_by_name', само сообщение (параметр content) ДОЛЖНО БЫТЬ ТОЛЬКО НА АНГЛИЙСКОМ ЯЗЫКЕ, так как клиенты американцы.
-- НИКОГДА не повторяй вслух текст отправленного сообщения. Просто скажи Султану, что сообщение успешно отправлено (например: "Всё, я отписал клиенту", "Сообщение Мартину отправлено").
-- Будь вежливым, но профессиональным. Не отвечай слишком длинно, если тебя не просят.
-- Используй живые фразы: "Хорошо, слушаю", "Записываю информацию", "Готово, Султан", "Все сделал, брат", "Понял тебя".
-- Если Султан спрашивает про финансы, выручку, проданные работы, средний чек или статистику, ОБЯЗАТЕЛЬНО сначала используй инструмент 'get_app_state', чтобы получить актуальные данные (metrics.financials), и только потом отвечай, опираясь на эти данные.
-- Текущее время и дата: ${new Date().toLocaleString('ru-RU', { timeZone: 'America/Los_Angeles' })}. Используй это, чтобы понимать, когда клиенту нужно ехать (сегодня, завтра и т.д.).
+ПРАВИЛА ИСПОЛЬЗОВАНИЯ ИНСТРУМЕНТОВ (КРИТИЧЕСКИ ВАЖНО):
+- ТЫ ОБЯЗАН ВЫЗЫВАТЬ ИНСТРУМЕНТЫ ДЛЯ ЛЮБОГО ДЕЙСТВИЯ. 
+- НИКОГДА не говори Султану, что ты что-то сделал (отправил сообщение, изменил статус, создал работу), если ты НЕ вызвал соответствующую функцию в этом же ответе.
+- ТЫ НЕ ДОЛЖЕН ПЕРЕСПРАШИВАТЬ РАЗРЕШЕНИЯ. Если Султан сказал "отправь", "отмени", "измени" — выполняй это немедленно, вызывая нужный инструмент.
+- Если Султан просит отменить встречу или изменить статус, ты ДОЛЖЕН вызвать 'update_job'. 
+- Если ты не знаешь ID работы для 'update_job', ты ОБЯЗАН сначала вызвать 'get_app_state', чтобы найти ID по имени клиента (на английском). Не пытайся угадать ID.
+- Если Султан просит отправить сообщение, ты ДОЛЖЕН вызвать 'send_message_by_name'.
+- Если Султан говорит "отмени встречу с Мартином", это значит: 1) Найти ID работы через 'get_app_state', 2) Вызвать 'update_job' со статусом 'cancelled', 3) Вызвать 'send_message_by_name', чтобы вежливо уведомить клиента на английском.
+- Если Султан говорит "напиши Джеку Лондону", ты вызываешь 'send_message_by_name' ОБЯЗАТЕЛЬНО c параметром fullName="Jack London" (переведи на английский язык). КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО ПЕРЕДАВАТЬ ИМЕНА В ПАРАМЕТРЫ ФУНКЦИЙ НА РУССКОМ ЯЗЫКЕ.
+
+ПРАВИЛА ОБЩЕНИЯ И ЯЗЫКОВАЯ ПОЛИТИКА:
+- С Султаном (работодателем) ты говоришь ТОЛЬКО на русском языке.
+- С КЛИЕНТАМИ (американцами) всё общение, поиск и записи ведутся ТОЛЬКО НА АНГЛИЙСКОМ ЯЗЫКЕ.
+- Когда ты отправляешь сообщение клиенту через инструмент 'send_message_by_name', текст сообщения (параметр content) ДОЛЖЕН БЫТЬ НА АНГЛИЙСКОМ.
+- Внимательно проверяй параметры функций: 'fullName', 'firstName', 'lastName' ВСЕГДА должны передаваться латиницей (на английском).
+- Сообщения клиентам должны быть вежливыми, профессиональными и соответствовать контексту (например, при отмене встречи вырази сожаление и предложи связаться позже).
+- НИКОГДА не повторяй вслух текст отправленного сообщения. Просто подтверди Султану на русском, что действие выполнено (например: "Всё, я отправил сообщение", "Отменил и написал ему").
+- Текущее время и дата: ${new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' })}. Хотя ты говоришь с Султаном по-русски, используй английский формат даты/времени для внутренней логики.
 
 ИНСТРУМЕНТЫ:
 - 'create_job': Создает новую работу.
-- 'update_job': Обновляет существующую работу.
-- 'navigate_to': Переходит на вкладку (calendar, jobs, messages, calls, analytics, brain).
-- 'get_app_state': Получает текущее состояние (список работ, статистику).
-- 'send_message_by_name': Отправляет сообщение клиенту, находя его по имени и фамилии.
+- 'update_job': Обновляет существующую работу (включая статус 'cancelled').
+- 'navigate_to': Переходит на вкладку.
+- 'get_app_state': Получает текущее состояние (список работ, ID работ, статистику).
+- 'send_message_by_name': Отправляет сообщение клиенту по имени.
 `;
 
 const TOOLS_VOICE = [
@@ -205,7 +218,7 @@ const TOOLS_VOICE = [
       },
       {
         name: 'get_app_state',
-        description: 'Retrieves the current state of the application including all jobs and metrics.',
+        description: 'Retrieves the current state of the application including all jobs (with scheduled dates/times) and financial metrics (revenue, targets, progress).',
         parameters: { type: Type.OBJECT, properties: {} }
       },
       {
@@ -255,6 +268,7 @@ export class GeminiVoiceAssistant {
         outputAudioTranscription: {},
         inputAudioTranscription: {},
         speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Puck' } } },
+        thinkingConfig: { thinkingLevel: ThinkingLevel.HIGH }
       },
       callbacks: {
         onopen: () => {
@@ -277,11 +291,22 @@ export class GeminiVoiceAssistant {
             this.currentInputTranscription += message.serverContent.inputTranscription.text;
             callbacks.onTranscript(this.currentInputTranscription, 'user', false);
           }
+          if (message.serverContent?.interrupted) {
+            this.sources.forEach(source => {
+              try { source.stop(); } catch (e) {}
+            });
+            this.sources.clear();
+            this.nextStartTime = this.audioContext?.currentTime || 0;
+          }
           if (message.serverContent?.turnComplete || message.serverContent?.interrupted) {
-            callbacks.onTranscript(this.currentInputTranscription, 'user', true);
-            callbacks.onTranscript(this.currentOutputTranscription, 'assistant', true);
-            this.currentInputTranscription = '';
-            this.currentOutputTranscription = '';
+            if (this.currentInputTranscription) {
+              callbacks.onTranscript(this.currentInputTranscription, 'user', true);
+              this.currentInputTranscription = '';
+            }
+            if (this.currentOutputTranscription) {
+              callbacks.onTranscript(this.currentOutputTranscription, 'assistant', true);
+              this.currentOutputTranscription = '';
+            }
           }
           const audioData = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
           if (audioData) this.playAudio(audioData);
@@ -307,11 +332,20 @@ export class GeminiVoiceAssistant {
 
   private async playAudio(base64: string) {
     if (!this.audioContext) return;
-    this.nextStartTime = Math.max(this.nextStartTime, this.audioContext.currentTime);
+    
+    // Add a 0.9s pause before starting a new response
+    if (this.nextStartTime <= this.audioContext.currentTime) {
+      this.nextStartTime = this.audioContext.currentTime + 0.9;
+    } else {
+      this.nextStartTime = Math.max(this.nextStartTime, this.audioContext.currentTime);
+    }
+    
     const audioBuffer = await decodeAudioData(decode(base64), this.audioContext, 24000, 1);
     const source = this.audioContext.createBufferSource();
     source.buffer = audioBuffer;
     source.connect(this.audioContext.destination);
+    this.sources.add(source);
+    source.onended = () => this.sources.delete(source);
     source.start(this.nextStartTime);
     this.nextStartTime += audioBuffer.duration;
   }

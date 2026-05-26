@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Sidebar } from './components/Sidebar';
 import { Navigation } from './components/Navigation';
 import { Dashboard } from './components/Dashboard';
@@ -31,27 +32,47 @@ const App: React.FC = () => {
   }, []);
 
   const renderContent = () => {
-    switch (activeTab) {
-      case 'calendar': return <WorkroomDashboard onJobSelect={(j) => setSelectedJobId(j.id)} onAddJob={() => setIsWizardOpen(true)} />;
-      case 'jobs': return <JobsList jobs={jobs} onAddJob={() => setIsWizardOpen(true)} onJobSelect={(job) => setSelectedJobId(job.id)} />;
-      case 'messages': return <MessagesList onJobSelect={(job) => setSelectedJobId(job.id)} />;
-      case 'calls': return <CallsList />;
-      case 'analytics': return <Dashboard />;
-      case 'brain': return <AIChat />;
-      case 'settings': return (
-        <div className="flex flex-col items-center justify-center min-h-[500px] text-gray-500">
-          <div className="w-20 h-20 bg-white/5 rounded-[2rem] flex items-center justify-center mb-6 border border-white/5">
-            <AlertCircle size={32} className="opacity-20" />
-          </div>
-          <p className="text-[11px] font-black uppercase tracking-[0.5em]">System Core Preferences</p>
-        </div>
-      );
-      default: return <WorkroomDashboard onJobSelect={(j) => setSelectedJobId(j.id)} onAddJob={() => setIsWizardOpen(true)} />;
-    }
+    return (
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, x: -20, filter: "blur(2px)", scale: 0.98 }}
+          animate={{ opacity: 1, x: 0, filter: "blur(0px)", scale: 1 }}
+          exit={{ opacity: 0, x: 20, filter: "blur(2px)", scale: 0.98 }}
+          transition={{ type: "spring", stiffness: 300, damping: 25, mass: 1 }}
+          className="h-full"
+        >
+          {(() => {
+            switch (activeTab) {
+              case 'calendar': return <WorkroomDashboard onJobSelect={(j) => setSelectedJobId(j.id)} onAddJob={() => setIsWizardOpen(true)} />;
+              case 'jobs': return <JobsList jobs={jobs} onAddJob={() => setIsWizardOpen(true)} onJobSelect={(job) => setSelectedJobId(job.id)} />;
+              case 'messages': return <MessagesList onJobSelect={(job) => setSelectedJobId(job.id)} />;
+              case 'calls': return <CallsList />;
+              case 'analytics': return <Dashboard />;
+              case 'brain': return <AIChat />;
+              case 'settings': return (
+                <div className="flex flex-col items-center justify-center min-h-[500px] text-slate-400">
+                  <motion.div 
+                    initial={{ scale: 0.8 }} 
+                    animate={{ scale: 1 }} 
+                    transition={{ type: "spring", bounce: 0.4 }}
+                    className="w-20 h-20 bg-white/5 rounded-[2rem] flex items-center justify-center mb-6 border border-white/10"
+                  >
+                    <AlertCircle size={32} className="opacity-20" />
+                  </motion.div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-slate-400">System Core Preferences</p>
+                </div>
+              );
+              default: return <WorkroomDashboard onJobSelect={(j) => setSelectedJobId(j.id)} onAddJob={() => setIsWizardOpen(true)} />;
+            }
+          })()}
+        </motion.div>
+      </AnimatePresence>
+    );
   };
 
   return (
-    <div className="min-h-screen bg-[#0F172A] flex flex-col md:flex-row font-sans text-gray-100 selection:bg-blue-500/30 overflow-x-hidden">
+    <div className="min-h-screen bg-slate-950 flex flex-col md:flex-row font-sans text-gray-100 selection:bg-blue-500/30 overflow-x-hidden">
       {/* Sidebar for Desktop only */}
       <Sidebar currentTab={activeTab} onTabChange={setActiveTab} />
       
@@ -63,53 +84,66 @@ const App: React.FC = () => {
       <div className="flex-1 flex flex-col min-w-0 relative">
         {/* Elite Dispatch Bar - Desktop original scale restored */}
         {inProgressJob && (
-          <div className="bg-gradient-to-r from-blue-700 to-blue-600 text-white px-4 md:px-12 py-3 md:py-4 flex items-center justify-between shadow-2xl z-50 border-b border-white/10 sticky top-0 md:relative">
+          <div className="bg-gradient-to-r from-[#00E5FF]/20 to-transparent border-b border-blue-500/20 text-white px-4 md:px-12 py-3 md:py-4 flex items-center justify-between shadow-[0_0_20px_rgba(0,229,255,0.1)] z-50 sticky top-0 md:relative backdrop-blur-xl">
              <div className="flex items-center space-x-3 md:space-x-6">
-                <div className="w-6 h-6 md:w-8 md:h-8 bg-white/20 rounded-lg flex items-center justify-center animate-pulse"><AlertCircle size={14} /></div>
+                <div className="w-6 h-6 md:w-8 md:h-8 bg-blue-500/20 text-blue-400 rounded-lg flex items-center justify-center animate-pulse"><AlertCircle size={14} /></div>
                 <div>
-                   <span className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.3em] opacity-70">Active Job</span>
-                   <p className="text-[10px] md:text-xs font-black uppercase tracking-tight truncate max-w-[120px] md:max-w-none">{inProgressJob.client.lastName}</p>
+                   <span className="text-xs md:text-sm font-semibold uppercase tracking-wider text-blue-400 opacity-80">Active Dispatch</span>
+                   <p className="text-xs md:text-sm font-bold uppercase tracking-tight truncate max-w-[120px] md:max-w-none">{inProgressJob.client.lastName}</p>
                 </div>
              </div>
-             <button onClick={() => setSelectedJobId(inProgressJob.id)} className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] bg-white text-blue-600 px-4 md:px-6 py-2 md:py-2.5 rounded-xl hover:bg-blue-50 transition-all shadow-lg active:scale-95">Record</button>
+             <button onClick={() => setSelectedJobId(inProgressJob.id)} className="text-xs md:text-sm font-bold uppercase tracking-wider bg-blue-600 text-white px-4 md:px-6 py-2 md:py-2.5 rounded-xl hover:bg-blue-500/90 transition-all shadow-[0_0_15px_rgba(0,229,255,0.4)] active:scale-95">Engage</button>
           </div>
         )}
 
-        {notification && (
-          <div className="fixed top-24 right-4 md:right-12 z-[100] bg-[#111827] border border-white/10 p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] shadow-[0_32px_64px_rgba(0,0,0,0.5)] flex items-center space-x-3 md:space-x-5 animate-in slide-in-from-right-12 duration-500 backdrop-blur-3xl max-w-[90vw] md:max-w-none">
-            <div className="w-8 h-8 md:w-10 md:h-10 bg-green-500/10 rounded-xl flex items-center justify-center text-green-500 shrink-0"><CheckCircle2 size={16} /></div>
-            <span className="text-[9px] md:text-[11px] font-black uppercase tracking-widest text-gray-200 line-clamp-1">{notification.msg}</span>
-            <button onClick={() => setNotification(null)} className="p-1 md:p-2 text-gray-600 hover:text-white transition-colors"><X size={14} /></button>
-          </div>
-        )}
+        <AnimatePresence>
+          {notification && (
+            <motion.div 
+              initial={{ opacity: 0, x: 50, scale: 0.9 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9, x: 20 }}
+              className="fixed top-24 right-4 md:right-12 z-[100] bg-slate-900/80 border border-t-blue-500/40 border-blue-500/10 p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] shadow-[0_32px_64px_rgba(0,0,0,0.8)] flex items-center space-x-3 md:space-x-5 backdrop-blur-3xl max-w-[90vw] md:max-w-none"
+            >
+              <div className="w-8 h-8 md:w-10 md:h-10 bg-blue-500/10 rounded-xl flex items-center justify-center text-blue-400 shrink-0"><CheckCircle2 size={16} /></div>
+              <span className="text-xs md:text-sm font-bold uppercase tracking-widest text-gray-200 line-clamp-1">{notification.msg}</span>
+              <button onClick={() => setNotification(null)} className="p-1 md:p-2 text-slate-500 hover:text-blue-400 transition-colors"><X size={14} /></button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        {/* Header - Desktop original padding restored */}
-        <header className="px-4 md:px-12 py-6 md:py-12 flex items-center justify-between border-b border-white/5 bg-[#0F172A]/50 backdrop-blur-3xl sticky top-0 md:relative z-40">
+        <header className="px-4 md:px-12 py-6 md:py-10 flex items-center justify-between border-b border-white/10 bg-slate-950/80 backdrop-blur-3xl sticky top-0 md:relative z-40 shadow-sm">
           <div>
-             <h2 className="text-[7px] md:text-[10px] font-black uppercase tracking-[0.5em] text-gray-600 mb-1 md:mb-2">Salem Fleet OS</h2>
-             <h3 className="text-xl md:text-4xl font-black capitalize tracking-tighter text-white">{activeTab === 'calendar' ? 'Workroom' : activeTab}</h3>
+             <h2 className="text-xs md:text-sm font-semibold uppercase tracking-widest text-blue-400 mb-1">PulseOS</h2>
+             <h3 className="text-xl md:text-3xl font-bold capitalize tracking-tight text-white">{activeTab === 'calendar' ? 'Workroom' : activeTab}</h3>
           </div>
           <div className="flex items-center space-x-3 md:space-x-8">
             <button className="relative group">
-                <div className="w-8 h-8 md:w-14 md:h-14 bg-white/5 rounded-lg md:rounded-2xl flex items-center justify-center text-gray-500 group-hover:text-white transition-all border border-white/5 group-hover:border-blue-500/30">
+                <motion.div 
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="w-8 h-8 md:w-12 md:h-12 bg-white/5 border border-white/10 rounded-lg md:rounded-xl flex items-center justify-center text-slate-300 group-hover:text-blue-400 transition-all"
+                >
                     <Bell size={18} />
-                </div>
-                <div className="absolute top-0 right-0 w-2 h-2 md:w-3 md:h-3 bg-red-500 rounded-full border border-[#0F172A] shadow-lg" />
+                </motion.div>
+                <div className="absolute top-0 right-0 w-2 h-2 md:w-3 md:h-3 bg-blue-600 rounded-full border-2 border-[#030303] animate-pulse shadow-lg" />
             </button>
             <div className="flex items-center space-x-2 md:space-x-4 pl-0 md:pl-8 border-l-0 md:border-l md:border-white/10">
                 <div className="hidden sm:block text-right">
-                    <p className="text-[10px] font-black text-white uppercase leading-none">Elite Tech #1</p>
-                    <p className="text-[9px] font-bold text-blue-500 uppercase tracking-widest mt-1">Online</p>
+                    <p className="text-xs font-semibold text-white">Sultan</p>
+                    <p className="text-xs font-medium text-blue-400 uppercase tracking-widest mt-0.5 animate-pulse">Online</p>
                 </div>
-                <div className="w-8 h-8 md:w-14 md:h-14 bg-blue-600 rounded-lg md:rounded-2xl overflow-hidden border-2 border-white/10 shadow-xl group cursor-pointer">
+                <motion.div 
+                  whileHover={{ scale: 1.05, borderColor: "rgba(0, 229, 255, 0.5)" }}
+                  className="w-8 h-8 md:w-12 md:h-12 bg-gray-900 border border-white/10 rounded-lg md:rounded-xl overflow-hidden shadow-md group cursor-pointer transition-all"
+                >
                     <img src="https://i.pravatar.cc/150?u=tech1" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="Profile" />
-                </div>
+                </motion.div>
             </div>
           </div>
         </header>
 
         {/* Main - Desktop padding restored */}
-        <main className="flex-1 p-4 md:p-12 overflow-y-auto scrollbar-hide">
+        <main className="flex-1 p-4 md:p-12 overflow-y-auto scrollbar-hide bg-slate-950">
           <div className="max-w-[1600px] mx-auto pb-24 md:pb-0">{renderContent()}</div>
         </main>
       </div>

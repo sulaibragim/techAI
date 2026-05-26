@@ -10,11 +10,17 @@ export const VoiceAssistant: React.FC = () => {
   const [isListening, setIsListening] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [notificationText, setNotificationText] = useState('');
-  const [messages, setMessages] = useState<{ text: string, role: 'user' | 'assistant' }[]>([]);
+  const [messages, setMessages] = useState<{ text: string, role: 'user' | 'assistant', isFinal?: boolean }[]>([]);
   
   const assistantRef = useRef<GeminiVoiceAssistant | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { handleAction } = useAIActions();
+
+  // Use a ref to always have the latest handleAction in the long-lived voice session
+  const actionRef = useRef(handleAction);
+  useEffect(() => {
+    actionRef.current = handleAction;
+  }, [handleAction]);
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -27,7 +33,8 @@ export const VoiceAssistant: React.FC = () => {
   }, []);
 
   const handleActionWithConfirmation = useCallback(async (action: string, data: any) => {
-    const result = await handleAction(action, data);
+    // Call the latest action from the ref
+    const result = await actionRef.current(action, data);
     if (result.status === 'success') {
       if (action === 'create_job') triggerConfirmation('Job Created');
       if (action === 'update_job') triggerConfirmation('Record Updated');
@@ -47,13 +54,20 @@ export const VoiceAssistant: React.FC = () => {
         onTranscript: (text, role, isFinal) => {
           if (!text.trim()) return;
           setMessages(prev => {
-            const last = prev[prev.length - 1];
-            if (last && last.role === role && !isFinal) {
+            let lastIndex = -1;
+            for (let i = prev.length - 1; i >= 0; i--) {
+              if (prev[i].role === role && !prev[i].isFinal) {
+                lastIndex = i;
+                break;
+              }
+            }
+            
+            if (lastIndex !== -1) {
               const updated = [...prev];
-              updated[updated.length - 1] = { text, role };
+              updated[lastIndex] = { text, role, isFinal };
               return updated;
             }
-            return [...prev, { text, role }];
+            return [...prev, { text, role, isFinal }];
           });
         },
         onAction: handleActionWithConfirmation
@@ -71,35 +85,35 @@ export const VoiceAssistant: React.FC = () => {
       {showConfirmation && (
         <div className="fixed top-8 left-1/2 -translate-x-1/2 bg-blue-600 px-8 py-4 rounded-[2rem] shadow-2xl flex items-center space-x-4 z-[200] animate-in slide-in-from-top-4 backdrop-blur-3xl border border-white/10">
           <CheckCircle className="text-white" size={20} />
-          <span className="font-black text-white text-[10px] uppercase tracking-[0.2em]">{notificationText}</span>
+          <span className="font-bold text-white text-xs uppercase tracking-wider">{notificationText}</span>
         </div>
       )}
       <button onClick={toggle} className={`fixed bottom-24 right-10 w-20 h-20 rounded-full flex items-center justify-center shadow-[0_32px_64px_-16px_rgba(59,130,246,0.5)] z-[100] transition-all duration-500 hover:scale-110 active:scale-90 ${isOpen ? 'bg-red-500' : 'bg-blue-600'}`}>
         {isOpen ? <X size={32} /> : <Mic size={32} />}
       </button>
       {isOpen && (
-        <div className="fixed bottom-48 right-10 w-[420px] max-w-[calc(100vw-3rem)] h-[600px] bg-[#111827]/95 backdrop-blur-3xl z-[90] flex flex-col rounded-[3.5rem] border border-white/10 shadow-2xl animate-in zoom-in-95">
-          <div className="p-8 border-b border-white/5 flex items-center justify-between shrink-0">
+        <div className="fixed bottom-48 right-10 w-[420px] max-w-[calc(100vw-3rem)] h-[600px] bg-slate-900/95 backdrop-blur-3xl z-[90] flex flex-col rounded-[3.5rem] border border-white/10 shadow-2xl animate-in zoom-in-95">
+          <div className="p-8 border-b border-white/10 flex items-center justify-between shrink-0">
             <div className="flex items-center space-x-5">
                <div className="w-12 h-12 bg-blue-600 rounded-[1.2rem] flex items-center justify-center text-white shadow-xl shadow-blue-900/40"><Bot size={24} /></div>
                <div>
-                  <h3 className="font-black text-sm uppercase tracking-widest text-white">Durachok AI</h3>
-                  <p className="text-[9px] text-blue-500 font-black uppercase tracking-widest mt-1 italic">Sultan's Bro</p>
+                  <h3 className="font-bold text-sm uppercase tracking-widest text-white">Durachok AI</h3>
+                  <p className="text-xs text-blue-500 font-bold uppercase tracking-widest mt-1 italic">Sultan's Bro</p>
                </div>
             </div>
-            <button onClick={toggle} className="p-3 text-gray-500 hover:text-white transition-colors"><Minimize2 size={20} /></button>
+            <button onClick={toggle} className="p-3 text-slate-400 hover:text-white transition-colors"><Minimize2 size={20} /></button>
           </div>
           <div ref={scrollRef} className="flex-1 overflow-y-auto p-8 space-y-6 scrollbar-hide">
             {messages.length === 0 && (
               <div className="h-full flex flex-col items-center justify-center text-center px-12 opacity-20 space-y-6">
                 <Bot size={48} className="text-blue-500" />
-                <p className="text-[10px] font-black uppercase tracking-[0.4em]">Awaiting Sultan's Command</p>
+                <p className="text-xs font-bold uppercase tracking-widest">Awaiting Sultan's Command</p>
               </div>
             )}
             {messages.map((m, i) => (
               <div key={i} className={`flex items-end space-x-4 ${m.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
                 <div className={`w-8 h-8 rounded-xl shrink-0 flex items-center justify-center shadow-lg ${m.role === 'user' ? 'bg-blue-600' : 'bg-gray-800'}`}>{m.role === 'user' ? <User size={16} className="text-white" /> : <Bot size={16} className="text-white" />}</div>
-                <div className={`max-w-[85%] px-6 py-5 rounded-[2rem] text-[13px] leading-relaxed font-medium shadow-xl ${m.role === 'user' ? 'bg-blue-600 text-white rounded-br-none' : 'bg-[#1F2937] text-gray-200 border border-white/5 rounded-bl-none'}`}>{m.text}</div>
+                <div className={`max-w-[85%] px-6 py-5 rounded-[2rem] text-[13px] leading-relaxed font-medium shadow-xl ${m.role === 'user' ? 'bg-blue-600 text-white rounded-br-none' : 'bg-[#1F2937] text-gray-200 border border-white/10 rounded-bl-none'}`}>{m.text}</div>
               </div>
             ))}
           </div>

@@ -1,6 +1,7 @@
 
 import React from 'react';
-import { Calendar, Briefcase, BarChart2, Settings, LogOut, BrainCircuit, Phone, MessageSquare, AlertCircle, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Calendar, Briefcase, BarChart2, Settings, LogOut, BrainCircuit, Phone, MessageSquare, AlertCircle, X, Activity } from 'lucide-react';
 import { useAppStore } from '../store';
 
 interface SidebarProps {
@@ -24,13 +25,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onTabChange }) => 
   const inProgressJob = jobs.find(j => j.status === 'enRoute' || j.status === 'diagnosed');
 
   return (
-    <aside className="hidden md:flex flex-col w-72 bg-[#111827] border-r border-[#1F2937] h-screen sticky top-0 py-10 shadow-2xl z-40">
+    <aside className="hidden md:flex flex-col w-72 bg-slate-900 border-r border-white/10 h-screen sticky top-0 py-10 shadow-2xl z-40">
       <div className="px-8 mb-12">
-        <h1 className="text-3xl font-extrabold tracking-tight text-white leading-none">Salem<span className="text-blue-500">AI</span></h1>
-        <p className="text-[10px] font-semibold uppercase text-gray-500 tracking-wider mt-3 italic">Field Tech OS v1.2</p>
+        <h1 className="text-3xl font-extrabold tracking-tight text-white leading-none flex items-center gap-2">
+          Pulse<span className="text-blue-400">OS</span>
+        </h1>
+        <p className="text-xs font-medium uppercase text-slate-300 tracking-widest mt-3 flex items-center"><Activity size={12} className="mr-1 text-blue-400" /> Field Dynamics</p>
       </div>
 
-      <nav className="px-4 space-y-2 mb-10 overflow-y-auto scrollbar-hide">
+      <nav className="px-4 space-y-2 mb-10 overflow-y-auto scrollbar-hide relative">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = currentTab === tab.id;
@@ -38,17 +41,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onTabChange }) => 
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
-              className={`w-full flex items-center space-x-4 px-6 py-4 rounded-2xl transition-all duration-300 group ${
-                isActive 
-                  ? 'bg-blue-600/10 text-blue-500 border border-blue-500/10' 
-                  : 'text-gray-400 hover:bg-gray-800/50 hover:text-white'
+              className={`w-full flex items-center space-x-4 px-6 py-4 rounded-xl transition-all duration-300 group relative ${
+                isActive ? 'text-blue-400' : 'text-slate-300 hover:text-white'
               }`}
             >
-              <div className={`p-2 rounded-xl transition-all ${isActive ? 'bg-blue-600 text-white shadow-md' : 'bg-transparent group-hover:bg-gray-800'}`}>
+              {isActive && (
+                <motion.div
+                  layoutId="sidebar-active-tab"
+                  className="absolute inset-0 bg-blue-500/10 border border-blue-500/20 rounded-xl"
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                />
+              )}
+              <div className={`relative z-10 p-2 rounded-lg transition-all ${isActive ? 'bg-blue-600 text-white shadow-lg' : 'bg-transparent group-hover:bg-white/5'}`}>
                 <Icon size={18} />
               </div>
-              <span className="font-bold uppercase text-[11px] tracking-wider">{tab.label}</span>
-              {isActive && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_#3B82F6]" />}
+              <span className="relative z-10 font-semibold uppercase text-xs tracking-wider">{tab.label}</span>
             </button>
           );
         })}
@@ -56,15 +63,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onTabChange }) => 
 
       <div className="flex-1 px-6 space-y-8 overflow-y-auto scrollbar-hide">
         {inProgressJob && (
-          <div className="bg-amber-500/[0.05] border border-amber-500/10 rounded-3xl p-6 shadow-xl group transition-all">
+          <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-6 shadow-lg group transition-all relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1 h-full bg-amber-500" />
             <div className="flex items-center space-x-2 text-amber-500 mb-4">
               <AlertCircle size={14} />
-              <span className="text-[10px] font-bold uppercase tracking-wider">Active Task</span>
+              <span className="text-xs font-bold uppercase tracking-widest">Active Task</span>
             </div>
-            <p className="text-xs font-bold text-white truncate mb-5 uppercase tracking-normal">{inProgressJob.client.lastName} — {inProgressJob.appliance.type}</p>
+            <p className="text-sm font-semibold text-white truncate mb-5 uppercase tracking-wide">{inProgressJob.client.lastName} — {inProgressJob.appliance.type}</p>
             <div className="flex items-end justify-between">
-              <div className="text-2xl font-bold text-white leading-none">28<span className="text-[10px] text-amber-500/80 ml-1 font-bold">m left</span></div>
-              <div className="w-16 h-1.5 bg-amber-500/10 rounded-full overflow-hidden">
+              <div className="text-2xl font-bold text-white leading-none">28<span className="text-xs text-amber-500 ml-1 font-semibold">m left</span></div>
+              <div className="w-16 h-1.5 bg-amber-500/20 rounded-full overflow-hidden">
                 <div className="h-full bg-amber-500" style={{ width: '70%' }} />
               </div>
             </div>
@@ -72,29 +80,39 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onTabChange }) => 
         )}
 
         <div className="space-y-4">
-           <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-500 px-3 flex justify-between">
+           <h3 className="text-xs font-semibold uppercase tracking-widest text-blue-400 px-3 flex justify-between items-center">
              <span>Attention</span>
-             <span className="text-red-500 bg-red-500/10 px-2 py-0.5 rounded-lg">{missedInteractions.length}</span>
+             {missedInteractions.length > 0 && (
+               <span className="text-red-500 bg-red-500/10 px-2 py-0.5 rounded-lg font-bold">{missedInteractions.length}</span>
+             )}
            </h3>
            <div className="space-y-2">
-             {missedInteractions.map(mi => (
-               <div key={mi.id} className="bg-gray-800/40 p-4 rounded-2xl border border-white/5 flex items-center space-x-3 group relative hover:bg-gray-800 transition-all">
-                 <img src={mi.avatar} className="w-10 h-10 rounded-xl object-cover grayscale group-hover:grayscale-0 transition-all" alt="" />
-                 <div className="flex-1 min-w-0">
-                    <p className="text-[11px] font-bold text-white truncate uppercase">{mi.from}</p>
-                    <p className="text-[9px] text-gray-500 font-medium uppercase mt-1">{mi.timestamp}</p>
-                 </div>
-                 <button onClick={() => clearMissed(mi.id)} className="opacity-0 group-hover:opacity-100 text-red-500 transition-all">
-                    <X size={14} />
-                 </button>
-               </div>
-             ))}
+             <AnimatePresence>
+               {missedInteractions.map(mi => (
+                 <motion.div 
+                   key={mi.id} 
+                   initial={{ opacity: 0, x: -10 }}
+                   animate={{ opacity: 1, x: 0 }}
+                   exit={{ opacity: 0, scale: 0.9 }}
+                   className="bg-white/5 p-4 rounded-2xl border border-white/10 flex items-center space-x-3 group relative hover:border-white/10 transition-all"
+                 >
+                   <img src={mi.avatar} className="w-10 h-10 rounded-xl object-cover grayscale group-hover:grayscale-0 transition-all" alt="" />
+                   <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-white truncate uppercase">{mi.from}</p>
+                      <p className="text-xs text-slate-400 font-medium uppercase mt-1">{mi.timestamp}</p>
+                   </div>
+                   <button onClick={() => clearMissed(mi.id)} className="opacity-0 group-hover:opacity-100 text-red-500 p-2 hover:bg-red-500/10 rounded-lg transition-all">
+                      <X size={14} />
+                   </button>
+                 </motion.div>
+               ))}
+             </AnimatePresence>
            </div>
         </div>
       </div>
 
-      <div className="px-6 mt-6 pt-6 border-t border-white/5">
-        <button className="flex items-center space-x-3 text-gray-500 hover:text-red-400 transition-all w-full px-6 py-4 font-bold uppercase text-[11px] tracking-wider bg-white/[0.02] rounded-2xl hover:bg-red-500/10 group">
+      <div className="px-6 mt-6 pt-6 border-t border-white/10">
+        <button className="flex items-center space-x-3 text-slate-400 hover:text-red-400 transition-all w-full px-6 py-4 font-semibold uppercase text-xs tracking-wider bg-white/5 rounded-xl hover:bg-red-500/10 group">
           <LogOut size={18} className="group-hover:translate-x-1 transition-transform" />
           <span>Exit OS</span>
         </button>
