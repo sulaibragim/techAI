@@ -825,38 +825,19 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
             {/* MAIN OPERATIONAL HUB */}
             <div className="lg:col-span-8 flex flex-col space-y-8">
               
-              {/* INVOICE & BILLING */}
-              <div className="bg-slate-900 rounded-2xl border border-white/10 shadow-2xl flex flex-col overflow-hidden">
-                {/* Invoice Header */}
-                <div className="px-6 py-5 border-b border-white/10 flex items-start justify-between">
-                  <div>
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="text-xs font-bold text-blue-400 uppercase tracking-widest">Invoice</span>
-                      <span className="text-xs font-mono text-slate-500">#{localJob.jobNumber}</span>
-                      <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${localJob.paymentStatus === 'paid' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}`}>
-                        {localJob.paymentStatus === 'paid' ? 'Paid' : 'Unpaid'}
-                      </span>
-                    </div>
-                    <p className="text-xl font-bold text-white leading-tight">{localJob.client.firstName} {localJob.client.lastName}</p>
-                    <p className="text-xs text-slate-400 mt-0.5">{localJob.client.address}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-bold text-white">{companyName}</p>
-                    <p className="text-xs text-slate-400 mt-0.5">{localJob.scheduledDate}</p>
-                    <p className="text-xs text-blue-400 mt-1 font-semibold">{localJob.lockDetails.type} · {localJob.lockDetails.brand}</p>
-                  </div>
-                </div>
-
-                {/* Add Item Buttons */}
-                <div className="px-6 py-3 border-b border-white/10 flex items-center gap-2 flex-wrap">
-                  <span className="text-xs font-bold text-slate-600 uppercase tracking-wider mr-1">Add:</span>
+              {/* INVOICE — professional white paper document */}
+              <div className="bg-white text-slate-900 rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-200">
+                {/* Add-item toolbar — sits above the doc, dark strip */}
+                <div className="bg-slate-900 px-5 py-2.5 flex items-center gap-2 border-b border-white/10">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mr-1">Add:</span>
                   {[
-                    { id: 'labor', label: 'Labor', icon: Hammer, color: 'text-blue-400' },
-                    { id: 'part', label: 'Part', icon: Package, color: 'text-amber-400' },
-                    { id: 'service_call', label: 'Diagnostic', icon: Activity, color: 'text-red-400' },
-                    { id: 'maintenance', label: 'Other', icon: Wrench, color: 'text-indigo-400' }
+                    { id: 'labor',       label: 'Labor',      icon: Hammer,   color: 'text-blue-400' },
+                    { id: 'part',        label: 'Part',       icon: Package,  color: 'text-amber-400' },
+                    { id: 'service_call',label: 'Diagnostic', icon: Activity, color: 'text-red-400' },
+                    { id: 'maintenance', label: 'Other',      icon: Wrench,   color: 'text-indigo-400' }
                   ].map(btn => (
-                    <button key={btn.id} onClick={() => setBillingPrompt({ open: true, type: btn.id as any, desc: '', price: '' })}
+                    <button key={btn.id}
+                      onClick={() => setBillingPrompt({ open: true, type: btn.id as any, desc: '', price: '' })}
                       className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-bold transition-all active:scale-95">
                       <Plus size={11} className={btn.color} />
                       <span className="text-slate-300 uppercase tracking-wide">{btn.label}</span>
@@ -864,69 +845,107 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                   ))}
                 </div>
 
-                {/* Table Header */}
-                <div className="px-6 py-2.5 grid grid-cols-12 gap-2 bg-white/[0.02] border-b border-white/5">
-                  <p className="col-span-6 text-[10px] font-bold text-slate-600 uppercase tracking-wider">Description</p>
-                  <p className="col-span-2 text-[10px] font-bold text-slate-600 uppercase tracking-wider text-center">Qty</p>
-                  <p className="col-span-2 text-[10px] font-bold text-slate-600 uppercase tracking-wider text-right">Unit</p>
-                  <p className="col-span-2 text-[10px] font-bold text-slate-600 uppercase tracking-wider text-right">Total</p>
-                </div>
+                {/* ── PAPER DOCUMENT ── */}
+                <div className="px-8 pt-7 pb-6 flex flex-col gap-6">
 
-                {/* Line Items */}
-                <div className="divide-y divide-white/5 flex-1">
-                  {localJob.lineItems.length === 0 ? (
-                    <div className="px-6 py-10 text-center">
-                      <p className="text-xs font-bold text-slate-700 uppercase tracking-widest">No items — add labor, parts or diagnostic above</p>
+                  {/* Letterhead */}
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-2xl font-extrabold text-blue-700 tracking-tight leading-none">{companyName}</p>
+                      <p className="text-xs text-slate-400 mt-1">{technicianName} · Professional Locksmith Services</p>
                     </div>
-                  ) : (
-                    localJob.lineItems.map(item => (
-                      <div key={item.id} className="px-6 py-4 grid grid-cols-12 gap-2 items-center group hover:bg-white/[0.02] transition-colors">
-                        <div className="col-span-6 min-w-0">
-                          <p className="text-sm font-semibold text-white truncate">{item.description}</p>
-                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider capitalize">{item.type.replace('_', ' ')}</span>
-                        </div>
-                        <p className="col-span-2 text-sm font-medium text-slate-400 text-center">{item.quantity}</p>
-                        <p className="col-span-2 text-sm font-medium text-slate-400 text-right">${item.unitPrice.toFixed(2)}</p>
-                        <div className="col-span-2 flex items-center justify-end gap-1">
-                          <span className="text-sm font-bold text-white tabular-nums">${(item.unitPrice * item.quantity).toFixed(2)}</span>
-                          <button onClick={() => handleRemoveLineItem(item.id)} className="opacity-0 group-hover:opacity-100 p-1 text-slate-700 hover:text-red-400 transition-all ml-1 shrink-0">
-                            <Trash2 size={12} />
-                          </button>
-                        </div>
+                    <div className="text-right">
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Invoice</p>
+                      <p className="text-lg font-extrabold text-slate-800 tracking-tight">#{localJob.jobNumber}</p>
+                      <p className="text-xs text-slate-400 mt-1">{localJob.scheduledDate}</p>
+                      <span className={`inline-block mt-2 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${localJob.paymentStatus === 'paid' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                        {localJob.paymentStatus === 'paid' ? '✓ Paid' : 'Unpaid'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Bill To + Service */}
+                  <div className="grid grid-cols-2 gap-6 py-5 border-y border-slate-100">
+                    <div>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Bill To</p>
+                      <p className="text-sm font-bold text-slate-800">{localJob.client.firstName} {localJob.client.lastName}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">{localJob.client.phone}</p>
+                      {localJob.client.address && <p className="text-xs text-slate-500 mt-0.5">{localJob.client.address}</p>}
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Service</p>
+                      <p className="text-sm font-bold text-slate-800">{localJob.lockDetails.type}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">{localJob.lockDetails.brand}{localJob.lockDetails.modelOrYear ? ` · ${localJob.lockDetails.modelOrYear}` : ''}</p>
+                    </div>
+                  </div>
+
+                  {/* Line Items Table */}
+                  <div>
+                    <div className="grid grid-cols-12 gap-2 pb-2 border-b border-slate-200">
+                      <p className="col-span-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Description</p>
+                      <p className="col-span-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Qty</p>
+                      <p className="col-span-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Unit</p>
+                      <p className="col-span-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Total</p>
+                    </div>
+
+                    <div className="divide-y divide-slate-100">
+                      {localJob.lineItems.length === 0 ? (
+                        <p className="py-6 text-center text-xs text-slate-300 italic">No line items — use the buttons above to add</p>
+                      ) : (
+                        localJob.lineItems.map(item => (
+                          <div key={item.id} className="grid grid-cols-12 gap-2 py-3 items-center group hover:bg-slate-50 -mx-1 px-1 rounded transition-colors">
+                            <div className="col-span-6 min-w-0">
+                              <p className="text-sm font-semibold text-slate-800 truncate">{item.description}</p>
+                              <span className="text-[10px] font-semibold text-slate-400 capitalize">{item.type.replace('_', ' ')}</span>
+                            </div>
+                            <p className="col-span-2 text-sm text-slate-500 text-center">{item.quantity}</p>
+                            <p className="col-span-2 text-sm text-slate-500 text-right">${item.unitPrice.toFixed(2)}</p>
+                            <div className="col-span-2 flex items-center justify-end gap-1">
+                              <span className="text-sm font-bold text-slate-800 tabular-nums">${(item.unitPrice * item.quantity).toFixed(2)}</span>
+                              <button onClick={() => handleRemoveLineItem(item.id)} className="opacity-0 group-hover:opacity-100 p-1 text-slate-300 hover:text-red-500 transition-all ml-0.5 shrink-0">
+                                <Trash2 size={12} />
+                              </button>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+
+                    {/* Totals */}
+                    <div className="mt-4 pt-4 border-t-2 border-slate-200 space-y-1.5">
+                      <div className="flex justify-between text-xs text-slate-400">
+                        <span>Subtotal</span>
+                        <span>${subtotal.toFixed(2)}</span>
                       </div>
-                    ))
-                  )}
+                      <div className="flex justify-between items-baseline">
+                        <span className="text-sm font-bold text-slate-700 uppercase tracking-wider">Total Due</span>
+                        <span className="text-3xl font-extrabold text-slate-900 tabular-nums tracking-tight">${subtotal.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Footer note */}
+                  <p className="text-[10px] text-slate-300 text-center border-t border-slate-100 pt-4">
+                    Thank you for choosing {companyName}. For questions call {technicianName}.
+                  </p>
                 </div>
 
-                {/* Totals + Actions */}
-                <div className="border-t border-white/10 px-6 pt-4 pb-5 space-y-4">
-                  <div className="space-y-1.5">
-                    <div className="flex justify-between text-xs font-semibold text-slate-500">
-                      <span>Subtotal ({localJob.lineItems.length} item{localJob.lineItems.length !== 1 ? 's' : ''})</span>
-                      <span>${subtotal.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between items-center pt-2 border-t border-white/10">
-                      <span className="text-sm font-bold text-white uppercase tracking-wider">Total</span>
-                      <span className="text-3xl font-extrabold text-white tabular-nums tracking-tight">${subtotal.toFixed(2)}</span>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      onClick={() => setPaymentStep('split')}
-                      disabled={localJob.paymentStatus === 'paid'}
-                      className={`py-3 rounded-xl font-bold uppercase text-xs tracking-wider transition-all flex items-center justify-center gap-2 active:scale-95 ${
-                        localJob.paymentStatus === 'paid'
-                          ? 'bg-green-500/10 text-green-400 border border-green-500/20 cursor-default'
-                          : 'bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-900/30'
-                      }`}
-                    >
-                      {localJob.paymentStatus === 'paid' ? <><CheckCircle2 size={14} /> Settled</> : <><CreditCard size={14} /> Collect</>}
-                    </button>
-                    <button onClick={handlePrintInvoice} className="py-3 rounded-xl font-bold uppercase text-xs tracking-wider bg-white/5 text-slate-300 hover:bg-white/10 border border-white/10 flex items-center justify-center gap-2 active:scale-95 transition-all">
-                      <Printer size={14} /> Print
-                    </button>
-                  </div>
+                {/* Action buttons — back to dark, outside the paper */}
+                <div className="bg-slate-900 px-5 py-3 grid grid-cols-2 gap-3 border-t border-white/10">
+                  <button
+                    onClick={() => setPaymentStep('split')}
+                    disabled={localJob.paymentStatus === 'paid'}
+                    className={`py-3 rounded-xl font-bold uppercase text-xs tracking-wider transition-all flex items-center justify-center gap-2 active:scale-95 ${
+                      localJob.paymentStatus === 'paid'
+                        ? 'bg-green-500/10 text-green-400 border border-green-500/20 cursor-default'
+                        : 'bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-900/30'
+                    }`}
+                  >
+                    {localJob.paymentStatus === 'paid' ? <><CheckCircle2 size={14} /> Settled</> : <><CreditCard size={14} /> Collect Payment</>}
+                  </button>
+                  <button onClick={handlePrintInvoice} className="py-3 rounded-xl font-bold uppercase text-xs tracking-wider bg-white/5 text-slate-300 hover:bg-white/10 border border-white/10 flex items-center justify-center gap-2 active:scale-95 transition-all">
+                    <Printer size={14} /> Print Invoice
+                  </button>
                 </div>
               </div>
 
