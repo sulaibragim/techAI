@@ -14,8 +14,8 @@ function formatRelativeTime(isoString: string): string {
   return `${Math.floor(hrs / 24)}d ago`;
 }
 
-function getTimeRemaining(scheduledTime: string): { label: string; pct: number } {
-  const scheduled = new Date(scheduledTime).getTime();
+function getTimeRemaining(scheduledDate: string, scheduledTime: string): { label: string; pct: number } {
+  const scheduled = new Date(`${scheduledDate}T${scheduledTime}:00`).getTime();
   const now = Date.now();
   const minsLeft = Math.round((scheduled - now) / 60000);
   if (minsLeft <= 0) return { label: 'overdue', pct: 100 };
@@ -99,7 +99,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onTabChange }) => 
             </div>
             <p className="text-sm font-semibold text-white truncate mb-3 uppercase tracking-wide">{inProgressJob.client.lastName} — {inProgressJob.lockDetails.type}</p>
             {(() => {
-              const { label, pct } = getTimeRemaining(inProgressJob.scheduledTime);
+              const { label, pct } = getTimeRemaining(inProgressJob.scheduledDate, inProgressJob.scheduledTime);
               return (
                 <div className="flex items-end justify-between">
                   <div className="text-xl font-bold text-white leading-none">

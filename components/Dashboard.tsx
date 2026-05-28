@@ -4,9 +4,8 @@ import {
   PieChart, Pie, Cell
 } from 'recharts';
 import {
-  TrendingUp, Wallet, Target, DollarSign, Calendar,
-  Zap, BrainCircuit, Trophy, Clock, Target as TargetIcon,
-  Activity, ArrowUpRight, Percent, ChevronRight
+  TrendingUp, Wallet, Target as TargetIcon,
+  BrainCircuit, Activity, CheckCircle2, Clock, Briefcase, XCircle
 } from 'lucide-react';
 import { useAppStore } from '../store';
 import { useSettingsStore } from '../settingsStore';
@@ -88,6 +87,30 @@ export const Dashboard: React.FC = () => {
   const metrics = useMemo(() => calculateFinancialMetrics(filteredJobs, targetGoal), [filteredJobs, targetGoal]);
   const revenueTrendData = useMemo(() => buildTrendData(jobs, dateRange), [jobs, dateRange]);
 
+  // Job overview stats (all jobs, not just filtered)
+  const totalJobs = jobs.length;
+  const completedJobs = jobs.filter(j => j.status === 'completed').length;
+  const activeJobs = jobs.filter(j => !['completed', 'cancelled'].includes(j.status)).length;
+  const cancelledJobs = jobs.filter(j => j.status === 'cancelled').length;
+
+  // Real parts cost from line items
+  const realPartsCost = useMemo(() =>
+    filteredJobs.reduce((sum, j) =>
+      sum + j.lineItems.filter(li => li.type === 'part').reduce((s, li) => s + li.unitPrice * li.quantity, 0)
+    , 0)
+  , [filteredJobs]);
+
+  // Revenue trend for velocity calc
+  const prevMonthRevenue = useMemo(() => {
+    const now = new Date();
+    const prevMonthStr = `${now.getFullYear()}-${String(now.getMonth()).padStart(2, '0')}`;
+    return jobs.filter(j => j.status === 'completed' && j.scheduledDate.startsWith(prevMonthStr)).reduce((s, j) => s + j.totalAmount, 0);
+  }, [jobs]);
+
+  const velocityPct = prevMonthRevenue > 0
+    ? (((metrics.totalRevenue - prevMonthRevenue) / prevMonthRevenue) * 100).toFixed(1)
+    : null;
+
   return (
     <div className="space-y-6 pb-24 max-w-7xl mx-auto animate-in fade-in duration-700">
 
@@ -134,12 +157,18 @@ export const Dashboard: React.FC = () => {
               </div>
               <div className="grid grid-cols-2 gap-3">
                  <div className="bg-white/5 p-3.5 rounded-xl border border-white/10">
-                    <p className="text-xs font-bold text-slate-500 uppercase mb-1">Daily Goal</p>
-                    <p className="text-lg font-bold text-white">${metrics.requiredDailyRevenue.toFixed(0)}</p>
+                    <p className="text-xs font-bold text-slate-500 uppercase mb-1">Daily Need</p>
+                    {metrics.remainingRevenue <= 0
+                      ? <p className="text-sm font-bold text-green-400">✅ Target Met</p>
+                      : <p className="text-lg font-bold text-white">${metrics.requiredDailyRevenue.toFixed(0)}</p>
+                    }
                  </div>
                  <div className="bg-white/5 p-3.5 rounded-xl border border-white/10">
                     <p className="text-xs font-bold text-slate-500 uppercase mb-1">Jobs/Day</p>
-                    <p className="text-lg font-bold text-white">{metrics.requiredSalesPerDay}</p>
+                    {metrics.remainingRevenue <= 0
+                      ? <p className="text-sm font-bold text-green-400">✅ Done</p>
+                      : <p className="text-lg font-bold text-white">{metrics.requiredSalesPerDay}</p>
+                    }
                  </div>
               </div>
               <div className="pt-4 border-t border-white/10">
@@ -213,7 +242,9 @@ export const Dashboard: React.FC = () => {
                <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Revenue Trajectory Matrix</h3>
                <div className="flex items-center space-x-2 text-green-500">
                   <TrendingUp size={13} />
-                  <span className="text-xs font-bold uppercase tracking-widest">+14.2% Peak Velocity</span>
+                  <span className="text-xs font-bold uppercase tracking-widest">
+                    {velocityPct !== null ? `${Number(velocityPct) >= 0 ? '+' : ''}${velocityPct}% vs last month` : 'Revenue Trend'}
+                  </span>
                </div>
             </div>
             <div className="flex-1 w-full">
@@ -255,7 +286,62 @@ export const Dashboard: React.FC = () => {
         ))}
       </div>
 
-      {/* 5. PROFITABILITY & STRATEGIC ADVISOR */}
+      {/* 5. JOB OVERVIEW */}
+      <section className="bg-slate-900 p-5 rounded-2xl border border-white/10 shadow-2xl">
+        <h3 className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-4 flex items-center">
+          <Briefcase size={13} className="mr-2" /> Job Overview — All Time
+        </h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-white/5 p-4 rounded-xl border border-white/10 flex items-center space-x-3">
+            <div className="w-9 h-9 bg-blue-500/10 rounded-xl flex items-center justify-center shrink-0">
+              <Briefcase size={16} className="text-blue-400" />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total</p>
+              <p className="text-2xl font-bold text-white">{totalJobs}</p>
+            </div>
+          </div>
+          <div className="bg-white/5 p-4 rounded-xl border border-green-500/10 flex items-center space-x-3">
+            <div className="w-9 h-9 bg-green-500/10 rounded-xl flex items-center justify-center shrink-0">
+              <CheckCircle2 size={16} className="text-green-400" />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Completed</p>
+              <p className="text-2xl font-bold text-green-400">{completedJobs}</p>
+            </div>
+          </div>
+          <div className="bg-white/5 p-4 rounded-xl border border-amber-500/10 flex items-center space-x-3">
+            <div className="w-9 h-9 bg-amber-500/10 rounded-xl flex items-center justify-center shrink-0">
+              <Clock size={16} className="text-amber-400" />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Active</p>
+              <p className="text-2xl font-bold text-amber-400">{activeJobs}</p>
+            </div>
+          </div>
+          <div className="bg-white/5 p-4 rounded-xl border border-red-500/10 flex items-center space-x-3">
+            <div className="w-9 h-9 bg-red-500/10 rounded-xl flex items-center justify-center shrink-0">
+              <XCircle size={16} className="text-red-400" />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Cancelled</p>
+              <p className="text-2xl font-bold text-red-400">{cancelledJobs || '—'}</p>
+            </div>
+          </div>
+        </div>
+        <div className="mt-4 h-2.5 bg-white/5 rounded-full overflow-hidden flex">
+          <div className="h-full bg-green-500 transition-all" style={{ width: `${(completedJobs / totalJobs) * 100}%` }} title="Completed" />
+          <div className="h-full bg-amber-500 transition-all" style={{ width: `${(activeJobs / totalJobs) * 100}%` }} title="Active" />
+          <div className="h-full bg-red-500 transition-all" style={{ width: `${(cancelledJobs / totalJobs) * 100}%` }} title="Cancelled" />
+        </div>
+        <div className="flex items-center gap-5 mt-2.5 text-xs font-semibold text-slate-400">
+          <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-green-500 inline-block" />Completed {((completedJobs / totalJobs) * 100).toFixed(0)}%</span>
+          <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500 inline-block" />Active {((activeJobs / totalJobs) * 100).toFixed(0)}%</span>
+          {cancelledJobs > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-red-500 inline-block" />Cancelled {((cancelledJobs / totalJobs) * 100).toFixed(0)}%</span>}
+        </div>
+      </section>
+
+      {/* 6. PROFITABILITY & STRATEGIC ADVISOR */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <section className="bg-slate-900 p-5 rounded-2xl border border-white/10 shadow-2xl space-y-5">
           <h3 className="text-xs font-bold text-gray-700 uppercase tracking-widest flex items-center">
@@ -267,12 +353,12 @@ export const Dashboard: React.FC = () => {
                <span className="text-base font-bold text-white">${metrics.totalRevenue.toLocaleString()}</span>
             </div>
             <div className="flex justify-between items-center py-3 border-b border-white/10">
-               <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">- Parts & Logistics</span>
-               <span className="text-base font-bold text-red-500">-$2,140</span>
+               <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">- Parts Cost</span>
+               <span className="text-base font-bold text-red-500">-${realPartsCost.toLocaleString()}</span>
             </div>
             <div className="flex justify-between items-center pt-4">
                <span className="text-sm font-bold text-white uppercase tracking-widest">Operational Margin</span>
-               <span className="text-3xl font-bold text-green-500 tracking-tighter shadow-green-500/20 drop-shadow-md">${(metrics.totalRevenue - 2140).toLocaleString()}</span>
+               <span className="text-3xl font-bold text-green-500 tracking-tighter shadow-green-500/20 drop-shadow-md">${(metrics.totalRevenue - realPartsCost).toLocaleString()}</span>
             </div>
           </div>
         </section>
