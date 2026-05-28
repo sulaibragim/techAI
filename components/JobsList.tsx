@@ -49,7 +49,7 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
   };
 
   const handleUpdate = (e: React.MouseEvent, jobId: string, currentStatus: JobStatus) => {
-    e.stopPropagation(); 
+    e.stopPropagation();
     const config = getButtonConfig(currentStatus);
     updateJobStatus(jobId, config.nextStatus);
     if (config.nextStatus === 'completed' && currentStatus === 'diagnosed') {
@@ -64,45 +64,45 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
   };
 
   return (
-    <div className="space-y-8 pb-32 relative">
-      
-      {/* Reschedule Overlay (Neat & Small) */}
+    <div className="space-y-5 pb-24 relative">
+
+      {/* Reschedule Overlay */}
       <AnimatePresence>
       {reschedulingId && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[200] flex items-center justify-center p-6"
         >
-           <motion.div 
+           <motion.div
              initial={{ scale: 0.9, opacity: 0 }}
              animate={{ scale: 1, opacity: 1 }}
              exit={{ scale: 0.9, opacity: 0 }}
-             className="bg-slate-900 w-full max-w-[300px] rounded-[2rem] border border-blue-500/20 p-6 shadow-[0_0_40px_rgba(0,229,255,0.15)] space-y-6"
+             className="bg-slate-900 w-full max-w-[280px] rounded-2xl border border-blue-500/20 p-5 shadow-[0_0_40px_rgba(0,229,255,0.15)] space-y-4"
            >
               <div className="flex justify-between items-center">
                  <h3 className="text-xs font-semibold uppercase tracking-widest text-blue-400">Reschedule</h3>
-                 <button onClick={() => setReschedulingId(null)} className="text-slate-400 hover:text-white"><X size={18}/></button>
+                 <button onClick={() => setReschedulingId(null)} className="text-slate-400 hover:text-white"><X size={16}/></button>
               </div>
-              <div className="space-y-4">
-                 <div className="bg-white/5 p-4 rounded-xl border border-white/10">
+              <div className="space-y-3">
+                 <div className="bg-white/5 p-3 rounded-xl border border-white/10">
                     <label className="text-xs font-bold text-blue-400 uppercase block mb-1">Service Date</label>
                     <input type="date" className="bg-transparent text-white font-semibold w-full outline-none text-sm" value={tempDate} onChange={e => setTempDate(e.target.value)} />
                  </div>
-                 <div className="space-y-1 max-h-[160px] overflow-y-auto scrollbar-hide">
+                 <div className="space-y-1 max-h-[150px] overflow-y-auto scrollbar-hide">
                     {TIME_WINDOWS.map(window => (
-                      <button 
-                        key={window} 
+                      <button
+                        key={window}
                         onClick={() => {
                           const target = jobs.find(j => j.id === reschedulingId);
                           if (target) updateJob({ ...target, scheduledDate: tempDate, scheduledTime: window.split(' ')[0] });
                           setReschedulingId(null);
                         }}
-                        className={`w-full py-2.5 px-4 rounded-lg text-left text-xs font-semibold border transition-all flex justify-between items-center group ${tempDate === new Date().toISOString().split('T')[0] ? 'bg-blue-500/10 border-blue-500/30 text-white hover:bg-blue-600 hover:text-white' : 'bg-white/5 border-white/10 text-slate-300 hover:bg-blue-500/20'}`}
+                        className={`w-full py-2 px-3 rounded-lg text-left text-xs font-semibold border transition-all flex justify-between items-center group ${tempDate === new Date().toISOString().split('T')[0] ? 'bg-blue-500/10 border-blue-500/30 text-white hover:bg-blue-600 hover:text-white' : 'bg-white/5 border-white/10 text-slate-300 hover:bg-blue-500/20'}`}
                       >
                         {window}
-                        <ArrowRight size={10} className="opacity-0 group-hover:opacity-100" />
+                        <ArrowRight size={9} className="opacity-0 group-hover:opacity-100" />
                       </button>
                     ))}
                  </div>
@@ -112,41 +112,41 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
       )}
       </AnimatePresence>
 
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-extrabold tracking-tight text-white uppercase leading-none">Dispatch Queue</h2>
-          <p className="text-xs text-blue-400 font-semibold uppercase tracking-widest mt-3">Operational Hub</p>
+          <h2 className="text-2xl font-extrabold tracking-tight text-white uppercase leading-none">Dispatch Queue</h2>
+          <p className="text-xs text-blue-400 font-semibold uppercase tracking-widest mt-2">Operational Hub</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="relative">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search jobs…"
-              className="bg-slate-900 border border-white/10 rounded-xl pl-9 pr-4 py-3 text-xs font-semibold text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 transition-all w-52"
+              className="bg-slate-900 border border-white/10 rounded-xl pl-8 pr-3 py-2.5 text-xs font-semibold text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 transition-all w-48"
             />
           </div>
           <button
             onClick={onAddJob}
-            className="bg-blue-600 hover:bg-white text-white px-8 py-4 rounded-2xl text-xs font-bold uppercase tracking-wider shadow-[0_0_20px_rgba(0,229,255,0.3)] transition-all"
+            className="bg-blue-600 hover:bg-white text-white px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-wider shadow-[0_0_20px_rgba(0,229,255,0.3)] transition-all"
           >
             New Intake
           </button>
         </div>
       </div>
 
-      <div className="flex bg-slate-900/60 p-1.5 rounded-[2rem] border border-blue-500/20 backdrop-blur-xl max-w-xl">
+      <div className="flex bg-slate-900/60 p-1 rounded-2xl border border-blue-500/20 backdrop-blur-xl max-w-sm">
         {['pending', 'completed', 'cancelled'].map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f as any)}
-            className={`relative flex-1 py-3 text-xs font-semibold uppercase tracking-wider rounded-2xl transition-all ${filter === f ? 'text-white z-10' : 'text-slate-400 hover:text-white'}`}
+            className={`relative flex-1 py-2 text-xs font-semibold uppercase tracking-wider rounded-xl transition-all ${filter === f ? 'text-white z-10' : 'text-slate-400 hover:text-white'}`}
           >
             {filter === f && (
-              <motion.div 
+              <motion.div
                 layoutId="filter-pill"
-                className="absolute inset-0 bg-blue-600 rounded-2xl shadow-[0_0_15px_rgba(0,229,255,0.4)] -z-10"
+                className="absolute inset-0 bg-blue-600 rounded-xl shadow-[0_0_15px_rgba(0,229,255,0.4)] -z-10"
               />
             )}
             {f}
@@ -154,7 +154,7 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
         ))}
       </div>
 
-      <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         <AnimatePresence mode="popLayout">
           {filteredJobs.map((job, index) => {
             const btn = getButtonConfig(job.status);
@@ -167,63 +167,63 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
                 transition={{ duration: 0.3, delay: index * 0.05 }}
                 key={job.id}
                 onClick={() => onJobSelect(job)}
-                className="bg-slate-900/80 backdrop-blur-3xl p-6 rounded-[2.5rem] border border-white/10 hover:border-blue-500/50 transition-all group cursor-pointer flex flex-col shadow-lg relative overflow-hidden"
+                className="bg-slate-900/80 backdrop-blur-3xl p-4 rounded-2xl border border-white/10 hover:border-blue-500/50 transition-all group cursor-pointer flex flex-col shadow-lg relative overflow-hidden"
               >
-                <div className="absolute top-0 left-0 right-0 h-1" style={{ backgroundColor: STATUS_COLORS[job.status] }} />
-                
-                <div className="flex flex-col mb-4">
-                  <div className="flex justify-between items-center mb-4">
+                <div className="absolute top-0 left-0 right-0 h-0.5" style={{ backgroundColor: STATUS_COLORS[job.status] }} />
+
+                <div className="flex flex-col mb-3">
+                  <div className="flex justify-between items-center mb-3">
                     <span className="text-xs font-semibold text-blue-400/80 uppercase tracking-widest">#{job.jobNumber}</span>
                     <div className="flex items-center space-x-2">
                       <span className="text-sm font-bold text-white tracking-tight">${job.totalAmount}</span>
-                      <div className={`px-2 py-1 rounded-lg text-xs font-bold uppercase tracking-widest bg-white/5 border border-white/10`} style={{ color: STATUS_COLORS[job.status] }}>
+                      <div className={`px-2 py-0.5 rounded-lg text-xs font-bold uppercase tracking-widest bg-white/5 border border-white/10`} style={{ color: STATUS_COLORS[job.status] }}>
                         {job.status.charAt(0).toUpperCase()}
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-0.5">
-                    <p className="text-xl font-bold text-white uppercase leading-none truncate group-hover:translate-x-1 transition-transform">
+                    <p className="text-base font-bold text-white uppercase leading-none truncate group-hover:translate-x-1 transition-transform">
                       {job.client.firstName} {job.client.lastName}
                     </p>
                     <p className="text-xs font-medium text-slate-400 uppercase mt-1 tracking-tight truncate">{job.lockDetails.type} — {job.lockDetails.brand || 'Elite Unit'}</p>
                   </div>
                 </div>
 
-                <div className="space-y-3 mb-6">
+                <div className="space-y-2 mb-4">
                    <div className="flex items-center text-slate-400 text-sm">
-                     <Clock size={16} className="mr-3 text-blue-400" />
-                     <span className="font-semibold uppercase tracking-wider">{job.scheduledTime}</span>
+                     <Clock size={13} className="mr-2 text-blue-400" />
+                     <span className="font-semibold uppercase tracking-wider text-xs">{job.scheduledTime}</span>
                    </div>
                    <div className="flex items-start text-slate-400 text-xs">
-                     <MapPin size={16} className="mr-3 text-blue-400 mt-0.5 shrink-0" />
+                     <MapPin size={13} className="mr-2 text-blue-400 mt-0.5 shrink-0" />
                      <span className="font-medium leading-tight truncate">{job.client.address}</span>
                    </div>
                 </div>
 
-                <div className="mt-auto pt-6 border-t border-white/10 flex items-center space-x-2">
-                   <button 
+                <div className="mt-auto pt-4 border-t border-white/10 flex items-center space-x-2">
+                   <button
                      onClick={(e) => handleUpdate(e, job.id, job.status)}
-                     className={`flex-1 py-3.5 rounded-xl flex items-center justify-center font-bold text-xs uppercase tracking-widest text-white shadow-lg hover:scale-105 active:scale-95 transition-all ${btn.color}`}
+                     className={`flex-1 py-2.5 rounded-xl flex items-center justify-center font-bold text-xs uppercase tracking-widest text-white shadow-lg hover:scale-105 active:scale-95 transition-all ${btn.color}`}
                    >
-                      {job.status === 'completed' ? <CheckCircle2 size={14} className="mr-2" /> : <Activity size={14} className="mr-2" />}
+                      {job.status === 'completed' ? <CheckCircle2 size={13} className="mr-1.5" /> : <Activity size={13} className="mr-1.5" />}
                       {btn.label}
                    </button>
-                   
-                   <button 
+
+                   <button
                      onClick={(e) => { e.stopPropagation(); setReschedulingId(job.id); }}
-                     className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-slate-300 hover:text-white hover:bg-white/10 transition-all border border-white/10"
+                     className="w-9 h-9 bg-white/5 rounded-xl flex items-center justify-center text-slate-300 hover:text-white hover:bg-white/10 transition-all border border-white/10"
                      title="Reschedule"
                    >
-                      <Calendar size={16} />
+                      <Calendar size={14} />
                    </button>
 
-                   <button 
+                   <button
                      onClick={(e) => handleCancel(e, job.id)}
-                     className="w-10 h-10 bg-red-500/10 rounded-xl flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white transition-all border border-red-500/20 active:scale-95"
+                     className="w-9 h-9 bg-red-500/10 rounded-xl flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white transition-all border border-red-500/20 active:scale-95"
                      title="Cancel Job"
                    >
-                      <X size={16} />
+                      <X size={14} />
                    </button>
                 </div>
               </motion.div>
@@ -231,12 +231,12 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
           })}
         </AnimatePresence>
         {filteredJobs.length === 0 && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="col-span-full h-48 flex flex-col items-center justify-center opacity-40"
+            className="col-span-full h-40 flex flex-col items-center justify-center opacity-40"
           >
-             <Hash size={40} className="mb-4" />
+             <Hash size={36} className="mb-3" />
              <p className="text-sm font-semibold uppercase tracking-widest">Queue Empty</p>
           </motion.div>
         )}

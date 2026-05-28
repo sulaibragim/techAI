@@ -8,50 +8,50 @@ export const CallsList: React.FC = () => {
 
   const getCallIcon = (type: string) => {
     switch (type) {
-      case 'incoming': return <PhoneIncoming size={16} className="text-green-500" />;
-      case 'outgoing': return <PhoneOutgoing size={16} className="text-blue-500" />;
-      case 'missed': return <PhoneMissed size={16} className="text-red-500" />;
-      default: return <Phone size={16} className="text-slate-400" />;
+      case 'incoming': return <PhoneIncoming size={14} className="text-green-500" />;
+      case 'outgoing': return <PhoneOutgoing size={14} className="text-blue-500" />;
+      case 'missed': return <PhoneMissed size={14} className="text-red-500" />;
+      default: return <Phone size={14} className="text-slate-400" />;
     }
   };
 
   return (
-    <div className="space-y-10 pb-32 max-w-5xl mx-auto animate-in fade-in duration-700">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-4">
+    <div className="space-y-5 pb-24 max-w-5xl mx-auto animate-in fade-in duration-700">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-2">
         <div>
-          <h2 className="text-4xl font-bold tracking-tight text-white leading-none uppercase">Call History</h2>
-          <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-4">Communication Ledger</p>
+          <h2 className="text-2xl font-bold tracking-tight text-white leading-none uppercase">Call History</h2>
+          <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-2">Communication Ledger</p>
         </div>
-        <div className="flex items-center space-x-3 text-blue-500 bg-blue-500/5 px-6 py-3 rounded-2xl border border-blue-500/10">
-           <Phone size={18} />
+        <div className="flex items-center space-x-2 text-blue-500 bg-blue-500/5 px-4 py-2.5 rounded-xl border border-blue-500/10">
+           <Phone size={15} />
            <span className="text-xs font-bold uppercase tracking-widest">{callHistory.length} Total Records</span>
         </div>
       </div>
 
-      <div className="space-y-4 px-4">
+      <div className="space-y-3 px-2">
         {callHistory.length === 0 ? (
-          <div className="bg-slate-900 rounded-[3rem] border border-white/10 p-20 flex flex-col items-center justify-center opacity-30 text-center">
-            <Phone size={48} className="mb-6 text-blue-500" />
-            <p className="text-xl font-bold uppercase tracking-widest">No History</p>
+          <div className="bg-slate-900 rounded-2xl border border-white/10 p-16 flex flex-col items-center justify-center opacity-30 text-center">
+            <Phone size={40} className="mb-4 text-blue-500" />
+            <p className="text-base font-bold uppercase tracking-widest">No History</p>
           </div>
         ) : (
           callHistory.map((call) => (
-            <div 
-              key={call.id} 
+            <div
+              key={call.id}
               onClick={() => window.location.href = `tel:${call.phone}`}
-              className="bg-slate-900/80 backdrop-blur-3xl p-8 rounded-[3rem] border border-white/10 hover:border-blue-500/30 hover:scale-[1.01] transition-all cursor-pointer flex items-center justify-between group shadow-xl relative"
+              className="bg-slate-900/80 backdrop-blur-3xl p-4 rounded-2xl border border-white/10 hover:border-blue-500/30 hover:scale-[1.01] transition-all cursor-pointer flex items-center justify-between group shadow-xl relative"
             >
-              <div className="flex items-center space-x-8 flex-1 min-w-0">
-                <div className="w-16 h-16 bg-slate-950 rounded-[1.8rem] overflow-hidden flex items-center justify-center border border-white/10 shadow-inner shrink-0">
+              <div className="flex items-center space-x-5 flex-1 min-w-0">
+                <div className="w-12 h-12 bg-slate-950 rounded-xl overflow-hidden flex items-center justify-center border border-white/10 shadow-inner shrink-0">
                   <img src={call.avatar} className="w-full h-full object-cover" alt="" />
                 </div>
-                
-                <div className="flex-1 min-w-0 space-y-1">
-                  <div className="flex items-center space-x-3">
-                    <h3 className="text-xl font-bold text-white uppercase tracking-tighter truncate leading-none">
+
+                <div className="flex-1 min-w-0 space-y-0.5">
+                  <div className="flex items-center space-x-2">
+                    <h3 className="text-base font-bold text-white uppercase tracking-tighter truncate leading-none">
                       {call.from}
                     </h3>
-                    <div className="bg-white/5 px-2 py-1 rounded-lg">
+                    <div className="bg-white/5 px-2 py-0.5 rounded-lg">
                       {getCallIcon(call.type)}
                     </div>
                   </div>
@@ -59,9 +59,9 @@ export const CallsList: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex flex-col items-end space-y-3 ml-6 shrink-0">
+              <div className="flex flex-col items-end space-y-2 ml-4 shrink-0">
                 <div className="flex items-center space-x-2 text-slate-500">
-                  <Clock size={12} />
+                  <Clock size={11} />
                   <span className="text-xs font-bold uppercase tracking-widest tabular-nums">{call.timestamp}</span>
                 </div>
                 {call.duration && (

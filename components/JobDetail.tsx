@@ -299,7 +299,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
       {/* MODAL: PHOTO SOURCE SELECTION */}
       {showPhotoSource && (
         <div className="absolute inset-0 z-[600] bg-black/90 backdrop-blur-2xl flex items-center justify-center p-6">
-          <div className="bg-slate-900 w-full max-w-md rounded-[3rem] border border-white/10 p-10 shadow-2xl space-y-8 animate-in zoom-in-95">
+          <div className="bg-slate-900 w-full max-w-md rounded-2xl border border-white/10 p-6 shadow-2xl space-y-5 animate-in zoom-in-95">
             <div className="flex justify-between items-center">
               <h3 className="text-xl font-bold text-white uppercase tracking-widest">Add Photo</h3>
               <button onClick={() => setShowPhotoSource(false)} className="p-2 text-slate-400 hover:text-white"><X size={24} /></button>
@@ -347,7 +347,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
       {/* MODAL: BILLING PROMPT */}
       {billingPrompt.open && (
         <div className="absolute inset-0 z-[600] bg-black/90 backdrop-blur-2xl flex items-center justify-center p-6">
-          <div className="bg-slate-900 w-full max-w-md rounded-[3rem] border border-white/10 p-10 shadow-2xl space-y-8 animate-in zoom-in-95">
+          <div className="bg-slate-900 w-full max-w-md rounded-2xl border border-white/10 p-6 shadow-2xl space-y-5 animate-in zoom-in-95">
             <div className="flex justify-between items-center">
               <h3 className="text-xl font-bold text-white uppercase tracking-widest">Add {billingPrompt.type}</h3>
               <button onClick={() => setBillingPrompt({ ...billingPrompt, open: false })} className="p-2 text-slate-400 hover:text-white"><X size={24} /></button>
@@ -420,7 +420,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
       {/* MODAL: CLIENT EDIT */}
       {isEditingClient && (
         <div className="absolute inset-0 z-[500] bg-black/90 backdrop-blur-2xl flex items-center justify-center p-6">
-          <div className="bg-slate-900 w-full max-w-2xl rounded-[3rem] border border-white/10 p-12 shadow-2xl space-y-8 animate-in zoom-in-95">
+          <div className="bg-slate-900 w-full max-w-2xl rounded-2xl border border-white/10 p-6 shadow-2xl space-y-5 animate-in zoom-in-95">
             <div className="flex justify-between items-center">
               <h3 className="text-xl font-bold text-white uppercase tracking-widest">Edit Client Records</h3>
               <button onClick={() => setIsEditingClient(false)} className="p-2 text-slate-400 hover:text-white"><X size={24} /></button>
@@ -475,22 +475,22 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
       {/* MODAL: SETTLEMENT WORKFLOW */}
       {paymentStep !== 'idle' && (
         <div className="absolute inset-0 z-[400] bg-black/90 backdrop-blur-2xl flex items-center justify-center p-6">
-          <div className="bg-white w-full max-w-lg rounded-[4rem] p-16 shadow-2xl animate-in slide-in-from-bottom-12 space-y-12 text-slate-900 relative">
+          <div className="bg-white w-full max-w-lg rounded-2xl p-8 shadow-2xl animate-in slide-in-from-bottom-12 space-y-6 text-slate-900 relative">
             <button onClick={() => setPaymentStep('idle')} className="absolute top-8 right-8 p-3 text-slate-300 hover:text-slate-900"><X size={24} /></button>
             
             {paymentStep === 'split' && (
-              <div className="space-y-10 animate-in fade-in">
+              <div className="space-y-5 animate-in fade-in">
                 <div className="text-center">
                   <h3 className="text-4xl font-bold uppercase tracking-tighter mb-2">Settlement Scope</h3>
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Identify collection tier</p>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <button onClick={() => { setPaymentSplit(1); setPaymentStep('method'); }} className="p-10 border-2 border-slate-100 rounded-[3rem] hover:border-blue-600 hover:bg-blue-50 transition-all flex flex-col items-center active:scale-95 shadow-sm">
+                  <button onClick={() => { setPaymentSplit(1); setPaymentStep('method'); }} className="p-6 border-2 border-slate-100 rounded-2xl hover:border-blue-600 hover:bg-blue-50 transition-all flex flex-col items-center active:scale-95 shadow-sm">
                     <DollarSign size={32} className="text-blue-600 mb-4" />
                     <span className="text-sm font-bold uppercase">Full Settlement</span>
                     <span className="text-xl font-bold mt-2">${subtotal}</span>
                   </button>
-                  <button onClick={() => { setPaymentSplit(0.5); setPaymentStep('method'); }} className="p-10 border-2 border-slate-100 rounded-[3rem] hover:border-blue-600 hover:bg-blue-50 transition-all flex flex-col items-center active:scale-95 shadow-sm">
+                  <button onClick={() => { setPaymentSplit(0.5); setPaymentStep('method'); }} className="p-6 border-2 border-slate-100 rounded-2xl hover:border-blue-600 hover:bg-blue-50 transition-all flex flex-col items-center active:scale-95 shadow-sm">
                     <Percent size={32} className="text-amber-600 mb-4" />
                     <span className="text-sm font-bold uppercase">50% Deposit</span>
                     <span className="text-xl font-bold mt-2">${subtotal * 0.5}</span>
@@ -500,7 +500,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
             )}
 
             {paymentStep === 'method' && (
-              <div className="space-y-10 animate-in slide-in-from-right-8">
+              <div className="space-y-5 animate-in slide-in-from-right-8">
                 <div className="text-center">
                   <h3 className="text-4xl font-bold uppercase tracking-tighter mb-2">Select Method</h3>
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Total to collect: ${collectingAmount}</p>
@@ -514,7 +514,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
             )}
 
             {paymentStep === 'sign' && (
-              <div className="space-y-10 animate-in slide-in-from-right-8">
+              <div className="space-y-5 animate-in slide-in-from-right-8">
                 <div className="text-center">
                   <h3 className="text-4xl font-bold uppercase tracking-tighter mb-2">Authorize</h3>
                   <p className="text-xs font-bold text-blue-600 uppercase tracking-widest">Collecting ${collectingAmount} via {paymentMethod}</p>
@@ -529,19 +529,19 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                   </div>
                 </div>
 
-                <div className="w-full aspect-video bg-slate-50 border-2 border-dashed border-slate-200 rounded-[3rem] flex flex-col items-center justify-center text-slate-200 relative overflow-hidden group">
+                <div className="w-full aspect-video bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center text-slate-200 relative overflow-hidden group">
                    <PenTool size={48} className="mb-4 opacity-10 group-hover:scale-110 transition-transform" />
                    <p className="text-xs font-bold uppercase tracking-widest">Digital Client Signature</p>
                 </div>
                 
-                <button onClick={() => { handleLocalChange({ paymentStatus: 'paid' }); setPaymentStep('idle'); }} className="w-full bg-slate-900 text-white py-10 rounded-[3.5rem] font-bold uppercase tracking-widest text-lg shadow-2xl active:scale-95 hover:bg-blue-600 transition-all">Execute Transaction</button>
+                <button onClick={() => { handleLocalChange({ paymentStatus: 'paid' }); setPaymentStep('idle'); }} className="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold uppercase tracking-widest text-base shadow-2xl active:scale-95 hover:bg-blue-600 transition-all">Execute Transaction</button>
               </div>
             )}
           </div>
         </div>
       )}
 
-      <div className="bg-slate-900 w-full max-w-[1600px] h-full max-h-[96vh] md:rounded-[4rem] border border-white/10 shadow-2xl flex flex-col relative overflow-hidden">
+      <div className="bg-slate-900 w-full max-w-[1600px] h-full max-h-[96vh] md:rounded-2xl border border-white/10 shadow-2xl flex flex-col relative overflow-hidden">
         
         {/* HEADER BAR */}
         <header className="px-10 py-6 flex items-center justify-between border-b border-white/10 bg-slate-900/80 z-50 shrink-0">
@@ -633,14 +633,14 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
           </button>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-12 scrollbar-hide">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-stretch min-h-full">
+        <div className="flex-1 overflow-y-auto p-6 scrollbar-hide">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch min-h-full">
             
             {/* SIDEBAR: CLIENT, APPLIANCE, MESSAGES */}
             <div className="lg:col-span-4 flex flex-col space-y-8">
               
               {/* CLIENT INFO CARD - NEW LAYOUT */}
-              <section className="bg-gray-900 p-8 rounded-[3rem] border border-slate-700 space-y-6 shadow-md relative overflow-hidden">
+              <section className="bg-gray-900 p-8 rounded-2xl border border-slate-700 space-y-6 shadow-md relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/5 blur-3xl rounded-full -mr-16 -mt-16" />
                 
                 <div className="flex justify-between items-start relative z-10">
@@ -704,7 +704,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
               </section>
 
               {/* LOCKDETAILS HUB */}
-              <section className="bg-gray-900 p-8 rounded-[3rem] border border-slate-700 space-y-6 shadow-md">
+              <section className="bg-gray-900 p-8 rounded-2xl border border-slate-700 space-y-6 shadow-md">
                 <div className="flex justify-between items-center">
                   <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Hardware Profile</h3>
                   <div className="flex space-x-2">
@@ -790,7 +790,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
               </section>
 
               {/* MESSAGE HISTORY - MOVED TO SIDEBAR */}
-              <section className="bg-slate-950 p-8 rounded-[3rem] border border-white/10 flex flex-col flex-1 min-h-[400px] shadow-2xl">
+              <section className="bg-slate-950 p-8 rounded-2xl border border-white/10 flex flex-col flex-1 min-h-[400px] shadow-2xl">
                 <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-6 flex items-center">
                   <MessageSquare size={16} className="mr-3 text-blue-500" /> 
                   Message History
@@ -831,9 +831,9 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
             <div className="lg:col-span-8 flex flex-col space-y-8">
               
               {/* INVOICE & BILLING */}
-              <div className="bg-white text-slate-900 rounded-[4rem] shadow-2xl flex flex-col overflow-hidden border border-slate-200 min-h-[810px] aspect-[1/1.414]">
+              <div className="bg-white text-slate-900 rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-200 min-h-[810px] aspect-[1/1.414]">
                 <div className="h-3 bg-blue-600" />
-                <div className="p-12 flex flex-col flex-1 space-y-8">
+                <div className="p-6 flex flex-col flex-1 space-y-5">
                   <header className="flex justify-between items-start">
                     <div>
                        <h3 className="text-5xl font-bold uppercase tracking-tighter leading-none mb-4">{localJob.client.firstName}<br/>{localJob.client.lastName}</h3>
@@ -903,11 +903,11 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
 
               {/* OPERATIONAL LOGS */}
               <div className="flex flex-col space-y-8 shrink-0">
-                 <div className="bg-gray-900 p-8 rounded-[3rem] border border-slate-700 flex flex-col space-y-6 shadow-md">
+                 <div className="bg-gray-900 p-8 rounded-2xl border border-slate-700 flex flex-col space-y-6 shadow-md">
                     <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center"><ClipboardList size={16} className="mr-3 text-blue-500" /> Intake</h3>
                     <div className="h-48 bg-transparent border border-slate-700 rounded-2xl p-6 text-sm font-medium text-gray-300 italic overflow-y-auto scrollbar-hide">"{localJob.complaint}"</div>
                  </div>
-                 <div className="bg-gray-900 p-8 rounded-[3rem] border border-slate-700 flex flex-col space-y-6 shadow-md">
+                 <div className="bg-gray-900 p-8 rounded-2xl border border-slate-700 flex flex-col space-y-6 shadow-md">
                     <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center"><Stethoscope size={16} className="mr-3 text-green-500" /> Diagnostic</h3>
                     <textarea 
                       className="h-48 bg-transparent border border-slate-700 rounded-2xl p-6 text-sm font-bold text-white leading-relaxed resize-none outline-none focus:border-blue-500 transition-all placeholder:text-slate-500"

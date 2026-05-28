@@ -70,21 +70,21 @@ export const Inventory: React.FC = () => {
         <div className="bg-slate-900 border border-white/10 rounded-2xl p-6 relative overflow-hidden shadow-lg">
            <div className="absolute top-0 right-0 p-4 opacity-5"><Package size={64} /></div>
            <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Total Assets</p>
-           <p className="text-3xl font-black text-white">{inventory.reduce((a, b) => a + b.stock, 0)}</p>
+           <p className="text-2xl font-black text-white">{inventory.reduce((a, b) => a + b.stock, 0)}</p>
         </div>
         <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-6 relative overflow-hidden shadow-lg">
            <div className="absolute top-0 right-0 p-4 opacity-10 text-amber-500"><AlertCircle size={64} /></div>
            <p className="text-amber-500 text-xs font-bold uppercase tracking-widest mb-1">Low Stock Alerts</p>
-           <p className="text-3xl font-black text-amber-500">{inventory.filter((p: Part) => p.stock <= p.reorderPoint).length}</p>
+           <p className="text-2xl font-black text-amber-500">{inventory.filter((p: Part) => p.stock <= p.reorderPoint).length}</p>
         </div>
         <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-6 relative overflow-hidden shadow-lg">
            <div className="absolute top-0 right-0 p-4 opacity-10 text-blue-500"><Package size={64} /></div>
            <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-1">Inventory Value</p>
-           <p className="text-3xl font-black text-blue-400">${inventory.reduce((a, b: Part) => a + (b.stock * b.price), 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
+           <p className="text-2xl font-black text-blue-400">${inventory.reduce((a, b: Part) => a + (b.stock * b.price), 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
         </div>
       </div>
 
-      <div className="bg-slate-900 rounded-[2rem] border border-white/10 overflow-hidden shadow-xl">
+      <div className="bg-slate-900 rounded-2xl border border-white/10 overflow-hidden shadow-xl">
         <div className="p-6 border-b border-white/10 flex flex-col md:flex-row gap-4 justify-between">
           <div className="flex bg-slate-950 border border-white/10 rounded-xl overflow-hidden p-1 w-full md:w-auto overflow-x-auto hide-scrollbar">
              {categories.map(c => (
@@ -167,7 +167,7 @@ export const Inventory: React.FC = () => {
               initial={{ scale: 0.95, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 20 }}
-              className="bg-slate-900 border border-white/10 p-8 rounded-[2rem] w-full max-w-lg shadow-2xl relative"
+              className="bg-slate-900 border border-white/10 p-5 rounded-2xl w-full max-w-lg shadow-2xl relative"
             >
               <button onClick={() => setIsEditing(false)} className="absolute top-6 right-6 text-slate-400 hover:text-white transition-colors">
                 <X size={20} />

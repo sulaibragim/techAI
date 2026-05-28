@@ -200,7 +200,7 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) =>
     <div className="fixed inset-0 bg-slate-950 z-[200] flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-8">
       {showCamera && (
         <div className="fixed inset-0 bg-black z-[300] flex flex-col items-center justify-center p-6">
-          <div className="relative w-full max-w-lg aspect-[3/4] bg-slate-900 rounded-[3rem] overflow-hidden border border-white/10 shadow-2xl">
+          <div className="relative w-full max-w-lg aspect-[3/4] bg-slate-900 rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
             <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
             <div className="absolute inset-x-0 bottom-10 flex justify-center space-x-6 px-10">
               <button onClick={() => setShowCamera(false)} className="w-16 h-16 bg-white/10 backdrop-blur-xl rounded-full flex items-center justify-center text-white"><X size={24} /></button>
@@ -224,7 +224,7 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) =>
         <div className="max-w-xl mx-auto">
 
           {step === 0 && (
-            <div className="space-y-8 animate-in slide-in-from-bottom-4">
+            <div className="space-y-5 animate-in slide-in-from-bottom-4">
               <div>
                 <h3 className="text-2xl font-bold text-white">Choose a template</h3>
                 <p className="text-sm text-slate-400 mt-2">Pre-fills job type & complaint. You can still edit everything.</p>
@@ -251,7 +251,7 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) =>
           )}
 
           {step === 1 && (
-            <div className="space-y-8 animate-in slide-in-from-right-4">
+            <div className="space-y-5 animate-in slide-in-from-right-4">
               <div className="space-y-4">
                   <h3 className="text-2xl font-bold">Customer Details</h3>
                 <div className="grid grid-cols-2 gap-4">
@@ -283,7 +283,7 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) =>
           )}
 
           {step === 2 && (
-            <div className="space-y-8 animate-in slide-in-from-right-4">
+            <div className="space-y-5 animate-in slide-in-from-right-4">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-2xl font-bold">Hardware Profile</h3>
@@ -335,10 +335,10 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) =>
           )}
 
           {step === 3 && (
-            <div className="space-y-8 animate-in slide-in-from-right-4">
+            <div className="space-y-5 animate-in slide-in-from-right-4">
               <div className="space-y-4">
                 <h3 className="text-2xl font-bold">Service Complaint</h3>
-                <div className="bg-slate-900 p-8 rounded-[3rem] border border-white/10 shadow-2xl">
+                <div className="bg-slate-900 p-5 rounded-2xl border border-white/10 shadow-2xl">
                   <textarea className="w-full bg-slate-950 border border-white/10 rounded-2xl p-6 min-h-[200px] text-base font-medium text-gray-300 resize-none outline-none focus:border-blue-500 transition-all italic" value={complaint} onChange={e => setComplaint(e.target.value)} placeholder="Describe the lock issue or vehicle situation..." />
                 </div>
               </div>
