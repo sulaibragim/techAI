@@ -2,9 +2,9 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
-  Calendar, DollarSign, TrendingUp, Clock, Target,
-  MapPin, AlertCircle, Sparkles, Activity, Plus, ChevronLeft, ChevronRight,
-  ArrowLeft, LayoutGrid, Zap, Shield
+  DollarSign, Clock, Target,
+  AlertCircle, Activity, Plus, ChevronLeft, ChevronRight,
+  ArrowLeft, Zap, Shield
 } from 'lucide-react';
 import { useAppStore } from '../store';
 import { useSettingsStore } from '../settingsStore';
@@ -317,55 +317,60 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
         </div>
 
         <div className="lg:col-span-4 flex flex-col gap-5">
-          <div className="bg-slate-900/80 backdrop-blur-xl p-5 rounded-2xl border border-white/10 shadow-[0_0_30px_rgba(0,0,0,0.5)] relative overflow-hidden group">
-            <h3 className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-5 flex items-center">
-              <Activity size={14} className="mr-2 text-blue-400" /> System Focus
+          <div className="bg-slate-900/80 backdrop-blur-xl p-5 rounded-2xl border border-white/10 shadow-[0_0_30px_rgba(0,0,0,0.5)] relative overflow-hidden">
+            <h3 className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-4 flex items-center">
+              <Activity size={14} className="mr-2 text-blue-400" /> Today
             </h3>
             <div className="space-y-3">
-               <motion.div whileHover={{ scale: 1.02 }} className="bg-white/5 border border-blue-500/10 hover:border-blue-500/40 p-4 rounded-xl transition-all group/item shadow-sm">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <TrendingUp size={15} className="text-blue-400" />
-                    <p className="text-xs font-bold text-white uppercase tracking-tight">Growth Trace</p>
-                  </div>
-                  <p className="text-xs font-medium text-slate-300 leading-relaxed italic opacity-90">Analysis indicates Friday performance is pacing 12% above quarterly targets.</p>
-               </motion.div>
-               <motion.div whileHover={{ scale: 1.02 }} className="bg-white/5 border border-white/10 hover:border-amber-500/40 p-4 rounded-xl transition-all group/item shadow-sm">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <AlertCircle size={15} className="text-amber-500" />
-                    <p className="text-xs font-bold text-white uppercase tracking-tight">Dispatch Audit</p>
-                  </div>
-                  <p className="text-xs font-medium text-slate-300 leading-relaxed italic opacity-90">Verifying 3 active dispatches. Target close rate objective is 65%.</p>
-               </motion.div>
+              {(() => {
+                const completedToday = todaysJobs.filter(j => j.status === 'completed').length;
+                const nextJob = todaysJobs.filter(j => j.status !== 'completed' && j.status !== 'cancelled').sort((a, b) => a.scheduledTime.localeCompare(b.scheduledTime))[0];
+                return (
+                  <>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-white/5 border border-white/10 p-3 rounded-xl">
+                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Done</p>
+                        <p className="text-2xl font-bold text-white">{completedToday}</p>
+                        <p className="text-xs text-slate-500 mt-0.5">of {todaysJobs.length} jobs</p>
+                      </div>
+                      <div className="bg-white/5 border border-white/10 p-3 rounded-xl">
+                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Revenue</p>
+                        <p className="text-2xl font-bold text-blue-400">${todaysRevenue.toLocaleString()}</p>
+                        <p className="text-xs text-slate-500 mt-0.5">today</p>
+                      </div>
+                    </div>
+                    {nextJob ? (
+                      <div className="bg-white/5 border border-blue-500/20 p-3 rounded-xl">
+                        <p className="text-xs font-semibold text-blue-400 uppercase tracking-wider mb-2 flex items-center gap-1.5"><Clock size={11} /> Next Up</p>
+                        <p className="text-sm font-bold text-white truncate">{nextJob.client.firstName} {nextJob.client.lastName}</p>
+                        <p className="text-xs text-slate-400 mt-0.5">{nextJob.scheduledTime} · {nextJob.lockDetails.type}</p>
+                      </div>
+                    ) : (
+                      <div className="bg-white/5 border border-white/10 p-3 rounded-xl text-center">
+                        <p className="text-xs text-slate-500 uppercase tracking-wider">No more jobs today</p>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
             </div>
           </div>
           <Speedometer closeRate={metrics.closeRate} target={65} />
-
-          <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl p-5 text-white shadow-xl relative overflow-hidden group">
-             <div className="absolute inset-0 bg-white/5 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-white/20 to-transparent mix-blend-overlay" />
-             <h4 className="relative z-10 text-lg font-extrabold uppercase tracking-tight mb-2">Elite Hub</h4>
-             <p className="relative z-10 text-xs font-bold text-white/80 uppercase tracking-widest mb-4">Quarterly Matrix</p>
-             <div className="relative z-10 w-full h-2.5 bg-black/20 rounded-full mb-4 overflow-hidden p-0.5 shadow-inner">
-                <motion.div
-                   initial={{ width: 0 }}
-                   whileInView={{ width: '84%' }}
-                   viewport={{ once: true }}
-                   transition={{ duration: 1.5, ease: "easeOut" }}
-                   className="h-full bg-white rounded-full shadow-[0_0_15px_white]"
-                />
-             </div>
-             <p className="relative z-10 text-xs font-semibold italic leading-relaxed text-white/90">
-               "Operational velocity is currently exceeding fleet benchmarks. Maintain focus on recurring service plans."
-             </p>
-          </div>
         </div>
       </div>
 
       {/* 3. DEPLOYMENT PIPELINE */}
       <section className="space-y-4">
-        <h3 className="text-xs font-bold text-blue-400 uppercase tracking-widest flex items-center px-2">
-          <Zap size={15} className="mr-2 text-blue-400" />
-          Pipeline Engineering
-        </h3>
+        <div className="flex items-center justify-between px-2">
+          <h3 className="text-xs font-bold text-blue-400 uppercase tracking-widest flex items-center">
+            <Zap size={15} className="mr-2 text-blue-400" />
+            Pipeline
+          </h3>
+          <button onClick={onAddJob} className="flex items-center space-x-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-xl transition-all active:scale-95 shadow-lg shadow-blue-900/30">
+            <Plus size={13} />
+            <span>New Job</span>
+          </button>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 px-2">
           {pipelineColumns.map((col) => (
             <motion.div

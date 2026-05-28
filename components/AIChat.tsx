@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
-import { Send, Bot, Sparkles, TrendingUp, BrainCircuit } from 'lucide-react';
+import { Send, Bot, Sparkles, BrainCircuit, KeyRound, Settings } from 'lucide-react';
 import { getStrategicBrainResponse } from '../geminiService';
 import { useAppStore, useAIActions } from '../store';
-import { calculateFinancialMetrics } from '../financialUtils';
+import { useSettingsStore } from '../settingsStore';
 
 export const AIChat: React.FC = () => {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<{ text: string, role: 'user' | 'assistant' }[]>([]);
   const [isTyping, setIsTyping] = useState(false);
-  const { jobs } = useAppStore();
+  const { jobs, setActiveTab } = useAppStore();
   const { handleAction } = useAIActions();
+  const { geminiApiKey } = useSettingsStore();
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -36,6 +37,29 @@ export const AIChat: React.FC = () => {
       setIsTyping(false);
     }
   };
+
+  if (!geminiApiKey) {
+    return (
+      <div className="max-w-4xl mx-auto h-[calc(100vh-160px)] flex flex-col items-center justify-center bg-[#1F2937]/30 rounded-2xl border border-white/10 backdrop-blur-xl">
+        <div className="text-center space-y-5 px-8 max-w-sm">
+          <div className="w-16 h-16 bg-blue-600/10 border border-blue-500/20 rounded-2xl flex items-center justify-center mx-auto">
+            <KeyRound size={28} className="text-blue-400" />
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-white mb-2">API Key Required</h3>
+            <p className="text-sm text-slate-400 leading-relaxed">Add your Gemini API key in Settings to activate the AI Brain.</p>
+          </div>
+          <button
+            onClick={() => setActiveTab('settings')}
+            className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl transition-all active:scale-95 mx-auto"
+          >
+            <Settings size={14} />
+            <span>Open Settings</span>
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto h-[calc(100vh-160px)] flex flex-col bg-[#1F2937]/30 rounded-2xl border border-white/10 overflow-hidden backdrop-blur-xl">

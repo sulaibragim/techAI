@@ -4,6 +4,26 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Calendar, Briefcase, BarChart2, Settings, LogOut, BrainCircuit, Phone, MessageSquare, AlertCircle, X, Activity, Package, Users } from 'lucide-react';
 import { useAppStore } from '../store';
 
+function formatRelativeTime(isoString: string): string {
+  const diff = Date.now() - new Date(isoString).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
+
+function getTimeRemaining(scheduledTime: string): { label: string; pct: number } {
+  const scheduled = new Date(scheduledTime).getTime();
+  const now = Date.now();
+  const minsLeft = Math.round((scheduled - now) / 60000);
+  if (minsLeft <= 0) return { label: 'overdue', pct: 100 };
+  if (minsLeft >= 120) return { label: `${Math.round(minsLeft / 60)}h left`, pct: 10 };
+  const pct = Math.max(5, Math.min(95, 100 - (minsLeft / 60) * 100));
+  return { label: `${minsLeft}m left`, pct };
+}
+
 interface SidebarProps {
   currentTab: string;
   onTabChange: (tab: string) => void;
@@ -78,12 +98,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onTabChange }) => 
               <span className="text-xs font-bold uppercase tracking-widest">Active Task</span>
             </div>
             <p className="text-sm font-semibold text-white truncate mb-3 uppercase tracking-wide">{inProgressJob.client.lastName} — {inProgressJob.lockDetails.type}</p>
-            <div className="flex items-end justify-between">
-              <div className="text-xl font-bold text-white leading-none">28<span className="text-xs text-amber-500 ml-1 font-semibold">m left</span></div>
-              <div className="w-12 h-1.5 bg-amber-500/20 rounded-full overflow-hidden">
-                <div className="h-full bg-amber-500" style={{ width: '70%' }} />
-              </div>
-            </div>
+            {(() => {
+              const { label, pct } = getTimeRemaining(inProgressJob.scheduledTime);
+              return (
+                <div className="flex items-end justify-between">
+                  <div className="text-xl font-bold text-white leading-none">
+                    <span className="text-xs text-amber-500 font-semibold">{label}</span>
+                  </div>
+                  <div className="w-12 h-1.5 bg-amber-500/20 rounded-full overflow-hidden">
+                    <div className="h-full bg-amber-500 transition-all" style={{ width: `${pct}%` }} />
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         )}
 
@@ -107,7 +134,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onTabChange }) => 
                    <img src={mi.avatar} className="w-8 h-8 rounded-lg object-cover grayscale group-hover:grayscale-0 transition-all" alt="" />
                    <div className="flex-1 min-w-0">
                       <p className="text-xs font-semibold text-white truncate uppercase">{mi.from}</p>
-                      <p className="text-xs text-slate-400 font-medium uppercase mt-0.5">{mi.timestamp}</p>
+                      <p className="text-xs text-slate-400 font-medium uppercase mt-0.5">{formatRelativeTime(mi.timestamp)}</p>
                    </div>
                    <button onClick={() => clearMissed(mi.id)} className="opacity-0 group-hover:opacity-100 text-red-500 p-1.5 hover:bg-red-500/10 rounded-lg transition-all">
                       <X size={13} />

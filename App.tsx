@@ -28,13 +28,6 @@ const App: React.FC = () => {
   const selectedJob = jobs.find(j => j.id === selectedJobId);
   const inProgressJob = jobs.find(j => j.status === 'enRoute' || j.status === 'diagnosed');
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setNotification({ msg: "System Sync: Barbara K. arrival scheduled for 13:00", type: 'info' });
-      setTimeout(() => setNotification(null), 5000);
-    }, 10000);
-    return () => clearTimeout(timer);
-  }, []);
 
   // Keyboard shortcuts
   useEffect(() => {

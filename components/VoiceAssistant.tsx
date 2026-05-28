@@ -1,8 +1,9 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Mic, X, Bot, User, Minimize2, CheckCircle, Calendar, Edit3 } from 'lucide-react';
+import { Mic, X, Bot, User, Minimize2, CheckCircle, Calendar, Edit3, KeyRound } from 'lucide-react';
 import { GeminiVoiceAssistant } from '../geminiService';
 import { useAppStore, useAIActions } from '../store';
+import { useSettingsStore } from '../settingsStore';
 import { Job, Message, JobStatus } from '../types';
 
 export const VoiceAssistant: React.FC = () => {
@@ -15,6 +16,7 @@ export const VoiceAssistant: React.FC = () => {
   const assistantRef = useRef<GeminiVoiceAssistant | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { handleAction } = useAIActions();
+  const { geminiApiKey } = useSettingsStore();
 
   // Use a ref to always have the latest handleAction in the long-lived voice session
   const actionRef = useRef(handleAction);
@@ -88,9 +90,25 @@ export const VoiceAssistant: React.FC = () => {
           <span className="font-bold text-white text-xs uppercase tracking-wider">{notificationText}</span>
         </div>
       )}
-      <button onClick={toggle} className={`fixed bottom-20 right-8 w-16 h-16 rounded-full flex items-center justify-center shadow-[0_32px_64px_-16px_rgba(59,130,246,0.5)] z-[100] transition-all duration-500 hover:scale-110 active:scale-90 ${isOpen ? 'bg-red-500' : 'bg-blue-600'}`}>
-        {isOpen ? <X size={26} /> : <Mic size={26} />}
-      </button>
+      <div className="fixed bottom-20 right-8 z-[100] group/fab">
+        <button
+          onClick={geminiApiKey ? toggle : undefined}
+          className={`w-16 h-16 rounded-full flex items-center justify-center shadow-[0_32px_64px_-16px_rgba(59,130,246,0.5)] transition-all duration-500 ${
+            !geminiApiKey
+              ? 'bg-slate-700 cursor-not-allowed opacity-60'
+              : isOpen
+              ? 'bg-red-500 hover:scale-110 active:scale-90'
+              : 'bg-blue-600 hover:scale-110 active:scale-90'
+          }`}
+        >
+          {isOpen ? <X size={26} /> : geminiApiKey ? <Mic size={26} /> : <KeyRound size={22} />}
+        </button>
+        {!geminiApiKey && (
+          <div className="absolute bottom-full right-0 mb-2 bg-slate-800 border border-white/10 text-white text-xs font-semibold px-3 py-2 rounded-xl whitespace-nowrap shadow-xl opacity-0 group-hover/fab:opacity-100 transition-opacity pointer-events-none">
+            Add API key in Settings
+          </div>
+        )}
+      </div>
       {isOpen && (
         <div className="fixed bottom-40 right-8 w-[380px] max-w-[calc(100vw-2rem)] h-[520px] bg-slate-900/95 backdrop-blur-3xl z-[90] flex flex-col rounded-2xl border border-white/10 shadow-2xl animate-in zoom-in-95">
           <div className="p-5 border-b border-white/10 flex items-center justify-between shrink-0">
