@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Calendar, Briefcase, BarChart2, Settings, LogOut, BrainCircuit, Phone, MessageSquare, AlertCircle, X, Activity } from 'lucide-react';
+import { Calendar, Briefcase, BarChart2, Settings, LogOut, BrainCircuit, Phone, MessageSquare, AlertCircle, X, Activity, Package } from 'lucide-react';
 import { useAppStore } from '../store';
 
 interface SidebarProps {
@@ -18,6 +18,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onTabChange }) => 
     { id: 'messages', label: 'Messages', icon: MessageSquare },
     { id: 'calls', label: 'Calls', icon: Phone },
     { id: 'analytics', label: 'Financials', icon: BarChart2 },
+    { id: 'inventory', label: 'Inventory', icon: Package },
     { id: 'brain', label: 'AI Brain', icon: BrainCircuit },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
@@ -69,7 +70,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onTabChange }) => 
               <AlertCircle size={14} />
               <span className="text-xs font-bold uppercase tracking-widest">Active Task</span>
             </div>
-            <p className="text-sm font-semibold text-white truncate mb-5 uppercase tracking-wide">{inProgressJob.client.lastName} — {inProgressJob.appliance.type}</p>
+            <p className="text-sm font-semibold text-white truncate mb-5 uppercase tracking-wide">{inProgressJob.client.lastName} — {inProgressJob.lockDetails.type}</p>
             <div className="flex items-end justify-between">
               <div className="text-2xl font-bold text-white leading-none">28<span className="text-xs text-amber-500 ml-1 font-semibold">m left</span></div>
               <div className="w-16 h-1.5 bg-amber-500/20 rounded-full overflow-hidden">

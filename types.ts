@@ -1,4 +1,14 @@
 
+export interface Part {
+  id: string;
+  name: string;
+  sku: string;
+  category: 'Key Blanks' | 'Remotes' | 'Cylinders' | 'Hardware' | 'Tools';
+  stock: number;
+  reorderPoint: number;
+  price: number;
+}
+
 export type JobStatus = 
   | 'scheduled' 
   | 'enRoute' 
@@ -44,15 +54,12 @@ export interface CallRecord {
   avatar: string;
 }
 
-export interface Appliance {
-  name?: string;
-  type: 'Refrigerator' | 'Washer' | 'Dryer' | 'Oven' | 'Dishwasher' | 'HVAC' | 'Other';
-  brand?: string;
-  modelNumber?: string;
-  serialNumber?: string;
-  partWeight?: string;
-  age?: number; 
-  warrantyMonths?: number;
+export interface LockDetails {
+  type: 'Automotive' | 'Residential' | 'Commercial' | 'Secure / Safe' | 'Other';
+  brand: string;
+  modelOrYear: string;
+  vinOrKeyCode?: string;
+  hardwareFinish?: string;
 }
 
 export interface LineItem {
@@ -61,13 +68,14 @@ export interface LineItem {
   description: string;
   quantity: number;
   unitPrice: number;
+  partId?: string;
 }
 
 export interface Job {
   id: string;
   jobNumber: string;
   client: Client;
-  appliance: Appliance;
+  lockDetails: LockDetails;
   complaint: string;
   diagnosisNotes: string;
   scheduledDate: string; // ISO format YYYY-MM-DD

@@ -11,9 +11,10 @@ import {
   Trash2, 
   X, 
   Wrench, 
-  Refrigerator, 
-  Zap, 
-  Thermometer, 
+  Car,
+  Home,
+  Building2,
+  Lock,
   Settings, 
   Package,
   Phone,
@@ -25,27 +26,25 @@ import {
   AirVent,
   Droplets
 } from 'lucide-react';
-import { Job, Client, Appliance, LineItem } from '../types';
+import { Job, Client, LockDetails, LineItem } from '../types';
 
 interface JobWizardProps {
   onComplete: (job: Job) => void;
   onCancel: () => void;
 }
 
-const APPLIANCE_TYPES = [
-  { id: 'Refrigerator', icon: Refrigerator, label: 'Fridge' },
-  { id: 'Washer', icon: Zap, label: 'Washer' },
-  { id: 'Dryer', icon: Thermometer, label: 'Dryer' },
-  { id: 'Oven', icon: Settings, label: 'Oven' },
-  { id: 'Dishwasher', icon: Droplets, label: 'Dishwasher' },
-  { id: 'HVAC', icon: AirVent, label: 'HVAC' },
+const LOCK_TYPES = [
+  { id: 'Automotive', icon: Car, label: 'Auto' },
+  { id: 'Residential', icon: Home, label: 'Home' },
+  { id: 'Commercial', icon: Building2, label: 'Business' },
+  { id: 'Secure / Safe', icon: Lock, label: 'Safe/Vault' },
   { id: 'Other', icon: Wrench, label: 'Other' }
 ];
 
 const INITIAL_BRANDS = [
-  'Whirlpool', 'GE', 'KitchenAid', 'Maytag', 'Frigidaire', 
-  'Samsung', 'LG', 'Viking', 'Thermador', 'Sub-Zero', 
-  'Bosch', 'Wolf', 'Miele', 'Kenmore', 'Dacor'
+  'Toyota', 'Honda', 'Ford', 'Chevrolet', 'Nissan', 'BMW', 'Audi',
+  'Schlage', 'Kwikset', 'Yale', 'Medeco', 'Von Duprin', 'Adams Rite',
+  'Amsec', 'SentrySafe', 'Corbin Russwin', 'Baldwin', 'Master Lock'
 ];
 
 export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) => {
@@ -59,10 +58,10 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) =>
     secondaryEmail: '',
     address: ''
   });
-  const [appliance, setAppliance] = useState<Partial<Appliance>>({
+  const [lockDetails, setLockDetails] = useState<Partial<LockDetails>>({
     type: 'Refrigerator',
     brand: '',
-    modelNumber: '',
+    modelOrYear: '',
   });
   const [complaint, setComplaint] = useState('');
   const [photos, setPhotos] = useState<string[]>([]);
@@ -123,7 +122,7 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) =>
       id: Math.random().toString(36).substr(2, 9),
       jobNumber: `${numPart}${initials.toUpperCase()}`,
       client: client as Client,
-      appliance: appliance as Appliance,
+      lockDetails: lockDetails as LockDetails,
       complaint,
       diagnosisNotes: '',
       scheduledDate: new Date().toISOString().split('T')[0],
@@ -169,7 +168,7 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) =>
           {step === 1 && (
             <div className="space-y-8 animate-in slide-in-from-right-4">
               <div className="space-y-4">
-                <h3 className="text-2xl font-bold">Customer Details</h3>
+                  <h3 className="text-2xl font-bold">Customer Details</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-slate-900 p-5 rounded-3xl border border-white/10">
                     <label className="text-xs font-bold text-slate-400 uppercase block mb-1.5">First Name</label>
@@ -192,7 +191,7 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) =>
                 </div>
                 <div className="bg-slate-900 p-5 rounded-3xl border border-white/10">
                   <label className="text-xs font-bold text-slate-400 uppercase block mb-1.5">Service Address</label>
-                  <textarea className="w-full bg-transparent border-none text-sm font-semibold text-white outline-none min-h-[80px] resize-none" value={client.address} onChange={e => setClient({...client, address: e.target.value})} placeholder="123 Appliance Way..." />
+                  <textarea className="w-full bg-transparent border-none text-sm font-semibold text-white outline-none min-h-[80px] resize-none" value={client.address} onChange={e => setClient({...client, address: e.target.value})} placeholder="123 Main St..." />
                 </div>
               </div>
             </div>
@@ -202,15 +201,15 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) =>
             <div className="space-y-8 animate-in slide-in-from-right-4">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-2xl font-bold">Appliance Info</h3>
+                  <h3 className="text-2xl font-bold">Hardware Profile</h3>
                   <button onClick={() => setShowCamera(true)} className="p-4 bg-blue-600/10 text-blue-500 rounded-2xl border border-blue-500/20 hover:bg-blue-600/20 transition-all"><Camera size={20} /></button>
                 </div>
                 
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {APPLIANCE_TYPES.map(t => {
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {LOCK_TYPES.map(t => {
                     const Icon = t.icon;
                     return (
-                      <button key={t.id} onClick={() => setAppliance({...appliance, type: t.id as any})} className={`p-6 rounded-3xl border flex flex-col items-center space-y-3 transition-all ${appliance.type === t.id ? 'bg-blue-600 border-blue-400 text-white shadow-xl scale-105' : 'bg-slate-900 border-white/10 text-slate-300'}`}>
+                      <button key={t.id} onClick={() => setLockDetails({...lockDetails, type: t.id as any})} className={`p-6 rounded-3xl border flex flex-col items-center space-y-3 transition-all ${lockDetails.type === t.id ? 'bg-blue-600 border-blue-400 text-white shadow-xl scale-105' : 'bg-slate-900 border-white/10 text-slate-300'}`}>
                         <Icon size={24} /><span className="text-xs font-bold uppercase tracking-widest">{t.label}</span>
                       </button>
                     );
@@ -220,7 +219,7 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) =>
                 <div className="flex flex-wrap gap-3 mt-6">
                   {photos.map((p, i) => (
                     <div key={i} className="relative w-24 h-24 rounded-2xl overflow-hidden border border-white/10 group">
-                      <img src={p} className="w-full h-full object-cover" alt="Appliance" />
+                      <img src={p} className="w-full h-full object-cover" alt="LockDetails" />
                       <button onClick={() => setPhotos(prev => prev.filter((_, idx) => idx !== i))} className="absolute top-1 right-1 p-1 bg-red-600 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={10} /></button>
                     </div>
                   ))}
@@ -229,22 +228,22 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) =>
                 <div className="relative">
                   <div className="bg-slate-900 p-5 rounded-3xl border border-white/10 mt-6 flex items-center justify-between">
                     <div className="flex-1">
-                      <label className="text-xs font-bold text-slate-400 uppercase block mb-1.5">Manufacturer</label>
-                      <input className="w-full bg-transparent border-none text-sm font-semibold text-white outline-none uppercase" value={appliance.brand} onChange={e => setAppliance({...appliance, brand: e.target.value})} placeholder="E.G. VIKING, THERMADOR" />
+                      <label className="text-xs font-bold text-slate-400 uppercase block mb-1.5">Manufacturer / Make</label>
+                      <input className="w-full bg-transparent border-none text-sm font-semibold text-white outline-none uppercase" value={lockDetails.brand} onChange={e => setLockDetails({...lockDetails, brand: e.target.value})} placeholder="E.G. TOYOTA, SCHLAGE" />
                     </div>
                     <button onClick={() => setShowBrandSearch(!showBrandSearch)} className="ml-4 p-3 bg-white/5 rounded-xl text-blue-500"><Plus size={18} /></button>
                   </div>
                   {showBrandSearch && (
                     <div className="absolute top-full left-0 right-0 mt-3 p-4 bg-[#1F2937] border border-white/10 rounded-3xl z-50 grid grid-cols-2 gap-2 shadow-2xl max-h-48 overflow-y-auto scrollbar-hide">
                        {INITIAL_BRANDS.map(b => (
-                         <button key={b} onClick={() => { setAppliance({...appliance, brand: b}); setShowBrandSearch(false); }} className="text-left px-4 py-3 text-xs font-bold uppercase text-gray-300 hover:bg-blue-600 hover:text-white rounded-xl transition-all">{b}</button>
+                         <button key={b} onClick={() => { setLockDetails({...lockDetails, brand: b}); setShowBrandSearch(false); }} className="text-left px-4 py-3 text-xs font-bold uppercase text-gray-300 hover:bg-blue-600 hover:text-white rounded-xl transition-all">{b}</button>
                        ))}
                     </div>
                   )}
                 </div>
                 <div className="bg-slate-900 p-5 rounded-3xl border border-white/10">
-                  <label className="text-xs font-bold text-slate-400 uppercase block mb-1.5">Model Number</label>
-                  <input className="w-full bg-transparent border-none text-sm font-bold text-white outline-none uppercase" value={appliance.modelNumber} onChange={e => setAppliance({...appliance, modelNumber: e.target.value})} placeholder="MODEL#" />
+                  <label className="text-xs font-bold text-slate-400 uppercase block mb-1.5">Model or Year</label>
+                  <input className="w-full bg-transparent border-none text-sm font-bold text-white outline-none uppercase" value={lockDetails.modelOrYear} onChange={e => setLockDetails({...lockDetails, modelOrYear: e.target.value})} placeholder="2018 CAMRY, OR DEADBOLT" />
                 </div>
               </div>
             </div>
@@ -255,7 +254,7 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) =>
               <div className="space-y-4">
                 <h3 className="text-2xl font-bold">Service Complaint</h3>
                 <div className="bg-slate-900 p-8 rounded-[3rem] border border-white/10 shadow-2xl">
-                  <textarea className="w-full bg-slate-950 border border-white/10 rounded-2xl p-6 min-h-[200px] text-base font-medium text-gray-300 resize-none outline-none focus:border-blue-500 transition-all italic" value={complaint} onChange={e => setComplaint(e.target.value)} placeholder="Describe the unit failure..." />
+                  <textarea className="w-full bg-slate-950 border border-white/10 rounded-2xl p-6 min-h-[200px] text-base font-medium text-gray-300 resize-none outline-none focus:border-blue-500 transition-all italic" value={complaint} onChange={e => setComplaint(e.target.value)} placeholder="Describe the lock issue or vehicle situation..." />
                 </div>
               </div>
             </div>

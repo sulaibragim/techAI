@@ -3,7 +3,8 @@ import { useAppStore } from '../store';
 import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Clock, ChevronRight, User } from 'lucide-react';
 
 export const CallsList: React.FC = () => {
-  const { callHistory } = useAppStore();
+  const { calls } = useAppStore();
+  const callHistory = calls || [];
 
   const getCallIcon = (type: string) => {
     switch (type) {

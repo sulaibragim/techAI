@@ -163,7 +163,7 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
                     <p className="text-xl font-bold text-white uppercase leading-none truncate group-hover:translate-x-1 transition-transform">
                       {job.client.firstName} {job.client.lastName}
                     </p>
-                    <p className="text-xs font-medium text-slate-400 uppercase mt-1 tracking-tight truncate">{job.appliance.type} — {job.appliance.brand || 'Elite Unit'}</p>
+                    <p className="text-xs font-medium text-slate-400 uppercase mt-1 tracking-tight truncate">{job.lockDetails.type} — {job.lockDetails.brand || 'Elite Unit'}</p>
                   </div>
                 </div>
 

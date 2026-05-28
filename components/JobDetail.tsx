@@ -10,37 +10,25 @@ import {
   Globe, Building2, Navigation, ChevronRight, MessageSquare, Image as ImageIcon,
   AlertTriangle, Edit2, Check, LayoutGrid, Pen, DollarSign,
   Briefcase, Hammer, PhoneIncoming, PhoneOutgoing, PhoneMissed, Shield,
-  Calendar as CalendarIcon, Send, Fingerprint, Percent, RotateCcw
+  Calendar as CalendarIcon, Send, Fingerprint, Percent, RotateCcw,
+  Car, Home, ChevronDown, Lock
 } from 'lucide-react';
-import { Job, LineItem, STATUS_COLORS, Appliance, JobStatus, Client, Message } from '../types';
+import { Job, LineItem, STATUS_COLORS, LockDetails, JobStatus, Client, Message } from '../types';
 import { useAppStore } from '../store';
 
-const APPLIANCE_ICONS = [
-  { id: 'Refrigerator', icon: Refrigerator, label: 'Refrigerator' },
-  { id: 'Washer', icon: Droplets, label: 'Washer' },
-  { id: 'Washing Machine', icon: Droplets, label: 'Washing Machine' },
-  { id: 'Dryer', icon: Thermometer, label: 'Dryer' },
-  { id: 'Dishwasher', icon: Droplets, label: 'Dishwasher' },
-  { id: 'Microwave', icon: Microwave, label: 'Microwave' },
-  { id: 'Oven', icon: Settings, label: 'Oven' },
-  { id: 'HVAC', icon: AirVent, label: 'HVAC' },
+const LOCK_ICONS = [
+  { id: 'Automotive', icon: Car, label: 'Auto' },
+  { id: 'Residential', icon: Home, label: 'Home' },
+  { id: 'Commercial', icon: Building2, label: 'Business' },
+  { id: 'Secure / Safe', icon: Lock, label: 'Safe/Vault' },
   { id: 'Other', icon: Wrench, label: 'Other' }
 ];
 
-const SUBZERO_MODELS = [
-  { id: 'PRO4850G', label: 'PRO4850G (Professional High-End)', tier: 'Elite' },
-  { id: 'PRO3650G', label: 'PRO3650G (Professional)', tier: 'High' },
-  { id: 'BI-48SD/S', label: 'BI-48SD/S (Classic Built-in)', tier: 'High' },
-  { id: 'BI-42S/S', label: 'BI-42S/S (Classic)', tier: 'Mid' },
-  { id: 'BI-36U/S', label: 'BI-36U/S (Over-and-Under)', tier: 'Mid' },
-  { id: 'CL3650U/L', label: 'CL3650U/L (Classic Series)', tier: 'Standard' },
-  { id: 'DET3050', label: 'DET3050 (Designer Column)', tier: 'Standard' },
-  { id: 'DEC2450W', label: 'DEC2450W (Wine Storage)', tier: 'Specialty' },
-  { id: 'UC-24R', label: 'UC-24R (Under-counter)', tier: 'Entry' },
-  { id: 'ID-24R', label: 'ID-24R (Drawer Integrated Low-End)', tier: 'Entry' }
+const BRANDS = [
+  'Toyota', 'Honda', 'Ford', 'Chevrolet', 'Nissan', 'BMW', 'Audi',
+  'Schlage', 'Kwikset', 'Yale', 'Medeco', 'Von Duprin', 'Adams Rite',
+  'Amsec', 'SentrySafe', 'Corbin Russwin', 'Baldwin', 'Master Lock'
 ];
-
-const BRANDS = ['Sub-Zero', 'Viking', 'Wolf', 'Samsung', 'LG', 'GE', 'KitchenAid', 'Bosch'];
 
 const STATUS_OPTIONS: { id: JobStatus; label: string }[] = [
   { id: 'scheduled', label: 'Scheduled' },
@@ -55,7 +43,7 @@ const STATUS_OPTIONS: { id: JobStatus; label: string }[] = [
 const TERM_TYPES = ['1', '10', '15', '20', '30'];
 
 export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: initialJob, onClose }) => {
-  const { jobs, updateJob } = useAppStore();
+  const { jobs, updateJob, inventory, updateInventoryItem } = useAppStore();
   const [localJob, setLocalJob] = useState<Job>({ ...initialJob });
   const [isModified, setIsModified] = useState(false);
   
@@ -70,7 +58,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
   const [showCustomBrandInput, setShowCustomBrandInput] = useState(false);
   
   // Billing Prompt State
-  const [billingPrompt, setBillingPrompt] = useState<{ open: boolean, type: LineItem['type'] | null, desc: string, price: string, extra?: string }>({
+  const [billingPrompt, setBillingPrompt] = useState<{ open: boolean, type: LineItem['type'] | null, desc: string, price: string, extra?: string, partId?: string }>({
     open: false, type: null, desc: '', price: ''
   });
 
@@ -94,7 +82,8 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
       id: Math.random().toString(),
       sender: 'technician',
       content: draftMessage,
-      timestamp: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+      timestamp: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+      method: 'sms'
     };
     
     const updatedJob = { ...localJob, messages: [...(localJob.messages || []), newMessage] };
@@ -176,8 +165,8 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
     setIsModified(true);
   };
 
-  const handleApplianceChange = (updates: Partial<Appliance>) => {
-    handleLocalChange({ appliance: { ...localJob.appliance, ...updates } });
+  const handleLockDetailsChange = (updates: Partial<LockDetails>) => {
+    handleLocalChange({ lockDetails: { ...localJob.lockDetails, ...updates } });
   };
 
   const handleClientChange = (updates: Partial<Client>) => {
@@ -203,10 +192,31 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
       type: billingPrompt.type,
       description: finalDesc,
       quantity: 1,
-      unitPrice: parseFloat(billingPrompt.price)
+      unitPrice: parseFloat(billingPrompt.price),
+      partId: billingPrompt.partId
     };
+    
+    // Decrement stock if part is selected
+    if (newItem.partId) {
+      const part = inventory.find(p => p.id === newItem.partId);
+      if (part) {
+        updateInventoryItem({ ...part, stock: Math.max(0, part.stock - 1) });
+      }
+    }
+
     handleLocalChange({ lineItems: [...localJob.lineItems, newItem] });
-    setBillingPrompt({ open: false, type: null, desc: '', price: '' });
+    setBillingPrompt({ open: false, type: null, desc: '', price: '', partId: undefined });
+  };
+
+  const handleRemoveLineItem = (itemId: string) => {
+    const item = localJob.lineItems.find(li => li.id === itemId);
+    if (item && item.partId) {
+      const part = inventory.find(p => p.id === item.partId);
+      if (part) {
+        updateInventoryItem({ ...part, stock: part.stock + 1 });
+      }
+    }
+    handleLocalChange({ lineItems: localJob.lineItems.filter(li => li.id !== itemId) });
   };
 
   const copyToClipboard = (text: string) => {
@@ -278,16 +288,38 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
             </div>
             
             <div className="space-y-6">
-              <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
+              <div className="bg-white/5 p-4 rounded-2xl border border-white/10 relative">
                 <label className="text-xs font-bold text-slate-400 uppercase block mb-1">
-                  {billingPrompt.type === 'labor' ? 'Labor Name' : billingPrompt.type === 'part' ? 'Part Name' : 'Description'}
+                  {billingPrompt.type === 'labor' ? 'Labor Name' : billingPrompt.type === 'part' ? 'Part Name (Search Inventory)' : 'Description'}
                 </label>
                 <input 
                   className="w-full bg-transparent text-white font-bold outline-none text-sm" 
                   value={billingPrompt.desc} 
-                  onChange={e => setBillingPrompt({ ...billingPrompt, desc: e.target.value })}
+                  onChange={e => {
+                    setBillingPrompt({ ...billingPrompt, desc: e.target.value, partId: undefined }); // Clear partId if they type manually
+                  }}
                   placeholder="Enter name..."
                 />
+                {billingPrompt.type === 'part' && billingPrompt.desc && !billingPrompt.partId && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-slate-800 border border-white/10 rounded-xl shadow-2xl z-50 max-h-40 overflow-y-auto">
+                    {inventory.filter(p => p.name.toLowerCase().includes(billingPrompt.desc.toLowerCase()) || p.sku.toLowerCase().includes(billingPrompt.desc.toLowerCase())).map(part => (
+                      <button 
+                        key={part.id}
+                        onClick={() => setBillingPrompt({ ...billingPrompt, desc: part.name, price: part.price.toString(), partId: part.id })}
+                        className="w-full text-left px-4 py-2 hover:bg-white/5 text-sm transition-colors border-b border-white/5 last:border-0 flex justify-between items-center"
+                      >
+                        <div>
+                          <p className="font-bold text-white">{part.name}</p>
+                          <p className="text-xs text-slate-400 font-mono">{part.sku}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-green-400">${part.price.toFixed(2)}</p>
+                          <p className={`text-xs ${part.stock <= part.reorderPoint ? 'text-amber-500' : 'text-slate-400'}`}>Stock: {part.stock}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {billingPrompt.type === 'service_call' && (
@@ -605,10 +637,10 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                 </div>
               </section>
 
-              {/* APPLINES HUB */}
+              {/* LOCKDETAILS HUB */}
               <section className="bg-gray-900 p-8 rounded-[3rem] border border-slate-700 space-y-6 shadow-md">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Appliance</h3>
+                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Hardware Profile</h3>
                   <div className="flex space-x-2">
                     <button onClick={() => setShowPhotoSource(true)} className="p-3 bg-gray-800 text-blue-500 rounded-xl hover:bg-blue-600 hover:text-white transition-all active:scale-90"><Camera size={14} /></button>
                   </div>
@@ -617,7 +649,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                 {/* PHOTO SPACE */}
                 <div className="w-full aspect-video bg-gray-800 rounded-3xl overflow-hidden border border-slate-600 shadow-inner flex items-center justify-center group relative text-center">
                   {localJob.photos && localJob.photos.length > 0 ? (
-                    <img src={localJob.photos[0]} className="w-full h-full object-cover" alt="Appliance" />
+                    <img src={localJob.photos[0]} className="w-full h-full object-cover" alt="LockDetails" />
                   ) : (
                     <div className="flex flex-col items-center text-gray-700">
                       <ImageIcon size={32} className="mb-2 opacity-20" />
@@ -634,14 +666,14 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                     <button onClick={() => setShowTypePicker(!showTypePicker)} className="w-full bg-white/5 p-4 rounded-2xl border border-white/10 text-left active:scale-95 transition-all">
                       <label className="text-xs font-bold text-slate-500 uppercase block mb-1 tracking-widest">Type</label>
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-white uppercase truncate">{localJob.appliance.type}</span>
+                        <span className="text-xs font-bold text-white uppercase truncate">{localJob.lockDetails.type}</span>
                         <ChevronDown size={12} className="text-gray-700" />
                       </div>
                     </button>
                     {showTypePicker && (
                       <div className="absolute top-full left-0 w-64 mt-2 p-4 bg-[#1F2937] border border-white/10 rounded-3xl z-[300] shadow-2xl grid grid-cols-2 gap-2 animate-in zoom-in-95">
-                        {APPLIANCE_ICONS.map(t => (
-                          <button key={t.id} onClick={() => { handleApplianceChange({ type: t.id as any }); setShowTypePicker(false); }} className={`p-4 rounded-xl flex flex-col items-center justify-center space-y-2 border transition-all active:scale-95 ${localJob.appliance.type === t.id ? 'bg-blue-600 text-white border-blue-400' : 'bg-white/5 text-slate-400 border-white/10 hover:text-gray-300'}`}>
+                        {LOCK_ICONS.map(t => (
+                          <button key={t.id} onClick={() => { handleLockDetailsChange({ type: t.id as any }); setShowTypePicker(false); }} className={`p-4 rounded-xl flex flex-col items-center justify-center space-y-2 border transition-all active:scale-95 ${localJob.lockDetails.type === t.id ? 'bg-blue-600 text-white border-blue-400' : 'bg-white/5 text-slate-400 border-white/10 hover:text-gray-300'}`}>
                             <t.icon size={18} />
                             <span className="text-xs font-bold uppercase text-center leading-tight">{t.label}</span>
                           </button>
@@ -654,20 +686,20 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                     <button onClick={() => setShowBrandPicker(!showBrandPicker)} className="w-full bg-white/5 p-4 rounded-2xl border border-white/10 text-left active:scale-95 transition-all">
                       <label className="text-xs font-bold text-slate-500 uppercase block mb-1 tracking-widest">Brand</label>
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-blue-500 uppercase truncate">{localJob.appliance.brand || 'Unknown'}</span>
+                        <span className="text-xs font-bold text-blue-500 uppercase truncate">{localJob.lockDetails.brand || 'Unknown'}</span>
                         <ChevronDown size={12} className="text-gray-700" />
                       </div>
                     </button>
                     {showBrandPicker && (
                       <div className="absolute top-full right-0 w-56 mt-2 p-4 bg-[#1F2937] border border-white/10 rounded-3xl z-[300] shadow-2xl max-h-[300px] overflow-y-auto scrollbar-hide animate-in zoom-in-95">
                         {BRANDS.map(b => (
-                          <button key={b} onClick={() => { handleApplianceChange({ brand: b }); setShowBrandPicker(false); }} className="w-full px-4 py-3 text-xs font-bold text-gray-300 hover:bg-blue-600 hover:text-white rounded-xl text-left uppercase transition-all mb-1 active:scale-95">{b}</button>
+                          <button key={b} onClick={() => { handleLockDetailsChange({ brand: b }); setShowBrandPicker(false); }} className="w-full px-4 py-3 text-xs font-bold text-gray-300 hover:bg-blue-600 hover:text-white rounded-xl text-left uppercase transition-all mb-1 active:scale-95">{b}</button>
                         ))}
                         <button onClick={() => setShowCustomBrandInput(true)} className="w-full px-4 py-3 text-xs font-bold text-blue-500 hover:bg-blue-600 hover:text-white rounded-xl text-left uppercase transition-all active:scale-95 border border-blue-500/20 mt-2">Add Custom Brand</button>
                         {showCustomBrandInput && (
                           <div className="p-2 mt-2 space-y-2">
                             <input className="w-full bg-white/5 border border-white/10 rounded-lg p-2 text-xs text-white outline-none" placeholder="Enter brand..." value={customBrand} onChange={e => setCustomBrand(e.target.value)} />
-                            <button onClick={() => { if(customBrand) { handleApplianceChange({ brand: customBrand }); setShowBrandPicker(false); setShowCustomBrandInput(false); setCustomBrand(''); } }} className="w-full bg-blue-600 text-white py-2 rounded-lg text-xs font-bold uppercase">Save Brand</button>
+                            <button onClick={() => { if(customBrand) { handleLockDetailsChange({ brand: customBrand }); setShowBrandPicker(false); setShowCustomBrandInput(false); setCustomBrand(''); } }} className="w-full bg-blue-600 text-white py-2 rounded-lg text-xs font-bold uppercase">Save Brand</button>
                           </div>
                         )}
                       </div>
@@ -677,16 +709,16 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
 
                 <div className="space-y-4">
                   <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
-                    <label className="text-xs font-bold text-slate-500 uppercase block mb-1 tracking-widest">Model Number</label>
-                    <input className="w-full bg-transparent text-xs font-bold text-white uppercase outline-none" value={localJob.appliance.modelNumber || ''} onChange={e => handleApplianceChange({ modelNumber: e.target.value })} placeholder="MANUAL INPUT" />
+                    <label className="text-xs font-bold text-slate-500 uppercase block mb-1 tracking-widest">Model or Year</label>
+                    <input className="w-full bg-transparent text-xs font-bold text-white uppercase outline-none" value={localJob.lockDetails.modelOrYear || ''} onChange={e => handleLockDetailsChange({ modelOrYear: e.target.value })} placeholder="MANUAL INPUT" />
                   </div>
                   <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
-                    <label className="text-xs font-bold text-slate-500 uppercase block mb-1 tracking-widest">Serial Number</label>
-                    <input className="w-full bg-transparent text-xs font-bold text-white uppercase outline-none" value={localJob.appliance.serialNumber || ''} onChange={e => handleApplianceChange({ serialNumber: e.target.value })} placeholder="MANUAL INPUT" />
+                    <label className="text-xs font-bold text-slate-500 uppercase block mb-1 tracking-widest">VIN / Key Code</label>
+                    <input className="w-full bg-transparent text-xs font-bold text-white uppercase outline-none" value={localJob.lockDetails.vinOrKeyCode || ''} onChange={e => handleLockDetailsChange({ vinOrKeyCode: e.target.value })} placeholder="MANUAL INPUT" />
                   </div>
                   <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
-                    <label className="text-xs font-bold text-slate-500 uppercase block mb-1 tracking-widest">Part Weight</label>
-                    <input className="w-full bg-transparent text-xs font-bold text-white uppercase outline-none" value={localJob.appliance.partWeight || ''} onChange={e => handleApplianceChange({ partWeight: e.target.value })} placeholder="E.G. 12.5 LBS" />
+                    <label className="text-xs font-bold text-slate-500 uppercase block mb-1 tracking-widest">Hardware Finish</label>
+                    <input className="w-full bg-transparent text-xs font-bold text-white uppercase outline-none" value={localJob.lockDetails.hardwareFinish || ''} onChange={e => handleLockDetailsChange({ hardwareFinish: e.target.value })} placeholder="E.G. BRUSHED NICKEL" />
                   </div>
                 </div>
               </section>
@@ -773,7 +805,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                          </div>
                          <div className="flex items-center space-x-8">
                             <span className="text-3xl font-bold text-slate-900 tabular-nums tracking-tight">${item.unitPrice}</span>
-                            <button onClick={() => handleLocalChange({ lineItems: localJob.lineItems.filter(li => li.id !== item.id) })} className="p-3 text-slate-200 hover:text-red-500 active:scale-90 transition-colors group-hover:text-slate-400"><Trash2 size={20} /></button>
+                            <button onClick={() => handleRemoveLineItem(item.id)} className="p-3 text-slate-200 hover:text-red-500 active:scale-90 transition-colors group-hover:text-slate-400"><Trash2 size={20} /></button>
                          </div>
                       </div>
                     ))}
@@ -820,8 +852,3 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
     </div>
   );
 };
-
-// Helper components for clean syntax
-const ChevronDown: React.FC<{ size?: number; className?: string }> = ({ size = 14, className = "" }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m6 9 6 6 6-6"/></svg>
-);

@@ -122,7 +122,7 @@ const KanbanCard: React.FC<{ job: Job; onSelect: () => void; onDragStart: (e: Re
          {job.distance || '2.1'} mi
       </div>
     </div>
-    <p className="text-xs font-medium text-slate-300 mb-4 truncate">{job.appliance.type} — {job.appliance.brand || 'Elite'}</p>
+    <p className="text-xs font-medium text-slate-300 mb-4 truncate">{job.lockDetails.type} — {job.lockDetails.brand || 'Elite'}</p>
 
     <div className="flex items-center justify-between pt-4 border-t border-white/10">
       <span className="text-sm font-bold text-blue-400">${job.totalAmount > 0 ? job.totalAmount.toLocaleString() : '136.00'}</span>
@@ -248,7 +248,7 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
                              <div>
                                 <p className="text-xs font-medium text-slate-400 mb-1">#{job.jobNumber}</p>
                                 <p className="text-lg font-bold text-white">{job.client.firstName} {job.client.lastName}</p>
-                                <p className="text-xs font-medium text-slate-300 mt-1">{job.appliance.type}</p>
+                                <p className="text-xs font-medium text-slate-300 mt-1">{job.lockDetails.type}</p>
                              </div>
                           </div>
                           <div className="flex items-center space-x-4">

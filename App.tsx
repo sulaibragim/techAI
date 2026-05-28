@@ -11,6 +11,7 @@ import { AIChat } from './components/AIChat';
 import { JobDetail } from './components/JobDetail';
 import { MessagesList } from './components/MessagesList';
 import { CallsList } from './components/CallsList';
+import { Inventory } from './components/Inventory';
 import { useAppStore } from './store';
 import { Bell, AlertCircle, CheckCircle2, X, Menu } from 'lucide-react';
 
@@ -49,6 +50,7 @@ const App: React.FC = () => {
               case 'messages': return <MessagesList onJobSelect={(job) => setSelectedJobId(job.id)} />;
               case 'calls': return <CallsList />;
               case 'analytics': return <Dashboard />;
+              case 'inventory': return <Inventory />;
               case 'brain': return <AIChat />;
               case 'settings': return (
                 <div className="flex flex-col items-center justify-center min-h-[500px] text-slate-400">

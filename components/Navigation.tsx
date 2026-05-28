@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, Briefcase, BarChart2, BrainCircuit, MessageSquare, Phone } from 'lucide-react';
+import { Calendar, Briefcase, BarChart2, BrainCircuit, MessageSquare, Phone, Package } from 'lucide-react';
 
 interface NavigationProps {
   currentTab: string;
@@ -11,7 +11,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentTab, onTabChange 
     { id: 'calendar', label: 'Work', icon: Calendar },
     { id: 'jobs', label: 'Jobs', icon: Briefcase },
     { id: 'messages', label: 'Inbox', icon: MessageSquare },
-    { id: 'calls', label: 'Calls', icon: Phone },
+    { id: 'inventory', label: 'Stock', icon: Package },
     { id: 'analytics', label: 'Stats', icon: BarChart2 },
   ];
 
