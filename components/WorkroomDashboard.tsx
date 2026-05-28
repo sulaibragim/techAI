@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   DollarSign, Clock, Target,
@@ -142,6 +142,8 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
+  const [hoveredDay, setHoveredDay] = useState<{ day: number; x: number; y: number; cellLeft: number } | null>(null);
+  const hideTooltipTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -164,6 +166,20 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
   const getJobsForDay = (day: number) => {
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     return jobs.filter(j => j.scheduledDate === dateStr);
+  };
+
+  const showDayTooltip = (day: number, e: React.MouseEvent<HTMLDivElement>) => {
+    if (hideTooltipTimer.current) clearTimeout(hideTooltipTimer.current);
+    const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
+    setHoveredDay({ day, x: rect.right + 10, y: rect.top, cellLeft: rect.left });
+  };
+
+  const scheduleDayTooltipHide = () => {
+    hideTooltipTimer.current = setTimeout(() => setHoveredDay(null), 120);
+  };
+
+  const cancelDayTooltipHide = () => {
+    if (hideTooltipTimer.current) clearTimeout(hideTooltipTimer.current);
   };
 
   const pipelineColumns = [
@@ -288,6 +304,8 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
                       <div
                         key={i}
                         onClick={() => day && handleDayClick(day)}
+                        onMouseEnter={day ? (e) => showDayTooltip(day, e) : undefined}
+                        onMouseLeave={day ? scheduleDayTooltipHide : undefined}
                         className={`min-h-[80px] p-2 transition-all relative border border-white/10 overflow-hidden ${day ? 'bg-slate-900/50 backdrop-blur-sm hover:border-blue-500/40 cursor-pointer group' : 'bg-transparent'}`}
                       >
                         {day && (
@@ -358,6 +376,85 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
           <Speedometer closeRate={metrics.closeRate} target={65} />
         </div>
       </div>
+
+      {/* CALENDAR DAY TOOLTIP */}
+      <AnimatePresence>
+        {hoveredDay && (() => {
+          const tipJobs = getJobsForDay(hoveredDay.day);
+          if (tipJobs.length === 0) return null;
+          const dayRevenue = tipJobs.reduce((s, j) => s + (j.totalAmount || 0), 0);
+          const dateLabel = new Date(year, month, hoveredDay.day).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+          const TOOLTIP_W = 268;
+          // calendar is ~67% of content width; flip tooltip left if it would enter the right panel
+          const fitsRight = hoveredDay.x + TOOLTIP_W < window.innerWidth * 0.67;
+          const x = fitsRight ? hoveredDay.x : hoveredDay.cellLeft - TOOLTIP_W - 8;
+          const y = Math.min(hoveredDay.y, window.innerHeight - 320);
+
+          return (
+            <motion.div
+              key="day-tooltip"
+              initial={{ opacity: 0, scale: 0.95, y: -4 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: -4 }}
+              transition={{ duration: 0.12 }}
+              style={{ position: 'fixed', left: x, top: y, width: TOOLTIP_W, zIndex: 9999 }}
+              onMouseEnter={cancelDayTooltipHide}
+              onMouseLeave={() => setHoveredDay(null)}
+              className="bg-slate-800 border border-white/15 rounded-2xl shadow-2xl overflow-hidden pointer-events-auto"
+            >
+              {/* Header */}
+              <div className="px-4 py-3 bg-slate-900/90 border-b border-white/10 flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{dateLabel}</p>
+                  <p className="text-xs font-bold text-white mt-0.5">{tipJobs.length} job{tipJobs.length > 1 ? 's' : ''}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] text-slate-500 uppercase tracking-wider">Revenue</p>
+                  <p className="text-sm font-extrabold text-blue-400">${dayRevenue.toLocaleString()}</p>
+                </div>
+              </div>
+
+              {/* Job list */}
+              <div className="p-2 space-y-1.5 max-h-64 overflow-y-auto scrollbar-hide">
+                {tipJobs
+                  .slice()
+                  .sort((a, b) => a.scheduledTime.localeCompare(b.scheduledTime))
+                  .map(j => (
+                    <button
+                      key={j.id}
+                      onClick={() => { setHoveredDay(null); onJobSelect(j); }}
+                      className="w-full text-left px-3 py-2.5 rounded-xl bg-white/5 hover:bg-blue-600/15 border border-white/5 hover:border-blue-500/30 transition-all group/tip"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: STATUS_COLORS[j.status] }} />
+                          <p className="text-xs font-bold text-white truncate group-hover/tip:text-blue-300 transition-colors">
+                            {j.client.firstName} {j.client.lastName}
+                          </p>
+                        </div>
+                        <span className="text-xs font-bold text-blue-400 shrink-0 tabular-nums">
+                          ${(j.totalAmount || 0).toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-0.5 pl-4">
+                        <span className="text-[10px] text-slate-400">{j.scheduledTime}</span>
+                        <span className="text-[10px] text-slate-500">·</span>
+                        <span className="text-[10px] text-slate-400 truncate">{j.lockDetails.type}</span>
+                        <span className="text-[10px] text-slate-500">·</span>
+                        <span className="text-[10px] font-semibold uppercase" style={{ color: STATUS_COLORS[j.status] }}>{j.status}</span>
+                      </div>
+                    </button>
+                  ))}
+              </div>
+
+              {/* Footer hint */}
+              <div className="px-4 py-2 border-t border-white/5 bg-slate-900/50">
+                <p className="text-[10px] text-slate-500 text-center uppercase tracking-widest">Click a job to open it</p>
+              </div>
+            </motion.div>
+          );
+        })()}
+      </AnimatePresence>
 
       {/* 3. DEPLOYMENT PIPELINE */}
       <section className="space-y-4">
