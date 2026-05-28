@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Calendar, Briefcase, BarChart2, Settings, LogOut, BrainCircuit, Phone, MessageSquare, AlertCircle, X, Activity, Package } from 'lucide-react';
+import { Calendar, Briefcase, BarChart2, Settings, LogOut, BrainCircuit, Phone, MessageSquare, AlertCircle, X, Activity, Package, Users } from 'lucide-react';
 import { useAppStore } from '../store';
 
 interface SidebarProps {
@@ -10,13 +10,15 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onTabChange }) => {
-  const { missedInteractions, clearMissed, jobs } = useAppStore();
+  const { missedInteractions, clearMissed, jobs, inventory } = useAppStore();
+  const lowStockCount = inventory.filter(p => p.stock <= p.reorderPoint).length;
   
   const tabs = [
     { id: 'calendar', label: 'Workroom', icon: Calendar },
     { id: 'jobs', label: 'My Jobs', icon: Briefcase },
     { id: 'messages', label: 'Messages', icon: MessageSquare },
     { id: 'calls', label: 'Calls', icon: Phone },
+    { id: 'clients', label: 'Clients', icon: Users },
     { id: 'analytics', label: 'Financials', icon: BarChart2 },
     { id: 'inventory', label: 'Inventory', icon: Package },
     { id: 'brain', label: 'AI Brain', icon: BrainCircuit },
@@ -56,7 +58,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onTabChange }) => 
               <div className={`relative z-10 p-2 rounded-lg transition-all ${isActive ? 'bg-blue-600 text-white shadow-lg' : 'bg-transparent group-hover:bg-white/5'}`}>
                 <Icon size={18} />
               </div>
-              <span className="relative z-10 font-semibold uppercase text-xs tracking-wider">{tab.label}</span>
+              <span className="relative z-10 font-semibold uppercase text-xs tracking-wider flex-1">{tab.label}</span>
+              {tab.id === 'inventory' && lowStockCount > 0 && (
+                <span className="relative z-10 bg-amber-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {lowStockCount}
+                </span>
+              )}
             </button>
           );
         })}

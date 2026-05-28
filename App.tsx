@@ -13,10 +13,14 @@ import { MessagesList } from './components/MessagesList';
 import { CallsList } from './components/CallsList';
 import { Inventory } from './components/Inventory';
 import { useAppStore } from './store';
+import { useSettingsStore } from './settingsStore';
+import { Settings } from './components/Settings';
+import { ClientsList } from './components/ClientsList';
 import { Bell, AlertCircle, CheckCircle2, X, Menu } from 'lucide-react';
 
 const App: React.FC = () => {
   const { jobs, addJob, activeTab, setActiveTab } = useAppStore();
+  const { technicianName, profilePhoto } = useSettingsStore();
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [notification, setNotification] = useState<{msg: string, type: 'info' | 'success'} | null>(null);
@@ -31,6 +35,25 @@ const App: React.FC = () => {
     }, 10000);
     return () => clearTimeout(timer);
   }, []);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const TAB_KEYS: Record<string, string> = {
+      '1': 'calendar', '2': 'jobs', '3': 'messages', '4': 'calls',
+      '5': 'clients', '6': 'analytics', '7': 'inventory', '8': 'brain', '9': 'settings',
+    };
+    const handler = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement).tagName.toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+      if (e.key === 'n' || e.key === 'N') { e.preventDefault(); setIsWizardOpen(true); return; }
+      if (e.key === 'Escape') { setSelectedJobId(null); setIsWizardOpen(false); return; }
+      if (TAB_KEYS[e.key]) { e.preventDefault(); setActiveTab(TAB_KEYS[e.key]); }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [setActiveTab]);
 
   const renderContent = () => {
     return (
@@ -49,22 +72,11 @@ const App: React.FC = () => {
               case 'jobs': return <JobsList jobs={jobs} onAddJob={() => setIsWizardOpen(true)} onJobSelect={(job) => setSelectedJobId(job.id)} />;
               case 'messages': return <MessagesList onJobSelect={(job) => setSelectedJobId(job.id)} />;
               case 'calls': return <CallsList />;
+              case 'clients': return <ClientsList onJobSelect={(job) => setSelectedJobId(job.id)} />;
               case 'analytics': return <Dashboard />;
               case 'inventory': return <Inventory />;
               case 'brain': return <AIChat />;
-              case 'settings': return (
-                <div className="flex flex-col items-center justify-center min-h-[500px] text-slate-400">
-                  <motion.div 
-                    initial={{ scale: 0.8 }} 
-                    animate={{ scale: 1 }} 
-                    transition={{ type: "spring", bounce: 0.4 }}
-                    className="w-20 h-20 bg-white/5 rounded-[2rem] flex items-center justify-center mb-6 border border-white/10"
-                  >
-                    <AlertCircle size={32} className="opacity-20" />
-                  </motion.div>
-                  <p className="text-xs font-bold uppercase tracking-widest text-slate-400">System Core Preferences</p>
-                </div>
-              );
+              case 'settings': return <Settings />;
               default: return <WorkroomDashboard onJobSelect={(j) => setSelectedJobId(j.id)} onAddJob={() => setIsWizardOpen(true)} />;
             }
           })()}
@@ -131,14 +143,14 @@ const App: React.FC = () => {
             </button>
             <div className="flex items-center space-x-2 md:space-x-4 pl-0 md:pl-8 border-l-0 md:border-l md:border-white/10">
                 <div className="hidden sm:block text-right">
-                    <p className="text-xs font-semibold text-white">Sultan</p>
+                    <p className="text-xs font-semibold text-white">{technicianName}</p>
                     <p className="text-xs font-medium text-blue-400 uppercase tracking-widest mt-0.5 animate-pulse">Online</p>
                 </div>
                 <motion.div 
                   whileHover={{ scale: 1.05, borderColor: "rgba(0, 229, 255, 0.5)" }}
                   className="w-8 h-8 md:w-12 md:h-12 bg-gray-900 border border-white/10 rounded-lg md:rounded-xl overflow-hidden shadow-md group cursor-pointer transition-all"
                 >
-                    <img src="https://i.pravatar.cc/150?u=tech1" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="Profile" />
+                    <img src={profilePhoto || "https://i.pravatar.cc/150?u=tech1"} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="Profile" />
                 </motion.div>
             </div>
           </div>

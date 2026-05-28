@@ -9,6 +9,7 @@ import {
   Activity, ArrowUpRight, Percent, ChevronRight
 } from 'lucide-react';
 import { useAppStore } from '../store';
+import { useSettingsStore } from '../settingsStore';
 import { calculateFinancialMetrics } from '../financialUtils';
 
 const PIE_COLORS = {
@@ -23,22 +24,71 @@ const ALERT_COLORS = {
   critical: { bg: 'bg-red-500/10', border: 'border-red-500/20', text: 'text-red-500', icon: '🚨' }
 };
 
+const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+function filterJobsByRange(jobs: any[], range: 'today' | 'week' | 'month') {
+  const now = new Date();
+  return jobs.filter(j => {
+    if (j.status !== 'completed') return false;
+    const d = new Date(j.scheduledDate);
+    if (range === 'today') {
+      return d.toDateString() === now.toDateString();
+    }
+    if (range === 'week') {
+      const weekStart = new Date(now);
+      weekStart.setDate(now.getDate() - now.getDay());
+      weekStart.setHours(0, 0, 0, 0);
+      return d >= weekStart;
+    }
+    // month
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  });
+}
+
+function buildTrendData(jobs: any[], range: 'today' | 'week' | 'month') {
+  const now = new Date();
+  if (range === 'today') {
+    const hours = Array.from({ length: 12 }, (_, i) => i * 2);
+    return hours.map(h => {
+      const rev = jobs
+        .filter(j => j.status === 'completed' && new Date(j.scheduledDate).toDateString() === now.toDateString())
+        .reduce((s: number, j: any) => s + j.totalAmount, 0);
+      return { day: `${h}:00`, revenue: h <= now.getHours() ? rev / 12 : 0 };
+    });
+  }
+  if (range === 'week') {
+    return DAY_LABELS.map((label, idx) => {
+      const target = new Date(now);
+      target.setDate(now.getDate() - now.getDay() + idx);
+      const rev = jobs
+        .filter(j => j.status === 'completed' && new Date(j.scheduledDate).toDateString() === target.toDateString())
+        .reduce((s: number, j: any) => s + j.totalAmount, 0);
+      return { day: label, revenue: rev };
+    });
+  }
+  // month — group by day
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  return Array.from({ length: daysInMonth }, (_, i) => {
+    const day = i + 1;
+    const dayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const rev = jobs
+      .filter(j => j.status === 'completed' && j.scheduledDate === dayStr)
+      .reduce((s: number, j: any) => s + j.totalAmount, 0);
+    return { day: String(day), revenue: rev };
+  });
+}
+
 export const Dashboard: React.FC = () => {
   const { jobs } = useAppStore();
+  const { monthlyRevenueTarget, updateSettings } = useSettingsStore();
   const [dateRange, setDateRange] = useState<'today' | 'week' | 'month'>('month');
-  const [targetGoal, setTargetGoal] = useState(20000);
-  
-  const metrics = useMemo(() => calculateFinancialMetrics(jobs, targetGoal), [jobs, targetGoal]);
 
-  const revenueTrendData = [
-    { day: 'Mon', revenue: 680 },
-    { day: 'Tue', revenue: 920 },
-    { day: 'Wed', revenue: 445 },
-    { day: 'Thu', revenue: 850 },
-    { day: 'Fri', revenue: 1100 },
-    { day: 'Sat', revenue: 520 },
-    { day: 'Sun', revenue: 0 },
-  ];
+  const targetGoal = monthlyRevenueTarget;
+  const setTargetGoal = (val: number) => updateSettings({ monthlyRevenueTarget: Math.max(1, val) });
+
+  const filteredJobs = useMemo(() => filterJobsByRange(jobs, dateRange), [jobs, dateRange]);
+  const metrics = useMemo(() => calculateFinancialMetrics(filteredJobs, targetGoal), [filteredJobs, targetGoal]);
+  const revenueTrendData = useMemo(() => buildTrendData(jobs, dateRange), [jobs, dateRange]);
 
   return (
     <div className="space-y-10 pb-32 max-w-7xl mx-auto animate-in fade-in duration-700">
@@ -79,7 +129,7 @@ export const Dashboard: React.FC = () => {
                   <input 
                     type="number" 
                     value={targetGoal} 
-                    onChange={(e) => setTargetGoal(Number(e.target.value))}
+                    onChange={(e) => setTargetGoal(Math.max(1, Number(e.target.value) || 1))}
                     className="w-full bg-slate-950 border border-white/10 rounded-2xl px-12 py-5 text-2xl font-bold text-white outline-none focus:border-blue-500 transition-all shadow-inner"
                   />
                 </div>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Job, JobStatus, STATUS_COLORS } from '../types';
-import { MapPin, Clock, ArrowRight, Calendar, X, Hash, CheckCircle2, Activity, Trash2, AlertCircle, Wrench } from 'lucide-react';
+import { MapPin, Clock, ArrowRight, Calendar, X, Hash, CheckCircle2, Activity, Trash2, AlertCircle, Wrench, Search } from 'lucide-react';
 import { useAppStore } from '../store';
 
 interface JobsListProps {
@@ -14,15 +14,27 @@ const TIME_WINDOWS = ['9:00 - 11:00', '11:00 - 13:00', '13:00 - 15:00', '15:00 -
 
 export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob }) => {
   const [filter, setFilter] = useState<'pending' | 'completed' | 'cancelled'>('pending');
+  const [search, setSearch] = useState('');
   const [reschedulingId, setReschedulingId] = useState<string | null>(null);
   const [tempDate, setTempDate] = useState(new Date().toISOString().split('T')[0]);
   const { updateJobStatus, updateJob } = useAppStore();
 
   const filteredJobs = jobs.filter(j => {
-    if (filter === 'pending') {
-      return j.status !== 'completed' && j.status !== 'cancelled';
+    if (filter === 'pending' && (j.status === 'completed' || j.status === 'cancelled')) return false;
+    if (filter !== 'pending' && j.status !== filter) return false;
+    if (search) {
+      const q = search.toLowerCase();
+      return (
+        j.client.firstName.toLowerCase().includes(q) ||
+        j.client.lastName.toLowerCase().includes(q) ||
+        j.client.phone.includes(q) ||
+        j.jobNumber.toLowerCase().includes(q) ||
+        (j.client.address || '').toLowerCase().includes(q) ||
+        j.lockDetails.type.toLowerCase().includes(q) ||
+        (j.lockDetails.brand || '').toLowerCase().includes(q)
+      );
     }
-    return j.status === filter;
+    return true;
   });
 
   const getButtonConfig = (status: JobStatus) => {
@@ -105,12 +117,23 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
           <h2 className="text-3xl font-extrabold tracking-tight text-white uppercase leading-none">Dispatch Queue</h2>
           <p className="text-xs text-blue-400 font-semibold uppercase tracking-widest mt-3">Operational Hub</p>
         </div>
-        <button
-          onClick={onAddJob}
-          className="bg-blue-600 hover:bg-white text-white px-8 py-4 rounded-2xl text-xs font-bold uppercase tracking-wider shadow-[0_0_20px_rgba(0,229,255,0.3)] transition-all"
-        >
-          New Manual Intake
-        </button>
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+            <input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search jobs…"
+              className="bg-slate-900 border border-white/10 rounded-xl pl-9 pr-4 py-3 text-xs font-semibold text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 transition-all w-52"
+            />
+          </div>
+          <button
+            onClick={onAddJob}
+            className="bg-blue-600 hover:bg-white text-white px-8 py-4 rounded-2xl text-xs font-bold uppercase tracking-wider shadow-[0_0_20px_rgba(0,229,255,0.3)] transition-all"
+          >
+            New Intake
+          </button>
+        </div>
       </div>
 
       <div className="flex bg-slate-900/60 p-1.5 rounded-[2rem] border border-blue-500/20 backdrop-blur-xl max-w-xl">

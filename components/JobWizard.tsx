@@ -33,6 +33,57 @@ interface JobWizardProps {
   onCancel: () => void;
 }
 
+const JOB_TEMPLATES = [
+  {
+    id: 'car-lockout',
+    icon: '🚗',
+    label: 'Car Lockout',
+    lockType: 'Automotive' as const,
+    complaint: 'Customer locked keys inside the vehicle.',
+    color: 'from-blue-600/20 to-blue-800/10 border-blue-500/30',
+  },
+  {
+    id: 'home-lockout',
+    icon: '🏠',
+    label: 'Home Lockout',
+    lockType: 'Residential' as const,
+    complaint: 'Customer locked out of their home.',
+    color: 'from-green-600/20 to-green-800/10 border-green-500/30',
+  },
+  {
+    id: 'rekey',
+    icon: '🔑',
+    label: 'Rekey',
+    lockType: 'Residential' as const,
+    complaint: 'Customer needs locks rekeyed (moved in / lost key / security).',
+    color: 'from-amber-600/20 to-amber-800/10 border-amber-500/30',
+  },
+  {
+    id: 'commercial',
+    icon: '🏢',
+    label: 'Commercial Lockout',
+    lockType: 'Commercial' as const,
+    complaint: 'Customer locked out of their business premises.',
+    color: 'from-purple-600/20 to-purple-800/10 border-purple-500/30',
+  },
+  {
+    id: 'safe',
+    icon: '🔒',
+    label: 'Safe Opening',
+    lockType: 'Secure / Safe' as const,
+    complaint: 'Customer cannot open safe — combination forgotten or malfunction.',
+    color: 'from-red-600/20 to-red-800/10 border-red-500/30',
+  },
+  {
+    id: 'lock-install',
+    icon: '🔧',
+    label: 'Lock Install',
+    lockType: 'Residential' as const,
+    complaint: 'Customer needs new deadbolt / lock installed.',
+    color: 'from-slate-600/20 to-slate-800/10 border-slate-500/30',
+  },
+];
+
 const LOCK_TYPES = [
   { id: 'Automotive', icon: Car, label: 'Auto' },
   { id: 'Residential', icon: Home, label: 'Home' },
@@ -48,7 +99,7 @@ const INITIAL_BRANDS = [
 ];
 
 export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) => {
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(0);
   const [client, setClient] = useState<Partial<Client>>({
     firstName: '',
     lastName: '',
@@ -136,6 +187,12 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) =>
     onComplete(newJob);
   };
 
+  const applyTemplate = (tpl: typeof JOB_TEMPLATES[0]) => {
+    setLockDetails({ type: tpl.lockType, brand: '', modelOrYear: '' });
+    setComplaint(tpl.complaint);
+    setStep(1);
+  };
+
   const nextStep = () => setStep(s => s + 1);
   const prevStep = () => setStep(s => s - 1);
 
@@ -158,13 +215,41 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) =>
         <button onClick={onCancel} className="p-3 text-slate-400 hover:text-white transition-colors"><X size={28} /></button>
         <div className="flex-1 text-center">
           <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">New Job Intake</h2>
-          <p className="text-xl font-bold text-blue-500 mt-1">Step {step} of 3</p>
+          <p className="text-xl font-bold text-blue-500 mt-1">{step === 0 ? 'Quick Start' : `Step ${step} of 3`}</p>
         </div>
         <div className="w-16" />
       </header>
 
       <div className="flex-1 overflow-y-auto px-6 py-10">
         <div className="max-w-xl mx-auto">
+
+          {step === 0 && (
+            <div className="space-y-8 animate-in slide-in-from-bottom-4">
+              <div>
+                <h3 className="text-2xl font-bold text-white">Choose a template</h3>
+                <p className="text-sm text-slate-400 mt-2">Pre-fills job type & complaint. You can still edit everything.</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                {JOB_TEMPLATES.map(tpl => (
+                  <button
+                    key={tpl.id}
+                    onClick={() => applyTemplate(tpl)}
+                    className={`bg-gradient-to-br ${tpl.color} border rounded-3xl p-6 flex flex-col items-start space-y-3 hover:scale-105 transition-all text-left`}
+                  >
+                    <span className="text-3xl">{tpl.icon}</span>
+                    <span className="text-sm font-bold text-white">{tpl.label}</span>
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => setStep(1)}
+                className="w-full py-4 rounded-2xl border border-white/10 text-xs font-bold uppercase tracking-widest text-slate-400 hover:text-white transition-all"
+              >
+                Start from scratch
+              </button>
+            </div>
+          )}
+
           {step === 1 && (
             <div className="space-y-8 animate-in slide-in-from-right-4">
               <div className="space-y-4">
@@ -262,20 +347,22 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) =>
         </div>
       </div>
 
-      <footer className="px-6 py-10 border-t border-white/10 bg-slate-950/90 backdrop-blur-md">
-        <div className="max-w-xl mx-auto flex items-center justify-between gap-6">
-          {step > 1 ? (
-            <button onClick={prevStep} className="px-8 py-5 rounded-2xl border border-white/10 text-xs font-bold uppercase tracking-widest flex items-center"><ChevronLeft size={16} className="mr-2" />Back</button>
-          ) : (
-            <button onClick={onCancel} className="px-8 py-5 rounded-2xl border border-white/10 text-xs font-bold uppercase tracking-widest">Cancel</button>
-          )}
-          {step < 3 ? (
-            <button onClick={nextStep} className="flex-1 bg-blue-600 hover:bg-blue-700 px-8 py-5 rounded-2xl text-sm font-bold uppercase tracking-widest text-white shadow-xl flex items-center justify-center">Next Step<ChevronRight size={16} className="ml-2" /></button>
-          ) : (
-            <button onClick={handleComplete} className="flex-1 bg-green-600 hover:bg-green-700 px-8 py-5 rounded-2xl text-sm font-bold uppercase tracking-widest text-white shadow-lg flex items-center justify-center animate-pulse"><Check size={16} className="mr-2" />Create Job</button>
-          )}
-        </div>
-      </footer>
+      {step > 0 && (
+        <footer className="px-6 py-10 border-t border-white/10 bg-slate-950/90 backdrop-blur-md">
+          <div className="max-w-xl mx-auto flex items-center justify-between gap-6">
+            {step > 1 ? (
+              <button onClick={prevStep} className="px-8 py-5 rounded-2xl border border-white/10 text-xs font-bold uppercase tracking-widest flex items-center"><ChevronLeft size={16} className="mr-2" />Back</button>
+            ) : (
+              <button onClick={() => setStep(0)} className="px-8 py-5 rounded-2xl border border-white/10 text-xs font-bold uppercase tracking-widest flex items-center"><ChevronLeft size={16} className="mr-2" />Templates</button>
+            )}
+            {step < 3 ? (
+              <button onClick={nextStep} className="flex-1 bg-blue-600 hover:bg-blue-700 px-8 py-5 rounded-2xl text-sm font-bold uppercase tracking-widest text-white shadow-xl flex items-center justify-center">Next Step<ChevronRight size={16} className="ml-2" /></button>
+            ) : (
+              <button onClick={handleComplete} className="flex-1 bg-green-600 hover:bg-green-700 px-8 py-5 rounded-2xl text-sm font-bold uppercase tracking-widest text-white shadow-lg flex items-center justify-center animate-pulse"><Check size={16} className="mr-2" />Create Job</button>
+            )}
+          </div>
+        </footer>
+      )}
     </div>
   );
 };

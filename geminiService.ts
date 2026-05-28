@@ -1,5 +1,12 @@
 
 import { GoogleGenAI, Modality, Type, LiveServerMessage, ThinkingLevel } from "@google/genai";
+import { useSettingsStore } from './settingsStore';
+
+const resolveApiKey = (): string => {
+  const key = useSettingsStore.getState().geminiApiKey || import.meta.env.VITE_API_KEY || '';
+  if (!key) throw new Error('Gemini API key not configured. Go to Settings → AI Configuration to add your key.');
+  return key;
+};
 
 export function decode(base64: string) {
   const binaryString = atob(base64);
@@ -47,8 +54,8 @@ export async function getStrategicBrainResponse(
   history: { text: string, role: 'user' | 'model' }[],
   callbacks: { onAction: (action: string, data: any) => any | Promise<any> }
 ) {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  
+  const ai = new GoogleGenAI({ apiKey: resolveApiKey() });
+
   const contents: any[] = history.map(h => ({
     role: h.role,
     parts: [{ text: h.text }]
@@ -103,7 +110,7 @@ export async function getStrategicBrainResponse(
  * Generates business insights using Gemini 3 Pro.
  */
 export async function getBusinessInsights(prompt: string, context: { jobCount: number; revenue: number; financials: any }) {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = new GoogleGenAI({ apiKey: resolveApiKey() });
   const response = await ai.models.generateContent({
     model: "gemini-3.1-pro-preview",
     contents: prompt,
@@ -252,7 +259,7 @@ export class GeminiVoiceAssistant {
     onTranscript: (text: string, role: 'user' | 'assistant', isFinal: boolean) => void;
     onAction: (action: string, data: any) => any | Promise<any>;
   }) {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = new GoogleGenAI({ apiKey: resolveApiKey() });
     if (!this.audioContext) {
       this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
       this.inputAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });

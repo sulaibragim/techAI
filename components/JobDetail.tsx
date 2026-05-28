@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  X, MapPin, Phone, Mail, Wrench, Trash2, 
-  Save, Package, Clock, User, Refrigerator, Stethoscope, 
-  Camera, Activity, Plus, Smartphone, 
+import {
+  X, MapPin, Phone, Mail, Wrench, Trash2,
+  Save, Package, Clock, User, Refrigerator, Stethoscope,
+  Camera, Activity, Plus, Smartphone,
   ChevronLeft, CheckCircle2, ShieldCheck,
   PenTool, CreditCard, Zap, Thermometer, Droplets, Microwave, Settings,
   ClipboardList, AirVent, Bot, Copy,
@@ -11,8 +11,9 @@ import {
   AlertTriangle, Edit2, Check, LayoutGrid, Pen, DollarSign,
   Briefcase, Hammer, PhoneIncoming, PhoneOutgoing, PhoneMissed, Shield,
   Calendar as CalendarIcon, Send, Fingerprint, Percent, RotateCcw,
-  Car, Home, ChevronDown, Lock
+  Car, Home, ChevronDown, Lock, Printer
 } from 'lucide-react';
+import { useSettingsStore } from '../settingsStore';
 import { Job, LineItem, STATUS_COLORS, LockDetails, JobStatus, Client, Message } from '../types';
 import { useAppStore } from '../store';
 
@@ -44,6 +45,7 @@ const TERM_TYPES = ['1', '10', '15', '20', '30'];
 
 export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: initialJob, onClose }) => {
   const { jobs, updateJob, inventory, updateInventoryItem } = useAppStore();
+  const { companyName, technicianName } = useSettingsStore();
   const [localJob, setLocalJob] = useState<Job>({ ...initialJob });
   const [isModified, setIsModified] = useState(false);
   
@@ -225,6 +227,70 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
   };
 
   const subtotal = localJob.lineItems.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
+
+  const handlePrintInvoice = () => {
+    const lineRows = localJob.lineItems.map(item => `
+      <tr>
+        <td style="padding:10px 8px;border-bottom:1px solid #e5e7eb;">${item.description}</td>
+        <td style="padding:10px 8px;border-bottom:1px solid #e5e7eb;text-align:center;">${item.quantity}</td>
+        <td style="padding:10px 8px;border-bottom:1px solid #e5e7eb;text-align:right;">$${item.unitPrice.toFixed(2)}</td>
+        <td style="padding:10px 8px;border-bottom:1px solid #e5e7eb;text-align:right;font-weight:600;">$${(item.unitPrice * item.quantity).toFixed(2)}</td>
+      </tr>`).join('');
+
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
+      <title>Invoice #${localJob.jobNumber}</title>
+      <style>
+        body{font-family:system-ui,sans-serif;color:#111;margin:0;padding:40px;}
+        .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:40px;}
+        .company{font-size:24px;font-weight:800;color:#1e40af;}
+        .sub{color:#6b7280;font-size:13px;margin-top:4px;}
+        .invoice-meta{text-align:right;}
+        .invoice-num{font-size:20px;font-weight:700;}
+        .badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;background:${localJob.paymentStatus === 'paid' ? '#dcfce7' : '#fef3c7'};color:${localJob.paymentStatus === 'paid' ? '#166534' : '#92400e'};}
+        .section{margin-bottom:28px;}
+        .label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#9ca3af;margin-bottom:6px;}
+        table{width:100%;border-collapse:collapse;margin-top:8px;}
+        thead tr{background:#f9fafb;}
+        thead th{padding:10px 8px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;}
+        .total-row{background:#f9fafb;}
+        .total-row td{padding:14px 8px;font-size:18px;font-weight:800;}
+        .footer{margin-top:48px;padding-top:20px;border-top:1px solid #e5e7eb;font-size:12px;color:#9ca3af;text-align:center;}
+      </style></head><body>
+      <div class="header">
+        <div><div class="company">${companyName}</div><div class="sub">Locksmith Services · ${technicianName}</div></div>
+        <div class="invoice-meta">
+          <div class="invoice-num">Invoice #${localJob.jobNumber}</div>
+          <div style="color:#6b7280;font-size:13px;margin-top:4px;">${localJob.scheduledDate}</div>
+          <div style="margin-top:8px;"><span class="badge">${localJob.paymentStatus}</span></div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;" class="section">
+        <div><div class="label">Bill To</div>
+          <div style="font-weight:600;">${localJob.client.firstName} ${localJob.client.lastName}</div>
+          <div style="color:#6b7280;font-size:13px;">${localJob.client.phone}</div>
+          <div style="color:#6b7280;font-size:13px;">${localJob.client.address || ''}</div>
+        </div>
+        <div><div class="label">Service</div>
+          <div style="font-weight:600;">${localJob.lockDetails.type}</div>
+          <div style="color:#6b7280;font-size:13px;">${localJob.lockDetails.brand} ${localJob.lockDetails.modelOrYear}</div>
+        </div>
+      </div>
+      <div class="section"><div class="label">Line Items</div>
+        <table><thead><tr>
+          <th>Description</th><th style="text-align:center">Qty</th>
+          <th style="text-align:right">Unit Price</th><th style="text-align:right">Amount</th>
+        </tr></thead><tbody>
+          ${lineRows || '<tr><td colspan="4" style="padding:16px 8px;color:#9ca3af;font-style:italic;">No line items</td></tr>'}
+          <tr class="total-row"><td colspan="3" style="text-align:right;padding:14px 8px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;">Total</td>
+            <td style="text-align:right;padding:14px 8px;font-size:18px;font-weight:800;">$${subtotal.toFixed(2)}</td></tr>
+        </tbody></table>
+      </div>
+      <div class="footer">Thank you for choosing ${companyName} · ${localJob.diagnosisNotes ? `Notes: ${localJob.diagnosisNotes.slice(0,120)}` : 'Professional locksmith services'}</div>
+    </body></html>`;
+
+    const w = window.open('', '_blank', 'width=800,height=900');
+    if (w) { w.document.write(html); w.document.close(); w.focus(); w.print(); }
+  };
   const collectingAmount = subtotal * paymentSplit;
 
   return (
@@ -819,6 +885,12 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                         className={`w-full py-8 rounded-[2.5rem] font-bold uppercase text-sm shadow-2xl transition-all flex items-center justify-center active:scale-95 ${localJob.paymentStatus === 'paid' ? 'bg-green-600 text-white shadow-green-500/20' : 'bg-slate-900 text-white hover:bg-blue-600 shadow-slate-900/40'}`}
                        >
                          {localJob.paymentStatus === 'paid' ? <><CheckCircle2 size={24} className="mr-4" /> Settled</> : <><CreditCard size={24} className="mr-4" /> Finalize Settlement</>}
+                       </button>
+                       <button
+                         onClick={handlePrintInvoice}
+                         className="w-full py-5 rounded-[2.5rem] font-bold uppercase text-sm shadow-lg transition-all flex items-center justify-center active:scale-95 bg-slate-800 text-slate-300 hover:bg-slate-700 border border-white/10"
+                       >
+                         <Printer size={18} className="mr-3" /> Print Invoice
                        </button>
                     </div>
                     <div className="text-right">

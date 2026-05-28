@@ -1,0 +1,61 @@
+{
+  "project": {
+    "root": "C:\\Clodecode\\CRM",
+    "name": "fieldtech-os---voice-first-technician-co-pilot",
+    "framework": "react",
+    "detected_frameworks": [
+      "react"
+    ],
+    "key_dependencies": {
+      "tailwind-merge": "^3.6.0",
+      "zustand": "^5.0.13"
+    },
+    "stack_type": "frontend"
+  },
+  "structure": {
+    "total_files": 23,
+    "components": {
+      "components": 14,
+      "modules": 9
+    },
+    "route_dirs": [],
+    "api_dirs": [],
+    "state_dirs": [],
+    "i18n_dirs": [],
+    "controller_dirs": [],
+    "model_dirs": [],
+    "dto_dirs": []
+  },
+  "routes": {
+    "count": 0,
+    "frontend_pages": [],
+    "backend_endpoints": [],
+    "pages": []
+  },
+  "apis": {
+    "total": 0,
+    "integrated": 0,
+    "mock": 0,
+    "endpoints": []
+  },
+  "enums": {
+    "count": 0,
+    "definitions": []
+  },
+  "models": {
+    "count": 0,
+    "definitions": []
+  },
+  "summary": {
+    "pages": 0,
+    "backend_endpoints": 0,
+    "api_endpoints": 0,
+    "api_integrated": 0,
+    "api_mock": 0,
+    "enums": 0,
+    "models": 0,
+    "has_i18n": false,
+    "has_state_management": false,
+    "stack_type": "frontend"
+  }
+}

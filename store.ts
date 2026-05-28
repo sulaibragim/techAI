@@ -1,6 +1,8 @@
 import { create } from 'zustand';
-import { Job, JobStatus, MissedInteraction, Message, CallRecord, LineItem } from './types';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { Job, JobStatus, MissedInteraction, Message, CallRecord, LineItem, Part } from './types';
 import { calculateFinancialMetrics } from './financialUtils';
+import { useSettingsStore } from './settingsStore';
 
 const getDynamicDate = (offsetDays: number) => {
   const d = new Date();
@@ -330,7 +332,9 @@ interface AppState {
   getFinancialMetrics: () => { totalRevenue: number, targetRevenue: number, closeRate: number, paceIndicator: number };
 }
 
-export const useAppStore = create<AppState>((set, get) => ({
+export const useAppStore = create<AppState>()(
+  persist(
+    (set, get) => ({
   jobs: INITIAL_JOBS,
   missedInteractions: INITIAL_MISSED_INTERACTIONS,
   messages: INITIAL_MESSAGES,
@@ -360,15 +364,29 @@ export const useAppStore = create<AppState>((set, get) => ({
     missedInteractions: state.missedInteractions.filter(m => m.id !== id)
   })),
   getFinancialMetrics: () => {
-    const metrics = calculateFinancialMetrics(get().jobs);
+    const { monthlyRevenueTarget } = useSettingsStore.getState();
+    const metrics = calculateFinancialMetrics(get().jobs, monthlyRevenueTarget);
     return {
       totalRevenue: metrics.totalRevenue,
-      targetRevenue: 5000, // example goal
-      closeRate: metrics.closeRate || 75,
+      targetRevenue: metrics.monthlyTarget,
+      closeRate: metrics.closeRate,
       paceIndicator: metrics.jobsSold || 0
     };
   }
-}));
+    }),
+    {
+      name: 'techai-crm-store',
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        jobs: state.jobs,
+        inventory: state.inventory,
+        messages: state.messages,
+        calls: state.calls,
+        missedInteractions: state.missedInteractions,
+      }),
+    }
+  )
+);
 
 export const useAIActions = () => {
   const handleAction = (actionPayload: any) => {

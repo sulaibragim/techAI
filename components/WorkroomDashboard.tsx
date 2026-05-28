@@ -7,6 +7,7 @@ import {
   ArrowLeft, LayoutGrid, Zap, Shield
 } from 'lucide-react';
 import { useAppStore } from '../store';
+import { useSettingsStore } from '../settingsStore';
 import { Job, JobStatus, STATUS_COLORS } from '../types';
 import { calculateFinancialMetrics } from '../financialUtils';
 
@@ -136,7 +137,8 @@ const KanbanCard: React.FC<{ job: Job; onSelect: () => void; onDragStart: (e: Re
 
 export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAddJob: () => void }> = ({ onJobSelect, onAddJob }) => {
   const { jobs, updateJobStatus } = useAppStore();
-  const metrics = useMemo(() => calculateFinancialMetrics(jobs), [jobs]);
+  const { monthlyRevenueTarget } = useSettingsStore();
+  const metrics = useMemo(() => calculateFinancialMetrics(jobs, monthlyRevenueTarget), [jobs, monthlyRevenueTarget]);
   
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<string | null>(null);

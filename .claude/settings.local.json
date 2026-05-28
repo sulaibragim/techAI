@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\sula1\\\\Downloads\\\\claude-skills-main\\\\claude-skills-main\\\\commands\" | Where-Object {$_.Name -match \"prd|senior-fullstack|spec-driven|code-to-prd|senior-architect|run|verify|focused-fix\"} | Select-Object Name)",
+      "PowerShell(python \"C:\\\\Users\\\\sula1\\\\Downloads\\\\claude-skills-main\\\\claude-skills-main\\\\engineering-team\\\\skills\\\\senior-fullstack\\\\scripts\\\\code_quality_analyzer.py\" \"C:\\\\Clodecode\\\\CRM\" --verbose 2>&1)",
+      "Bash(npm run *)",
+      "mcp__Claude_in_Chrome__browser_batch",
+      "mcp__Claude_in_Chrome__computer",
+      "mcp__Claude_in_Chrome__javascript_tool",
+      "Bash(git -C \"C:\\\\Clodecode\\\\CRM\" config user.email \"sultan@salemlocksmith.com\")",
+      "Bash(git -C \"C:\\\\Clodecode\\\\CRM\" config user.name \"Sultan\")",
+      "Bash(git -C \"C:\\\\Clodecode\\\\CRM\" add -A)",
+      "Bash(git -C \"C:\\\\Clodecode\\\\CRM\" commit -m \"feat: 9 features + code review fixes \\(persistence, clients, templates, invoice, search, shortcuts\\)\")"
+    ]
+  }
+}
