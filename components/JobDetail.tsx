@@ -648,7 +648,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                     <h3 className="text-3xl font-bold text-white uppercase tracking-tight leading-none">
                       {localJob.client.firstName} {localJob.client.lastName}
                     </h3>
-                    <p className="text-xs font-semibold text-red-500 uppercase tracking-widest">System not in operation</p>
+                    <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: STATUS_COLORS[localJob.status] }}>{localJob.lockDetails.type} · {localJob.lockDetails.brand || 'Unknown'}</p>
                   </div>
                   <button 
                     onClick={() => setIsEditingClient(true)}
@@ -660,45 +660,40 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                 </div>
 
                 <div className="flex items-center space-x-4 py-4 border-y border-slate-700">
-                  <div className="w-16 h-16 bg-gray-800 rounded-2xl overflow-hidden border border-slate-600 shrink-0">
+                  <div className="w-12 h-12 bg-gray-800 rounded-xl overflow-hidden border border-slate-600 shrink-0">
                     <img src={localJob.client.photo || `https://i.pravatar.cc/150?u=${localJob.client.lastName}`} className="w-full h-full object-cover" alt="Client" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-lg font-bold text-white uppercase truncate">{localJob.client.lastName}</p>
-                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Job ID: {localJob.jobNumber}</p>
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Job #{localJob.jobNumber}</p>
+                    <p className="text-xs font-semibold text-slate-500 mt-0.5">{localJob.scheduledDate} @ {localJob.scheduledTime}</p>
                   </div>
                 </div>
 
-                {/* TABS FOR ACTIONS - LINE LAYOUT */}
+                {/* CONTACT ACTIONS */}
                 <div className="space-y-1">
-                  <div className="flex items-center justify-between py-3 border-b border-slate-700 group">
+                  <div className="flex items-center justify-between py-2.5 border-b border-slate-700/50 group">
                     <div className="flex items-center space-x-3">
-                      <Phone size={14} className="text-blue-500" />
-                      <span className="text-xs font-bold text-white uppercase tracking-wider">{localJob.client.phone}</span>
+                      <Phone size={13} className="text-blue-500 shrink-0" />
+                      <span className="text-xs font-semibold text-white">{localJob.client.phone}</span>
                     </div>
-                    <div className="flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => window.location.href = `tel:${localJob.client.phone}`} className="p-2 text-slate-400 hover:text-blue-500 transition-colors"><Phone size={14} /></button>
-                      <button onClick={() => copyToClipboard(localJob.client.phone)} className="p-2 text-slate-400 hover:text-blue-500 transition-colors"><Copy size={14} /></button>
+                    <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button onClick={() => window.location.href = `tel:${localJob.client.phone}`} className="p-1.5 text-slate-400 hover:text-blue-400 transition-colors"><Phone size={12} /></button>
+                      <button onClick={() => copyToClipboard(localJob.client.phone)} className="p-1.5 text-slate-400 hover:text-blue-400 transition-colors"><Copy size={12} /></button>
                     </div>
                   </div>
-
-                  <div className="flex items-center justify-between py-3 border-b border-slate-700 group">
+                  <div className="flex items-center justify-between py-2.5 border-b border-slate-700/50 group">
                     <div className="flex items-center space-x-3">
-                      <Mail size={14} className="text-blue-500" />
-                      <span className="text-xs font-bold text-white uppercase tracking-wider truncate max-w-[200px]">{localJob.client.email}</span>
+                      <Mail size={13} className="text-blue-500 shrink-0" />
+                      <span className="text-xs font-semibold text-white truncate max-w-[200px]">{localJob.client.email}</span>
                     </div>
-                    <button onClick={() => copyToClipboard(localJob.client.email)} className="p-2 text-slate-400 hover:text-blue-500 transition-colors opacity-0 group-hover:opacity-100"><Copy size={14} /></button>
+                    <button onClick={() => copyToClipboard(localJob.client.email)} className="p-1.5 text-slate-400 hover:text-blue-400 transition-colors opacity-0 group-hover:opacity-100"><Copy size={12} /></button>
                   </div>
-
-                  <div className="flex items-center justify-between py-3 border-b border-slate-700 group">
+                  <div className="flex items-center justify-between py-2.5 group">
                     <div className="flex items-center space-x-3">
-                      <MapPin size={14} className="text-blue-500" />
-                      <span className="text-xs font-bold text-white uppercase tracking-wider truncate max-w-[200px]">{localJob.client.address}</span>
+                      <MapPin size={13} className="text-blue-500 shrink-0" />
+                      <span className="text-xs font-semibold text-white truncate max-w-[170px]">{localJob.client.address}</span>
                     </div>
-                    <div className="flex space-x-2">
-                      <button onClick={() => copyToClipboard(localJob.client.address)} className="p-2 text-slate-400 hover:text-blue-500 transition-colors opacity-0 group-hover:opacity-100"><Copy size={14} /></button>
-                      <button onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(localJob.client.address)}`)} className="p-2 bg-blue-600/10 text-blue-500 rounded-lg hover:bg-blue-600 hover:text-white transition-all"><Navigation size={14} /></button>
-                    </div>
+                    <button onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(localJob.client.address)}`)} className="p-1.5 bg-blue-600/10 text-blue-400 rounded-lg hover:bg-blue-600 hover:text-white transition-all"><Navigation size={12} /></button>
                   </div>
                 </div>
               </section>
@@ -831,73 +826,107 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
             <div className="lg:col-span-8 flex flex-col space-y-8">
               
               {/* INVOICE & BILLING */}
-              <div className="bg-white text-slate-900 rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-200 min-h-[810px] aspect-[1/1.414]">
-                <div className="h-3 bg-blue-600" />
-                <div className="p-6 flex flex-col flex-1 space-y-5">
-                  <header className="flex justify-between items-start">
-                    <div>
-                       <h3 className="text-5xl font-bold uppercase tracking-tighter leading-none mb-4">{localJob.client.firstName}<br/>{localJob.client.lastName}</h3>
-                       <div className="flex items-center space-x-4">
-                          <span className="text-xs font-bold text-blue-600 uppercase tracking-widest">Node ID: {localJob.jobNumber}</span>
-                          <span className="text-xs font-bold text-slate-300 uppercase tracking-widest">• {localJob.scheduledDate}</span>
-                       </div>
+              <div className="bg-slate-900 rounded-2xl border border-white/10 shadow-2xl flex flex-col overflow-hidden">
+                {/* Invoice Header */}
+                <div className="px-6 py-5 border-b border-white/10 flex items-start justify-between">
+                  <div>
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="text-xs font-bold text-blue-400 uppercase tracking-widest">Invoice</span>
+                      <span className="text-xs font-mono text-slate-500">#{localJob.jobNumber}</span>
+                      <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${localJob.paymentStatus === 'paid' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}`}>
+                        {localJob.paymentStatus === 'paid' ? 'Paid' : 'Unpaid'}
+                      </span>
                     </div>
-                    <div className="text-right flex items-center space-x-6">
-                       <div className="text-left"><h4 className="text-4xl font-extrabold uppercase tracking-tight leading-none">Salem AI</h4><p className="text-xs font-semibold text-blue-500 uppercase mt-1 tracking-widest">Fleet Operations</p></div>
-                       <div className="w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center text-white shadow-xl"><Building2 size={28} /></div>
-                    </div>
-                  </header>
-
-                  <div className="py-6 border-y border-slate-100 flex items-center justify-between gap-4">
-                    {[
-                      { id: 'labor', label: 'Labor', icon: Hammer, color: 'text-blue-600' },
-                      { id: 'part', label: 'Hardware', icon: Package, color: 'text-amber-600' },
-                      { id: 'service_call', label: 'Diagnostic', icon: Activity, color: 'text-red-600' },
-                      { id: 'maintenance', label: 'Maint', icon: Wrench, color: 'text-indigo-600' }
-                    ].map(btn => (
-                      <button key={btn.id} onClick={() => setBillingPrompt({ open: true, type: btn.id as any, desc: '', price: '' })} className="flex-1 py-6 rounded-3xl border border-slate-100 bg-slate-50 hover:bg-slate-900 hover:text-white transition-all flex flex-col items-center space-y-2 active:scale-95 shadow-sm group">
-                         <btn.icon size={20} className={`${btn.color} group-hover:text-white transition-colors`} />
-                         <span className="text-xs font-bold uppercase tracking-widest">{btn.label}</span>
-                      </button>
-                    ))}
+                    <p className="text-xl font-bold text-white leading-tight">{localJob.client.firstName} {localJob.client.lastName}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">{localJob.client.address}</p>
                   </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-white">{companyName}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">{localJob.scheduledDate}</p>
+                    <p className="text-xs text-blue-400 mt-1 font-semibold">{localJob.lockDetails.type} · {localJob.lockDetails.brand}</p>
+                  </div>
+                </div>
 
-                  <div className="space-y-4 flex-1 overflow-y-auto pr-2 scrollbar-hide">
-                    {localJob.lineItems.map(item => (
-                      <div key={item.id} className="flex items-center space-x-6 py-6 px-8 bg-slate-50/80 rounded-3xl border border-slate-100 shadow-sm group">
-                         <div className="flex-1 min-w-0">
-                            <p className="text-xl font-bold text-slate-900 uppercase truncate leading-none mb-1">{item.description}</p>
-                            <span className="text-xs font-semibold text-blue-600 uppercase tracking-widest">{item.type}</span>
-                         </div>
-                         <div className="flex items-center space-x-8">
-                            <span className="text-3xl font-bold text-slate-900 tabular-nums tracking-tight">${item.unitPrice}</span>
-                            <button onClick={() => handleRemoveLineItem(item.id)} className="p-3 text-slate-200 hover:text-red-500 active:scale-90 transition-colors group-hover:text-slate-400"><Trash2 size={20} /></button>
-                         </div>
+                {/* Add Item Buttons */}
+                <div className="px-6 py-3 border-b border-white/10 flex items-center gap-2 flex-wrap">
+                  <span className="text-xs font-bold text-slate-600 uppercase tracking-wider mr-1">Add:</span>
+                  {[
+                    { id: 'labor', label: 'Labor', icon: Hammer, color: 'text-blue-400' },
+                    { id: 'part', label: 'Part', icon: Package, color: 'text-amber-400' },
+                    { id: 'service_call', label: 'Diagnostic', icon: Activity, color: 'text-red-400' },
+                    { id: 'maintenance', label: 'Other', icon: Wrench, color: 'text-indigo-400' }
+                  ].map(btn => (
+                    <button key={btn.id} onClick={() => setBillingPrompt({ open: true, type: btn.id as any, desc: '', price: '' })}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-bold transition-all active:scale-95">
+                      <Plus size={11} className={btn.color} />
+                      <span className="text-slate-300 uppercase tracking-wide">{btn.label}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Table Header */}
+                <div className="px-6 py-2.5 grid grid-cols-12 gap-2 bg-white/[0.02] border-b border-white/5">
+                  <p className="col-span-6 text-[10px] font-bold text-slate-600 uppercase tracking-wider">Description</p>
+                  <p className="col-span-2 text-[10px] font-bold text-slate-600 uppercase tracking-wider text-center">Qty</p>
+                  <p className="col-span-2 text-[10px] font-bold text-slate-600 uppercase tracking-wider text-right">Unit</p>
+                  <p className="col-span-2 text-[10px] font-bold text-slate-600 uppercase tracking-wider text-right">Total</p>
+                </div>
+
+                {/* Line Items */}
+                <div className="divide-y divide-white/5 flex-1">
+                  {localJob.lineItems.length === 0 ? (
+                    <div className="px-6 py-10 text-center">
+                      <p className="text-xs font-bold text-slate-700 uppercase tracking-widest">No items — add labor, parts or diagnostic above</p>
+                    </div>
+                  ) : (
+                    localJob.lineItems.map(item => (
+                      <div key={item.id} className="px-6 py-4 grid grid-cols-12 gap-2 items-center group hover:bg-white/[0.02] transition-colors">
+                        <div className="col-span-6 min-w-0">
+                          <p className="text-sm font-semibold text-white truncate">{item.description}</p>
+                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider capitalize">{item.type.replace('_', ' ')}</span>
+                        </div>
+                        <p className="col-span-2 text-sm font-medium text-slate-400 text-center">{item.quantity}</p>
+                        <p className="col-span-2 text-sm font-medium text-slate-400 text-right">${item.unitPrice.toFixed(2)}</p>
+                        <div className="col-span-2 flex items-center justify-end gap-1">
+                          <span className="text-sm font-bold text-white tabular-nums">${(item.unitPrice * item.quantity).toFixed(2)}</span>
+                          <button onClick={() => handleRemoveLineItem(item.id)} className="opacity-0 group-hover:opacity-100 p-1 text-slate-700 hover:text-red-400 transition-all ml-1 shrink-0">
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
                       </div>
-                    ))}
+                    ))
+                  )}
+                </div>
+
+                {/* Totals + Actions */}
+                <div className="border-t border-white/10 px-6 pt-4 pb-5 space-y-4">
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between text-xs font-semibold text-slate-500">
+                      <span>Subtotal ({localJob.lineItems.length} item{localJob.lineItems.length !== 1 ? 's' : ''})</span>
+                      <span>${subtotal.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between items-center pt-2 border-t border-white/10">
+                      <span className="text-sm font-bold text-white uppercase tracking-wider">Total</span>
+                      <span className="text-3xl font-extrabold text-white tabular-nums tracking-tight">${subtotal.toFixed(2)}</span>
+                    </div>
                   </div>
 
-                  <footer className="pt-8 border-t border-slate-100 flex justify-between items-end">
-                    <div className="w-1/2">
-                       <button 
-                        onClick={() => setPaymentStep('split')}
-                        disabled={localJob.paymentStatus === 'paid'}
-                        className={`w-full py-8 rounded-[2.5rem] font-bold uppercase text-sm shadow-2xl transition-all flex items-center justify-center active:scale-95 ${localJob.paymentStatus === 'paid' ? 'bg-green-600 text-white shadow-green-500/20' : 'bg-slate-900 text-white hover:bg-blue-600 shadow-slate-900/40'}`}
-                       >
-                         {localJob.paymentStatus === 'paid' ? <><CheckCircle2 size={24} className="mr-4" /> Settled</> : <><CreditCard size={24} className="mr-4" /> Finalize Settlement</>}
-                       </button>
-                       <button
-                         onClick={handlePrintInvoice}
-                         className="w-full py-5 rounded-[2.5rem] font-bold uppercase text-sm shadow-lg transition-all flex items-center justify-center active:scale-95 bg-slate-800 text-slate-300 hover:bg-slate-700 border border-white/10"
-                       >
-                         <Printer size={18} className="mr-3" /> Print Invoice
-                       </button>
-                    </div>
-                    <div className="text-right">
-                       <p className="text-sm font-bold uppercase text-blue-600 mb-2 tracking-widest">Total</p>
-                       <p className="text-6xl font-extrabold text-slate-900 tracking-tight leading-none tabular-nums">${subtotal}</p>
-                    </div>
-                  </footer>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={() => setPaymentStep('split')}
+                      disabled={localJob.paymentStatus === 'paid'}
+                      className={`py-3 rounded-xl font-bold uppercase text-xs tracking-wider transition-all flex items-center justify-center gap-2 active:scale-95 ${
+                        localJob.paymentStatus === 'paid'
+                          ? 'bg-green-500/10 text-green-400 border border-green-500/20 cursor-default'
+                          : 'bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-900/30'
+                      }`}
+                    >
+                      {localJob.paymentStatus === 'paid' ? <><CheckCircle2 size={14} /> Settled</> : <><CreditCard size={14} /> Collect</>}
+                    </button>
+                    <button onClick={handlePrintInvoice} className="py-3 rounded-xl font-bold uppercase text-xs tracking-wider bg-white/5 text-slate-300 hover:bg-white/10 border border-white/10 flex items-center justify-center gap-2 active:scale-95 transition-all">
+                      <Printer size={14} /> Print
+                    </button>
+                  </div>
                 </div>
               </div>
 
