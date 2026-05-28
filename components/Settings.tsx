@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { motion } from 'motion/react';
-import { User, Target, Key, Eye, EyeOff, RotateCcw, Save, Upload, Info } from 'lucide-react';
+import { User, Target, Key, Eye, EyeOff, RotateCcw, Save, Upload, Info, Building2 } from 'lucide-react';
 import { useSettingsStore, SETTINGS_DEFAULTS, settingsStorageIsEphemeral } from '../settingsStore';
 
 const VERSION = '0.0.0';
@@ -10,6 +10,11 @@ export const Settings: React.FC = () => {
   const [form, setForm] = useState({
     technicianName: settings.technicianName,
     companyName: settings.companyName,
+    companyAddress: settings.companyAddress,
+    companyCity: settings.companyCity,
+    companyPhone: settings.companyPhone,
+    companyEmail: settings.companyEmail,
+    licenseNumber: settings.licenseNumber,
     profilePhoto: settings.profilePhoto,
     monthlyRevenueTarget: settings.monthlyRevenueTarget,
     dailyRevenueTarget: settings.dailyRevenueTarget,
@@ -52,7 +57,19 @@ export const Settings: React.FC = () => {
 
   const handleReset = () => {
     settings.resetSettings();
-    setForm({ ...SETTINGS_DEFAULTS });
+    setForm({
+      technicianName: SETTINGS_DEFAULTS.technicianName,
+      companyName: SETTINGS_DEFAULTS.companyName,
+      companyAddress: SETTINGS_DEFAULTS.companyAddress,
+      companyCity: SETTINGS_DEFAULTS.companyCity,
+      companyPhone: SETTINGS_DEFAULTS.companyPhone,
+      companyEmail: SETTINGS_DEFAULTS.companyEmail,
+      licenseNumber: SETTINGS_DEFAULTS.licenseNumber,
+      profilePhoto: SETTINGS_DEFAULTS.profilePhoto,
+      monthlyRevenueTarget: SETTINGS_DEFAULTS.monthlyRevenueTarget,
+      dailyRevenueTarget: SETTINGS_DEFAULTS.dailyRevenueTarget,
+      geminiApiKey: SETTINGS_DEFAULTS.geminiApiKey,
+    });
     setShowReset(false);
   };
 
@@ -153,6 +170,63 @@ export const Settings: React.FC = () => {
               placeholder="Your company"
             />
           </div>
+        </Section>
+
+        <Section icon={Building2} title="Company Info">
+          <div>
+            <label className={labelCls}>Street Address</label>
+            <input
+              className={inputCls}
+              maxLength={120}
+              value={form.companyAddress}
+              onChange={e => setForm(f => ({ ...f, companyAddress: e.target.value }))}
+              placeholder="123 Main Street, Suite 100"
+            />
+          </div>
+          <div>
+            <label className={labelCls}>City, State ZIP</label>
+            <input
+              className={inputCls}
+              maxLength={80}
+              value={form.companyCity}
+              onChange={e => setForm(f => ({ ...f, companyCity: e.target.value }))}
+              placeholder="Portland, OR 97201"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelCls}>Phone</label>
+              <input
+                className={inputCls}
+                maxLength={20}
+                value={form.companyPhone}
+                onChange={e => setForm(f => ({ ...f, companyPhone: e.target.value }))}
+                placeholder="(503) 555-0100"
+              />
+            </div>
+            <div>
+              <label className={labelCls}>License #</label>
+              <input
+                className={inputCls}
+                maxLength={30}
+                value={form.licenseNumber}
+                onChange={e => setForm(f => ({ ...f, licenseNumber: e.target.value }))}
+                placeholder="LK-00000"
+              />
+            </div>
+          </div>
+          <div>
+            <label className={labelCls}>Business Email</label>
+            <input
+              className={inputCls}
+              type="email"
+              maxLength={100}
+              value={form.companyEmail}
+              onChange={e => setForm(f => ({ ...f, companyEmail: e.target.value }))}
+              placeholder="info@yourbusiness.com"
+            />
+          </div>
+          <p className="text-xs text-slate-500 -mt-1">Appears on all printed invoices</p>
         </Section>
 
         <Section icon={Target} title="Business Targets">

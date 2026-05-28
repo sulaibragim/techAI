@@ -45,7 +45,7 @@ const TERM_TYPES = ['1', '10', '15', '20', '30'];
 
 export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: initialJob, onClose }) => {
   const { jobs, updateJob, inventory, updateInventoryItem } = useAppStore();
-  const { companyName, technicianName } = useSettingsStore();
+  const { companyName, technicianName, companyAddress, companyCity, companyPhone, companyEmail, licenseNumber } = useSettingsStore();
   const [localJob, setLocalJob] = useState<Job>({ ...initialJob });
   const [isModified, setIsModified] = useState(false);
   
@@ -229,67 +229,186 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
   const subtotal = localJob.lineItems.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
 
   const handlePrintInvoice = () => {
-    const lineRows = localJob.lineItems.map(item => `
-      <tr>
-        <td style="padding:10px 8px;border-bottom:1px solid #e5e7eb;">${item.description}</td>
-        <td style="padding:10px 8px;border-bottom:1px solid #e5e7eb;text-align:center;">${item.quantity}</td>
-        <td style="padding:10px 8px;border-bottom:1px solid #e5e7eb;text-align:right;">$${item.unitPrice.toFixed(2)}</td>
-        <td style="padding:10px 8px;border-bottom:1px solid #e5e7eb;text-align:right;font-weight:600;">$${(item.unitPrice * item.quantity).toFixed(2)}</td>
+    const isPaid = localJob.paymentStatus === 'paid';
+    const lineRows = localJob.lineItems.map((item, idx) => `
+      <tr style="border-bottom:1px solid #f1f5f9;">
+        <td style="padding:9px 8px;font-size:12px;color:#94a3b8;">${idx + 1}</td>
+        <td style="padding:9px 8px;">
+          <div style="font-size:13px;font-weight:600;color:#1e293b;">${item.description}</div>
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#3b82f6;margin-top:1px;">${item.type.replace('_', ' ')}</div>
+        </td>
+        <td style="padding:9px 8px;font-size:13px;color:#64748b;text-align:center;">${item.quantity}</td>
+        <td style="padding:9px 8px;font-size:13px;color:#64748b;text-align:right;">$${item.unitPrice.toFixed(2)}</td>
+        <td style="padding:9px 8px;font-size:13px;font-weight:700;color:#1e293b;text-align:right;">$${(item.unitPrice * item.quantity).toFixed(2)}</td>
       </tr>`).join('');
 
-    const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
-      <title>Invoice #${localJob.jobNumber}</title>
-      <style>
-        body{font-family:system-ui,sans-serif;color:#111;margin:0;padding:40px;}
-        .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:40px;}
-        .company{font-size:24px;font-weight:800;color:#1e40af;}
-        .sub{color:#6b7280;font-size:13px;margin-top:4px;}
-        .invoice-meta{text-align:right;}
-        .invoice-num{font-size:20px;font-weight:700;}
-        .badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;background:${localJob.paymentStatus === 'paid' ? '#dcfce7' : '#fef3c7'};color:${localJob.paymentStatus === 'paid' ? '#166534' : '#92400e'};}
-        .section{margin-bottom:28px;}
-        .label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#9ca3af;margin-bottom:6px;}
-        table{width:100%;border-collapse:collapse;margin-top:8px;}
-        thead tr{background:#f9fafb;}
-        thead th{padding:10px 8px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;}
-        .total-row{background:#f9fafb;}
-        .total-row td{padding:14px 8px;font-size:18px;font-weight:800;}
-        .footer{margin-top:48px;padding-top:20px;border-top:1px solid #e5e7eb;font-size:12px;color:#9ca3af;text-align:center;}
-      </style></head><body>
-      <div class="header">
-        <div><div class="company">${companyName}</div><div class="sub">Locksmith Services · ${technicianName}</div></div>
-        <div class="invoice-meta">
-          <div class="invoice-num">Invoice #${localJob.jobNumber}</div>
-          <div style="color:#6b7280;font-size:13px;margin-top:4px;">${localJob.scheduledDate}</div>
-          <div style="margin-top:8px;"><span class="badge">${localJob.paymentStatus}</span></div>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;" class="section">
-        <div><div class="label">Bill To</div>
-          <div style="font-weight:600;">${localJob.client.firstName} ${localJob.client.lastName}</div>
-          <div style="color:#6b7280;font-size:13px;">${localJob.client.phone}</div>
-          <div style="color:#6b7280;font-size:13px;">${localJob.client.address || ''}</div>
-        </div>
-        <div><div class="label">Service</div>
-          <div style="font-weight:600;">${localJob.lockDetails.type}</div>
-          <div style="color:#6b7280;font-size:13px;">${localJob.lockDetails.brand} ${localJob.lockDetails.modelOrYear}</div>
-        </div>
-      </div>
-      <div class="section"><div class="label">Line Items</div>
-        <table><thead><tr>
-          <th>Description</th><th style="text-align:center">Qty</th>
-          <th style="text-align:right">Unit Price</th><th style="text-align:right">Amount</th>
-        </tr></thead><tbody>
-          ${lineRows || '<tr><td colspan="4" style="padding:16px 8px;color:#9ca3af;font-style:italic;">No line items</td></tr>'}
-          <tr class="total-row"><td colspan="3" style="text-align:right;padding:14px 8px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;">Total</td>
-            <td style="text-align:right;padding:14px 8px;font-size:18px;font-weight:800;">$${subtotal.toFixed(2)}</td></tr>
-        </tbody></table>
-      </div>
-      <div class="footer">Thank you for choosing ${companyName} · ${localJob.diagnosisNotes ? `Notes: ${localJob.diagnosisNotes.slice(0,120)}` : 'Professional locksmith services'}</div>
-    </body></html>`;
+    const html = `<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Invoice #${localJob.jobNumber} — ${localJob.client.lastName}</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  @page{size:A4;margin:18mm 16mm;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1e293b;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .page{max-width:760px;margin:0 auto;padding:36px 40px;}
+  /* Letterhead */
+  .lh{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:20px;border-bottom:3px solid #1d4ed8;margin-bottom:24px;}
+  .co-name{font-size:26px;font-weight:900;color:#1d4ed8;letter-spacing:-.5px;}
+  .co-sub{font-size:11px;color:#64748b;margin-top:4px;}
+  .inv-title{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#94a3b8;text-align:right;}
+  .inv-num{font-size:22px;font-weight:900;color:#1e293b;text-align:right;margin-top:2px;}
+  .inv-meta{font-size:11px;color:#64748b;text-align:right;margin-top:3px;}
+  .badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;background:${isPaid ? '#dcfce7' : '#fef3c7'};color:${isPaid ? '#15803d' : '#92400e'};margin-top:6px;}
+  /* Parties */
+  .parties{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;padding-bottom:20px;border-bottom:1px solid #f1f5f9;margin-bottom:20px;}
+  .sect-label{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#94a3b8;margin-bottom:6px;}
+  .sect-val{font-size:13px;font-weight:700;color:#1e293b;}
+  .sect-sub{font-size:11px;color:#64748b;margin-top:2px;}
+  /* Table */
+  table{width:100%;border-collapse:collapse;}
+  thead tr{background:#f8fafc;}
+  thead th{padding:9px 8px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;border-bottom:2px solid #e2e8f0;}
+  thead th:first-child{width:32px;}
+  thead th:nth-child(3){text-align:center;}
+  thead th:nth-child(4),thead th:nth-child(5){text-align:right;}
+  tfoot td{padding:9px 8px;font-size:12px;color:#64748b;text-align:right;}
+  /* Totals */
+  .totals{margin-top:16px;display:flex;justify-content:flex-end;}
+  .totals-box{width:220px;}
+  .tot-row{display:flex;justify-content:space-between;font-size:12px;color:#64748b;padding:4px 0;}
+  .tot-divider{border-top:2px solid #e2e8f0;margin:6px 0;}
+  .tot-main{display:flex;justify-content:space-between;align-items:baseline;}
+  .tot-main-label{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#1e293b;}
+  .tot-main-val{font-size:24px;font-weight:900;color:#1e293b;}
+  .tot-paid{display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:#16a34a;padding-top:4px;}
+  /* Payment + terms */
+  .pt{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-top:1px solid #f1f5f9;border-bottom:1px solid #f1f5f9;margin:18px 0;}
+  .pmethods{display:flex;gap:6px;margin-top:5px;}
+  .pm{font-size:10px;font-weight:700;padding:3px 9px;border-radius:99px;border:1px solid #e2e8f0;color:#64748b;background:#f8fafc;}
+  /* Signatures */
+  .sigs{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:18px;}
+  .sig-box{}
+  .sig-label{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#94a3b8;margin-bottom:8px;}
+  .sig-note{font-size:9px;color:#94a3b8;font-style:italic;margin-bottom:10px;}
+  .sig-line{border-bottom:1px solid #cbd5e1;height:32px;margin-bottom:4px;}
+  .sig-sub{font-size:10px;color:#94a3b8;}
+  /* Footer */
+  .footer{margin-top:24px;padding-top:16px;border-top:1px solid #f1f5f9;font-size:10px;color:#94a3b8;text-align:center;line-height:1.6;}
+  @media print{body{background:#fff;}}
+</style></head>
+<body><div class="page">
 
-    const w = window.open('', '_blank', 'width=800,height=900');
-    if (w) { w.document.write(html); w.document.close(); w.focus(); w.print(); }
+  <!-- LETTERHEAD -->
+  <div class="lh">
+    <div>
+      <div class="co-name">${companyName}</div>
+      ${companyAddress ? `<div class="co-sub">${companyAddress}</div>` : ''}
+      ${companyCity ? `<div class="co-sub">${companyCity}</div>` : ''}
+      <div class="co-sub" style="margin-top:3px;">
+        ${companyPhone ? `☎ ${companyPhone}` : ''}${companyPhone && companyEmail ? ' &nbsp;·&nbsp; ' : ''}${companyEmail ? `✉ ${companyEmail}` : ''}
+        ${licenseNumber ? `<span style="margin-left:8px;font-weight:700;">Lic# ${licenseNumber}</span>` : ''}
+      </div>
+    </div>
+    <div>
+      <div class="inv-title">Invoice</div>
+      <div class="inv-num">#${localJob.jobNumber}</div>
+      <div class="inv-meta">Date: ${localJob.scheduledDate}</div>
+      <div class="inv-meta">Due: Upon Receipt</div>
+      <div><span class="badge">${isPaid ? '✓ Paid in Full' : '⏳ Payment Due'}</span></div>
+    </div>
+  </div>
+
+  <!-- PARTIES -->
+  <div class="parties">
+    <div>
+      <div class="sect-label">Bill To</div>
+      <div class="sect-val">${localJob.client.firstName} ${localJob.client.lastName}</div>
+      ${localJob.client.phone ? `<div class="sect-sub">${localJob.client.phone}</div>` : ''}
+      ${localJob.client.email ? `<div class="sect-sub">${localJob.client.email}</div>` : ''}
+      ${localJob.client.address ? `<div class="sect-sub" style="margin-top:3px;">${localJob.client.address}</div>` : ''}
+    </div>
+    <div>
+      <div class="sect-label">Service Location</div>
+      <div class="sect-sub" style="font-size:12px;">${localJob.client.address || '—'}</div>
+    </div>
+    <div>
+      <div class="sect-label">Equipment / Job</div>
+      <div class="sect-val" style="font-size:12px;">${localJob.lockDetails.type}</div>
+      ${localJob.lockDetails.brand ? `<div class="sect-sub">${localJob.lockDetails.brand}${localJob.lockDetails.modelOrYear ? ' · ' + localJob.lockDetails.modelOrYear : ''}</div>` : ''}
+      ${localJob.lockDetails.vinOrKeyCode ? `<div class="sect-sub" style="font-family:monospace;">Key: ${localJob.lockDetails.vinOrKeyCode}</div>` : ''}
+      <div class="sect-sub">Tech: ${technicianName}</div>
+    </div>
+  </div>
+
+  <!-- LINE ITEMS -->
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th style="text-align:left;">Description</th>
+        <th>Qty</th>
+        <th style="text-align:right;">Unit Price</th>
+        <th style="text-align:right;">Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${lineRows || '<tr><td colspan="5" style="padding:18px 8px;text-align:center;color:#94a3b8;font-style:italic;font-size:12px;">No line items</td></tr>'}
+    </tbody>
+  </table>
+
+  <!-- TOTALS -->
+  <div class="totals">
+    <div class="totals-box">
+      <div class="tot-row"><span>Subtotal</span><span>$${subtotal.toFixed(2)}</span></div>
+      <div class="tot-row"><span>Tax / Fees</span><span>$0.00</span></div>
+      <div class="tot-divider"></div>
+      <div class="tot-main">
+        <span class="tot-main-label">Total Due</span>
+        <span class="tot-main-val">$${subtotal.toFixed(2)}</span>
+      </div>
+      ${isPaid ? `<div class="tot-paid"><span>Amount Paid</span><span>— $${subtotal.toFixed(2)}</span></div>` : ''}
+    </div>
+  </div>
+
+  <!-- PAYMENT + TERMS -->
+  <div class="pt">
+    <div>
+      <div class="sect-label">Accepted Payment Methods</div>
+      <div class="pmethods">
+        <span class="pm">Cash</span><span class="pm">Card</span><span class="pm">Check</span><span class="pm">Zelle</span>
+      </div>
+    </div>
+    <div style="text-align:right;">
+      <div class="sect-label">Terms</div>
+      <div style="font-size:12px;font-weight:600;color:#1e293b;">Due on Receipt</div>
+      <div style="font-size:10px;color:#94a3b8;margin-top:2px;">All labor carries a 90-day warranty</div>
+    </div>
+  </div>
+
+  <!-- SIGNATURES -->
+  <div class="sigs">
+    <div class="sig-box">
+      <div class="sig-label">Technician Signature</div>
+      <div class="sig-line"></div>
+      <div class="sig-sub">${technicianName}${licenseNumber ? ' · Lic# ' + licenseNumber : ''}</div>
+    </div>
+    <div class="sig-box">
+      <div class="sig-label">Client Authorization</div>
+      <div class="sig-note">I authorize the work described above and agree to the payment terms.</div>
+      <div class="sig-line"></div>
+      <div class="sig-sub">Signature &amp; Date</div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    Thank you for choosing <strong>${companyName}</strong>${companyPhone ? ' · ' + companyPhone : ''}${companyEmail ? ' · ' + companyEmail : ''}<br>
+    ${localJob.diagnosisNotes ? `<em>Notes: ${localJob.diagnosisNotes.slice(0, 160)}</em>` : 'Professional locksmith services — licensed &amp; insured'}
+  </div>
+
+</div></body></html>`;
+
+    const w = window.open('', '_blank', 'width=860,height=1050');
+    if (w) { w.document.write(html); w.document.close(); w.focus(); setTimeout(() => w.print(), 400); }
   };
   const collectingAmount = subtotal * paymentSplit;
 
@@ -825,19 +944,20 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
             {/* MAIN OPERATIONAL HUB */}
             <div className="lg:col-span-8 flex flex-col space-y-8">
               
-              {/* INVOICE — professional white paper document */}
-              <div className="bg-white text-slate-900 rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-200">
-                {/* Add-item toolbar — sits above the doc, dark strip */}
-                <div className="bg-slate-900 px-5 py-2.5 flex items-center gap-2 border-b border-white/10">
+              {/* INVOICE — full A4 professional document */}
+              <div className="flex flex-col rounded-2xl overflow-hidden shadow-2xl border border-white/10">
+
+                {/* ── TOOLBAR (dark) ── */}
+                <div className="bg-slate-900 px-5 py-2.5 flex items-center gap-2 flex-wrap border-b border-white/10">
                   <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mr-1">Add:</span>
-                  {[
-                    { id: 'labor',       label: 'Labor',      icon: Hammer,   color: 'text-blue-400' },
-                    { id: 'part',        label: 'Part',       icon: Package,  color: 'text-amber-400' },
-                    { id: 'service_call',label: 'Diagnostic', icon: Activity, color: 'text-red-400' },
-                    { id: 'maintenance', label: 'Other',      icon: Wrench,   color: 'text-indigo-400' }
-                  ].map(btn => (
+                  {([
+                    { id: 'labor',        label: 'Labor',      icon: Hammer,   color: 'text-blue-400' },
+                    { id: 'part',         label: 'Part',       icon: Package,  color: 'text-amber-400' },
+                    { id: 'service_call', label: 'Diagnostic', icon: Activity, color: 'text-red-400' },
+                    { id: 'maintenance',  label: 'Other',      icon: Wrench,   color: 'text-indigo-400' },
+                  ] as { id: LineItem['type']; label: string; icon: any; color: string }[]).map(btn => (
                     <button key={btn.id}
-                      onClick={() => setBillingPrompt({ open: true, type: btn.id as any, desc: '', price: '' })}
+                      onClick={() => setBillingPrompt({ open: true, type: btn.id, desc: '', price: '' })}
                       className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-bold transition-all active:scale-95">
                       <Plus size={11} className={btn.color} />
                       <span className="text-slate-300 uppercase tracking-wide">{btn.label}</span>
@@ -845,93 +965,152 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                   ))}
                 </div>
 
-                {/* ── PAPER DOCUMENT ── */}
-                <div className="px-8 pt-7 pb-6 flex flex-col gap-6">
+                {/* ── PAPER (white A4) ── */}
+                <div className="bg-white text-slate-900 px-9 pt-8 pb-7 flex flex-col gap-5">
 
-                  {/* Letterhead */}
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="text-2xl font-extrabold text-blue-700 tracking-tight leading-none">{companyName}</p>
-                      <p className="text-xs text-slate-400 mt-1">{technicianName} · Professional Locksmith Services</p>
+                  {/* 1 · LETTERHEAD */}
+                  <div className="flex items-start justify-between pb-5 border-b-2 border-blue-700">
+                    <div className="space-y-0.5">
+                      <p className="text-[22px] font-extrabold text-blue-700 tracking-tight leading-none">{companyName}</p>
+                      {companyAddress && <p className="text-xs text-slate-500 mt-1">{companyAddress}</p>}
+                      {companyCity   && <p className="text-xs text-slate-500">{companyCity}</p>}
+                      <div className="flex items-center gap-3 mt-1 flex-wrap">
+                        {companyPhone && <span className="text-xs text-slate-500">☎ {companyPhone}</span>}
+                        {companyEmail && <span className="text-xs text-slate-500">✉ {companyEmail}</span>}
+                        {licenseNumber && <span className="text-[10px] font-bold text-slate-400 uppercase">Lic# {licenseNumber}</span>}
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Invoice</p>
-                      <p className="text-lg font-extrabold text-slate-800 tracking-tight">#{localJob.jobNumber}</p>
-                      <p className="text-xs text-slate-400 mt-1">{localJob.scheduledDate}</p>
-                      <span className={`inline-block mt-2 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${localJob.paymentStatus === 'paid' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
-                        {localJob.paymentStatus === 'paid' ? '✓ Paid' : 'Unpaid'}
+                    <div className="text-right space-y-0.5 min-w-[160px]">
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Invoice</p>
+                      <p className="text-xl font-extrabold text-slate-800 tracking-tight">#{localJob.jobNumber}</p>
+                      <p className="text-xs text-slate-500">Date: {localJob.scheduledDate}</p>
+                      <p className="text-xs text-slate-500">Due: Upon Receipt</p>
+                      <span className={`inline-block mt-1.5 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${localJob.paymentStatus === 'paid' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                        {localJob.paymentStatus === 'paid' ? '✓ Paid' : '⏳ Payment Due'}
                       </span>
                     </div>
                   </div>
 
-                  {/* Bill To + Service */}
-                  <div className="grid grid-cols-2 gap-6 py-5 border-y border-slate-100">
+                  {/* 2 · PARTIES + JOB INFO */}
+                  <div className="grid grid-cols-3 gap-4 pb-5 border-b border-slate-100">
                     <div>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Bill To</p>
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Bill To</p>
                       <p className="text-sm font-bold text-slate-800">{localJob.client.firstName} {localJob.client.lastName}</p>
-                      <p className="text-xs text-slate-500 mt-0.5">{localJob.client.phone}</p>
-                      {localJob.client.address && <p className="text-xs text-slate-500 mt-0.5">{localJob.client.address}</p>}
+                      {localJob.client.phone   && <p className="text-xs text-slate-500 mt-0.5">{localJob.client.phone}</p>}
+                      {localJob.client.email   && <p className="text-xs text-slate-500 mt-0.5">{localJob.client.email}</p>}
+                      {localJob.client.address && <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">{localJob.client.address}</p>}
                     </div>
                     <div>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Service</p>
-                      <p className="text-sm font-bold text-slate-800">{localJob.lockDetails.type}</p>
-                      <p className="text-xs text-slate-500 mt-0.5">{localJob.lockDetails.brand}{localJob.lockDetails.modelOrYear ? ` · ${localJob.lockDetails.modelOrYear}` : ''}</p>
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Service Location</p>
+                      <p className="text-xs text-slate-700 leading-relaxed">{localJob.client.address || '—'}</p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Equipment / Job</p>
+                      <p className="text-xs font-semibold text-slate-700">{localJob.lockDetails.type}</p>
+                      {localJob.lockDetails.brand && <p className="text-xs text-slate-500 mt-0.5">{localJob.lockDetails.brand}{localJob.lockDetails.modelOrYear ? ` · ${localJob.lockDetails.modelOrYear}` : ''}</p>}
+                      {localJob.lockDetails.vinOrKeyCode && <p className="text-xs text-slate-400 mt-0.5 font-mono">Key: {localJob.lockDetails.vinOrKeyCode}</p>}
+                      <p className="text-xs text-slate-400 mt-0.5">Tech: {technicianName}</p>
                     </div>
                   </div>
 
-                  {/* Line Items Table */}
+                  {/* 3 · LINE ITEMS */}
                   <div>
-                    <div className="grid grid-cols-12 gap-2 pb-2 border-b border-slate-200">
-                      <p className="col-span-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Description</p>
-                      <p className="col-span-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Qty</p>
-                      <p className="col-span-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Unit</p>
-                      <p className="col-span-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Total</p>
+                    {/* Table head */}
+                    <div className="grid grid-cols-12 gap-1 pb-2 border-b border-slate-300">
+                      <p className="col-span-1 text-[9px] font-bold text-slate-400 uppercase tracking-widest">#</p>
+                      <p className="col-span-5 text-[9px] font-bold text-slate-400 uppercase tracking-widest">Description</p>
+                      <p className="col-span-2 text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Qty</p>
+                      <p className="col-span-2 text-[9px] font-bold text-slate-400 uppercase tracking-widest text-right">Unit Price</p>
+                      <p className="col-span-2 text-[9px] font-bold text-slate-400 uppercase tracking-widest text-right">Amount</p>
                     </div>
 
-                    <div className="divide-y divide-slate-100">
-                      {localJob.lineItems.length === 0 ? (
-                        <p className="py-6 text-center text-xs text-slate-300 italic">No line items — use the buttons above to add</p>
-                      ) : (
-                        localJob.lineItems.map(item => (
-                          <div key={item.id} className="grid grid-cols-12 gap-2 py-3 items-center group hover:bg-slate-50 -mx-1 px-1 rounded transition-colors">
-                            <div className="col-span-6 min-w-0">
-                              <p className="text-sm font-semibold text-slate-800 truncate">{item.description}</p>
-                              <span className="text-[10px] font-semibold text-slate-400 capitalize">{item.type.replace('_', ' ')}</span>
+                    {/* Rows */}
+                    <div className="divide-y divide-slate-100 min-h-[80px]">
+                      {localJob.lineItems.length === 0
+                        ? <p className="py-5 text-center text-xs text-slate-300 italic">No line items yet</p>
+                        : localJob.lineItems.map((item, idx) => (
+                          <div key={item.id} className="grid grid-cols-12 gap-1 py-2.5 items-start group hover:bg-blue-50/30 rounded transition-colors -mx-1 px-1">
+                            <p className="col-span-1 text-xs text-slate-400">{idx + 1}</p>
+                            <div className="col-span-5 min-w-0">
+                              <p className="text-sm font-semibold text-slate-800 leading-tight">{item.description}</p>
+                              <span className="text-[9px] font-bold uppercase tracking-wider text-blue-600/70">{item.type.replace('_', ' ')}</span>
                             </div>
-                            <p className="col-span-2 text-sm text-slate-500 text-center">{item.quantity}</p>
-                            <p className="col-span-2 text-sm text-slate-500 text-right">${item.unitPrice.toFixed(2)}</p>
-                            <div className="col-span-2 flex items-center justify-end gap-1">
-                              <span className="text-sm font-bold text-slate-800 tabular-nums">${(item.unitPrice * item.quantity).toFixed(2)}</span>
-                              <button onClick={() => handleRemoveLineItem(item.id)} className="opacity-0 group-hover:opacity-100 p-1 text-slate-300 hover:text-red-500 transition-all ml-0.5 shrink-0">
-                                <Trash2 size={12} />
-                              </button>
+                            <p className="col-span-2 text-xs text-slate-600 text-center pt-0.5">{item.quantity}</p>
+                            <p className="col-span-2 text-xs text-slate-600 text-right pt-0.5">${item.unitPrice.toFixed(2)}</p>
+                            <div className="col-span-2 flex items-start justify-end gap-0.5">
+                              <span className="text-xs font-bold text-slate-800 tabular-nums">${(item.unitPrice * item.quantity).toFixed(2)}</span>
+                              <button onClick={() => handleRemoveLineItem(item.id)} className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-300 hover:text-red-500 transition-all shrink-0 mt-0.5"><Trash2 size={11} /></button>
                             </div>
                           </div>
                         ))
-                      )}
+                      }
                     </div>
 
                     {/* Totals */}
-                    <div className="mt-4 pt-4 border-t-2 border-slate-200 space-y-1.5">
-                      <div className="flex justify-between text-xs text-slate-400">
-                        <span>Subtotal</span>
-                        <span>${subtotal.toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between items-baseline">
-                        <span className="text-sm font-bold text-slate-700 uppercase tracking-wider">Total Due</span>
-                        <span className="text-3xl font-extrabold text-slate-900 tabular-nums tracking-tight">${subtotal.toFixed(2)}</span>
+                    <div className="mt-3 pt-3 border-t-2 border-slate-200 flex justify-end">
+                      <div className="w-56 space-y-1.5">
+                        <div className="flex justify-between text-xs text-slate-500">
+                          <span>Subtotal</span>
+                          <span>${subtotal.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between text-xs text-slate-400">
+                          <span>Tax / Fees</span>
+                          <span>$0.00</span>
+                        </div>
+                        <div className="flex justify-between items-baseline pt-2 border-t border-slate-300">
+                          <span className="text-sm font-extrabold text-slate-800 uppercase tracking-wide">Total Due</span>
+                          <span className="text-2xl font-extrabold text-slate-900 tabular-nums">${subtotal.toFixed(2)}</span>
+                        </div>
+                        {localJob.paymentStatus === 'paid' && (
+                          <div className="flex justify-between text-xs text-green-600 font-bold pt-1">
+                            <span>Amount Paid</span>
+                            <span>— ${subtotal.toFixed(2)}</span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
 
-                  {/* Footer note */}
-                  <p className="text-[10px] text-slate-300 text-center border-t border-slate-100 pt-4">
-                    Thank you for choosing {companyName}. For questions call {technicianName}.
+                  {/* 4 · PAYMENT METHOD + TERMS */}
+                  <div className="flex items-center justify-between py-3 border-y border-slate-100">
+                    <div>
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Accepted Payment</p>
+                      <div className="flex items-center gap-2">
+                        {['Cash', 'Card', 'Check', 'Zelle'].map(m => (
+                          <span key={m} className="text-[10px] font-bold px-2 py-0.5 rounded-full border border-slate-200 text-slate-500 bg-slate-50">{m}</span>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Terms</p>
+                      <p className="text-xs font-semibold text-slate-600">Due on Receipt</p>
+                      <p className="text-[10px] text-slate-400 mt-0.5">Labor: 90-day warranty</p>
+                    </div>
+                  </div>
+
+                  {/* 5 · SIGNATURE BLOCK */}
+                  <div className="grid grid-cols-2 gap-8">
+                    <div>
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3">Technician</p>
+                      <div className="h-8 border-b border-slate-300" />
+                      <p className="text-xs text-slate-500 mt-1">{technicianName}{licenseNumber ? ` · Lic# ${licenseNumber}` : ''}</p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Client Authorization</p>
+                      <p className="text-[9px] text-slate-400 italic mb-2">I authorize the work described above and agree to the terms.</p>
+                      <div className="h-8 border-b border-slate-300" />
+                      <p className="text-[9px] text-slate-400 mt-1">Signature &amp; Date</p>
+                    </div>
+                  </div>
+
+                  {/* 6 · FOOTER */}
+                  <p className="text-[9px] text-slate-300 text-center pt-4 border-t border-slate-100">
+                    Thank you for choosing {companyName} · {companyPhone} · {companyEmail}
                   </p>
                 </div>
 
-                {/* Action buttons — back to dark, outside the paper */}
-                <div className="bg-slate-900 px-5 py-3 grid grid-cols-2 gap-3 border-t border-white/10">
+                {/* ── ACTION BAR (dark) ── */}
+                <div className="bg-slate-900 px-5 py-3 grid grid-cols-2 gap-3">
                   <button
                     onClick={() => setPaymentStep('split')}
                     disabled={localJob.paymentStatus === 'paid'}

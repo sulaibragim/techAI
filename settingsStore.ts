@@ -4,6 +4,11 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 export interface SettingsState {
   technicianName: string;
   companyName: string;
+  companyAddress: string;
+  companyCity: string;
+  companyPhone: string;
+  companyEmail: string;
+  licenseNumber: string;
   profilePhoto: string;
   monthlyRevenueTarget: number;
   dailyRevenueTarget: number;
@@ -15,6 +20,11 @@ export interface SettingsState {
 export const SETTINGS_DEFAULTS = {
   technicianName: 'Sultan',
   companyName: 'Salem Locksmith',
+  companyAddress: '123 Main Street, Suite 100',
+  companyCity: 'Portland, OR 97201',
+  companyPhone: '(503) 555-0100',
+  companyEmail: 'info@salemlocksmith.com',
+  licenseNumber: 'LK-00000',
   profilePhoto: '',
   monthlyRevenueTarget: 5000,
   dailyRevenueTarget: 1500,
