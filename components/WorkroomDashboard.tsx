@@ -142,8 +142,8 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
-  const [hoveredDay, setHoveredDay] = useState<{ day: number; x: number; y: number; cellLeft: number } | null>(null);
-  const hideTooltipTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [popDay, setPopDay] = useState<{ day: number; cx: number; cy: number; cw: number; ch: number } | null>(null);
+  const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -168,18 +168,22 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
     return jobs.filter(j => j.scheduledDate === dateStr);
   };
 
-  const showDayTooltip = (day: number, e: React.MouseEvent<HTMLDivElement>) => {
-    if (hideTooltipTimer.current) clearTimeout(hideTooltipTimer.current);
+  const handleCellHover = (day: number, e: React.MouseEvent<HTMLDivElement>) => {
+    if (hoverTimer.current) clearTimeout(hoverTimer.current);
     const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
-    setHoveredDay({ day, x: rect.right + 10, y: rect.top, cellLeft: rect.left });
+    setPopDay({ day, cx: rect.left + rect.width / 2, cy: rect.top + rect.height / 2, cw: rect.width, ch: rect.height });
   };
 
-  const scheduleDayTooltipHide = () => {
-    hideTooltipTimer.current = setTimeout(() => setHoveredDay(null), 120);
+  const handleCellLeave = () => {
+    hoverTimer.current = setTimeout(() => setPopDay(null), 120);
   };
 
-  const cancelDayTooltipHide = () => {
-    if (hideTooltipTimer.current) clearTimeout(hideTooltipTimer.current);
+  const handlePopupEnter = () => {
+    if (hoverTimer.current) clearTimeout(hoverTimer.current);
+  };
+
+  const handlePopupLeave = () => {
+    setPopDay(null);
   };
 
   const pipelineColumns = [
@@ -304,8 +308,8 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
                       <div
                         key={i}
                         onClick={() => day && handleDayClick(day)}
-                        onMouseEnter={day ? (e) => showDayTooltip(day, e) : undefined}
-                        onMouseLeave={day ? scheduleDayTooltipHide : undefined}
+                        onMouseEnter={day ? (e) => handleCellHover(day, e) : undefined}
+                        onMouseLeave={day ? handleCellLeave : undefined}
                         className={`min-h-[80px] p-2 transition-all relative border border-white/10 overflow-hidden ${day ? 'bg-slate-900/50 backdrop-blur-sm hover:border-blue-500/40 cursor-pointer group' : 'bg-transparent'}`}
                       >
                         {day && (
@@ -377,79 +381,84 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
         </div>
       </div>
 
-      {/* CALENDAR DAY TOOLTIP */}
-      <AnimatePresence>
-        {hoveredDay && (() => {
-          const tipJobs = getJobsForDay(hoveredDay.day);
+      {/* CALENDAR CELL POP-OUT */}
+      <AnimatePresence mode="wait">
+        {popDay && (() => {
+          const tipJobs = getJobsForDay(popDay.day).slice().sort((a, b) => a.scheduledTime.localeCompare(b.scheduledTime));
           if (tipJobs.length === 0) return null;
           const dayRevenue = tipJobs.reduce((s, j) => s + (j.totalAmount || 0), 0);
-          const dateLabel = new Date(year, month, hoveredDay.day).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-          const TOOLTIP_W = 268;
-          // calendar is ~67% of content width; flip tooltip left if it would enter the right panel
-          const fitsRight = hoveredDay.x + TOOLTIP_W < window.innerWidth * 0.67;
-          const x = fitsRight ? hoveredDay.x : hoveredDay.cellLeft - TOOLTIP_W - 8;
-          const y = Math.min(hoveredDay.y, window.innerHeight - 320);
+          const dateLabel = new Date(year, month, popDay.day).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+
+          const EW = 248;
+          const EH = 58 + tipJobs.length * 54 + 10;
+          const NAV = 140;
+
+          // Position popup BELOW the cell (no overlap → no self-dismiss)
+          let ex = popDay.cx - EW / 2;
+          const cellBottom = popDay.cy + popDay.ch / 2;
+          let ey = cellBottom + 6;
+
+          // Flip above if not enough space below
+          if (ey + EH > window.innerHeight - 8) {
+            ey = popDay.cy - popDay.ch / 2 - EH - 6;
+          }
+          ex = Math.max(NAV + 4, Math.min(ex, window.innerWidth - EW - 8));
+          ey = Math.max(60, ey);
+
+          // transformOrigin: top-center of popup = bottom edge of cell → grows downward from cell
+          const originX = EW / 2;
+          const originY = ey > cellBottom ? 0 : EH;
 
           return (
             <motion.div
-              key="day-tooltip"
-              initial={{ opacity: 0, scale: 0.95, y: -4 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: -4 }}
-              transition={{ duration: 0.12 }}
-              style={{ position: 'fixed', left: x, top: y, width: TOOLTIP_W, zIndex: 9999 }}
-              onMouseEnter={cancelDayTooltipHide}
-              onMouseLeave={() => setHoveredDay(null)}
-              className="bg-slate-800 border border-white/15 rounded-2xl shadow-2xl overflow-hidden pointer-events-auto"
+              key={`pop-${popDay.day}`}
+              initial={{ scale: 0.25, opacity: 0 }}
+              animate={{ scale: 1,    opacity: 1 }}
+              exit={{    scale: 0.2,  opacity: 0, transition: { duration: 0.1 } }}
+              transition={{ type: 'spring', stiffness: 420, damping: 30 }}
+              style={{
+                position: 'fixed',
+                left: ex, top: ey,
+                width: EW, height: EH,
+                transformOrigin: `${originX}px ${originY}px`,
+                zIndex: 9999,
+              }}
+              onMouseEnter={handlePopupEnter}
+              onMouseLeave={handlePopupLeave}
+              className="bg-slate-800 border border-blue-500/40 shadow-2xl shadow-blue-900/40 rounded-2xl overflow-hidden pointer-events-auto"
             >
-              {/* Header */}
-              <div className="px-4 py-3 bg-slate-900/90 border-b border-white/10 flex items-center justify-between">
+              {/* Day header */}
+              <div className="px-3 pt-2.5 pb-2 bg-slate-900 border-b border-white/10 flex items-center justify-between shrink-0">
                 <div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{dateLabel}</p>
-                  <p className="text-xs font-bold text-white mt-0.5">{tipJobs.length} job{tipJobs.length > 1 ? 's' : ''}</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">{dateLabel}</p>
+                  <p className="text-xs font-extrabold text-white mt-0.5">{tipJobs.length} job{tipJobs.length > 1 ? 's' : ''}</p>
                 </div>
-                <div className="text-right">
-                  <p className="text-[10px] text-slate-500 uppercase tracking-wider">Revenue</p>
-                  <p className="text-sm font-extrabold text-blue-400">${dayRevenue.toLocaleString()}</p>
-                </div>
+                <p className="text-sm font-extrabold text-blue-400 tabular-nums">${dayRevenue.toLocaleString()}</p>
               </div>
 
-              {/* Job list */}
-              <div className="p-2 space-y-1.5 max-h-64 overflow-y-auto scrollbar-hide">
-                {tipJobs
-                  .slice()
-                  .sort((a, b) => a.scheduledTime.localeCompare(b.scheduledTime))
-                  .map(j => (
-                    <button
-                      key={j.id}
-                      onClick={() => { setHoveredDay(null); onJobSelect(j); }}
-                      className="w-full text-left px-3 py-2.5 rounded-xl bg-white/5 hover:bg-blue-600/15 border border-white/5 hover:border-blue-500/30 transition-all group/tip"
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: STATUS_COLORS[j.status] }} />
-                          <p className="text-xs font-bold text-white truncate group-hover/tip:text-blue-300 transition-colors">
-                            {j.client.firstName} {j.client.lastName}
-                          </p>
-                        </div>
-                        <span className="text-xs font-bold text-blue-400 shrink-0 tabular-nums">
-                          ${(j.totalAmount || 0).toLocaleString()}
-                        </span>
+              {/* Job rows */}
+              <div className="p-1.5 space-y-1 overflow-hidden">
+                {tipJobs.map(j => (
+                  <button
+                    key={j.id}
+                    onClick={() => { setPopDay(null); onJobSelect(j); }}
+                    className="w-full text-left px-2.5 py-2 rounded-xl bg-white/5 hover:bg-blue-600/20 border border-white/5 hover:border-blue-500/30 transition-all active:scale-95 group/row"
+                  >
+                    <div className="flex items-center justify-between gap-1">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span className="text-[10px] font-bold text-slate-400 shrink-0 font-mono bg-white/5 px-1.5 py-0.5 rounded-md">{j.scheduledTime}</span>
+                        <span className="text-xs font-bold text-white truncate group-hover/row:text-blue-300 transition-colors">{j.client.firstName} {j.client.lastName}</span>
                       </div>
-                      <div className="flex items-center gap-2 mt-0.5 pl-4">
-                        <span className="text-[10px] text-slate-400">{j.scheduledTime}</span>
-                        <span className="text-[10px] text-slate-500">·</span>
-                        <span className="text-[10px] text-slate-400 truncate">{j.lockDetails.type}</span>
-                        <span className="text-[10px] text-slate-500">·</span>
-                        <span className="text-[10px] font-semibold uppercase" style={{ color: STATUS_COLORS[j.status] }}>{j.status}</span>
-                      </div>
-                    </button>
-                  ))}
-              </div>
-
-              {/* Footer hint */}
-              <div className="px-4 py-2 border-t border-white/5 bg-slate-900/50">
-                <p className="text-[10px] text-slate-500 text-center uppercase tracking-widest">Click a job to open it</p>
+                      <span className="text-xs font-bold text-blue-400 shrink-0">${(j.totalAmount || 0).toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 mt-1 pl-0.5">
+                      <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: STATUS_COLORS[j.status] }} />
+                      <span className="text-[10px] text-slate-400 truncate">{j.lockDetails.type}</span>
+                      <span className="text-[10px] text-slate-500">·</span>
+                      <span className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: STATUS_COLORS[j.status] }}>{j.status}</span>
+                    </div>
+                  </button>
+                ))}
               </div>
             </motion.div>
           );
