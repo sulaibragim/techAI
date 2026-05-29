@@ -42,7 +42,7 @@ const App: React.FC = () => {
 
       if (e.key === 'n' || e.key === 'N') { e.preventDefault(); setIsWizardOpen(true); return; }
       if (e.key === 'Escape') { setSelectedJobId(null); setIsWizardOpen(false); return; }
-      if (TAB_KEYS[e.key]) { e.preventDefault(); setActiveTab(TAB_KEYS[e.key]); }
+      if (TAB_KEYS[e.key]) { e.preventDefault(); setActiveTab(TAB_KEYS[e.key] as import('./types').TabId); }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);

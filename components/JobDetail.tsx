@@ -2,40 +2,29 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   X, MapPin, Phone, Mail, Wrench, Trash2,
-  Save, Package, Clock, User, Refrigerator, Stethoscope,
-  Camera, Activity, Plus, Smartphone,
-  ChevronLeft, CheckCircle2, ShieldCheck,
-  PenTool, CreditCard, Zap, Thermometer, Droplets, Microwave, Settings,
-  ClipboardList, AirVent, Bot, Copy,
-  Globe, Building2, Navigation, ChevronRight, MessageSquare, Image as ImageIcon,
-  AlertTriangle, Edit2, Check, LayoutGrid, Pen, DollarSign,
-  Briefcase, Hammer, PhoneIncoming, PhoneOutgoing, PhoneMissed, Shield,
-  Calendar as CalendarIcon, Send, Fingerprint, Percent, RotateCcw,
+  Save, Package, Clock, User, Stethoscope,
+  Camera, Activity, Plus,
+  ChevronLeft, CheckCircle2,
+  PenTool, CreditCard, Settings,
+  ClipboardList, Copy,
+  Building2, Navigation, ChevronRight, MessageSquare, Image as ImageIcon,
+  Edit2, DollarSign,
+  Hammer, Shield,
+  Calendar as CalendarIcon, Send, Percent,
   Car, Home, ChevronDown, Lock, Printer
 } from 'lucide-react';
 import { useSettingsStore } from '../settingsStore';
 import { Job, LineItem, STATUS_COLORS, LockDetails, JobStatus, Client, Message } from '../types';
 import { useAppStore } from '../store';
-
-const LOCK_ICONS = [
-  { id: 'Automotive', icon: Car, label: 'Auto' },
-  { id: 'Residential', icon: Home, label: 'Home' },
-  { id: 'Commercial', icon: Building2, label: 'Business' },
-  { id: 'Secure / Safe', icon: Lock, label: 'Safe/Vault' },
-  { id: 'Other', icon: Wrench, label: 'Other' }
-];
-
-const BRANDS = [
-  'Toyota', 'Honda', 'Ford', 'Chevrolet', 'Nissan', 'BMW', 'Audi',
-  'Schlage', 'Kwikset', 'Yale', 'Medeco', 'Von Duprin', 'Adams Rite',
-  'Amsec', 'SentrySafe', 'Corbin Russwin', 'Baldwin', 'Master Lock'
-];
+import { BRANDS, LOCK_TYPES as LOCK_ICONS } from '../constants';
 
 const STATUS_OPTIONS: { id: JobStatus; label: string }[] = [
   { id: 'scheduled', label: 'Scheduled' },
   { id: 'enRoute', label: 'En Route' },
+  { id: 'onSite', label: 'On Site' },
   { id: 'diagnosed', label: 'Diagnosed' },
-  { id: 'sold', label: 'Sold' },
+  { id: 'sold', label: 'Job Sold' },
+  { id: 'coffee', label: 'Coffee Break' },
   { id: 'waitingParts', label: 'Waiting Parts' },
   { id: 'completed', label: 'Completed' },
   { id: 'cancelled', label: 'Cancelled' }
@@ -84,7 +73,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
       id: Math.random().toString(),
       sender: 'technician',
       content: draftMessage,
-      timestamp: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+      timestamp: new Date().toISOString(),
       method: 'sms'
     };
     
@@ -94,13 +83,17 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
     setDraftMessage('');
   };
 
-  useEffect(() => { 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     if (localJob.id !== initialJob.id) {
-      setLocalJob({ ...initialJob }); 
+      setLocalJob({ ...initialJob });
       setIsModified(false);
       setCalendarDate(initialJob.scheduledDate);
     } else if (!isModified) {
-      setLocalJob({ ...initialJob }); 
+      setLocalJob({ ...initialJob });
       setCalendarDate(initialJob.scheduledDate);
     }
   }, [initialJob, isModified, localJob.id]);
@@ -229,6 +222,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
   const subtotal = localJob.lineItems.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
 
   const handlePrintInvoice = () => {
+    const esc = (s: string) => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     const isPaid = localJob.paymentStatus === 'paid';
     const lineRows = localJob.lineItems.map((item, idx) => `
       <tr style="border-bottom:1px solid #f1f5f9;">
@@ -244,7 +238,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
 
     const html = `<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
-<title>Invoice #${localJob.jobNumber} — ${localJob.client.lastName}</title>
+<title>Invoice #${esc(localJob.jobNumber)} — ${esc(localJob.client.lastName)}</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0;}
   @page{size:A4;margin:18mm 16mm;}
@@ -300,17 +294,17 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
   <!-- LETTERHEAD -->
   <div class="lh">
     <div>
-      <div class="co-name">${companyName}</div>
-      ${companyAddress ? `<div class="co-sub">${companyAddress}</div>` : ''}
-      ${companyCity ? `<div class="co-sub">${companyCity}</div>` : ''}
+      <div class="co-name">${esc(companyName)}</div>
+      ${companyAddress ? `<div class="co-sub">${esc(companyAddress)}</div>` : ''}
+      ${companyCity ? `<div class="co-sub">${esc(companyCity)}</div>` : ''}
       <div class="co-sub" style="margin-top:3px;">
-        ${companyPhone ? `☎ ${companyPhone}` : ''}${companyPhone && companyEmail ? ' &nbsp;·&nbsp; ' : ''}${companyEmail ? `✉ ${companyEmail}` : ''}
-        ${licenseNumber ? `<span style="margin-left:8px;font-weight:700;">Lic# ${licenseNumber}</span>` : ''}
+        ${companyPhone ? `☎ ${esc(companyPhone)}` : ''}${companyPhone && companyEmail ? ' &nbsp;·&nbsp; ' : ''}${companyEmail ? `✉ ${esc(companyEmail)}` : ''}
+        ${licenseNumber ? `<span style="margin-left:8px;font-weight:700;">Lic# ${esc(licenseNumber)}</span>` : ''}
       </div>
     </div>
     <div>
       <div class="inv-title">Invoice</div>
-      <div class="inv-num">#${localJob.jobNumber}</div>
+      <div class="inv-num">#${esc(localJob.jobNumber)}</div>
       <div class="inv-meta">Date: ${localJob.scheduledDate}</div>
       <div class="inv-meta">Due: Upon Receipt</div>
       <div><span class="badge">${isPaid ? '✓ Paid in Full' : '⏳ Payment Due'}</span></div>
@@ -321,21 +315,21 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
   <div class="parties">
     <div>
       <div class="sect-label">Bill To</div>
-      <div class="sect-val">${localJob.client.firstName} ${localJob.client.lastName}</div>
-      ${localJob.client.phone ? `<div class="sect-sub">${localJob.client.phone}</div>` : ''}
-      ${localJob.client.email ? `<div class="sect-sub">${localJob.client.email}</div>` : ''}
-      ${localJob.client.address ? `<div class="sect-sub" style="margin-top:3px;">${localJob.client.address}</div>` : ''}
+      <div class="sect-val">${esc(localJob.client.firstName)} ${esc(localJob.client.lastName)}</div>
+      ${localJob.client.phone ? `<div class="sect-sub">${esc(localJob.client.phone)}</div>` : ''}
+      ${localJob.client.email ? `<div class="sect-sub">${esc(localJob.client.email)}</div>` : ''}
+      ${localJob.client.address ? `<div class="sect-sub" style="margin-top:3px;">${esc(localJob.client.address)}</div>` : ''}
     </div>
     <div>
       <div class="sect-label">Service Location</div>
-      <div class="sect-sub" style="font-size:12px;">${localJob.client.address || '—'}</div>
+      <div class="sect-sub" style="font-size:12px;">${esc(localJob.client.address || '—')}</div>
     </div>
     <div>
       <div class="sect-label">Equipment / Job</div>
-      <div class="sect-val" style="font-size:12px;">${localJob.lockDetails.type}</div>
-      ${localJob.lockDetails.brand ? `<div class="sect-sub">${localJob.lockDetails.brand}${localJob.lockDetails.modelOrYear ? ' · ' + localJob.lockDetails.modelOrYear : ''}</div>` : ''}
-      ${localJob.lockDetails.vinOrKeyCode ? `<div class="sect-sub" style="font-family:monospace;">Key: ${localJob.lockDetails.vinOrKeyCode}</div>` : ''}
-      <div class="sect-sub">Tech: ${technicianName}</div>
+      <div class="sect-val" style="font-size:12px;">${esc(localJob.lockDetails.type)}</div>
+      ${localJob.lockDetails.brand ? `<div class="sect-sub">${esc(localJob.lockDetails.brand)}${localJob.lockDetails.modelOrYear ? ' · ' + esc(localJob.lockDetails.modelOrYear) : ''}</div>` : ''}
+      ${localJob.lockDetails.vinOrKeyCode ? `<div class="sect-sub" style="font-family:monospace;">Key: ${esc(localJob.lockDetails.vinOrKeyCode)}</div>` : ''}
+      <div class="sect-sub">Tech: ${esc(technicianName)}</div>
     </div>
   </div>
 
@@ -389,7 +383,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
     <div class="sig-box">
       <div class="sig-label">Technician Signature</div>
       <div class="sig-line"></div>
-      <div class="sig-sub">${technicianName}${licenseNumber ? ' · Lic# ' + licenseNumber : ''}</div>
+      <div class="sig-sub">${esc(technicianName)}${licenseNumber ? ' · Lic# ' + esc(licenseNumber) : ''}</div>
     </div>
     <div class="sig-box">
       <div class="sig-label">Client Authorization</div>
@@ -401,8 +395,8 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
 
   <!-- FOOTER -->
   <div class="footer">
-    Thank you for choosing <strong>${companyName}</strong>${companyPhone ? ' · ' + companyPhone : ''}${companyEmail ? ' · ' + companyEmail : ''}<br>
-    ${localJob.diagnosisNotes ? `<em>Notes: ${localJob.diagnosisNotes.slice(0, 160)}</em>` : 'Professional locksmith services — licensed &amp; insured'}
+    Thank you for choosing <strong>${esc(companyName)}</strong>${companyPhone ? ' · ' + esc(companyPhone) : ''}${companyEmail ? ' · ' + esc(companyEmail) : ''}<br>
+    ${localJob.diagnosisNotes ? `<em>Notes: ${esc(localJob.diagnosisNotes.slice(0, 160))}</em>` : 'Professional locksmith services — licensed &amp; insured'}
   </div>
 
 </div></body></html>`;
@@ -625,8 +619,8 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Total to collect: ${collectingAmount}</p>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  {['Card', 'Cash', 'Check', 'Zelle'].map(m => (
-                    <button key={m} onClick={() => { setPaymentMethod(m as any); setPaymentStep('sign'); }} className="p-8 border-2 border-slate-100 rounded-3xl hover:border-slate-900 text-sm font-bold uppercase active:scale-95 shadow-sm transition-all">{m}</button>
+                  {(['Card', 'Cash', 'Check', 'Zelle'] as const).map(m => (
+                    <button key={m} onClick={() => { setPaymentMethod(m); setPaymentStep('sign'); }} className="p-8 border-2 border-slate-100 rounded-3xl hover:border-slate-900 text-sm font-bold uppercase active:scale-95 shadow-sm transition-all">{m}</button>
                   ))}
                 </div>
               </div>

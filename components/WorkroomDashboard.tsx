@@ -126,7 +126,7 @@ const KanbanCard: React.FC<{ job: Job; onSelect: () => void; onDragStart: (e: Re
     <p className="text-xs font-medium text-slate-300 mb-3 truncate">{job.lockDetails.type} — {job.lockDetails.brand || 'Elite'}</p>
 
     <div className="flex items-center justify-between pt-3 border-t border-white/10">
-      <span className="text-sm font-bold text-blue-400">${job.totalAmount > 0 ? job.totalAmount.toLocaleString() : '136.00'}</span>
+      <span className="text-sm font-bold text-blue-400">${job.totalAmount > 0 ? job.totalAmount.toLocaleString() : 'TBD'}</span>
       <div className="flex items-center space-x-1.5">
          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: STATUS_COLORS[job.status] }} />
          <span className="text-xs font-medium text-slate-300 capitalize">{job.status}</span>
@@ -137,7 +137,7 @@ const KanbanCard: React.FC<{ job: Job; onSelect: () => void; onDragStart: (e: Re
 
 export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAddJob: () => void }> = ({ onJobSelect, onAddJob }) => {
   const { jobs, updateJobStatus } = useAppStore();
-  const { monthlyRevenueTarget } = useSettingsStore();
+  const { monthlyRevenueTarget, dailyRevenueTarget } = useSettingsStore();
   const metrics = useMemo(() => calculateFinancialMetrics(jobs, monthlyRevenueTarget), [jobs, monthlyRevenueTarget]);
 
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -335,7 +335,7 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
             )}
           </div>
 
-          <DailyGoalTracker current={todaysRevenue} target={1500} />
+          <DailyGoalTracker current={todaysRevenue} target={dailyRevenueTarget} />
         </div>
 
         <div className="lg:col-span-4 flex flex-col gap-5">

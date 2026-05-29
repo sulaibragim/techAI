@@ -3,7 +3,7 @@ import { GoogleGenAI, Modality, Type, LiveServerMessage, ThinkingLevel } from "@
 import { useSettingsStore } from './settingsStore';
 
 const resolveApiKey = (): string => {
-  const key = useSettingsStore.getState().geminiApiKey || import.meta.env.VITE_API_KEY || '';
+  const key = useSettingsStore.getState().geminiApiKey || import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.VITE_API_KEY || '';
   if (!key) throw new Error('Gemini API key not configured. Go to Settings → AI Configuration to add your key.');
   return key;
 };
@@ -63,7 +63,7 @@ export async function getStrategicBrainResponse(
   contents.push({ role: 'user', parts: [{ text: message }] });
 
   const response = await ai.models.generateContent({
-    model: "gemini-3.1-pro-preview",
+    model: "gemini-2.5-flash",
     contents,
     config: {
       systemInstruction: getSystemInstruction(),
@@ -88,7 +88,7 @@ export async function getStrategicBrainResponse(
     
     // Send back the results to get the final text response
     const secondResponse = await ai.models.generateContent({
-      model: "gemini-3.1-pro-preview",
+      model: "gemini-2.5-flash",
       contents: [
         ...contents,
         { role: 'model', parts: functionCalls.map(fc => ({ functionCall: fc })) },
@@ -112,7 +112,7 @@ export async function getStrategicBrainResponse(
 export async function getBusinessInsights(prompt: string, context: { jobCount: number; revenue: number; financials: any }) {
   const ai = new GoogleGenAI({ apiKey: resolveApiKey() });
   const response = await ai.models.generateContent({
-    model: "gemini-3.1-pro-preview",
+    model: "gemini-2.5-flash",
     contents: prompt,
     config: {
       systemInstruction: `You are a world-class strategic consultant for Salem AI.
@@ -218,7 +218,7 @@ const TOOLS_VOICE = [
         parameters: {
           type: Type.OBJECT,
           properties: {
-            tab: { type: Type.STRING, enum: ['calendar', 'jobs', 'messages', 'calls', 'analytics', 'brain'] }
+            tab: { type: Type.STRING, enum: ['calendar', 'jobs', 'messages', 'calls', 'analytics', 'brain', 'clients', 'settings', 'inventory'] }
           },
           required: ['tab']
         }
@@ -252,7 +252,8 @@ export class GeminiVoiceAssistant {
   private sources = new Set<AudioBufferSourceNode>();
   private currentInputTranscription = '';
   private currentOutputTranscription = '';
-  
+  private stream: MediaStream | null = null;
+
   constructor() {}
 
   async connect(callbacks: {
@@ -264,7 +265,8 @@ export class GeminiVoiceAssistant {
       this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
       this.inputAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
     }
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const stream = this.stream;
 
     this.sessionPromise = ai.live.connect({
       model: 'gemini-2.5-flash-native-audio-preview-09-2025',
@@ -358,6 +360,8 @@ export class GeminiVoiceAssistant {
   }
 
   stop() {
+    this.stream?.getTracks().forEach(t => t.stop());
+    this.stream = null;
     this.sessionPromise?.then(s => s.close());
   }
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAppStore } from '../store';
-import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Clock, ChevronRight, User } from 'lucide-react';
+import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Clock, ChevronRight, User, PhoneCall } from 'lucide-react';
 
 export const CallsList: React.FC = () => {
   const { calls } = useAppStore();
@@ -38,8 +38,7 @@ export const CallsList: React.FC = () => {
           callHistory.map((call) => (
             <div
               key={call.id}
-              onClick={() => window.location.href = `tel:${call.phone}`}
-              className="bg-slate-900/80 backdrop-blur-3xl p-4 rounded-2xl border border-white/10 hover:border-blue-500/30 hover:scale-[1.01] transition-all cursor-pointer flex items-center justify-between group shadow-xl relative"
+              className="bg-slate-900/80 backdrop-blur-3xl p-4 rounded-2xl border border-white/10 hover:border-blue-500/30 hover:scale-[1.01] transition-all flex items-center justify-between group shadow-xl relative"
             >
               <div className="flex items-center space-x-5 flex-1 min-w-0">
                 <div className="w-12 h-12 bg-slate-950 rounded-xl overflow-hidden flex items-center justify-center border border-white/10 shadow-inner shrink-0">
@@ -67,6 +66,13 @@ export const CallsList: React.FC = () => {
                 {call.duration && (
                   <span className="text-xs font-bold text-blue-500 uppercase tracking-widest">{call.duration}</span>
                 )}
+                <button
+                  onClick={(e) => { e.stopPropagation(); window.location.href = `tel:${call.phone}`; }}
+                  className="p-2 bg-green-600/10 text-green-400 hover:bg-green-600 hover:text-white rounded-xl transition-all active:scale-90"
+                  title="Call"
+                >
+                  <PhoneCall size={14} />
+                </button>
               </div>
             </div>
           ))

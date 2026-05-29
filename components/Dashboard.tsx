@@ -29,7 +29,7 @@ function filterJobsByRange(jobs: any[], range: 'today' | 'week' | 'month') {
   const now = new Date();
   return jobs.filter(j => {
     if (j.status !== 'completed') return false;
-    const d = new Date(j.scheduledDate);
+    const d = new Date(j.scheduledDate + 'T00:00:00');
     if (range === 'today') {
       return d.toDateString() === now.toDateString();
     }
@@ -103,7 +103,8 @@ export const Dashboard: React.FC = () => {
   // Revenue trend for velocity calc
   const prevMonthRevenue = useMemo(() => {
     const now = new Date();
-    const prevMonthStr = `${now.getFullYear()}-${String(now.getMonth()).padStart(2, '0')}`;
+    const prevMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const prevMonthStr = `${prevMonthDate.getFullYear()}-${String(prevMonthDate.getMonth() + 1).padStart(2, '0')}`;
     return jobs.filter(j => j.status === 'completed' && j.scheduledDate.startsWith(prevMonthStr)).reduce((s, j) => s + j.totalAmount, 0);
   }, [jobs]);
 

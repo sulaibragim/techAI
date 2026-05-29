@@ -1,32 +1,24 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { 
-  ChevronRight, 
-  ChevronLeft, 
-  MapPin, 
-  Camera, 
-  Check, 
-  DollarSign, 
-  Plus, 
-  Trash2, 
-  X, 
-  Wrench, 
+import {
+  ChevronRight,
+  ChevronLeft,
+  Camera,
+  Check,
+  Plus,
+  Trash2,
+  X,
+  Wrench,
   Car,
   Home,
   Building2,
   Lock,
-  Settings, 
-  Package,
   Phone,
   Mail,
-  User,
-  ShieldCheck,
-  Stethoscope,
-  Clipboard,
-  AirVent,
-  Droplets
+  User
 } from 'lucide-react';
 import { Job, Client, LockDetails, LineItem } from '../types';
+import { BRANDS as INITIAL_BRANDS, LOCK_TYPES } from '../constants';
 
 interface JobWizardProps {
   onComplete: (job: Job) => void;
@@ -84,19 +76,6 @@ const JOB_TEMPLATES = [
   },
 ];
 
-const LOCK_TYPES = [
-  { id: 'Automotive', icon: Car, label: 'Auto' },
-  { id: 'Residential', icon: Home, label: 'Home' },
-  { id: 'Commercial', icon: Building2, label: 'Business' },
-  { id: 'Secure / Safe', icon: Lock, label: 'Safe/Vault' },
-  { id: 'Other', icon: Wrench, label: 'Other' }
-];
-
-const INITIAL_BRANDS = [
-  'Toyota', 'Honda', 'Ford', 'Chevrolet', 'Nissan', 'BMW', 'Audi',
-  'Schlage', 'Kwikset', 'Yale', 'Medeco', 'Von Duprin', 'Adams Rite',
-  'Amsec', 'SentrySafe', 'Corbin Russwin', 'Baldwin', 'Master Lock'
-];
 
 export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) => {
   const [step, setStep] = useState(0);
@@ -110,7 +89,7 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) =>
     address: ''
   });
   const [lockDetails, setLockDetails] = useState<Partial<LockDetails>>({
-    type: 'Refrigerator',
+    type: 'Automotive',
     brand: '',
     modelOrYear: '',
   });

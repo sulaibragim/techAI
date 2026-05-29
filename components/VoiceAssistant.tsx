@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Mic, X, Bot, User, Minimize2, CheckCircle, Calendar, Edit3, KeyRound } from 'lucide-react';
 import { GeminiVoiceAssistant } from '../geminiService';
 import { useAppStore, useAIActions } from '../store';
@@ -9,10 +9,13 @@ import { Job, Message, JobStatus } from '../types';
 export const VoiceAssistant: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [notificationText, setNotificationText] = useState('');
   const [messages, setMessages] = useState<{ text: string, role: 'user' | 'assistant', isFinal?: boolean }[]>([]);
-  
+  const [barHeights, setBarHeights] = useState(() => Array.from({ length: 8 }, () => 20 + Math.random() * 80));
+  const barIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   const assistantRef = useRef<GeminiVoiceAssistant | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { handleAction } = useAIActions();
@@ -27,6 +30,19 @@ export const VoiceAssistant: React.FC = () => {
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages]);
+
+  useEffect(() => {
+    if (isListening) {
+      barIntervalRef.current = setInterval(() => {
+        setBarHeights(Array.from({ length: 8 }, () => 20 + Math.random() * 80));
+      }, 200);
+    } else {
+      if (barIntervalRef.current) clearInterval(barIntervalRef.current);
+    }
+    return () => {
+      if (barIntervalRef.current) clearInterval(barIntervalRef.current);
+    };
+  }, [isListening]);
 
   const triggerConfirmation = useCallback((text: string = 'Success') => {
     setNotificationText(text);
@@ -47,33 +63,38 @@ export const VoiceAssistant: React.FC = () => {
   }, [handleAction, triggerConfirmation]);
 
   const toggle = async () => {
+    if (isConnecting) return;
     if (!isOpen) {
-      setIsOpen(true);
-      const ass = new GeminiVoiceAssistant();
-      assistantRef.current = ass;
-      setIsListening(true);
-      await ass.connect({
-        onTranscript: (text, role, isFinal) => {
-          if (!text.trim()) return;
-          setMessages(prev => {
-            let lastIndex = -1;
-            for (let i = prev.length - 1; i >= 0; i--) {
-              if (prev[i].role === role && !prev[i].isFinal) {
-                lastIndex = i;
-                break;
+      setIsConnecting(true);
+      try {
+        setIsOpen(true);
+        const ass = new GeminiVoiceAssistant();
+        assistantRef.current = ass;
+        setIsListening(true);
+        await ass.connect({
+          onTranscript: (text, role, isFinal) => {
+            if (!text.trim()) return;
+            setMessages(prev => {
+              let lastIndex = -1;
+              for (let i = prev.length - 1; i >= 0; i--) {
+                if (prev[i].role === role && !prev[i].isFinal) {
+                  lastIndex = i;
+                  break;
+                }
               }
-            }
-            
-            if (lastIndex !== -1) {
-              const updated = [...prev];
-              updated[lastIndex] = { text, role, isFinal };
-              return updated;
-            }
-            return [...prev, { text, role, isFinal }];
-          });
-        },
-        onAction: handleActionWithConfirmation
-      });
+              if (lastIndex !== -1) {
+                const updated = [...prev];
+                updated[lastIndex] = { text, role, isFinal };
+                return updated;
+              }
+              return [...prev, { text, role, isFinal }];
+            });
+          },
+          onAction: handleActionWithConfirmation
+        });
+      } finally {
+        setIsConnecting(false);
+      }
     } else {
       assistantRef.current?.stop();
       setIsOpen(false);
@@ -93,9 +114,12 @@ export const VoiceAssistant: React.FC = () => {
       <div className="fixed bottom-20 right-8 z-[100] group/fab">
         <button
           onClick={geminiApiKey ? toggle : undefined}
+          disabled={isConnecting}
           className={`w-16 h-16 rounded-full flex items-center justify-center shadow-[0_32px_64px_-16px_rgba(59,130,246,0.5)] transition-all duration-500 ${
             !geminiApiKey
               ? 'bg-slate-700 cursor-not-allowed opacity-60'
+              : isConnecting
+              ? 'bg-slate-600 cursor-wait opacity-70'
               : isOpen
               ? 'bg-red-500 hover:scale-110 active:scale-90'
               : 'bg-blue-600 hover:scale-110 active:scale-90'
@@ -137,7 +161,7 @@ export const VoiceAssistant: React.FC = () => {
           </div>
           <div className="p-6 flex flex-col items-center shrink-0">
              <div className="flex items-center space-x-2 h-8">
-               {[...Array(8)].map((_, i) => <div key={i} className="w-1.5 bg-blue-500 rounded-full animate-pulse shadow-[0_0_10px_#3b82f6]" style={{ height: `${20 + Math.random() * 80}%`, animationDelay: `${i * 100}ms` }} />)}
+               {barHeights.map((h, i) => <div key={i} className="w-1.5 bg-blue-500 rounded-full animate-pulse shadow-[0_0_10px_#3b82f6]" style={{ height: `${h}%`, animationDelay: `${i * 100}ms` }} />)}
              </div>
           </div>
         </div>

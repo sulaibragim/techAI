@@ -1,3 +1,4 @@
+export type TabId = 'calendar' | 'jobs' | 'messages' | 'calls' | 'clients' | 'analytics' | 'inventory' | 'brain' | 'settings';
 
 export interface Part {
   id: string;
@@ -74,6 +75,7 @@ export interface LineItem {
 export interface Job {
   id: string;
   jobNumber: string;
+  createdAt?: string;
   client: Client;
   lockDetails: LockDetails;
   complaint: string;

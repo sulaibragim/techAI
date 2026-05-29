@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { Job, JobStatus, MissedInteraction, Message, CallRecord, LineItem, Part } from './types';
+import { Job, JobStatus, MissedInteraction, Message, CallRecord, LineItem, Part, TabId } from './types';
 import { calculateFinancialMetrics } from './financialUtils';
 import { useSettingsStore } from './settingsStore';
 
@@ -342,8 +342,8 @@ interface AppState {
   messages: Message[];
   calls: CallRecord[];
   inventory: Part[];
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
+  activeTab: TabId;
+  setActiveTab: (tab: TabId) => void;
   addJob: (job: Omit<Job, 'id' | 'createdAt'>) => void;
   updateJob: (job: Job) => void;
   updateJobStatus: (id: string, status: JobStatus) => void;
@@ -411,9 +411,59 @@ export const useAppStore = create<AppState>()(
 );
 
 export const useAIActions = () => {
-  const handleAction = (actionPayload: any) => {
-    console.log("AI Action Triggered", actionPayload);
-    // In a real implementation this would dispatch to the store based on payload
+  const handleAction = async (action: string, data: any): Promise<{ status: string; [key: string]: any }> => {
+    console.log("AI Action Triggered", action, data);
+    try {
+      if (action === 'navigate_to') {
+        if (data?.tab) {
+          useAppStore.getState().setActiveTab(data.tab as TabId);
+          return { status: 'success', tab: data.tab };
+        }
+        return { status: 'error', message: 'Missing tab parameter' };
+      }
+      if (action === 'get_app_state') {
+        const state = useAppStore.getState();
+        return {
+          status: 'success',
+          data: {
+            jobs: state.jobs.map(j => ({
+              id: j.id,
+              jobNumber: j.jobNumber,
+              clientName: `${j.client.firstName} ${j.client.lastName}`,
+              status: j.status,
+              scheduledDate: j.scheduledDate,
+              scheduledTime: j.scheduledTime,
+              totalAmount: j.totalAmount
+            })),
+            activeTab: state.activeTab,
+            totalJobs: state.jobs.length
+          }
+        };
+      }
+      if (action === 'create_job') {
+        if (data && typeof data === 'object') {
+          useAppStore.getState().addJob(data);
+          return { status: 'success', message: 'Job created' };
+        }
+        return { status: 'error', message: 'Invalid job data' };
+      }
+      if (action === 'update_job') {
+        if (data?.jobId) {
+          const state = useAppStore.getState();
+          const job = state.jobs.find(j => j.id === data.jobId);
+          if (job) {
+            const { jobId, ...updates } = data;
+            state.updateJob({ ...job, ...updates });
+            return { status: 'success', message: 'Job updated' };
+          }
+          return { status: 'error', message: 'Job not found' };
+        }
+        return { status: 'error', message: 'Missing jobId' };
+      }
+      return { status: 'pending', message: 'Action not implemented yet' };
+    } catch (err: any) {
+      return { status: 'error', message: err?.message || 'Unknown error' };
+    }
   };
   return { handleAction };
 };
