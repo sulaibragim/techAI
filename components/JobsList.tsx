@@ -154,20 +154,14 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
         ))}
       </div>
 
-      <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        <AnimatePresence mode="popLayout">
-          {filteredJobs.map((job, index) => {
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {filteredJobs.map((job) => {
             const btn = getButtonConfig(job.status);
             return (
-              <motion.div
-                layout
-                initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
+              <div
                 key={job.id}
                 onClick={() => onJobSelect(job)}
-                className="bg-slate-900/80 backdrop-blur-3xl p-4 rounded-2xl border border-white/10 hover:border-blue-500/50 transition-all group cursor-pointer flex flex-col shadow-lg relative overflow-hidden"
+                className="bg-slate-900/80 backdrop-blur-3xl p-4 rounded-2xl border border-white/10 hover:border-blue-500/50 transition-colors group cursor-pointer flex flex-col shadow-lg relative overflow-hidden"
               >
                 <div className="absolute top-0 left-0 right-0 h-0.5" style={{ backgroundColor: STATUS_COLORS[job.status] }} />
 
@@ -226,21 +220,16 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
                       <X size={14} />
                    </button>
                 </div>
-              </motion.div>
+              </div>
             );
           })}
-        </AnimatePresence>
         {filteredJobs.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="col-span-full h-40 flex flex-col items-center justify-center opacity-40"
-          >
+          <div className="col-span-full h-40 flex flex-col items-center justify-center opacity-40">
              <Hash size={36} className="mb-3" />
              <p className="text-sm font-semibold uppercase tracking-widest">Queue Empty</p>
-          </motion.div>
+          </div>
         )}
-      </motion.div>
+      </div>
     </div>
   );
 };
