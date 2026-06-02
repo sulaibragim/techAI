@@ -94,9 +94,7 @@ const Card: React.FC<{ title?: string; icon?: React.ElementType; className?: str
 
 export const Dashboard: React.FC = () => {
   const { jobs } = useAppStore();
-  const { monthlyRevenueTarget, updateSettings } = useSettingsStore();
-  const targetGoal = monthlyRevenueTarget;
-  const setTargetGoal = (val: number) => updateSettings({ monthlyRevenueTarget: Math.max(1, val) });
+  const { monthlyRevenueTarget, monthlyTargets, setMonthlyTarget } = useSettingsStore();
 
   const now = new Date();
   const [viewYear, setViewYear] = useState(now.getFullYear());
@@ -106,10 +104,15 @@ export const Dashboard: React.FC = () => {
   const [cmpYear, setCmpYear] = useState(prevDefault.year);
   const [cmpMonth, setCmpMonth] = useState(prevDefault.month);
 
+  const keyOf = (y: number, m: number) => `${y}-${String(m + 1).padStart(2, '0')}`;
+  const targetGoal = monthlyTargets[keyOf(viewYear, viewMonth)] ?? monthlyRevenueTarget;
+  const setTargetGoal = (val: number) => setMonthlyTarget(keyOf(viewYear, viewMonth), Math.max(1, val));
+  const targetB = monthlyTargets[keyOf(cmpYear, cmpMonth)] ?? monthlyRevenueTarget;
+
   const months = useMemo(() => availableMonths(jobs), [jobs]);
 
   const A = useMemo(() => calculatePeriodMetrics(jobs, viewYear, viewMonth, targetGoal), [jobs, viewYear, viewMonth, targetGoal]);
-  const B = useMemo(() => calculatePeriodMetrics(jobs, cmpYear, cmpMonth, targetGoal), [jobs, cmpYear, cmpMonth, targetGoal]);
+  const B = useMemo(() => calculatePeriodMetrics(jobs, cmpYear, cmpMonth, targetB), [jobs, cmpYear, cmpMonth, targetB]);
   const trend = useMemo(() => buildMonthlyTrend(jobs, viewYear, viewMonth), [jobs, viewYear, viewMonth]);
   const yearly = useMemo(() => buildYearlyTrend(jobs, viewYear), [jobs, viewYear]);
   const byType = useMemo(() => revenueByJobType(jobs, viewYear, viewMonth), [jobs, viewYear, viewMonth]);
@@ -119,7 +122,7 @@ export const Dashboard: React.FC = () => {
   const coffee = useMemo(() => coffeeAnalysis(jobs, viewYear, viewMonth), [jobs, viewYear, viewMonth]);
 
   const prevMonth = useMemo(() => stepMonth(viewYear, viewMonth, -1), [viewYear, viewMonth]);
-  const prevMetrics = useMemo(() => calculatePeriodMetrics(jobs, prevMonth.year, prevMonth.month, targetGoal), [jobs, prevMonth, targetGoal]);
+  const prevMetrics = useMemo(() => calculatePeriodMetrics(jobs, prevMonth.year, prevMonth.month, monthlyTargets[keyOf(prevMonth.year, prevMonth.month)] ?? monthlyRevenueTarget), [jobs, prevMonth, monthlyTargets, monthlyRevenueTarget]);
 
   const velocityPct = prevMetrics.totalRevenue > 0
     ? ((A.totalRevenue - prevMetrics.totalRevenue) / prevMetrics.totalRevenue) * 100
@@ -208,7 +211,7 @@ export const Dashboard: React.FC = () => {
                 </h3>
                 <div className="space-y-4">
                   <div>
-                    <label className="text-xs font-bold text-slate-400 uppercase block mb-2 pl-1">Monthly Target Goal</label>
+                    <label className="text-xs font-bold text-slate-400 uppercase block mb-2 pl-1">Target — {MONTH_FULL[viewMonth]} {viewYear}</label>
                     <div className="relative">
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
                       <input
@@ -334,6 +337,45 @@ export const Dashboard: React.FC = () => {
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
+              </Card>
+
+              <Card title="Pace & Projection" icon={TargetIcon}>
+                {(() => {
+                  const headline = A.isCurrentMonth ? A.projectedRevenue : A.totalRevenue;
+                  const onTrack = headline >= targetGoal;
+                  const short = Math.max(0, targetGoal - headline);
+                  return (
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 items-center">
+                      <div>
+                        <p className="text-xs font-bold text-slate-500 uppercase mb-1">{A.isCurrentMonth ? 'Projected Month-End' : 'Final Revenue'}</p>
+                        <p className="text-2xl font-bold text-white tracking-tighter">{fmt$(headline)}</p>
+                        <p className={`text-xs font-bold mt-1 ${onTrack ? 'text-green-400' : 'text-amber-400'}`}>
+                          {onTrack ? '✅ On track for goal' : `${fmt$(short)} short of goal`}
+                        </p>
+                      </div>
+                      <div className="sm:col-span-2 space-y-3">
+                        <div>
+                          <div className="flex justify-between text-xs font-bold mb-1">
+                            <span className="text-slate-400 uppercase tracking-wider">Actual</span>
+                            <span className="text-blue-400">{A.progress.toFixed(0)}%</span>
+                          </div>
+                          <div className="h-2 bg-white/5 rounded-full overflow-hidden border border-white/5">
+                            <div className="h-full bg-blue-500 rounded-full transition-all duration-700" style={{ width: `${Math.min(A.progress, 100)}%` }} />
+                          </div>
+                        </div>
+                        <div>
+                          <div className="flex justify-between text-xs font-bold mb-1">
+                            <span className="text-slate-400 uppercase tracking-wider">{A.isCurrentMonth ? `Expected pace · day ${A.daysElapsed}/${A.daysInMonth}` : 'Month complete'}</span>
+                            <span className="text-slate-300">{A.expectedProgress.toFixed(0)}%</span>
+                          </div>
+                          <div className="h-2 bg-white/5 rounded-full overflow-hidden border border-white/5">
+                            <div className="h-full bg-slate-400 rounded-full transition-all duration-700" style={{ width: `${Math.min(A.expectedProgress, 100)}%` }} />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
               </Card>
             </div>
           </div>

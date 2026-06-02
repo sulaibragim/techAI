@@ -12,9 +12,18 @@ export interface SettingsState {
   profilePhoto: string;
   monthlyRevenueTarget: number;
   dailyRevenueTarget: number;
+  /** Per-month revenue target overrides, keyed "YYYY-MM". Falls back to monthlyRevenueTarget. */
+  monthlyTargets: Record<string, number>;
   geminiApiKey: string;
-  updateSettings: (patch: Partial<Omit<SettingsState, 'updateSettings' | 'resetSettings'>>) => void;
+  updateSettings: (patch: Partial<Omit<SettingsState, 'updateSettings' | 'resetSettings' | 'setMonthlyTarget'>>) => void;
+  setMonthlyTarget: (monthKey: string, value: number) => void;
   resetSettings: () => void;
+}
+
+/** Resolve the effective monthly target for a given year/month (override → global default). */
+export function resolveMonthlyTarget(state: Pick<SettingsState, 'monthlyTargets' | 'monthlyRevenueTarget'>, year: number, month: number): number {
+  const key = `${year}-${String(month + 1).padStart(2, '0')}`;
+  return state.monthlyTargets?.[key] ?? state.monthlyRevenueTarget;
 }
 
 export const SETTINGS_DEFAULTS = {
@@ -28,6 +37,7 @@ export const SETTINGS_DEFAULTS = {
   profilePhoto: '',
   monthlyRevenueTarget: 5000,
   dailyRevenueTarget: 1500,
+  monthlyTargets: {} as Record<string, number>,
   geminiApiKey: '',
 };
 
@@ -51,6 +61,9 @@ export const useSettingsStore = create<SettingsState>()(
     (set) => ({
       ...DEFAULTS,
       updateSettings: (patch) => set((state) => ({ ...state, ...patch })),
+      setMonthlyTarget: (monthKey, value) => set((state) => ({
+        monthlyTargets: { ...state.monthlyTargets, [monthKey]: Math.max(1, value) },
+      })),
       resetSettings: () => set({ ...DEFAULTS }),
     }),
     {

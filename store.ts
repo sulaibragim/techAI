@@ -386,8 +386,9 @@ export const useAppStore = create<AppState>()(
     missedInteractions: state.missedInteractions.filter(m => m.id !== id)
   })),
   getFinancialMetrics: () => {
-    const { monthlyRevenueTarget } = useSettingsStore.getState();
-    const metrics = calculateFinancialMetrics(get().jobs, monthlyRevenueTarget);
+    const { monthlyRevenueTarget, monthlyTargets } = useSettingsStore.getState();
+    const nowKey = (() => { const n = new Date(); return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}`; })();
+    const metrics = calculateFinancialMetrics(get().jobs, monthlyTargets?.[nowKey] ?? monthlyRevenueTarget);
     return {
       totalRevenue: metrics.totalRevenue,
       targetRevenue: metrics.monthlyTarget,

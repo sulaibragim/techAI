@@ -137,8 +137,10 @@ const KanbanCard: React.FC<{ job: Job; onSelect: () => void; onDragStart: (e: Re
 
 export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAddJob: () => void }> = ({ onJobSelect, onAddJob }) => {
   const { jobs, updateJobStatus } = useAppStore();
-  const { monthlyRevenueTarget, dailyRevenueTarget } = useSettingsStore();
-  const metrics = useMemo(() => calculateFinancialMetrics(jobs, monthlyRevenueTarget), [jobs, monthlyRevenueTarget]);
+  const { monthlyRevenueTarget, monthlyTargets, dailyRevenueTarget } = useSettingsStore();
+  const nowRef = new Date();
+  const effectiveMonthlyTarget = monthlyTargets[`${nowRef.getFullYear()}-${String(nowRef.getMonth() + 1).padStart(2, '0')}`] ?? monthlyRevenueTarget;
+  const metrics = useMemo(() => calculateFinancialMetrics(jobs, effectiveMonthlyTarget), [jobs, effectiveMonthlyTarget]);
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
