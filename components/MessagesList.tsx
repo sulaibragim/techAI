@@ -2,7 +2,7 @@ import React, { useMemo, useEffect, useState } from 'react';
 import { useAppStore } from '../store';
 import { MessageSquare, User, Clock, Smartphone, ChevronRight, RefreshCw, Send, Radio } from 'lucide-react';
 import { Job } from '../types';
-import { API_BASE } from '../api';
+import { API_BASE } from '../backendUrl';
 
 const PHONE_NUMBER_ID = 'PNkhFHiD2G';
 

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAppStore } from '../store';
 import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Clock, PhoneCall, RefreshCw, Radio } from 'lucide-react';
 import { CallRecord } from '../types';
-import { API_BASE } from '../api';
+import { API_BASE } from '../backendUrl';
 
 const PHONE_NUMBER_ID = 'PNkhFHiD2G';
 
