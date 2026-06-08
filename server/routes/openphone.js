@@ -42,6 +42,10 @@ openphoneRouter.post('/webhook', async (req, res) => {
       await handleCallCompleted(obj);
     }
 
+    if (event.type === 'call.transcript.completed') {
+      await handleTranscriptCompleted(obj);
+    }
+
     if (event.type === 'message.received') {
       const msg = {
         id: obj.id,
@@ -122,29 +126,67 @@ openphoneRouter.delete('/pending-jobs/:callId', (req, res) => {
   res.sendStatus(204);
 });
 
-// ─── Internal: process completed call transcript with AI ─────────────────────
+// ─── Internal: process completed call (if transcript already in payload) ──────
 async function handleCallCompleted(call) {
   const transcript = call.transcript?.dialogue
     ?.map(d => `${d.identifier}: ${d.content}`)
     .join('\n');
 
   if (!transcript) {
-    console.log('[OpenPhone] No transcript for call', call.id);
+    // Transcript will come separately via call.transcript.completed
+    console.log('[OpenPhone] call.completed received, waiting for transcript', call.id);
+    // Store basic call info so transcript handler can enrich it
+    pendingJobSuggestions.set(call.id, {
+      callId: call.id,
+      callerPhone: call.from,
+      duration: call.duration,
+      recordingUrl: call.recording?.url,
+      transcript: null,
+      suggestion: null,
+      createdAt: new Date().toISOString(),
+      status: 'awaiting_transcript',
+    });
     return;
   }
 
-  const callerPhone = call.from;
+  await enrichWithAI(call.id, call.from, call.duration, call.recording?.url, transcript);
+}
+
+// ─── Internal: handle transcript from call.transcript.completed event ─────────
+async function handleTranscriptCompleted(transcriptObj) {
+  const callId = transcriptObj.callId;
+  const dialogue = transcriptObj.dialogue || [];
+  const transcript = dialogue.map(d => `${d.identifier}: ${d.content}`).join('\n');
+
+  if (!transcript) {
+    console.log('[OpenPhone] Empty transcript for call', callId);
+    return;
+  }
+
+  // Get stored call info if available
+  const existing = pendingJobSuggestions.get(callId);
+  const callerPhone = existing?.callerPhone || transcriptObj.from || 'unknown';
+  const duration = existing?.duration || null;
+  const recordingUrl = existing?.recordingUrl || null;
+
+  await enrichWithAI(callId, callerPhone, duration, recordingUrl, transcript);
+}
+
+// ─── Internal: run Gemini on transcript and store suggestion ──────────────────
+async function enrichWithAI(callId, callerPhone, duration, recordingUrl, transcript) {
+  console.log('[OpenPhone] Processing transcript with AI for call', callId);
   const suggestion = await processTranscriptWithAI(transcript, callerPhone);
 
-  pendingJobSuggestions.set(call.id, {
-    callId: call.id,
+  pendingJobSuggestions.set(callId, {
+    callId,
     callerPhone,
-    duration: call.duration,
-    recordingUrl: call.recording?.url,
+    duration,
+    recordingUrl,
     transcript,
     suggestion,
     createdAt: new Date().toISOString(),
+    status: 'ready',
   });
 
-  console.log('[OpenPhone] Job suggestion ready for call', call.id);
+  console.log('[OpenPhone] Job suggestion ready for call', callId);
 }
