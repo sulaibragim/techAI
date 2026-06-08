@@ -12,15 +12,22 @@ import { JobDetail } from './components/JobDetail';
 import { MessagesList } from './components/MessagesList';
 import { CallsList } from './components/CallsList';
 import { Inventory } from './components/Inventory';
-import { useAppStore } from './store';
+import { useAppStore, useVisibleJobs } from './store';
 import { useSettingsStore } from './settingsStore';
+import { useCurrentUser, visibleTabsFor, ROLE_LABELS } from './authStore';
 import { Settings } from './components/Settings';
 import { ClientsList } from './components/ClientsList';
+import { Login } from './components/Login';
 import { Bell, AlertCircle, CheckCircle2, X, Menu } from 'lucide-react';
+import type { TabId } from './types';
 
 const App: React.FC = () => {
-  const { jobs, addJob, activeTab, setActiveTab } = useAppStore();
-  const { technicianName, profilePhoto } = useSettingsStore();
+  const { addJob, activeTab, setActiveTab } = useAppStore();
+  const { profilePhoto } = useSettingsStore();
+  const currentUser = useCurrentUser();
+  const jobs = useVisibleJobs();
+  const allowedTabs = currentUser ? visibleTabsFor(currentUser.role) : [];
+  const effectiveTab = (allowedTabs.includes(activeTab) ? activeTab : 'calendar') as TabId;
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [notification, setNotification] = useState<{msg: string, type: 'info' | 'success'} | null>(null);
@@ -42,17 +49,24 @@ const App: React.FC = () => {
 
       if (e.key === 'n' || e.key === 'N') { e.preventDefault(); setIsWizardOpen(true); return; }
       if (e.key === 'Escape') { setSelectedJobId(null); setIsWizardOpen(false); return; }
-      if (TAB_KEYS[e.key]) { e.preventDefault(); setActiveTab(TAB_KEYS[e.key] as import('./types').TabId); }
+      if (TAB_KEYS[e.key]) {
+        const target = TAB_KEYS[e.key];
+        if (!currentUser || !visibleTabsFor(currentUser.role).includes(target)) return;
+        e.preventDefault();
+        setActiveTab(target as TabId);
+      }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [setActiveTab]);
+  }, [setActiveTab, currentUser]);
+
+  if (!currentUser) return <Login />;
 
   const renderContent = () => {
     return (
       <AnimatePresence mode="wait">
         <motion.div
-          key={activeTab}
+          key={effectiveTab}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -60,7 +74,7 @@ const App: React.FC = () => {
           className="h-full"
         >
           {(() => {
-            switch (activeTab) {
+            switch (effectiveTab) {
               case 'calendar': return <WorkroomDashboard onJobSelect={(j) => setSelectedJobId(j.id)} onAddJob={() => setIsWizardOpen(true)} />;
               case 'jobs': return <JobsList jobs={jobs} onAddJob={() => setIsWizardOpen(true)} onJobSelect={(job) => setSelectedJobId(job.id)} />;
               case 'messages': return <MessagesList onJobSelect={(job) => setSelectedJobId(job.id)} />;
@@ -81,11 +95,11 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col md:flex-row font-sans text-gray-100 selection:bg-blue-500/30 overflow-x-hidden">
       {/* Sidebar for Desktop only */}
-      <Sidebar currentTab={activeTab} onTabChange={setActiveTab} />
+      <Sidebar currentTab={effectiveTab} onTabChange={setActiveTab} />
 
       {/* Bottom Nav for Mobile only */}
       <div className="md:hidden">
-        <Navigation currentTab={activeTab} onTabChange={setActiveTab} />
+        <Navigation currentTab={effectiveTab} onTabChange={setActiveTab} />
       </div>
 
       <div className="flex-1 flex flex-col min-w-0 relative">
@@ -120,8 +134,8 @@ const App: React.FC = () => {
 
         <header className="px-4 md:px-8 py-4 md:py-6 flex items-center justify-between border-b border-white/10 bg-slate-950/80 backdrop-blur-3xl sticky top-0 md:relative z-40 shadow-sm">
           <div>
-             <h2 className="text-xs font-semibold uppercase tracking-widest text-blue-400 mb-0.5">PulseOS</h2>
-             <h3 className="text-lg md:text-2xl font-bold capitalize tracking-tight text-white">{activeTab === 'calendar' ? 'Workroom' : activeTab}</h3>
+             <h2 className="text-xs font-semibold uppercase tracking-widest text-blue-400 mb-0.5">TrustKey</h2>
+             <h3 className="text-lg md:text-2xl font-bold capitalize tracking-tight text-white">{effectiveTab === 'calendar' ? 'Workroom' : effectiveTab}</h3>
           </div>
           <div className="flex items-center space-x-3 md:space-x-6">
             <button className="relative group">
@@ -136,8 +150,8 @@ const App: React.FC = () => {
             </button>
             <div className="flex items-center space-x-2 md:space-x-3 pl-0 md:pl-6 border-l-0 md:border-l md:border-white/10">
                 <div className="hidden sm:block text-right">
-                    <p className="text-xs font-semibold text-white">{technicianName}</p>
-                    <p className="text-xs font-medium text-blue-400 uppercase tracking-widest mt-0.5 animate-pulse">Online</p>
+                    <p className="text-xs font-semibold text-white">{currentUser.name}</p>
+                    <p className="text-xs font-medium text-blue-400 uppercase tracking-widest mt-0.5">{ROLE_LABELS[currentUser.role]}</p>
                 </div>
                 <motion.div
                   whileHover={{ scale: 1.05, borderColor: "rgba(0, 229, 255, 0.5)" }}

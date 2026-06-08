@@ -68,17 +68,17 @@ export const Inventory: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-slate-900 border border-white/10 rounded-2xl p-6 relative overflow-hidden shadow-lg">
-           <div className="absolute top-0 right-0 p-4 opacity-5"><Package size={64} /></div>
+           <div className="absolute top-0 right-0 p-4 opacity-5"><Package size={40} /></div>
            <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Total Assets</p>
            <p className="text-2xl font-black text-white">{inventory.reduce((a, b) => a + b.stock, 0)}</p>
         </div>
         <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-6 relative overflow-hidden shadow-lg">
-           <div className="absolute top-0 right-0 p-4 opacity-10 text-amber-500"><AlertCircle size={64} /></div>
+           <div className="absolute top-0 right-0 p-4 opacity-10 text-amber-500"><AlertCircle size={40} /></div>
            <p className="text-amber-500 text-xs font-bold uppercase tracking-widest mb-1">Low Stock Alerts</p>
            <p className="text-2xl font-black text-amber-500">{inventory.filter((p: Part) => p.stock <= p.reorderPoint).length}</p>
         </div>
         <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-6 relative overflow-hidden shadow-lg">
-           <div className="absolute top-0 right-0 p-4 opacity-10 text-blue-500"><Package size={64} /></div>
+           <div className="absolute top-0 right-0 p-4 opacity-10 text-blue-500"><Package size={40} /></div>
            <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-1">Inventory Value</p>
            <p className="text-2xl font-black text-blue-400">${inventory.reduce((a, b: Part) => a + (b.stock * b.price), 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
         </div>

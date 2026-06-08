@@ -15,7 +15,8 @@ import {
   Lock,
   Phone,
   Mail,
-  User
+  User,
+  KeyRound
 } from 'lucide-react';
 import { Job, Client, LockDetails, LineItem } from '../types';
 import { BRANDS as INITIAL_BRANDS, LOCK_TYPES } from '../constants';
@@ -28,51 +29,57 @@ interface JobWizardProps {
 const JOB_TEMPLATES = [
   {
     id: 'car-lockout',
-    icon: '🚗',
+    icon: Car,
     label: 'Car Lockout',
     lockType: 'Automotive' as const,
     complaint: 'Customer locked keys inside the vehicle.',
     color: 'from-blue-600/20 to-blue-800/10 border-blue-500/30',
+    iconColor: 'text-blue-400',
   },
   {
     id: 'home-lockout',
-    icon: '🏠',
+    icon: Home,
     label: 'Home Lockout',
     lockType: 'Residential' as const,
     complaint: 'Customer locked out of their home.',
     color: 'from-green-600/20 to-green-800/10 border-green-500/30',
+    iconColor: 'text-green-400',
   },
   {
     id: 'rekey',
-    icon: '🔑',
+    icon: KeyRound,
     label: 'Rekey',
     lockType: 'Residential' as const,
     complaint: 'Customer needs locks rekeyed (moved in / lost key / security).',
     color: 'from-amber-600/20 to-amber-800/10 border-amber-500/30',
+    iconColor: 'text-amber-400',
   },
   {
     id: 'commercial',
-    icon: '🏢',
+    icon: Building2,
     label: 'Commercial Lockout',
     lockType: 'Commercial' as const,
     complaint: 'Customer locked out of their business premises.',
     color: 'from-purple-600/20 to-purple-800/10 border-purple-500/30',
+    iconColor: 'text-purple-400',
   },
   {
     id: 'safe',
-    icon: '🔒',
+    icon: Lock,
     label: 'Safe Opening',
     lockType: 'Secure / Safe' as const,
     complaint: 'Customer cannot open safe — combination forgotten or malfunction.',
     color: 'from-red-600/20 to-red-800/10 border-red-500/30',
+    iconColor: 'text-red-400',
   },
   {
     id: 'lock-install',
-    icon: '🔧',
+    icon: Wrench,
     label: 'Lock Install',
     lockType: 'Residential' as const,
     complaint: 'Customer needs new deadbolt / lock installed.',
     color: 'from-slate-600/20 to-slate-800/10 border-slate-500/30',
+    iconColor: 'text-slate-300',
   },
 ];
 
@@ -209,16 +216,19 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) =>
                 <p className="text-sm text-slate-400 mt-2">Pre-fills job type & complaint. You can still edit everything.</p>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                {JOB_TEMPLATES.map(tpl => (
-                  <button
-                    key={tpl.id}
-                    onClick={() => applyTemplate(tpl)}
-                    className={`bg-gradient-to-br ${tpl.color} border rounded-3xl p-6 flex flex-col items-start space-y-3 hover:scale-105 transition-all text-left`}
-                  >
-                    <span className="text-3xl">{tpl.icon}</span>
-                    <span className="text-sm font-bold text-white">{tpl.label}</span>
-                  </button>
-                ))}
+                {JOB_TEMPLATES.map(tpl => {
+                  const Icon = tpl.icon;
+                  return (
+                    <button
+                      key={tpl.id}
+                      onClick={() => applyTemplate(tpl)}
+                      className={`bg-gradient-to-br ${tpl.color} border rounded-3xl p-6 flex flex-col items-start space-y-3 hover:scale-105 transition-all text-left`}
+                    >
+                      <Icon size={28} className={tpl.iconColor} />
+                      <span className="text-sm font-bold text-white">{tpl.label}</span>
+                    </button>
+                  );
+                })}
               </div>
               <button
                 onClick={() => setStep(1)}
@@ -298,9 +308,9 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) =>
                     <button onClick={() => setShowBrandSearch(!showBrandSearch)} className="ml-4 p-3 bg-white/5 rounded-xl text-blue-500"><Plus size={18} /></button>
                   </div>
                   {showBrandSearch && (
-                    <div className="absolute top-full left-0 right-0 mt-3 p-4 bg-[#1F2937] border border-white/10 rounded-3xl z-50 grid grid-cols-2 gap-2 shadow-2xl max-h-48 overflow-y-auto scrollbar-hide">
+                    <div className="absolute top-full left-0 right-0 mt-3 p-4 bg-slate-800 border border-white/10 rounded-3xl z-50 grid grid-cols-2 gap-2 shadow-2xl max-h-48 overflow-y-auto scrollbar-hide">
                        {INITIAL_BRANDS.map(b => (
-                         <button key={b} onClick={() => { setLockDetails({...lockDetails, brand: b}); setShowBrandSearch(false); }} className="text-left px-4 py-3 text-xs font-bold uppercase text-gray-300 hover:bg-blue-600 hover:text-white rounded-xl transition-all">{b}</button>
+                         <button key={b} onClick={() => { setLockDetails({...lockDetails, brand: b}); setShowBrandSearch(false); }} className="text-left px-4 py-3 text-xs font-bold uppercase text-slate-300 hover:bg-blue-600 hover:text-white rounded-xl transition-all">{b}</button>
                        ))}
                     </div>
                   )}
@@ -318,7 +328,7 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) =>
               <div className="space-y-4">
                 <h3 className="text-2xl font-bold">Service Complaint</h3>
                 <div className="bg-slate-900 p-5 rounded-2xl border border-white/10 shadow-2xl">
-                  <textarea className="w-full bg-slate-950 border border-white/10 rounded-2xl p-6 min-h-[200px] text-base font-medium text-gray-300 resize-none outline-none focus:border-blue-500 transition-all italic" value={complaint} onChange={e => setComplaint(e.target.value)} placeholder="Describe the lock issue or vehicle situation..." />
+                  <textarea className="w-full bg-slate-950 border border-white/10 rounded-2xl p-6 min-h-[200px] text-base font-medium text-slate-300 resize-none outline-none focus:border-blue-500 transition-all italic" value={complaint} onChange={e => setComplaint(e.target.value)} placeholder="Describe the lock issue or vehicle situation..." />
                 </div>
               </div>
             </div>
@@ -337,7 +347,7 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) =>
             {step < 3 ? (
               <button onClick={nextStep} className="flex-1 bg-blue-600 hover:bg-blue-700 px-8 py-5 rounded-2xl text-sm font-bold uppercase tracking-widest text-white shadow-xl flex items-center justify-center">Next Step<ChevronRight size={16} className="ml-2" /></button>
             ) : (
-              <button onClick={handleComplete} className="flex-1 bg-green-600 hover:bg-green-700 px-8 py-5 rounded-2xl text-sm font-bold uppercase tracking-widest text-white shadow-lg flex items-center justify-center animate-pulse"><Check size={16} className="mr-2" />Create Job</button>
+              <button onClick={handleComplete} className="flex-1 bg-green-600 hover:bg-green-700 px-8 py-5 rounded-2xl text-sm font-bold uppercase tracking-widest text-white shadow-lg flex items-center justify-center"><Check size={16} className="mr-2" />Create Job</button>
             )}
           </div>
         </footer>

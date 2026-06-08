@@ -19,7 +19,7 @@ export const CallsList: React.FC = () => {
     <div className="space-y-5 pb-24 max-w-5xl mx-auto animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-2">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-white leading-none uppercase">Call History</h2>
+          <h2 className="text-2xl font-bold tracking-tight text-white leading-none">Call History</h2>
           <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-2">Communication Ledger</p>
         </div>
         <div className="flex items-center space-x-2 text-blue-500 bg-blue-500/5 px-4 py-2.5 rounded-xl border border-blue-500/10">
@@ -31,8 +31,8 @@ export const CallsList: React.FC = () => {
       <div className="space-y-3 px-2">
         {callHistory.length === 0 ? (
           <div className="bg-slate-900 rounded-2xl border border-white/10 p-16 flex flex-col items-center justify-center opacity-30 text-center">
-            <Phone size={40} className="mb-4 text-blue-500" />
-            <p className="text-base font-bold uppercase tracking-widest">No History</p>
+            <Phone size={28} className="mb-4 text-blue-500" />
+            <p className="text-base font-bold tracking-tight">No call history yet</p>
           </div>
         ) : (
           callHistory.map((call) => (
@@ -47,7 +47,7 @@ export const CallsList: React.FC = () => {
 
                 <div className="flex-1 min-w-0 space-y-0.5">
                   <div className="flex items-center space-x-2">
-                    <h3 className="text-base font-bold text-white uppercase tracking-tighter truncate leading-none">
+                    <h3 className="text-base font-bold text-white tracking-tight truncate leading-none">
                       {call.from}
                     </h3>
                     <div className="bg-white/5 px-2 py-0.5 rounded-lg">

@@ -1,12 +1,15 @@
 import React, { useRef, useState } from 'react';
 import { motion } from 'motion/react';
-import { User, Target, Key, Eye, EyeOff, RotateCcw, Save, Upload, Info, Building2 } from 'lucide-react';
+import { User, Target, Key, Eye, EyeOff, RotateCcw, Save, Upload, Info, Building2, AlertTriangle, Users, Plus, Trash2, ShieldCheck, History } from 'lucide-react';
 import { useSettingsStore, SETTINGS_DEFAULTS, settingsStorageIsEphemeral } from '../settingsStore';
+import { useAuthStore, useCurrentUser, can, ROLE_LABELS } from '../authStore';
+import { Role } from '../types';
 
 const VERSION = '0.0.0';
 
 export const Settings: React.FC = () => {
   const settings = useSettingsStore();
+  const currentUser = useCurrentUser();
   const [form, setForm] = useState({
     technicianName: settings.technicianName,
     companyName: settings.companyName,
@@ -101,7 +104,7 @@ export const Settings: React.FC = () => {
     >
       {settingsStorageIsEphemeral && (
         <div className="flex items-center space-x-3 px-4 py-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-xs text-amber-400 font-semibold">
-          <span>⚠️</span>
+          <AlertTriangle size={16} className="shrink-0" />
           <span>Private/incognito mode detected — settings will not persist after this tab is closed.</span>
         </div>
       )}
@@ -281,7 +284,7 @@ export const Settings: React.FC = () => {
           <div className="space-y-3">
             <div className="flex justify-between items-center py-2 border-b border-white/5">
               <span className="text-xs text-slate-400 uppercase tracking-wider">App</span>
-              <span className="text-xs font-semibold text-white">techAI — PulseOS</span>
+              <span className="text-xs font-semibold text-white">TrustKey Locksmith</span>
             </div>
             <div className="flex justify-between items-center py-2 border-b border-white/5">
               <span className="text-xs text-slate-400 uppercase tracking-wider">Version</span>
@@ -294,6 +297,13 @@ export const Settings: React.FC = () => {
           </div>
         </Section>
       </div>
+
+      {currentUser && can.manageUsers(currentUser.role) && (
+        <>
+          <TeamSection />
+          <AuditSection />
+        </>
+      )}
 
       {showReset && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -319,6 +329,205 @@ export const Settings: React.FC = () => {
               </button>
             </div>
           </motion.div>
+        </div>
+      )}
+    </motion.div>
+  );
+};
+
+const ROLES: Role[] = ['owner', 'manager', 'technician'];
+
+const TeamSection: React.FC = () => {
+  const { users, addUser, updateUser, removeUser } = useAuthStore();
+  const currentUser = useCurrentUser();
+  const [showAdd, setShowAdd] = useState(false);
+  const [draft, setDraft] = useState({ name: '', email: '', password: '', role: 'technician' as Role, commissionRate: 30 });
+  const [err, setErr] = useState('');
+
+  const handleAdd = () => {
+    if (!draft.name.trim() || !draft.email.trim() || !draft.password.trim()) { setErr('Name, email and password are required.'); return; }
+    if (users.some(u => u.email.trim().toLowerCase() === draft.email.trim().toLowerCase())) { setErr('That email is already in use.'); return; }
+    addUser({
+      name: draft.name.trim(),
+      email: draft.email.trim(),
+      password: draft.password,
+      role: draft.role,
+      commissionRate: draft.role === 'technician' ? draft.commissionRate : undefined,
+      active: true,
+    });
+    setDraft({ name: '', email: '', password: '', role: 'technician', commissionRate: 30 });
+    setErr('');
+    setShowAdd(false);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-slate-900 border border-white/5 rounded-2xl p-6"
+    >
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-3">
+          <div className="w-8 h-8 bg-blue-500/10 rounded-lg flex items-center justify-center">
+            <Users size={16} className="text-blue-400" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold uppercase tracking-widest text-white">Team & Access</h3>
+            <p className="text-xs text-slate-500 mt-0.5">Owner-only · manage staff and roles</p>
+          </div>
+        </div>
+        <button
+          onClick={() => { setShowAdd(v => !v); setErr(''); }}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-xl text-white text-xs font-bold uppercase tracking-wider transition-all active:scale-95"
+        >
+          <Plus size={14} /> Add Staff
+        </button>
+      </div>
+
+      {showAdd && (
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-4 mb-5 space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <input className="bg-slate-800 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-blue-500/50" placeholder="Full name" value={draft.name} onChange={e => setDraft(d => ({ ...d, name: e.target.value }))} />
+            <input className="bg-slate-800 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-blue-500/50" placeholder="Email" value={draft.email} onChange={e => setDraft(d => ({ ...d, email: e.target.value }))} />
+            <input className="bg-slate-800 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-blue-500/50" placeholder="Temporary password" value={draft.password} onChange={e => setDraft(d => ({ ...d, password: e.target.value }))} />
+            <select className="bg-slate-800 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-blue-500/50" value={draft.role} onChange={e => setDraft(d => ({ ...d, role: e.target.value as Role }))}>
+              {ROLES.map(r => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
+            </select>
+            {draft.role === 'technician' && (
+              <div className="md:col-span-2">
+                <label className="block text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">Commission rate (%)</label>
+                <input type="number" min={0} max={100} className="w-full bg-slate-800 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-blue-500/50" value={draft.commissionRate} onChange={e => setDraft(d => ({ ...d, commissionRate: Math.max(0, Math.min(100, Number(e.target.value) || 0)) }))} />
+              </div>
+            )}
+          </div>
+          {err && <p className="text-xs font-semibold text-red-400">{err}</p>}
+          <div className="flex gap-3">
+            <button onClick={() => { setShowAdd(false); setErr(''); }} className="flex-1 py-2.5 bg-white/5 border border-white/10 rounded-xl text-slate-300 text-xs font-bold uppercase tracking-wider hover:bg-white/10 transition-all">Cancel</button>
+            <button onClick={handleAdd} className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-500 rounded-xl text-white text-xs font-bold uppercase tracking-wider transition-all">Create Account</button>
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-2">
+        {users.map(u => {
+          const isSelf = u.id === currentUser?.id;
+          return (
+            <div key={u.id} className="bg-white/5 border border-white/10 rounded-2xl p-3 space-y-3">
+              {/* identity row */}
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl overflow-hidden bg-slate-800 border border-white/10 shrink-0">
+                  <img src={u.photo || `https://i.pravatar.cc/150?u=${u.id}`} className="w-full h-full object-cover" alt="" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-white truncate flex items-center gap-2">
+                    {u.name}
+                    {isSelf && <span className="text-[9px] font-bold uppercase tracking-wide text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded">You</span>}
+                    {!u.active && <span className="text-[9px] font-bold uppercase tracking-wide text-slate-500 bg-white/5 px-1.5 py-0.5 rounded">Disabled</span>}
+                  </p>
+                  <p className="text-xs text-slate-500 truncate">{u.email}</p>
+                </div>
+                {!isSelf && (
+                  <button
+                    onClick={() => { if (confirm(`Remove ${u.name}? This cannot be undone.`)) removeUser(u.id); }}
+                    className="w-9 h-9 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 text-slate-400 hover:text-red-400 hover:border-red-500/30 transition-all shrink-0"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                )}
+              </div>
+
+              {/* controls row */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <select
+                  value={u.role}
+                  disabled={isSelf}
+                  onChange={e => {
+                    const role = e.target.value as Role;
+                    updateUser({ ...u, role, commissionRate: role === 'technician' ? (u.commissionRate ?? 30) : u.commissionRate });
+                  }}
+                  className="bg-slate-800 border border-white/10 rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wide text-slate-300 focus:outline-none focus:border-blue-500/50 disabled:opacity-50"
+                >
+                  {ROLES.map(r => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
+                </select>
+
+                {u.role === 'technician' && (
+                  <div className="flex items-center gap-1.5 bg-slate-800 border border-white/10 rounded-lg px-3 py-1.5">
+                    <span className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Commission</span>
+                    <input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={u.commissionRate ?? 0}
+                      onChange={e => updateUser({ ...u, commissionRate: Math.max(0, Math.min(100, Number(e.target.value) || 0)) })}
+                      className="w-12 bg-transparent text-sm font-bold text-white text-right outline-none"
+                    />
+                    <span className="text-sm font-bold text-slate-400">%</span>
+                  </div>
+                )}
+
+                {!isSelf && (
+                  <button
+                    onClick={() => updateUser({ ...u, active: !u.active })}
+                    className="ml-auto px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wide bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-all"
+                  >
+                    {u.active ? 'Disable' : 'Enable'}
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <p className="text-[11px] text-slate-600 mt-4 flex items-center gap-1.5">
+        <ShieldCheck size={12} /> Passwords are stored locally in this prototype. Real authentication is added with the backend.
+      </p>
+    </motion.div>
+  );
+};
+
+const AuditSection: React.FC = () => {
+  const { audit, clearAudit } = useAuthStore();
+
+  const fmt = (iso: string) => {
+    const d = new Date(iso);
+    return d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-slate-900 border border-white/5 rounded-2xl p-6"
+    >
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-3">
+          <div className="w-8 h-8 bg-blue-500/10 rounded-lg flex items-center justify-center">
+            <History size={16} className="text-blue-400" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold uppercase tracking-widest text-white">Activity Log</h3>
+            <p className="text-xs text-slate-500 mt-0.5">Who changed what, and when</p>
+          </div>
+        </div>
+        {audit.length > 0 && (
+          <button onClick={() => { if (confirm('Clear the activity log?')) clearAudit(); }} className="text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-red-400 transition-all">Clear</button>
+        )}
+      </div>
+
+      {audit.length === 0 ? (
+        <p className="text-xs text-slate-500 italic py-4 text-center">No activity recorded yet.</p>
+      ) : (
+        <div className="space-y-1.5 max-h-80 overflow-y-auto scrollbar-hide">
+          {audit.map(a => (
+            <div key={a.id} className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-3 py-2.5">
+              <span className="text-[9px] font-bold uppercase tracking-wide text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded shrink-0">{ROLE_LABELS[a.role]}</span>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs text-white truncate"><span className="font-semibold">{a.userName}</span> · {a.detail}</p>
+              </div>
+              <span className="text-[10px] text-slate-500 shrink-0 tabular-nums">{fmt(a.timestamp)}</span>
+            </div>
+          ))}
         </div>
       )}
     </motion.div>

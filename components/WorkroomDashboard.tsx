@@ -6,7 +6,7 @@ import {
   AlertCircle, Activity, Plus, ChevronLeft, ChevronRight,
   ArrowLeft, Zap, Shield
 } from 'lucide-react';
-import { useAppStore } from '../store';
+import { useAppStore, useVisibleJobs } from '../store';
 import { useSettingsStore } from '../settingsStore';
 import { Job, JobStatus, STATUS_COLORS } from '../types';
 import { calculateFinancialMetrics } from '../financialUtils';
@@ -29,7 +29,7 @@ const Speedometer: React.FC<{ closeRate: number; target: number }> = ({ closeRat
       transition={{ delay: 0.2 }}
       className="bg-slate-900/80 backdrop-blur-xl p-4 rounded-2xl border border-blue-500/10 shadow-[0_0_30px_rgba(0,229,255,0.05)] flex flex-col items-center relative overflow-hidden"
     >
-      <p className="text-xs font-semibold uppercase text-blue-400 tracking-wider mb-5">Efficiency Matrix</p>
+      <p className="text-xs font-semibold uppercase text-blue-400 tracking-wider mb-5">Performance</p>
       <div className="relative w-full max-w-[180px]">
         <svg viewBox="0 0 200 120" className="w-full h-auto">
           <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#1f2937" strokeWidth="18" strokeLinecap="round" />
@@ -136,7 +136,8 @@ const KanbanCard: React.FC<{ job: Job; onSelect: () => void; onDragStart: (e: Re
 );
 
 export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAddJob: () => void }> = ({ onJobSelect, onAddJob }) => {
-  const { jobs, updateJobStatus } = useAppStore();
+  const { updateJobStatus } = useAppStore();
+  const jobs = useVisibleJobs();
   const { monthlyRevenueTarget, monthlyTargets, dailyRevenueTarget } = useSettingsStore();
   const nowRef = new Date();
   const effectiveMonthlyTarget = monthlyTargets[`${nowRef.getFullYear()}-${String(nowRef.getMonth() + 1).padStart(2, '0')}`] ?? monthlyRevenueTarget;
@@ -218,10 +219,10 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
       <div className="flex gap-4 overflow-x-auto scrollbar-hide py-1">
         <AnimatePresence>
           {[
-            { label: 'Revenue Pool', value: `$${metrics.totalRevenue.toLocaleString()}`, detail: '↑ 14% Pace', icon: DollarSign, color: 'blue' },
-            { label: 'Settlement', value: `${metrics.closeRate.toFixed(0)}%`, detail: 'System Peak', icon: Target, color: 'cyan' },
-            { label: 'Asset Logs', value: jobs.length, detail: 'Operational Flux', icon: Activity, color: 'slate' },
-            { label: 'Active Plan', value: 'Elite', detail: 'Guarantees Active', icon: Shield, color: 'cyan' }
+            { label: 'Revenue', value: `$${metrics.totalRevenue.toLocaleString()}`, detail: 'All time', icon: DollarSign, color: 'blue' },
+            { label: 'Close Rate', value: `${metrics.closeRate.toFixed(0)}%`, detail: 'Sold vs visited', icon: Target, color: 'cyan' },
+            { label: 'Total Jobs', value: jobs.length, detail: 'In system', icon: Activity, color: 'slate' },
+            { label: 'Completed', value: jobs.filter(j => j.status === 'completed').length, detail: 'Jobs closed', icon: Shield, color: 'cyan' }
           ].map((card, i) => (
             <motion.div
               key={i}
@@ -264,7 +265,7 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
                   </div>
                   <div className="flex-1 space-y-3 overflow-y-auto pr-2 scrollbar-hide">
                     {jobs.filter(j => j.scheduledDate === selectedDay).map(job => (
-                        <div key={job.id} onClick={() => onJobSelect(job)} className="bg-gray-800/30 p-4 rounded-xl border border-slate-700 flex items-center justify-between group hover:bg-gray-800/60 transition-all cursor-pointer">
+                        <div key={job.id} onClick={() => onJobSelect(job)} className="bg-slate-800/30 p-4 rounded-xl border border-slate-700 flex items-center justify-between group hover:bg-slate-800/60 transition-all cursor-pointer">
                           <div className="flex items-center space-x-4">
                              <div className="w-12 h-12 bg-slate-950 rounded-xl flex items-center justify-center">
                                 <span className="text-xs font-bold text-blue-500">{job.scheduledTime}</span>
@@ -276,7 +277,7 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
                              </div>
                           </div>
                           <div className="flex items-center space-x-3">
-                             <div className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize bg-gray-800/50 border border-slate-600`} style={{ color: STATUS_COLORS[job.status] }}>
+                             <div className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize bg-slate-800/50 border border-slate-600`} style={{ color: STATUS_COLORS[job.status] }}>
                                 {job.status}
                              </div>
                              <ChevronRight size={18} className="text-slate-400 group-hover:text-white" />
@@ -289,7 +290,7 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
               <>
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h3 className="text-xl font-bold text-white uppercase tracking-tight">{monthName} <span className="text-blue-500/50">{year}</span></h3>
+                    <h3 className="text-xl font-bold text-white tracking-tight">{monthName} <span className="text-blue-500/50">{year}</span></h3>
                     <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mt-1">{monthName} Schedule</p>
                   </div>
                   <div className="flex space-x-2">
@@ -300,7 +301,7 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
 
                 <div className="grid grid-cols-7 gap-px bg-white/5 border border-white/10 rounded-2xl overflow-hidden flex-1 shadow-inner">
                   {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map(d => (
-                    <div key={d} className="bg-gray-800/30 py-3 text-center text-xs font-bold uppercase tracking-widest text-slate-400 border-b border-slate-700">{d}</div>
+                    <div key={d} className="bg-slate-800/30 py-3 text-center text-xs font-bold uppercase tracking-widest text-slate-400 border-b border-slate-700">{d}</div>
                   ))}
                   {calendarDays.map((day, i) => {
                     const dayJobs = day ? getJobsForDay(day) : [];

@@ -173,7 +173,7 @@ export const ClientsList: React.FC<{ onJobSelect?: (job: Job) => void }> = ({ on
       <div className="space-y-3">
         {filtered.length === 0 && (
           <div className="text-center py-16 text-slate-500">
-            <User size={40} className="mx-auto mb-4 opacity-20" />
+            <User size={28} className="mx-auto mb-4 opacity-20" />
             <p className="text-sm font-semibold">No clients found</p>
           </div>
         )}

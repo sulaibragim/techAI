@@ -3,6 +3,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Calendar, Briefcase, BarChart2, Settings, LogOut, BrainCircuit, Phone, MessageSquare, AlertCircle, X, Activity, Package, Users } from 'lucide-react';
 import { useAppStore } from '../store';
+import { useAuthStore, useCurrentUser, visibleTabsFor, ROLE_LABELS } from '../authStore';
 
 function formatRelativeTime(isoString: string): string {
   const diff = Date.now() - new Date(isoString).getTime();
@@ -31,9 +32,12 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onTabChange }) => {
   const { missedInteractions, clearMissed, jobs, inventory } = useAppStore();
+  const logout = useAuthStore(s => s.logout);
+  const currentUser = useCurrentUser();
   const lowStockCount = inventory.filter(p => p.stock <= p.reorderPoint).length;
 
-  const tabs = [
+  const allowed = currentUser ? visibleTabsFor(currentUser.role) : [];
+  const ALL_TABS = [
     { id: 'calendar', label: 'Workroom', icon: Calendar },
     { id: 'jobs', label: 'My Jobs', icon: Briefcase },
     { id: 'messages', label: 'Messages', icon: MessageSquare },
@@ -44,6 +48,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onTabChange }) => 
     { id: 'brain', label: 'AI Brain', icon: BrainCircuit },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
+  const tabs = ALL_TABS.filter(t => allowed.includes(t.id));
 
   const inProgressJob = jobs.find(j => j.status === 'enRoute' || j.status === 'diagnosed');
 
@@ -51,9 +56,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onTabChange }) => 
     <aside className="hidden md:flex flex-col w-56 bg-slate-900 border-r border-white/10 h-screen sticky top-0 py-6 shadow-2xl z-40">
       <div className="px-5 mb-7">
         <h1 className="text-2xl font-extrabold tracking-tight text-white leading-none flex items-center gap-2">
-          Pulse<span className="text-blue-400">OS</span>
+          Trust<span className="text-blue-400">Key</span>
         </h1>
-        <p className="text-xs font-medium uppercase text-slate-300 tracking-widest mt-2 flex items-center"><Activity size={11} className="mr-1 text-blue-400" /> Field Dynamics</p>
+        <p className="text-xs font-medium uppercase text-slate-300 tracking-widest mt-2 flex items-center"><Activity size={11} className="mr-1 text-blue-400" /> Locksmith CRM</p>
       </div>
 
       <nav className="px-3 space-y-1 mb-6 overflow-y-auto scrollbar-hide relative">
@@ -146,10 +151,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onTabChange }) => 
         </div>
       </div>
 
-      <div className="px-4 mt-4 pt-4 border-t border-white/10">
-        <button className="flex items-center space-x-3 text-slate-400 hover:text-red-400 transition-all w-full px-4 py-3 font-semibold uppercase text-xs tracking-wider bg-white/5 rounded-xl hover:bg-red-500/10 group">
+      <div className="px-4 mt-4 pt-4 border-t border-white/10 space-y-3">
+        {currentUser && (
+          <div className="flex items-center space-x-3 px-2">
+            <div className="w-9 h-9 rounded-xl overflow-hidden bg-slate-800 border border-white/10 shrink-0">
+              <img src={currentUser.photo || `https://i.pravatar.cc/150?u=${currentUser.id}`} className="w-full h-full object-cover" alt="" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-semibold text-white truncate">{currentUser.name}</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-blue-400">{ROLE_LABELS[currentUser.role]}</p>
+            </div>
+          </div>
+        )}
+        <button onClick={logout} className="flex items-center space-x-3 text-slate-400 hover:text-red-400 transition-all w-full px-4 py-3 font-semibold uppercase text-xs tracking-wider bg-white/5 rounded-xl hover:bg-red-500/10 group">
           <LogOut size={16} className="group-hover:translate-x-1 transition-transform" />
-          <span>Exit OS</span>
+          <span>Log Out</span>
         </button>
       </div>
     </aside>

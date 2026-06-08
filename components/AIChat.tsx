@@ -40,7 +40,7 @@ export const AIChat: React.FC = () => {
 
   if (!geminiApiKey) {
     return (
-      <div className="max-w-4xl mx-auto h-[calc(100vh-160px)] flex flex-col items-center justify-center bg-[#1F2937]/30 rounded-2xl border border-white/10 backdrop-blur-xl">
+      <div className="max-w-4xl mx-auto h-[calc(100vh-160px)] flex flex-col items-center justify-center bg-slate-800/30 rounded-2xl border border-white/10 backdrop-blur-xl">
         <div className="text-center space-y-5 px-8 max-w-sm">
           <div className="w-16 h-16 bg-blue-600/10 border border-blue-500/20 rounded-2xl flex items-center justify-center mx-auto">
             <KeyRound size={28} className="text-blue-400" />
@@ -62,7 +62,7 @@ export const AIChat: React.FC = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto h-[calc(100vh-160px)] flex flex-col bg-[#1F2937]/30 rounded-2xl border border-white/10 overflow-hidden backdrop-blur-xl">
+    <div className="max-w-4xl mx-auto h-[calc(100vh-160px)] flex flex-col bg-slate-800/30 rounded-2xl border border-white/10 overflow-hidden backdrop-blur-xl">
       <div className="p-5 border-b border-white/10 flex items-center justify-between bg-gradient-to-r from-blue-600/10 to-transparent">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-2xl shadow-blue-600/20">
@@ -70,7 +70,7 @@ export const AIChat: React.FC = () => {
           </div>
           <div>
             <h2 className="text-base font-black">Strategic Brain</h2>
-            <p className="text-xs text-slate-400 font-bold uppercase tracking-[0.2em]">Powered by Gemini 3 Pro</p>
+            <p className="text-xs text-slate-400 font-bold uppercase tracking-[0.2em]">Powered by Gemini</p>
           </div>
         </div>
         <div className="flex items-center space-x-2 text-xs font-bold text-blue-500 bg-blue-500/10 px-3 py-1.5 rounded-full">
@@ -82,7 +82,7 @@ export const AIChat: React.FC = () => {
       <div className="flex-1 overflow-y-auto p-5 space-y-4 scrollbar-hide">
         {messages.length === 0 && (
           <div className="h-full flex flex-col items-center justify-center text-center space-y-4 opacity-50">
-            <Bot size={48} className="text-blue-500" />
+            <Bot size={32} className="text-blue-500" />
             <div>
               <p className="text-base font-bold mb-2">Ask about your business</p>
               <p className="text-sm max-w-xs text-slate-300">"Analyze my revenue trends for the last 30 days" or "How can I increase my average ticket size?"</p>
@@ -94,7 +94,7 @@ export const AIChat: React.FC = () => {
             <div className={`max-w-[80%] p-3.5 rounded-2xl leading-relaxed text-sm ${
               m.role === 'user'
                 ? 'bg-blue-600 text-white font-medium shadow-xl'
-                : 'bg-slate-900 text-gray-300 border border-white/10'
+                : 'bg-slate-900 text-slate-300 border border-white/10'
             }`}>
               {m.text}
             </div>

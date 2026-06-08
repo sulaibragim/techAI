@@ -114,7 +114,7 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-extrabold tracking-tight text-white uppercase leading-none">Dispatch Queue</h2>
+          <h2 className="text-2xl font-extrabold tracking-tight text-white leading-none">Dispatch Queue</h2>
           <p className="text-xs text-blue-400 font-semibold uppercase tracking-widest mt-2">Operational Hub</p>
         </div>
         <div className="flex items-center gap-3">
@@ -177,7 +177,7 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
                   </div>
 
                   <div className="space-y-0.5">
-                    <p className="text-base font-bold text-white uppercase leading-none truncate group-hover:translate-x-1 transition-transform">
+                    <p className="text-base font-bold text-white leading-none truncate group-hover:translate-x-1 transition-transform">
                       {job.client.firstName} {job.client.lastName}
                     </p>
                     <p className="text-xs font-medium text-slate-400 uppercase mt-1 tracking-tight truncate">{job.lockDetails.type} — {job.lockDetails.brand || 'Elite Unit'}</p>
@@ -225,7 +225,7 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
           })}
         {filteredJobs.length === 0 && (
           <div className="col-span-full h-40 flex flex-col items-center justify-center opacity-40">
-             <Hash size={36} className="mb-3" />
+             <Hash size={28} className="mb-3" />
              <p className="text-sm font-semibold uppercase tracking-widest">Queue Empty</p>
           </div>
         )}

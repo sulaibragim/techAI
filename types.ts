@@ -1,5 +1,31 @@
 export type TabId = 'calendar' | 'jobs' | 'messages' | 'calls' | 'clients' | 'analytics' | 'inventory' | 'brain' | 'settings';
 
+export type Role = 'owner' | 'manager' | 'technician';
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  password: string; // NOTE: prototype only — plaintext local storage. Replace with backend auth before production.
+  role: Role;
+  phone?: string;
+  photo?: string;
+  commissionRate?: number; // percent of completed-job revenue, for salary calc
+  active: boolean;
+  createdAt: string;
+}
+
+export interface AuditEntry {
+  id: string;
+  timestamp: string;
+  userId: string;
+  userName: string;
+  role: Role;
+  action: string;   // e.g. 'job.update', 'job.delete', 'payment.collect', 'price.change'
+  detail: string;
+  jobId?: string;
+}
+
 export interface Part {
   id: string;
   name: string;
@@ -87,10 +113,12 @@ export interface Job {
   lineItems: LineItem[];
   paymentStatus: 'paid' | 'unpaid';
   totalAmount: number;
-  photos: string[]; 
+  photos: string[];
   messages?: Message[];
   distance?: number; // Miles for Kanban card
   warranty?: string;
+  assignedTo?: string; // User id of the technician responsible
+  createdBy?: string;  // User id of whoever created the job
 }
 
 export interface MissedInteraction {

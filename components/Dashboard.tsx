@@ -6,7 +6,7 @@ import {
 import {
   TrendingUp, TrendingDown, Wallet, Target as TargetIcon, BrainCircuit, Activity,
   CheckCircle2, Clock, Briefcase, XCircle, ChevronLeft, ChevronRight, GitCompareArrows,
-  Download, Trophy, Coffee, Users, CalendarDays, Sparkles
+  Download, Trophy, Coffee, Users, CalendarDays, Sparkles, Flame, AlertTriangle, AlertCircle
 } from 'lucide-react';
 import { useAppStore } from '../store';
 import { useSettingsStore } from '../settingsStore';
@@ -25,10 +25,10 @@ const TYPE_COLORS: Record<string, string> = {
 };
 
 const ALERT_COLORS = {
-  excellent: { bg: 'bg-green-500/10', border: 'border-green-500/20', text: 'text-green-400', icon: '🔥' },
-  good: { bg: 'bg-blue-500/10', border: 'border-blue-500/20', text: 'text-blue-400', icon: '✅' },
-  warning: { bg: 'bg-amber-500/10', border: 'border-amber-500/20', text: 'text-amber-400', icon: '⚠️' },
-  critical: { bg: 'bg-red-500/10', border: 'border-red-500/20', text: 'text-red-400', icon: '🚨' },
+  excellent: { bg: 'bg-green-500/10', border: 'border-green-500/20', text: 'text-green-400', icon: Flame },
+  good: { bg: 'bg-blue-500/10', border: 'border-blue-500/20', text: 'text-blue-400', icon: CheckCircle2 },
+  warning: { bg: 'bg-amber-500/10', border: 'border-amber-500/20', text: 'text-amber-400', icon: AlertTriangle },
+  critical: { bg: 'bg-red-500/10', border: 'border-red-500/20', text: 'text-red-400', icon: AlertCircle },
 };
 
 const fmt$ = (n: number) => `$${Math.round(n).toLocaleString()}`;
@@ -168,7 +168,7 @@ export const Dashboard: React.FC = () => {
       {/* HEADER + PERIOD CONTROLS */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-white leading-none uppercase">Financial Performance</h2>
+          <h2 className="text-2xl font-bold tracking-tight text-white leading-none">Financial Performance</h2>
           <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-2">
             {compareMode ? 'Comparison Mode' : periodLabel}
           </p>
@@ -238,13 +238,13 @@ export const Dashboard: React.FC = () => {
                       <div className="bg-white/5 p-3.5 rounded-xl border border-white/10">
                         <p className="text-xs font-bold text-slate-500 uppercase mb-1">Daily Need</p>
                         {A.remainingRevenue <= 0
-                          ? <p className="text-sm font-bold text-green-400">✅ Target Met</p>
+                          ? <p className="text-sm font-bold text-green-400">Target met</p>
                           : <p className="text-lg font-bold text-white">{fmt$(A.requiredDailyRevenue)}</p>}
                       </div>
                       <div className="bg-white/5 p-3.5 rounded-xl border border-white/10">
                         <p className="text-xs font-bold text-slate-500 uppercase mb-1">Jobs/Day</p>
                         {A.remainingRevenue <= 0
-                          ? <p className="text-sm font-bold text-green-400">✅ Done</p>
+                          ? <p className="text-sm font-bold text-green-400">Done</p>
                           : <p className="text-lg font-bold text-white">{A.requiredSalesPerDay}</p>}
                       </div>
                     </div>
@@ -293,7 +293,8 @@ export const Dashboard: React.FC = () => {
                     <p className="text-xs font-bold text-slate-500 uppercase">/ {fmt$(A.monthlyTarget)}</p>
                   </div>
                   <div className={`mt-3 inline-flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest ${ALERT_COLORS[A.planStatus].bg} ${ALERT_COLORS[A.planStatus].text} border ${ALERT_COLORS[A.planStatus].border}`}>
-                    {ALERT_COLORS[A.planStatus].icon} Status: {A.planStatus}
+                    {(() => { const Icon = ALERT_COLORS[A.planStatus].icon; return <Icon size={12} />; })()}
+                    <span>Status: {A.planStatus}</span>
                   </div>
                 </div>
                 <div className="grid grid-cols-3 gap-6 text-right pr-2">
@@ -350,7 +351,7 @@ export const Dashboard: React.FC = () => {
                         <p className="text-xs font-bold text-slate-500 uppercase mb-1">{A.isCurrentMonth ? 'Projected Month-End' : 'Final Revenue'}</p>
                         <p className="text-2xl font-bold text-white tracking-tighter">{fmt$(headline)}</p>
                         <p className={`text-xs font-bold mt-1 ${onTrack ? 'text-green-400' : 'text-amber-400'}`}>
-                          {onTrack ? '✅ On track for goal' : `${fmt$(short)} short of goal`}
+                          {onTrack ? 'On track for goal' : `${fmt$(short)} short of goal`}
                         </p>
                       </div>
                       <div className="sm:col-span-2 space-y-3">
@@ -541,7 +542,7 @@ export const Dashboard: React.FC = () => {
               <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 blur-3xl -mr-24 -mt-24" />
               <div className="flex items-center space-x-3 mb-4">
                 <BrainCircuit size={22} className="text-blue-300" />
-                <h4 className="text-lg font-bold uppercase tracking-widest">Smart Insights</h4>
+                <h4 className="text-lg font-bold tracking-tight">Smart Insights</h4>
               </div>
               {insights.length === 0 ? (
                 <p className="text-sm text-blue-100/70 italic">Not enough data for this period yet.</p>

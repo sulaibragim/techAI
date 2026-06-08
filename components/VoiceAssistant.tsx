@@ -148,14 +148,14 @@ export const VoiceAssistant: React.FC = () => {
           <div ref={scrollRef} className="flex-1 overflow-y-auto p-5 space-y-4 scrollbar-hide">
             {messages.length === 0 && (
               <div className="h-full flex flex-col items-center justify-center text-center px-8 opacity-20 space-y-4">
-                <Bot size={40} className="text-blue-500" />
+                <Bot size={28} className="text-blue-500" />
                 <p className="text-xs font-bold uppercase tracking-widest">Awaiting Sultan's Command</p>
               </div>
             )}
             {messages.map((m, i) => (
               <div key={i} className={`flex items-end space-x-3 ${m.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
-                <div className={`w-7 h-7 rounded-xl shrink-0 flex items-center justify-center shadow-lg ${m.role === 'user' ? 'bg-blue-600' : 'bg-gray-800'}`}>{m.role === 'user' ? <User size={14} className="text-white" /> : <Bot size={14} className="text-white" />}</div>
-                <div className={`max-w-[85%] px-4 py-3 rounded-2xl text-[13px] leading-relaxed font-medium shadow-xl ${m.role === 'user' ? 'bg-blue-600 text-white rounded-br-none' : 'bg-[#1F2937] text-gray-200 border border-white/10 rounded-bl-none'}`}>{m.text}</div>
+                <div className={`w-7 h-7 rounded-xl shrink-0 flex items-center justify-center shadow-lg ${m.role === 'user' ? 'bg-blue-600' : 'bg-slate-800'}`}>{m.role === 'user' ? <User size={14} className="text-white" /> : <Bot size={14} className="text-white" />}</div>
+                <div className={`max-w-[85%] px-4 py-3 rounded-2xl text-[13px] leading-relaxed font-medium shadow-xl ${m.role === 'user' ? 'bg-blue-600 text-white rounded-br-none' : 'bg-slate-800 text-gray-200 border border-white/10 rounded-bl-none'}`}>{m.text}</div>
               </div>
             ))}
           </div>

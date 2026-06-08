@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { Job, JobStatus, MissedInteraction, Message, CallRecord, LineItem, Part, TabId } from './types';
 import { calculateFinancialMetrics } from './financialUtils';
 import { useSettingsStore } from './settingsStore';
+import { useAuthStore } from './authStore';
 
 const getDynamicDate = (offsetDays: number) => {
   const d = new Date();
@@ -165,6 +166,7 @@ const INITIAL_JOBS: Job[] = [
     durationMinutes: 45,
     status: 'diagnosed',
     paymentStatus: 'unpaid',
+    assignedTo: 'u-tech',
     photos: [],
     lineItems: [
       { id: '16', type: 'service_call', description: 'Commercial Service Call', unitPrice: 95, quantity: 1 },
@@ -191,6 +193,7 @@ const INITIAL_JOBS: Job[] = [
     durationMinutes: 60,
     status: 'enRoute',
     paymentStatus: 'unpaid',
+    assignedTo: 'u-tech',
     photos: [],
     lineItems: [],
     totalAmount: 0
@@ -364,9 +367,13 @@ export const useAppStore = create<AppState>()(
   inventory: INITIAL_INVENTORY,
   activeTab: 'calendar',
   setActiveTab: (tab) => set({ activeTab: tab }),
-  addJob: (jobData) => set((state) => ({
-    jobs: [...state.jobs, { ...jobData, id: `job-${Date.now()}`, createdAt: new Date().toISOString() }]
-  })),
+  addJob: (jobData) => set((state) => {
+    const auth = useAuthStore.getState();
+    const creator = auth.users.find(u => u.id === auth.currentUserId);
+    return {
+      jobs: [...state.jobs, { ...jobData, id: `job-${Date.now()}`, createdAt: new Date().toISOString(), createdBy: creator?.id }]
+    };
+  }),
   updateJob: (updatedJob) => set((state) => ({
     jobs: state.jobs.map(j => j.id === updatedJob.id ? updatedJob : j)
   })),
@@ -410,6 +417,17 @@ export const useAppStore = create<AppState>()(
     }
   )
 );
+
+// Jobs visible to the current user. Technicians only see jobs assigned to them;
+// owner and manager see everything.
+export const useVisibleJobs = (): Job[] => {
+  const jobs = useAppStore(s => s.jobs);
+  const currentUserId = useAuthStore(s => s.currentUserId);
+  const users = useAuthStore(s => s.users);
+  const user = users.find(u => u.id === currentUserId) ?? null;
+  if (user?.role === 'technician') return jobs.filter(j => j.assignedTo === user.id);
+  return jobs;
+};
 
 export const useAIActions = () => {
   const handleAction = async (action: string, data: any): Promise<{ status: string; [key: string]: any }> => {
