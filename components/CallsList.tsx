@@ -1,10 +1,65 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAppStore } from '../store';
-import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Clock, ChevronRight, User, PhoneCall } from 'lucide-react';
+import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Clock, PhoneCall, RefreshCw, Radio } from 'lucide-react';
+import { CallRecord } from '../types';
+
+const PHONE_NUMBER_ID = 'PNkhFHiD2G';
+
+function formatDuration(seconds: number): string {
+  if (!seconds) return '';
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return m > 0 ? `${m}m ${s}s` : `${s}s`;
+}
+
+function mapOpenPhoneCall(c: any): CallRecord {
+  const isInbound = c.direction === 'inbound';
+  const isMissed = c.status === 'missed' || c.status === 'no-answer';
+  const type = isMissed ? 'missed' : isInbound ? 'incoming' : 'outgoing';
+  const callerNumber = isInbound ? c.from : c.to;
+  const name = c.contact?.name || callerNumber;
+
+  return {
+    id: c.id,
+    from: name,
+    phone: callerNumber,
+    type,
+    duration: c.duration ? formatDuration(c.duration) : undefined,
+    timestamp: new Date(c.createdAt).toLocaleString('en-US', {
+      month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+    }),
+    avatar: '',
+  };
+}
 
 export const CallsList: React.FC = () => {
-  const { calls } = useAppStore();
-  const callHistory = calls || [];
+  const { calls: storeCalls } = useAppStore();
+  const [liveCalls, setLiveCalls] = useState<CallRecord[] | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isLive, setIsLive] = useState(true);
+
+  const fetchCalls = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/openphone/calls?phoneNumberId=${PHONE_NUMBER_ID}`);
+      if (!res.ok) throw new Error(`${res.status}`);
+      const data = await res.json();
+      setLiveCalls((data.data || []).map(mapOpenPhoneCall));
+      setIsLive(true);
+    } catch {
+      setError('Backend offline — showing local data');
+      setLiveCalls(null);
+      setIsLive(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchCalls(); }, []);
+
+  const callHistory = liveCalls ?? storeCalls ?? [];
 
   const getCallIcon = (type: string) => {
     switch (type) {
@@ -15,6 +70,14 @@ export const CallsList: React.FC = () => {
     }
   };
 
+  const getBorderColor = (type: string) => {
+    switch (type) {
+      case 'incoming': return 'hover:border-green-500/30';
+      case 'missed': return 'hover:border-red-500/30';
+      default: return 'hover:border-blue-500/30';
+    }
+  };
+
   return (
     <div className="space-y-5 pb-24 max-w-5xl mx-auto animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-2">
@@ -22,14 +85,43 @@ export const CallsList: React.FC = () => {
           <h2 className="text-2xl font-bold tracking-tight text-white leading-none">Call History</h2>
           <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-2">Communication Ledger</p>
         </div>
-        <div className="flex items-center space-x-2 text-blue-500 bg-blue-500/5 px-4 py-2.5 rounded-xl border border-blue-500/10">
-           <Phone size={15} />
-           <span className="text-xs font-bold uppercase tracking-widest">{callHistory.length} Total Records</span>
+        <div className="flex items-center gap-3">
+          {isLive && (
+            <div className="flex items-center space-x-2 text-green-400 bg-green-500/5 px-3 py-2 rounded-xl border border-green-500/20">
+              <Radio size={12} className="animate-pulse" />
+              <span className="text-xs font-bold uppercase tracking-widest">OpenPhone Live</span>
+            </div>
+          )}
+          <button
+            onClick={fetchCalls}
+            disabled={loading}
+            className="p-2.5 bg-slate-900 border border-white/10 rounded-xl text-slate-400 hover:text-white hover:border-blue-500/30 transition-all active:scale-95 disabled:opacity-40"
+            title="Refresh"
+          >
+            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+          </button>
+          <div className="flex items-center space-x-2 text-blue-500 bg-blue-500/5 px-4 py-2.5 rounded-xl border border-blue-500/10">
+            <Phone size={15} />
+            <span className="text-xs font-bold uppercase tracking-widest">{callHistory.length} Records</span>
+          </div>
         </div>
       </div>
 
+      {error && (
+        <div className="px-2">
+          <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl px-4 py-2.5 text-xs font-semibold text-amber-400 flex items-center gap-2">
+            <Phone size={12} />
+            {error}
+          </div>
+        </div>
+      )}
+
       <div className="space-y-3 px-2">
-        {callHistory.length === 0 ? (
+        {loading ? (
+          [...Array(3)].map((_, i) => (
+            <div key={i} className="bg-slate-900/80 p-4 rounded-2xl border border-white/10 animate-pulse h-20" />
+          ))
+        ) : callHistory.length === 0 ? (
           <div className="bg-slate-900 rounded-2xl border border-white/10 p-16 flex flex-col items-center justify-center opacity-30 text-center">
             <Phone size={28} className="mb-4 text-blue-500" />
             <p className="text-base font-bold tracking-tight">No call history yet</p>
@@ -38,11 +130,15 @@ export const CallsList: React.FC = () => {
           callHistory.map((call) => (
             <div
               key={call.id}
-              className="bg-slate-900/80 backdrop-blur-3xl p-4 rounded-2xl border border-white/10 hover:border-blue-500/30 hover:scale-[1.01] transition-all flex items-center justify-between group shadow-xl relative"
+              className={`bg-slate-900/80 backdrop-blur-3xl p-4 rounded-2xl border border-white/10 ${getBorderColor(call.type)} hover:scale-[1.01] transition-all flex items-center justify-between group shadow-xl relative`}
             >
               <div className="flex items-center space-x-5 flex-1 min-w-0">
                 <div className="w-12 h-12 bg-slate-950 rounded-xl overflow-hidden flex items-center justify-center border border-white/10 shadow-inner shrink-0">
-                  <img src={call.avatar} className="w-full h-full object-cover" alt="" />
+                  {call.avatar ? (
+                    <img src={call.avatar} className="w-full h-full object-cover" alt="" />
+                  ) : (
+                    <Phone size={18} className="text-slate-600" />
+                  )}
                 </div>
 
                 <div className="flex-1 min-w-0 space-y-0.5">
@@ -69,7 +165,7 @@ export const CallsList: React.FC = () => {
                 <button
                   onClick={(e) => { e.stopPropagation(); window.location.href = `tel:${call.phone}`; }}
                   className="p-2 bg-green-600/10 text-green-400 hover:bg-green-600 hover:text-white rounded-xl transition-all active:scale-90"
-                  title="Call"
+                  title="Call back"
                 >
                   <PhoneCall size={14} />
                 </button>
