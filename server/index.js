@@ -35,6 +35,7 @@ app.get('/debug-openphone', async (_req, res) => {
 });
 
 app.use('/openphone', openphoneRouter);
+app.use('/api/openphone', openphoneRouter);
 
 app.listen(PORT, () => {
   console.log(`TrustKey backend running on port ${PORT}`);
