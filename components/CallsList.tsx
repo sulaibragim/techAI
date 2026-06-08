@@ -14,7 +14,7 @@ function formatDuration(seconds: number): string {
 }
 
 function mapOpenPhoneCall(c: any): CallRecord {
-  const isInbound = c.direction === 'inbound';
+  const isInbound = c.direction === 'inbound' || c.direction === 'incoming';
   const isMissed = c.status === 'missed' || c.status === 'no-answer';
   const type = isMissed ? 'missed' : isInbound ? 'incoming' : 'outgoing';
   const callerNumber = isInbound ? c.from : c.to;
