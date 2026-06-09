@@ -1,7 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useAppStore } from '../store';
+import { useAuthStore } from '../authStore';
 import { API_BASE } from '../backendUrl';
-import { Sparkles, Phone, MapPin, Lock, Clock, CheckCircle, X, ChevronDown, ChevronUp, Mic } from 'lucide-react';
+import { TechStatus } from '../types';
+import { Sparkles, Phone, MapPin, Lock, Clock, CheckCircle, X, ChevronDown, ChevronUp, Mic, UserCheck, Circle } from 'lucide-react';
 
 interface AISuggestion {
   clientName: string;
@@ -38,6 +40,12 @@ const SERVICE_ICON: Record<string, string> = {
   commercial: '🏢',
 };
 
+const STATUS_DOT: Record<TechStatus, { color: string; label: string }> = {
+  available: { color: 'text-green-400', label: 'Available' },
+  onJob: { color: 'text-amber-400', label: 'On Job' },
+  offDuty: { color: 'text-slate-500', label: 'Off Duty' },
+};
+
 function generateJobNumber(): string {
   return `LK-${Math.floor(8000 + Math.random() * 2000)}`;
 }
@@ -57,9 +65,12 @@ function formatDur(s: number | null): string {
 
 export const PendingJobSuggestions: React.FC = () => {
   const { addJob } = useAppStore();
+  const { users } = useAuthStore();
+  const technicians = users.filter(u => u.role === 'technician' && u.active);
   const [pending, setPending] = useState<PendingJob[]>([]);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [creating, setCreating] = useState<string | null>(null);
+  const [selectedTech, setSelectedTech] = useState<Record<string, string>>({});
 
   const fetchPending = useCallback(async () => {
     try {
@@ -67,9 +78,7 @@ export const PendingJobSuggestions: React.FC = () => {
       if (!res.ok) return;
       const data: PendingJob[] = await res.json();
       setPending(data.filter(p => p.status === 'ready'));
-    } catch {
-      // backend offline — silently ignore
-    }
+    } catch {}
   }, []);
 
   useEffect(() => {
@@ -96,6 +105,8 @@ export const PendingJobSuggestions: React.FC = () => {
       residential: 'Residential',
       commercial: 'Commercial',
     };
+
+    const assignedTechId = selectedTech[pj.callId] || undefined;
 
     addJob({
       jobNumber: generateJobNumber(),
@@ -125,6 +136,7 @@ export const PendingJobSuggestions: React.FC = () => {
       totalAmount: s.estimatedPrice || 0,
       photos: [],
       messages: [],
+      assignedTo: assignedTechId,
     });
 
     await dismiss(pj.callId);
@@ -153,7 +165,6 @@ export const PendingJobSuggestions: React.FC = () => {
             key={pj.callId}
             className="bg-violet-950/30 border border-violet-500/20 rounded-2xl overflow-hidden shadow-xl"
           >
-            {/* Header row */}
             <div className="flex items-center justify-between p-4 gap-3">
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <div className="w-10 h-10 bg-violet-500/10 border border-violet-500/20 rounded-xl flex items-center justify-center text-lg shrink-0">
@@ -195,14 +206,6 @@ export const PendingJobSuggestions: React.FC = () => {
                   title="Dismiss"
                 >
                   <X size={14} />
-                </button>
-                <button
-                  onClick={() => approve(pj)}
-                  disabled={creating === pj.callId}
-                  className="flex items-center gap-1.5 px-3 py-2 bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold rounded-xl transition-all active:scale-95 disabled:opacity-50"
-                >
-                  <CheckCircle size={13} />
-                  {creating === pj.callId ? 'Creating…' : 'Create Job'}
                 </button>
               </div>
             </div>
@@ -256,6 +259,54 @@ export const PendingJobSuggestions: React.FC = () => {
                       {pj.transcript}
                     </pre>
                   </details>
+                )}
+
+                {/* Assign technician */}
+                {technicians.length > 0 && (
+                  <div className="bg-slate-900/50 rounded-xl p-3 space-y-2">
+                    <div className="flex items-center gap-1.5">
+                      <UserCheck size={11} className="text-violet-400" />
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Assign Technician</span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                      {technicians.map(tech => {
+                        const st = STATUS_DOT[tech.techStatus || 'offDuty'];
+                        const isSelected = selectedTech[pj.callId] === tech.id;
+                        return (
+                          <button
+                            key={tech.id}
+                            onClick={() => setSelectedTech(prev => ({ ...prev, [pj.callId]: isSelected ? '' : tech.id }))}
+                            className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-left transition-all ${
+                              isSelected
+                                ? 'border-violet-500/50 bg-violet-500/10 text-white'
+                                : 'border-white/5 bg-white/5 text-slate-300 hover:border-white/20'
+                            }`}
+                          >
+                            <Circle size={8} className={`${st.color} fill-current`} />
+                            <span className="text-xs font-semibold flex-1">{tech.name}</span>
+                            <span className={`text-[9px] font-bold uppercase tracking-wide ${st.color}`}>{st.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Create Job button */}
+                {s && (
+                  <button
+                    onClick={() => approve(pj)}
+                    disabled={creating === pj.callId}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all active:scale-[0.98] disabled:opacity-50"
+                  >
+                    <CheckCircle size={14} />
+                    {creating === pj.callId
+                      ? 'Creating…'
+                      : selectedTech[pj.callId]
+                        ? `Assign to ${technicians.find(t => t.id === selectedTech[pj.callId])?.name} & Create Job`
+                        : 'Create Job (Unassigned)'
+                    }
+                  </button>
                 )}
               </div>
             )}

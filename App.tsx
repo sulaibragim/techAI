@@ -14,7 +14,8 @@ import { CallsList } from './components/CallsList';
 import { Inventory } from './components/Inventory';
 import { useAppStore, useVisibleJobs } from './store';
 import { useSettingsStore } from './settingsStore';
-import { useCurrentUser, visibleTabsFor, ROLE_LABELS } from './authStore';
+import { useCurrentUser, useAuthStore, visibleTabsFor, ROLE_LABELS } from './authStore';
+import type { TechStatus } from './types';
 import { Settings } from './components/Settings';
 import { ClientsList } from './components/ClientsList';
 import { Login } from './components/Login';
@@ -24,6 +25,7 @@ import type { TabId } from './types';
 const App: React.FC = () => {
   const { addJob, activeTab, setActiveTab } = useAppStore();
   const { profilePhoto } = useSettingsStore();
+  const { setTechStatus } = useAuthStore();
   const currentUser = useCurrentUser();
   const jobs = useVisibleJobs();
   const allowedTabs = currentUser ? visibleTabsFor(currentUser.role) : [];
@@ -148,6 +150,21 @@ const App: React.FC = () => {
                 </motion.div>
                 <div className="absolute top-0 right-0 w-2 h-2 bg-blue-600 rounded-full border-2 border-[#030303] animate-pulse shadow-lg" />
             </button>
+            {currentUser.role === 'technician' && (
+              <select
+                value={currentUser.techStatus || 'offDuty'}
+                onChange={e => setTechStatus(currentUser.id, e.target.value as TechStatus)}
+                className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1.5 rounded-lg border cursor-pointer transition-all ${
+                  currentUser.techStatus === 'available' ? 'bg-green-500/10 border-green-500/30 text-green-400' :
+                  currentUser.techStatus === 'onJob' ? 'bg-amber-500/10 border-amber-500/30 text-amber-400' :
+                  'bg-slate-800 border-white/10 text-slate-400'
+                }`}
+              >
+                <option value="available">Available</option>
+                <option value="onJob">On Job</option>
+                <option value="offDuty">Off Duty</option>
+              </select>
+            )}
             <div className="flex items-center space-x-2 md:space-x-3 pl-0 md:pl-6 border-l-0 md:border-l md:border-white/10">
                 <div className="hidden sm:block text-right">
                     <p className="text-xs font-semibold text-white">{currentUser.name}</p>

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { User, Role, AuditEntry } from './types';
+import { User, Role, AuditEntry, TechStatus } from './types';
 
 // NOTE: This is a client-only prototype auth layer. Passwords are stored in
 // localStorage in plaintext. Before launch, swap this store's backing calls for
@@ -10,7 +10,7 @@ import { User, Role, AuditEntry } from './types';
 const DEFAULT_USERS: User[] = [
   { id: 'u-owner', name: 'Sultan',     email: 'owner@trustkey.az',   password: '1234', role: 'owner',      active: true, createdAt: new Date().toISOString() },
   { id: 'u-mgr',   name: 'Manager',    email: 'manager@trustkey.az', password: '1234', role: 'manager',    active: true, createdAt: new Date().toISOString() },
-  { id: 'u-tech',  name: 'Technician', email: 'tech@trustkey.az',    password: '1234', role: 'technician', commissionRate: 30, active: true, createdAt: new Date().toISOString() },
+  { id: 'u-tech',  name: 'Technician', email: 'tech@trustkey.az',    password: '1234', role: 'technician', commissionRate: 30, active: true, createdAt: new Date().toISOString(), techStatus: 'available' },
 ];
 
 interface AuthState {
@@ -26,6 +26,7 @@ interface AuthState {
   updateUser: (user: User) => void;
   removeUser: (id: string) => void;
 
+  setTechStatus: (userId: string, status: TechStatus) => void;
   logAudit: (entry: Omit<AuditEntry, 'id' | 'timestamp' | 'userId' | 'userName' | 'role'>) => void;
   clearAudit: () => void;
 }
@@ -59,6 +60,10 @@ export const useAuthStore = create<AuthState>()(
       removeUser: (id) => set((state) => ({
         users: state.users.filter(u => u.id !== id),
         currentUserId: state.currentUserId === id ? null : state.currentUserId,
+      })),
+
+      setTechStatus: (userId, status) => set((state) => ({
+        users: state.users.map(u => u.id === userId ? { ...u, techStatus: status } : u)
       })),
 
       logAudit: (entry) => {

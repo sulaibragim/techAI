@@ -1,6 +1,7 @@
 export type TabId = 'calendar' | 'jobs' | 'messages' | 'calls' | 'clients' | 'analytics' | 'inventory' | 'brain' | 'settings';
 
 export type Role = 'owner' | 'manager' | 'technician';
+export type TechStatus = 'available' | 'onJob' | 'offDuty';
 
 export interface User {
   id: string;
@@ -13,6 +14,8 @@ export interface User {
   commissionRate?: number; // percent of completed-job revenue, for salary calc
   active: boolean;
   createdAt: string;
+  techStatus?: TechStatus;
+  lastLocation?: { lat: number; lng: number; updatedAt: string };
 }
 
 export interface AuditEntry {
