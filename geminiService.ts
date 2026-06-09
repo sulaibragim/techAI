@@ -1,6 +1,9 @@
 
 import { GoogleGenAI, Modality, Type, LiveServerMessage, ThinkingLevel } from "@google/genai";
 import { useSettingsStore } from './settingsStore';
+import { useAppStore } from './store';
+import { useAuthStore } from './authStore';
+import { API_BASE } from './backendUrl';
 
 const resolveApiKey = (): string => {
   const key = useSettingsStore.getState().geminiApiKey || import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.VITE_API_KEY || '';
@@ -27,7 +30,6 @@ export async function decodeAudioData(
   const dataInt16 = new Int16Array(data.buffer);
   const frameCount = dataInt16.length / numChannels;
   const buffer = ctx.createBuffer(numChannels, frameCount, sampleRate);
-
   for (let channel = 0; channel < numChannels; channel++) {
     const channelData = buffer.getChannelData(channel);
     for (let i = 0; i < frameCount; i++) {
@@ -46,13 +48,450 @@ export function encode(bytes: Uint8Array) {
   return btoa(chunks.join(''));
 }
 
-/**
- * Generates strategic responses with tool support for the chat interface.
- */
+function getBusinessContext(): string {
+  const store = useAppStore.getState();
+  const auth = useAuthStore.getState();
+  const settings = useSettingsStore.getState();
+  const jobs = store.jobs;
+  const users = auth.users.filter(u => u.active);
+
+  const today = new Date();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  const todaysJobs = jobs.filter(j => j.scheduledDate === todayStr);
+  const activeJobs = jobs.filter(j => !['completed', 'cancelled'].includes(j.status));
+  const completedJobs = jobs.filter(j => j.status === 'completed');
+  const todayRevenue = todaysJobs.filter(j => j.status === 'completed' || j.status === 'sold').reduce((s, j) => s + (j.totalAmount || 0), 0);
+  const totalRevenue = completedJobs.reduce((s, j) => s + (j.totalAmount || 0), 0);
+
+  const techs = users.filter(u => u.role === 'technician');
+  const techList = techs.map(t => `${t.name} (${t.techStatus || 'offDuty'}, ID: ${t.id})`).join(', ');
+
+  const recentJobs = jobs.slice(-15).map(j =>
+    `[${j.id}] #${j.jobNumber} | ${j.client.firstName} ${j.client.lastName} | ${j.client.phone} | ${j.lockDetails.type}/${j.lockDetails.brand || '?'} | ${j.status} | ${j.scheduledDate} ${j.scheduledTime} | $${j.totalAmount} | assigned: ${j.assignedTo || 'none'}`
+  ).join('\n');
+
+  return `
+CURRENT BUSINESS STATE (auto-injected, refreshed every message):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Date: ${today.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'America/Phoenix' })}
+Time: ${today.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Phoenix' })} (Arizona Time)
+Company: ${settings.companyName}
+
+TODAY'S JOBS: ${todaysJobs.length} (Revenue: $${todayRevenue} / Target: $${settings.dailyRevenueTarget})
+ACTIVE JOBS: ${activeJobs.length}
+TOTAL COMPLETED: ${completedJobs.length} (Revenue: $${totalRevenue})
+MONTHLY TARGET: $${settings.monthlyRevenueTarget}
+
+TECHNICIANS: ${techList || 'None configured'}
+
+RECENT JOBS (last 15):
+${recentJobs || '(no jobs yet)'}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+}
+
+const getSystemInstruction = () => `
+IDENTITY:
+- Your name is "Дурачок" (Durachok). You are Sultan's elite business partner and AI assistant.
+- You speak with Sultan ONLY in Russian (русский язык).
+- All client names, addresses, messages to clients, and data entries MUST be in ENGLISH.
+- You think internally in English for all logic and data operations.
+
+ROLE:
+You are the strategic brain of TrustKey Locksmith — a locksmith company in Arizona (AZ).
+Services: automotive lockouts, residential rekeying, commercial lock systems, safe opening.
+You have FULL access to the CRM data and can perform ANY action Sultan asks.
+
+COMMUNICATION STYLE:
+- Be concise. No fluff. Get to the point.
+- When reporting data, use structured format (bullets, numbers).
+- When Sultan asks "what's up" or "как дела", give a quick business overview: today's jobs, revenue, any issues.
+- Never say "I'll help you with that" — just DO it.
+- If Sultan says "отправь" / "создай" / "отмени" — execute immediately, no confirmation needed.
+
+TOOL USAGE (CRITICAL):
+- You MUST call tools for ANY action. Never claim you did something without calling the function.
+- DO NOT ask for permission. If Sultan says to do something, DO IT.
+- If you need a job ID, call 'search_jobs' first to find it.
+- All client names in tool parameters MUST be in English/Latin script.
+- When creating jobs: scheduledDate format is YYYY-MM-DD, scheduledTime is HH:MM.
+
+LANGUAGE RULES:
+- Talk to Sultan: RUSSIAN
+- Client names in data: ENGLISH (Султан says "Джек" → you write "Jack")
+- SMS to clients (send_sms content): ENGLISH, professional, friendly
+- Never repeat SMS text back to Sultan. Just confirm: "Отправил сообщение"
+- Job descriptions, addresses, notes: ENGLISH
+
+WHAT YOU CAN DO:
+1. CREATE jobs with full details
+2. UPDATE any job field (status, schedule, notes, assignment)
+3. SEARCH jobs by name, status, date
+4. VIEW dashboard stats and revenue
+5. SEND real SMS to clients via OpenPhone
+6. CHECK inventory/parts
+7. SEE technician status and assignments
+8. NAVIGATE between app tabs
+9. ANALYZE business performance and give strategic advice
+
+LOCKSMITH DOMAIN KNOWLEDGE:
+- Job types: Automotive (car lockouts, key programming, ignition repair), Residential (lockouts, rekeying, smart locks), Commercial (panic bars, access control, master key systems), Safe/Vault (combination changes, drilling, manipulation)
+- Common brands: Schlage, Kwikset, Yale, Medeco (residential); Toyota, Honda, Ford, BMW, Audi (automotive); Von Duprin, Adams Rite, Corbin Russwin (commercial); Amsec, SentrySafe (safes)
+- Status flow: scheduled → enRoute → onSite → diagnosed → sold → completed
+- Urgency levels: emergency (locked out NOW), urgent (same-day), standard (can schedule)
+
+${getBusinessContext()}
+`;
+
+const AI_TOOLS = [
+  {
+    functionDeclarations: [
+      {
+        name: 'create_job',
+        description: 'Creates a new locksmith job. Returns the created job details.',
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            firstName: { type: Type.STRING, description: 'Client first name in English' },
+            lastName: { type: Type.STRING, description: 'Client last name in English' },
+            phone: { type: Type.STRING, description: 'Client phone number' },
+            email: { type: Type.STRING, description: 'Client email' },
+            address: { type: Type.STRING, description: 'Service address' },
+            lockType: { type: Type.STRING, enum: ['Automotive', 'Residential', 'Commercial', 'Secure / Safe', 'Other'] },
+            brand: { type: Type.STRING, description: 'Lock or vehicle brand (e.g. Toyota, Schlage)' },
+            modelOrYear: { type: Type.STRING, description: 'Model name or year (e.g. 2019 Camry)' },
+            complaint: { type: Type.STRING, description: 'Problem description in English' },
+            scheduledDate: { type: Type.STRING, description: 'YYYY-MM-DD format' },
+            scheduledTime: { type: Type.STRING, description: 'HH:MM format' },
+            urgency: { type: Type.STRING, enum: ['standard', 'urgent', 'emergency'] },
+            assignedTo: { type: Type.STRING, description: 'Technician user ID to assign' },
+          },
+          required: ['firstName', 'lastName', 'phone', 'lockType', 'complaint']
+        }
+      },
+      {
+        name: 'update_job',
+        description: 'Updates an existing job. Use search_jobs first if you need the job ID.',
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            jobId: { type: Type.STRING, description: 'The job ID (e.g. job-1234567890)' },
+            status: { type: Type.STRING, enum: ['scheduled', 'enRoute', 'onSite', 'diagnosed', 'sold', 'waitingParts', 'completed', 'cancelled'] },
+            scheduledDate: { type: Type.STRING, description: 'YYYY-MM-DD' },
+            scheduledTime: { type: Type.STRING, description: 'HH:MM' },
+            diagnosisNotes: { type: Type.STRING },
+            complaint: { type: Type.STRING },
+            assignedTo: { type: Type.STRING, description: 'Technician user ID' },
+            brand: { type: Type.STRING },
+            modelOrYear: { type: Type.STRING },
+            totalAmount: { type: Type.NUMBER },
+          },
+          required: ['jobId']
+        }
+      },
+      {
+        name: 'search_jobs',
+        description: 'Search jobs by client name, status, date, or phone. Returns matching jobs with their IDs.',
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            query: { type: Type.STRING, description: 'Search text (matches client name, phone, job number)' },
+            status: { type: Type.STRING, enum: ['scheduled', 'enRoute', 'onSite', 'diagnosed', 'sold', 'waitingParts', 'completed', 'cancelled'] },
+            date: { type: Type.STRING, description: 'YYYY-MM-DD to filter by scheduled date' },
+          }
+        }
+      },
+      {
+        name: 'get_dashboard',
+        description: 'Gets comprehensive business dashboard: today stats, revenue, job counts, technician status, recent activity.',
+        parameters: { type: Type.OBJECT, properties: {} }
+      },
+      {
+        name: 'get_calls',
+        description: 'Gets recent call records from OpenPhone (incoming, outgoing, missed).',
+        parameters: { type: Type.OBJECT, properties: {} }
+      },
+      {
+        name: 'get_messages',
+        description: 'Gets recent SMS messages from OpenPhone.',
+        parameters: { type: Type.OBJECT, properties: {} }
+      },
+      {
+        name: 'send_sms',
+        description: 'Sends a real SMS message to a phone number via OpenPhone. Content MUST be in English.',
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            to: { type: Type.STRING, description: 'Phone number (e.g. +16025551234)' },
+            content: { type: Type.STRING, description: 'Message text in ENGLISH' },
+          },
+          required: ['to', 'content']
+        }
+      },
+      {
+        name: 'send_sms_by_name',
+        description: 'Sends SMS to a client by their name (searches jobs to find their phone). Content in ENGLISH.',
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            clientName: { type: Type.STRING, description: 'Client full name in English (e.g. "Jack London")' },
+            content: { type: Type.STRING, description: 'Message text in ENGLISH' },
+          },
+          required: ['clientName', 'content']
+        }
+      },
+      {
+        name: 'search_inventory',
+        description: 'Search parts inventory by name, SKU, or category.',
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            query: { type: Type.STRING, description: 'Search text' },
+          },
+          required: ['query']
+        }
+      },
+      {
+        name: 'get_technicians',
+        description: 'Gets list of all technicians with their current status (available/onJob/offDuty).',
+        parameters: { type: Type.OBJECT, properties: {} }
+      },
+      {
+        name: 'navigate_to',
+        description: 'Navigates to a specific tab in the CRM application.',
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            tab: { type: Type.STRING, enum: ['calendar', 'jobs', 'messages', 'calls', 'clients', 'analytics', 'inventory', 'brain', 'settings'] }
+          },
+          required: ['tab']
+        }
+      },
+    ]
+  }
+];
+
+export async function handleAITool(name: string, args: any): Promise<any> {
+  const store = useAppStore.getState();
+  const auth = useAuthStore.getState();
+  const settings = useSettingsStore.getState();
+
+  switch (name) {
+    case 'create_job': {
+      const today = new Date();
+      const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+      const nowTime = `${String(today.getHours()).padStart(2, '0')}:${String(today.getMinutes()).padStart(2, '0')}`;
+
+      const jobData = {
+        jobNumber: `LK-${Math.floor(8000 + Math.random() * 2000)}`,
+        client: {
+          id: `c-${Date.now()}`,
+          firstName: args.firstName || 'Unknown',
+          lastName: args.lastName || '',
+          phone: args.phone || '',
+          email: args.email || '',
+          address: args.address || '',
+        },
+        lockDetails: {
+          type: args.lockType || 'Other',
+          brand: args.brand || '',
+          modelOrYear: args.modelOrYear || '',
+        },
+        complaint: args.complaint || '',
+        diagnosisNotes: '',
+        scheduledDate: args.scheduledDate || todayStr,
+        scheduledTime: args.scheduledTime || nowTime,
+        durationMinutes: 60,
+        status: 'scheduled' as const,
+        lineItems: [],
+        paymentStatus: 'unpaid' as const,
+        totalAmount: 0,
+        photos: [],
+        messages: [],
+        assignedTo: args.assignedTo || undefined,
+      };
+
+      store.addJob(jobData);
+      const allJobs = useAppStore.getState().jobs;
+      const created = allJobs[allJobs.length - 1];
+      return { status: 'success', message: `Job #${jobData.jobNumber} created`, jobId: created?.id, jobNumber: jobData.jobNumber };
+    }
+
+    case 'update_job': {
+      const job = store.jobs.find(j => j.id === args.jobId);
+      if (!job) return { status: 'error', message: `Job ${args.jobId} not found` };
+
+      const updates: any = {};
+      if (args.status) updates.status = args.status;
+      if (args.scheduledDate) updates.scheduledDate = args.scheduledDate;
+      if (args.scheduledTime) updates.scheduledTime = args.scheduledTime;
+      if (args.diagnosisNotes) updates.diagnosisNotes = args.diagnosisNotes;
+      if (args.complaint) updates.complaint = args.complaint;
+      if (args.assignedTo !== undefined) updates.assignedTo = args.assignedTo;
+      if (args.totalAmount !== undefined) updates.totalAmount = args.totalAmount;
+      if (args.brand) updates.lockDetails = { ...job.lockDetails, brand: args.brand };
+      if (args.modelOrYear) updates.lockDetails = { ...(updates.lockDetails || job.lockDetails), modelOrYear: args.modelOrYear };
+
+      store.updateJob({ ...job, ...updates });
+      return { status: 'success', message: `Job #${job.jobNumber} updated`, changes: Object.keys(updates) };
+    }
+
+    case 'search_jobs': {
+      let results = [...store.jobs];
+      if (args.query) {
+        const q = args.query.toLowerCase();
+        results = results.filter(j =>
+          `${j.client.firstName} ${j.client.lastName}`.toLowerCase().includes(q) ||
+          j.client.phone.includes(q) ||
+          j.jobNumber.toLowerCase().includes(q)
+        );
+      }
+      if (args.status) results = results.filter(j => j.status === args.status);
+      if (args.date) results = results.filter(j => j.scheduledDate === args.date);
+
+      return {
+        status: 'success',
+        count: results.length,
+        jobs: results.slice(0, 20).map(j => ({
+          id: j.id,
+          jobNumber: j.jobNumber,
+          client: `${j.client.firstName} ${j.client.lastName}`,
+          phone: j.client.phone,
+          address: j.client.address,
+          type: j.lockDetails.type,
+          brand: j.lockDetails.brand,
+          status: j.status,
+          scheduledDate: j.scheduledDate,
+          scheduledTime: j.scheduledTime,
+          totalAmount: j.totalAmount,
+          assignedTo: j.assignedTo,
+        }))
+      };
+    }
+
+    case 'get_dashboard': {
+      const today = new Date();
+      const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+      const todaysJobs = store.jobs.filter(j => j.scheduledDate === todayStr);
+      const completed = store.jobs.filter(j => j.status === 'completed');
+      const active = store.jobs.filter(j => !['completed', 'cancelled'].includes(j.status));
+      const todayRevenue = todaysJobs.filter(j => j.status === 'completed' || j.status === 'sold').reduce((s, j) => s + (j.totalAmount || 0), 0);
+      const totalRevenue = completed.reduce((s, j) => s + (j.totalAmount || 0), 0);
+      const techs = auth.users.filter(u => u.role === 'technician' && u.active);
+
+      return {
+        status: 'success',
+        today: {
+          date: todayStr,
+          jobCount: todaysJobs.length,
+          revenue: todayRevenue,
+          dailyTarget: settings.dailyRevenueTarget,
+          jobs: todaysJobs.map(j => ({ jobNumber: j.jobNumber, client: `${j.client.firstName} ${j.client.lastName}`, status: j.status, time: j.scheduledTime, amount: j.totalAmount })),
+        },
+        overall: {
+          totalJobs: store.jobs.length,
+          activeJobs: active.length,
+          completedJobs: completed.length,
+          totalRevenue,
+          monthlyTarget: settings.monthlyRevenueTarget,
+        },
+        technicians: techs.map(t => ({ id: t.id, name: t.name, status: t.techStatus || 'offDuty' })),
+      };
+    }
+
+    case 'get_calls': {
+      try {
+        const res = await fetch(`${API_BASE}/api/openphone/calls`);
+        if (!res.ok) return { status: 'error', message: 'Failed to fetch calls' };
+        const data = await res.json();
+        return { status: 'success', calls: data.data?.slice(0, 20) || [], total: data.totalItems || 0 };
+      } catch {
+        return { status: 'error', message: 'Backend unreachable' };
+      }
+    }
+
+    case 'get_messages': {
+      try {
+        const res = await fetch(`${API_BASE}/api/openphone/messages`);
+        if (!res.ok) return { status: 'error', message: 'Failed to fetch messages' };
+        const data = await res.json();
+        return { status: 'success', messages: data.data?.slice(0, 20) || [], total: data.totalItems || 0 };
+      } catch {
+        return { status: 'error', message: 'Backend unreachable' };
+      }
+    }
+
+    case 'send_sms': {
+      try {
+        const res = await fetch(`${API_BASE}/api/openphone/messages/send`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            to: args.to,
+            content: args.content,
+            phoneNumberId: import.meta.env.VITE_OPENPHONE_PHONE_NUMBER_ID || 'PNkhFHiD2G',
+          }),
+        });
+        const data = await res.json();
+        return { status: res.ok ? 'success' : 'error', message: res.ok ? `SMS sent to ${args.to}` : data.error };
+      } catch {
+        return { status: 'error', message: 'Failed to send SMS' };
+      }
+    }
+
+    case 'send_sms_by_name': {
+      const q = (args.clientName || '').toLowerCase();
+      const job = store.jobs.find(j =>
+        `${j.client.firstName} ${j.client.lastName}`.toLowerCase().includes(q)
+      );
+      if (!job) return { status: 'error', message: `Client "${args.clientName}" not found in jobs` };
+      return handleAITool('send_sms', { to: job.client.phone, content: args.content });
+    }
+
+    case 'search_inventory': {
+      const q = (args.query || '').toLowerCase();
+      const results = store.inventory.filter(p =>
+        p.name.toLowerCase().includes(q) ||
+        p.sku.toLowerCase().includes(q) ||
+        p.category.toLowerCase().includes(q)
+      );
+      return {
+        status: 'success',
+        count: results.length,
+        parts: results.map(p => ({ name: p.name, sku: p.sku, category: p.category, stock: p.stock, price: p.price, lowStock: p.stock <= p.reorderPoint })),
+      };
+    }
+
+    case 'get_technicians': {
+      const techs = auth.users.filter(u => u.role === 'technician' && u.active);
+      return {
+        status: 'success',
+        technicians: techs.map(t => ({
+          id: t.id,
+          name: t.name,
+          email: t.email,
+          phone: t.phone || '',
+          status: t.techStatus || 'offDuty',
+          commissionRate: t.commissionRate,
+        })),
+      };
+    }
+
+    case 'navigate_to': {
+      if (args.tab) {
+        store.setActiveTab(args.tab);
+        return { status: 'success', tab: args.tab };
+      }
+      return { status: 'error', message: 'Missing tab parameter' };
+    }
+
+    default:
+      return { status: 'error', message: `Unknown action: ${name}` };
+  }
+}
+
 export async function getStrategicBrainResponse(
-  message: string, 
+  message: string,
   history: { text: string, role: 'user' | 'model' }[],
-  callbacks: { onAction: (action: string, data: any) => any | Promise<any> }
 ) {
   const ai = new GoogleGenAI({ apiKey: resolveApiKey() });
 
@@ -67,8 +506,7 @@ export async function getStrategicBrainResponse(
     contents,
     config: {
       systemInstruction: getSystemInstruction(),
-      tools: TOOLS_VOICE,
-      thinkingConfig: { thinkingLevel: ThinkingLevel.HIGH }
+      tools: AI_TOOLS,
     },
   });
 
@@ -76,17 +514,16 @@ export async function getStrategicBrainResponse(
   if (functionCalls) {
     const results: any[] = [];
     for (const fc of functionCalls) {
-      const result = await Promise.resolve(callbacks.onAction(fc.name, fc.args));
+      const result = await handleAITool(fc.name, fc.args);
       results.push({
         functionResponse: {
           id: fc.id,
           name: fc.name,
-          response: { result: result || { status: "ok" } }
+          response: { result }
         }
       });
     }
-    
-    // Send back the results to get the final text response
+
     const secondResponse = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: [
@@ -96,153 +533,38 @@ export async function getStrategicBrainResponse(
       ],
       config: {
         systemInstruction: getSystemInstruction(),
-        tools: TOOLS_VOICE,
-        thinkingConfig: { thinkingLevel: ThinkingLevel.HIGH }
+        tools: AI_TOOLS,
       }
     });
+
+    // Handle chained tool calls
+    if (secondResponse.functionCalls) {
+      const chainedResults: any[] = [];
+      for (const fc of secondResponse.functionCalls) {
+        const result = await handleAITool(fc.name, fc.args);
+        chainedResults.push({
+          functionResponse: { id: fc.id, name: fc.name, response: { result } }
+        });
+      }
+      const thirdResponse = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: [
+          ...contents,
+          { role: 'model', parts: functionCalls.map(fc => ({ functionCall: fc })) },
+          { role: 'user', parts: results },
+          { role: 'model', parts: secondResponse.functionCalls.map(fc => ({ functionCall: fc })) },
+          { role: 'user', parts: chainedResults },
+        ],
+        config: { systemInstruction: getSystemInstruction(), tools: AI_TOOLS }
+      });
+      return thirdResponse.text;
+    }
+
     return secondResponse.text;
   }
 
   return response.text;
 }
-
-/**
- * Generates business insights using Gemini 3 Pro.
- */
-export async function getBusinessInsights(prompt: string, context: { jobCount: number; revenue: number; financials: any }) {
-  const ai = new GoogleGenAI({ apiKey: resolveApiKey() });
-  const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents: prompt,
-    config: {
-      systemInstruction: `You are a world-class strategic consultant for Salem AI.
-Context:
-- Jobs: ${context.jobCount}
-- Revenue: $${context.revenue}
-- Detailed Metrics: ${JSON.stringify(context.financials)}
-
-Tone: Elite, Actionable, Data-driven.`,
-    },
-  });
-  return response.text;
-}
-
-const getSystemInstruction = () => `
-ЛИЧНОСТЬ:
-- Твое имя — "Дурачок". Ты элитный напарник Султана. 
-- Твой голос — Puck. Ты быстрый, четкий и очень полезный. 
-- Ты общаешься с Султаном (работодателем) на русском языке.
-- ТЫ ДОЛЖЕН ДУМАТЬ НА АНГЛИЙСКОМ ЯЗЫКЕ. Вся внутренняя логика, поиск клиентов и работа с данными происходят на английском.
-- Ты знаешь всё о бизнесе Султана: работы, клиенты, финансы, звонки.
-- Веди диалог естественно, как живой человек. Будь лаконичным, дружелюбным и логичным.
-
-ТВОИ ВОЗМОЖНОСТИ:
-1. СОЗДАНИЕ РАБОТ: Ты можешь создавать новые записи о работах. Все имена клиентов, адреса и описания должны быть на АНГЛИЙСКОМ. Например, если Султан говорит "Джек Лондон", ты записываешь "Jack London".
-2. УПРАВЛЕНИЕ ДАННЫМИ: Ты можешь менять любую информацию в существующих работах.
-3. ПОИСК: Ты можешь находить информацию о работах и клиентах. Поиск имен ведется на АНГЛИЙСКОМ. Если Султан просит найти "Джека Лондона", ты ищешь "Jack London".
-4. НАВИГАЦИЯ: Ты можешь переключать вкладки приложения.
-5. КОММУНИКАЦИЯ: Ты можешь отправлять сообщения клиентам. 
-
-ПРАВИЛА ИСПОЛЬЗОВАНИЯ ИНСТРУМЕНТОВ (КРИТИЧЕСКИ ВАЖНО):
-- ТЫ ОБЯЗАН ВЫЗЫВАТЬ ИНСТРУМЕНТЫ ДЛЯ ЛЮБОГО ДЕЙСТВИЯ. 
-- НИКОГДА не говори Султану, что ты что-то сделал (отправил сообщение, изменил статус, создал работу), если ты НЕ вызвал соответствующую функцию в этом же ответе.
-- ТЫ НЕ ДОЛЖЕН ПЕРЕСПРАШИВАТЬ РАЗРЕШЕНИЯ. Если Султан сказал "отправь", "отмени", "измени" — выполняй это немедленно, вызывая нужный инструмент.
-- Если Султан просит отменить встречу или изменить статус, ты ДОЛЖЕН вызвать 'update_job'. 
-- Если ты не знаешь ID работы для 'update_job', ты ОБЯЗАН сначала вызвать 'get_app_state', чтобы найти ID по имени клиента (на английском). Не пытайся угадать ID.
-- Если Султан просит отправить сообщение, ты ДОЛЖЕН вызвать 'send_message_by_name'.
-- Если Султан говорит "отмени встречу с Мартином", это значит: 1) Найти ID работы через 'get_app_state', 2) Вызвать 'update_job' со статусом 'cancelled', 3) Вызвать 'send_message_by_name', чтобы вежливо уведомить клиента на английском.
-- Если Султан говорит "напиши Джеку Лондону", ты вызываешь 'send_message_by_name' ОБЯЗАТЕЛЬНО c параметром fullName="Jack London" (переведи на английский язык). КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО ПЕРЕДАВАТЬ ИМЕНА В ПАРАМЕТРЫ ФУНКЦИЙ НА РУССКОМ ЯЗЫКЕ.
-
-ПРАВИЛА ОБЩЕНИЯ И ЯЗЫКОВАЯ ПОЛИТИКА:
-- С Султаном (работодателем) ты говоришь ТОЛЬКО на русском языке.
-- С КЛИЕНТАМИ (американцами) всё общение, поиск и записи ведутся ТОЛЬКО НА АНГЛИЙСКОМ ЯЗЫКЕ.
-- Когда ты отправляешь сообщение клиенту через инструмент 'send_message_by_name', текст сообщения (параметр content) ДОЛЖЕН БЫТЬ НА АНГЛИЙСКОМ.
-- Внимательно проверяй параметры функций: 'fullName', 'firstName', 'lastName' ВСЕГДА должны передаваться латиницей (на английском).
-- Сообщения клиентам должны быть вежливыми, профессиональными и соответствовать контексту (например, при отмене встречи вырази сожаление и предложи связаться позже).
-- НИКОГДА не повторяй вслух текст отправленного сообщения. Просто подтверди Султану на русском, что действие выполнено (например: "Всё, я отправил сообщение", "Отменил и написал ему").
-- Текущее время и дата: ${new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' })}. Хотя ты говоришь с Султаном по-русски, используй английский формат даты/времени для внутренней логики.
-
-ИНСТРУМЕНТЫ:
-- 'create_job': Создает новую работу.
-- 'update_job': Обновляет существующую работу (включая статус 'cancelled').
-- 'navigate_to': Переходит на вкладку.
-- 'get_app_state': Получает текущее состояние (список работ, ID работ, статистику).
-- 'send_message_by_name': Отправляет сообщение клиенту по имени.
-`;
-
-const TOOLS_VOICE = [
-  {
-    functionDeclarations: [
-      {
-        name: 'create_job',
-        description: 'Creates a new job record with full details.',
-        parameters: {
-          type: Type.OBJECT,
-          properties: {
-            firstName: { type: Type.STRING },
-            lastName: { type: Type.STRING },
-            phone: { type: Type.STRING },
-            email: { type: Type.STRING },
-            address: { type: Type.STRING },
-            applianceType: { type: Type.STRING },
-            brand: { type: Type.STRING },
-            modelNumber: { type: Type.STRING },
-            complaint: { type: Type.STRING },
-            scheduledDate: { type: Type.STRING, description: 'YYYY-MM-DD' },
-            scheduledTime: { type: Type.STRING, description: 'HH:MM' }
-          },
-          required: ['firstName', 'lastName', 'phone', 'applianceType', 'complaint']
-        }
-      },
-      {
-        name: 'update_job',
-        description: 'Updates an existing job record.',
-        parameters: {
-          type: Type.OBJECT,
-          properties: {
-            jobId: { type: Type.STRING },
-            status: { type: Type.STRING, enum: ['scheduled', 'enRoute', 'onSite', 'diagnosed', 'waitingParts', 'completed', 'cancelled'] },
-            diagnosisNotes: { type: Type.STRING },
-            brand: { type: Type.STRING },
-            modelNumber: { type: Type.STRING },
-            serialNumber: { type: Type.STRING },
-            scheduledDate: { type: Type.STRING },
-            scheduledTime: { type: Type.STRING }
-          },
-          required: ['jobId']
-        }
-      },
-      {
-        name: 'navigate_to',
-        description: 'Navigates to a specific tab in the application.',
-        parameters: {
-          type: Type.OBJECT,
-          properties: {
-            tab: { type: Type.STRING, enum: ['calendar', 'jobs', 'messages', 'calls', 'analytics', 'brain', 'clients', 'settings', 'inventory'] }
-          },
-          required: ['tab']
-        }
-      },
-      {
-        name: 'get_app_state',
-        description: 'Retrieves the current state of the application including all jobs (with scheduled dates/times) and financial metrics (revenue, targets, progress).',
-        parameters: { type: Type.OBJECT, properties: {} }
-      },
-      {
-        name: 'send_message_by_name',
-        description: 'Sends a professional message to a client identified by their full name.',
-        parameters: {
-          type: Type.OBJECT,
-          properties: {
-            fullName: { type: Type.STRING, description: 'First and Last name of the client' },
-            content: { type: Type.STRING, description: 'The content of the message' }
-          },
-          required: ['fullName', 'content']
-        }
-      }
-    ]
-  }
-];
 
 export class GeminiVoiceAssistant {
   private sessionPromise: Promise<any> | null = null;
@@ -273,11 +595,10 @@ export class GeminiVoiceAssistant {
       config: {
         responseModalities: [Modality.AUDIO],
         systemInstruction: getSystemInstruction(),
-        tools: TOOLS_VOICE,
+        tools: AI_TOOLS,
         outputAudioTranscription: {},
         inputAudioTranscription: {},
         speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Puck' } } },
-        thinkingConfig: { thinkingLevel: ThinkingLevel.HIGH }
       },
       callbacks: {
         onopen: () => {
@@ -321,13 +642,13 @@ export class GeminiVoiceAssistant {
           if (audioData) this.playAudio(audioData);
           if (message.toolCall) {
             for (const fc of message.toolCall.functionCalls) {
-              const result = await Promise.resolve(callbacks.onAction(fc.name, fc.args));
-              // Corrected sendToolResponse: functionResponses should be an object, not an array, as per GenAI SDK documentation
+              const result = await handleAITool(fc.name, fc.args);
+              callbacks.onAction(fc.name, { ...fc.args, _result: result });
               this.sessionPromise?.then(s => s.sendToolResponse({
                 functionResponses: [{
                   id: fc.id,
                   name: fc.name,
-                  response: { result: result || { status: "ok" } },
+                  response: { result },
                 }]
               }));
             }
@@ -341,14 +662,11 @@ export class GeminiVoiceAssistant {
 
   private async playAudio(base64: string) {
     if (!this.audioContext) return;
-    
-    // Add a 0.9s pause before starting a new response
     if (this.nextStartTime <= this.audioContext.currentTime) {
       this.nextStartTime = this.audioContext.currentTime + 0.9;
     } else {
       this.nextStartTime = Math.max(this.nextStartTime, this.audioContext.currentTime);
     }
-    
     const audioBuffer = await decodeAudioData(decode(base64), this.audioContext, 24000, 1);
     const source = this.audioContext.createBufferSource();
     source.buffer = audioBuffer;

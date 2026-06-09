@@ -1,10 +1,8 @@
 
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { Mic, X, Bot, User, Minimize2, CheckCircle, Calendar, Edit3, KeyRound } from 'lucide-react';
-import { GeminiVoiceAssistant } from '../geminiService';
-import { useAppStore, useAIActions } from '../store';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Mic, X, Bot, User, Minimize2, CheckCircle, KeyRound } from 'lucide-react';
+import { GeminiVoiceAssistant, handleAITool } from '../geminiService';
 import { useSettingsStore } from '../settingsStore';
-import { Job, Message, JobStatus } from '../types';
 
 export const VoiceAssistant: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,14 +16,7 @@ export const VoiceAssistant: React.FC = () => {
 
   const assistantRef = useRef<GeminiVoiceAssistant | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { handleAction } = useAIActions();
   const { geminiApiKey } = useSettingsStore();
-
-  // Use a ref to always have the latest handleAction in the long-lived voice session
-  const actionRef = useRef(handleAction);
-  useEffect(() => {
-    actionRef.current = handleAction;
-  }, [handleAction]);
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -51,16 +42,20 @@ export const VoiceAssistant: React.FC = () => {
   }, []);
 
   const handleActionWithConfirmation = useCallback(async (action: string, data: any) => {
-    // Call the latest action from the ref
-    const result = await actionRef.current(action, data);
-    if (result.status === 'success') {
-      if (action === 'create_job') triggerConfirmation('Job Created');
-      if (action === 'update_job') triggerConfirmation('Record Updated');
-      if (action === 'navigate_to') triggerConfirmation(`Navigating to ${data.tab}`);
-      if (action === 'send_message_by_name') triggerConfirmation('Message Sent');
+    const result = data._result || await handleAITool(action, data);
+    if (result?.status === 'success') {
+      const labels: Record<string, string> = {
+        create_job: 'Job Created',
+        update_job: 'Job Updated',
+        navigate_to: `Navigating to ${data.tab}`,
+        send_sms: 'SMS Sent',
+        send_sms_by_name: 'SMS Sent',
+        search_jobs: `Found ${result.count || 0} jobs`,
+      };
+      triggerConfirmation(labels[action] || 'Done');
     }
     return result;
-  }, [handleAction, triggerConfirmation]);
+  }, [triggerConfirmation]);
 
   const toggle = async () => {
     if (isConnecting) return;
@@ -137,10 +132,10 @@ export const VoiceAssistant: React.FC = () => {
         <div className="fixed bottom-40 right-8 w-[380px] max-w-[calc(100vw-2rem)] h-[520px] bg-slate-900/95 backdrop-blur-3xl z-[90] flex flex-col rounded-2xl border border-white/10 shadow-2xl animate-in zoom-in-95">
           <div className="p-5 border-b border-white/10 flex items-center justify-between shrink-0">
             <div className="flex items-center space-x-3">
-               <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-xl shadow-blue-900/40"><Bot size={20} /></div>
+               <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-violet-600 rounded-xl flex items-center justify-center text-white shadow-xl shadow-blue-900/40"><Bot size={20} /></div>
                <div>
-                  <h3 className="font-bold text-sm uppercase tracking-widest text-white">Durachok AI</h3>
-                  <p className="text-xs text-blue-500 font-bold uppercase tracking-widest mt-0.5 italic">Sultan's Bro</p>
+                  <h3 className="font-bold text-sm uppercase tracking-widest text-white">Дурачок AI</h3>
+                  <p className="text-[10px] text-blue-400 font-bold uppercase tracking-widest mt-0.5">Voice Mode · TrustKey</p>
                </div>
             </div>
             <button onClick={toggle} className="p-2 text-slate-400 hover:text-white transition-colors"><Minimize2 size={18} /></button>
@@ -149,7 +144,7 @@ export const VoiceAssistant: React.FC = () => {
             {messages.length === 0 && (
               <div className="h-full flex flex-col items-center justify-center text-center px-8 opacity-20 space-y-4">
                 <Bot size={28} className="text-blue-500" />
-                <p className="text-xs font-bold uppercase tracking-widest">Awaiting Sultan's Command</p>
+                <p className="text-xs font-bold uppercase tracking-widest">Listening...</p>
               </div>
             )}
             {messages.map((m, i) => (
