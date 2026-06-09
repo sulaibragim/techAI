@@ -15,6 +15,7 @@ import { Inventory } from './components/Inventory';
 import { useAppStore, useVisibleJobs } from './store';
 import { useSettingsStore } from './settingsStore';
 import { useCurrentUser, useAuthStore, visibleTabsFor, ROLE_LABELS } from './authStore';
+import { getToken } from './apiClient';
 import type { TechStatus } from './types';
 import { Settings } from './components/Settings';
 import { ClientsList } from './components/ClientsList';
@@ -72,7 +73,9 @@ const App: React.FC = () => {
 
   const { onboardingComplete } = useSettingsStore();
 
-  if (!currentUser) return <Login />;
+  // Require both an identity and a valid server-issued token. A stale localStorage
+  // session without a token (e.g. after the auth upgrade) is forced to re-login.
+  if (!currentUser || !getToken()) return <Login />;
 
   const isDefaultOwner = currentUser.role === 'owner'
     && currentUser.email === 'owner@trustkey.az'
