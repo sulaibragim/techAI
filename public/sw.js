@@ -1,4 +1,4 @@
-const CACHE_NAME = 'trustkey-v1';
+const CACHE_NAME = 'trustkey-v2';
 const PRECACHE_URLS = [
   '/',
   '/manifest.json',

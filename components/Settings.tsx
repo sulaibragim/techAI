@@ -75,12 +75,22 @@ export const Settings: React.FC = () => {
         setFreshBusy(false);
         return;
       }
-      // Wipe the persisted client caches BEFORE reload, otherwise the browser
-      // re-uploads its old jobs on the next sync and they reappear.
-      useAppStore.setState({ jobs: [], inventory: [], messages: [], calls: [], missedInteractions: [] });
-      settings.resetSettings();
+      // Hard-wipe this device so nothing stale can re-upload or re-render:
+      // persisted Zustand stores, AI chat, and the PWA service-worker caches.
       try { (useAppStore as any).persist?.clearStorage?.(); } catch { /* ignore */ }
-      try { localStorage.removeItem('techai-crm-store-v3'); } catch { /* ignore */ }
+      try {
+        ['techai-crm-store-v3', 'techai-settings-v2', 'techai-brain-chat'].forEach(k => localStorage.removeItem(k));
+      } catch { /* ignore */ }
+      try {
+        if ('caches' in window) {
+          const keys = await caches.keys();
+          await Promise.all(keys.map(k => caches.delete(k)));
+        }
+      } catch { /* ignore */ }
+      try {
+        const regs = await navigator.serviceWorker?.getRegistrations();
+        await Promise.all((regs || []).map(r => r.unregister()));
+      } catch { /* ignore */ }
       window.location.reload();
     } catch {
       clearTimeout(timer);
