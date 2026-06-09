@@ -10,6 +10,7 @@ import { useAppStore, useVisibleJobs } from '../store';
 import { useSettingsStore } from '../settingsStore';
 import { Job, JobStatus, STATUS_COLORS } from '../types';
 import { calculateFinancialMetrics } from '../financialUtils';
+import { PendingJobSuggestions } from './PendingJobSuggestions';
 
 // --- SUB-COMPONENTS ---
 
@@ -214,6 +215,9 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
 
   return (
     <div className="space-y-6 pb-32 animate-in fade-in duration-700">
+
+      {/* AI pending job suggestions from call transcripts */}
+      <PendingJobSuggestions />
 
       {/* 1. COMMAND KPI BAR */}
       <div className="flex gap-4 overflow-x-auto scrollbar-hide py-1">
