@@ -1,5 +1,6 @@
 import React, { useMemo, useEffect, useState } from 'react';
 import { useAppStore, useVisibleJobs } from '../store';
+import { formatTimestamp } from '../dateUtils';
 import { MessageSquare, User, Clock, Smartphone, ChevronRight, RefreshCw, Send, Radio } from 'lucide-react';
 import { Job } from '../types';
 import { API_BASE } from '../backendUrl';
@@ -256,7 +257,7 @@ export const MessagesList: React.FC<MessagesListProps> = ({ onJobSelect }) => {
                 <div className="flex flex-col items-end space-y-2 ml-4 shrink-0">
                   <div className="flex items-center space-x-2 text-slate-500">
                     <Clock size={11} />
-                    <span className="text-xs font-bold uppercase tracking-widest tabular-nums">{latest.timestamp}</span>
+                    <span className="text-xs font-bold uppercase tracking-widest tabular-nums">{formatTimestamp(latest.timestamp)}</span>
                   </div>
                   <div className="p-2 bg-white/5 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition-all">
                     <ChevronRight size={15} />

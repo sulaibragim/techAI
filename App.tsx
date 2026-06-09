@@ -37,7 +37,8 @@ const App: React.FC = () => {
   const [notification, setNotification] = useState<{msg: string, type: 'info' | 'success'} | null>(null);
 
   const selectedJob = jobs.find(j => j.id === selectedJobId);
-  const inProgressJob = jobs.find(j => j.status === 'enRoute' || j.status === 'diagnosed');
+  const ACTIVE_STATUSES = ['enRoute', 'onSite', 'diagnosed', 'sold', 'waitingParts'];
+  const inProgressJob = jobs.find(j => ACTIVE_STATUSES.includes(j.status));
 
   useEffect(() => {
     if (currentUser) {

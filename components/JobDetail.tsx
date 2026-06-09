@@ -18,6 +18,7 @@ import { Job, LineItem, STATUS_COLORS, LockDetails, JobStatus, Client, Message }
 import { useAppStore } from '../store';
 import { useAuthStore, useCurrentUser, can } from '../authStore';
 import { BRANDS, LOCK_TYPES as LOCK_ICONS } from '../constants';
+import { formatTimestamp } from '../dateUtils';
 
 const STATUS_OPTIONS: { id: JobStatus; label: string }[] = [
   { id: 'scheduled', label: 'Scheduled' },
@@ -95,6 +96,11 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    // Stop any live camera stream if the modal unmounts while the camera is open.
+    return () => {
+      const stream = videoRef.current?.srcObject as MediaStream | null;
+      if (stream) stream.getTracks().forEach(t => t.stop());
+    };
   }, []);
 
   useEffect(() => {
@@ -205,7 +211,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
     if (newItem.partId) {
       const part = inventory.find(p => p.id === newItem.partId);
       if (part) {
-        updateInventoryItem({ ...part, stock: Math.max(0, part.stock - 1) });
+        updateInventoryItem({ ...part, stock: Math.max(0, part.stock - newItem.quantity) });
       }
     }
 
@@ -218,7 +224,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
     if (item && item.partId) {
       const part = inventory.find(p => p.id === item.partId);
       if (part) {
-        updateInventoryItem({ ...part, stock: part.stock + 1 });
+        updateInventoryItem({ ...part, stock: part.stock + item.quantity });
       }
     }
     handleLocalChange({ lineItems: localJob.lineItems.filter(li => li.id !== itemId) });
@@ -230,6 +236,8 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
   };
 
   const subtotal = localJob.lineItems.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
+  // The technician who actually did the job (falls back to the company's default name).
+  const assignedTechName = users.find(u => u.id === localJob.assignedTo)?.name || technicianName;
 
   const handlePrintInvoice = () => {
     const esc = (s: string) => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -342,7 +350,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
       <div class="sect-val" style="font-size:12px;">${esc(localJob.lockDetails.type)}</div>
       ${localJob.lockDetails.brand ? `<div class="sect-sub">${esc(localJob.lockDetails.brand)}${localJob.lockDetails.modelOrYear ? ' · ' + esc(localJob.lockDetails.modelOrYear) : ''}</div>` : ''}
       ${localJob.lockDetails.vinOrKeyCode ? `<div class="sect-sub" style="font-family:monospace;">Key: ${esc(localJob.lockDetails.vinOrKeyCode)}</div>` : ''}
-      <div class="sect-sub">Tech: ${esc(technicianName)}</div>
+      <div class="sect-sub">Tech: ${esc(assignedTechName)}</div>
     </div>
   </div>
 
@@ -995,7 +1003,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                         <div className={`max-w-[85%] p-4 rounded-2xl text-sm font-medium leading-relaxed ${msg.sender === 'technician' ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-white/5 text-slate-300 rounded-tl-none'}`}>
                           {msg.content}
                         </div>
-                        <span className="text-xs font-bold text-slate-500 uppercase mt-1 tracking-widest">{msg.timestamp}</span>
+                        <span className="text-xs font-bold text-slate-500 uppercase mt-1 tracking-widest">{formatTimestamp(msg.timestamp)}</span>
                       </div>
                     ))
                   ) : (
@@ -1094,7 +1102,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                           <p className="text-xs font-semibold text-slate-700">{localJob.lockDetails.type}</p>
                           {localJob.lockDetails.brand && <p className="text-xs text-slate-500 mt-0.5">{localJob.lockDetails.brand}{localJob.lockDetails.modelOrYear ? ` · ${localJob.lockDetails.modelOrYear}` : ''}</p>}
                           {localJob.lockDetails.vinOrKeyCode && <p className="text-xs text-slate-400 mt-0.5 font-mono">Key: {localJob.lockDetails.vinOrKeyCode}</p>}
-                          <p className="text-xs text-slate-400 mt-0.5">Tech: {technicianName}</p>
+                          <p className="text-xs text-slate-400 mt-0.5">Tech: {assignedTechName}</p>
                         </div>
                       </div>
 

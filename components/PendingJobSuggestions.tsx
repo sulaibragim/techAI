@@ -128,7 +128,7 @@ export const PendingJobSuggestions: React.FC<{ onJobCreated?: (job: import('../t
 
     const assignedTechId = selectedTech[pj.callId] || undefined;
 
-    addJob({
+    const createdJob = addJob({
       jobNumber: generateJobNumber(),
       client: {
         id: `c-${Date.now()}`,
@@ -167,8 +167,6 @@ export const PendingJobSuggestions: React.FC<{ onJobCreated?: (job: import('../t
     await dismiss(pj.callId);
     setCreating(null);
 
-    const allJobs = useAppStore.getState().jobs;
-    const createdJob = allJobs[allJobs.length - 1];
     if (createdJob && onJobCreated) {
       onJobCreated(createdJob);
     }

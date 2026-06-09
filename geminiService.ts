@@ -53,7 +53,11 @@ function getBusinessContext(): string {
   const store = useAppStore.getState();
   const auth = useAuthStore.getState();
   const settings = useSettingsStore.getState();
-  const jobs = store.jobs;
+  const currentUser = auth.users.find(u => u.id === auth.currentUserId) ?? null;
+  // Technicians only ever see their own assigned jobs in the AI context (defense in depth).
+  const jobs = currentUser?.role === 'technician'
+    ? store.jobs.filter(j => j.assignedTo === currentUser.id)
+    : store.jobs;
   const users = auth.users.filter(u => u.active);
 
   const today = new Date();
@@ -176,7 +180,7 @@ const AI_TOOLS = [
           type: Type.OBJECT,
           properties: {
             jobId: { type: Type.STRING, description: 'The job ID (e.g. job-1234567890)' },
-            status: { type: Type.STRING, enum: ['scheduled', 'enRoute', 'onSite', 'diagnosed', 'sold', 'waitingParts', 'completed', 'cancelled'] },
+            status: { type: Type.STRING, enum: ['scheduled', 'enRoute', 'onSite', 'diagnosed', 'sold', 'coffee', 'waitingParts', 'completed', 'cancelled'] },
             scheduledDate: { type: Type.STRING, description: 'YYYY-MM-DD' },
             scheduledTime: { type: Type.STRING, description: 'HH:MM' },
             diagnosisNotes: { type: Type.STRING },
@@ -196,7 +200,7 @@ const AI_TOOLS = [
           type: Type.OBJECT,
           properties: {
             query: { type: Type.STRING, description: 'Search text (matches client name, phone, job number)' },
-            status: { type: Type.STRING, enum: ['scheduled', 'enRoute', 'onSite', 'diagnosed', 'sold', 'waitingParts', 'completed', 'cancelled'] },
+            status: { type: Type.STRING, enum: ['scheduled', 'enRoute', 'onSite', 'diagnosed', 'sold', 'coffee', 'waitingParts', 'completed', 'cancelled'] },
             date: { type: Type.STRING, description: 'YYYY-MM-DD to filter by scheduled date' },
           }
         }

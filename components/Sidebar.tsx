@@ -51,7 +51,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onTabChange }) => 
   ];
   const tabs = ALL_TABS.filter(t => allowed.includes(t.id));
 
-  const inProgressJob = visibleJobs.find(j => j.status === 'enRoute' || j.status === 'diagnosed');
+  const inProgressJob = visibleJobs.find(j => ['enRoute', 'onSite', 'diagnosed', 'sold', 'waitingParts'].includes(j.status));
 
   return (
     <aside className="hidden md:flex flex-col w-56 bg-slate-900 border-r border-white/10 h-screen sticky top-0 py-6 shadow-2xl z-40">

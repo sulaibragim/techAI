@@ -89,6 +89,7 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) =>
   const currentUser = useCurrentUser();
   const technicians = useAuthStore(s => s.users.filter(u => u.role === 'technician' && u.active));
   const [step, setStep] = useState(0);
+  const [error, setError] = useState('');
   const [client, setClient] = useState<Partial<Client>>({
     firstName: '',
     lastName: '',
@@ -198,8 +199,15 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) =>
     setStep(1);
   };
 
-  const nextStep = () => setStep(s => s + 1);
-  const prevStep = () => setStep(s => s - 1);
+  const nextStep = () => {
+    if (step === 1) {
+      if (!client.phone?.trim()) { setError('Phone number is required.'); return; }
+      if (!client.firstName?.trim() && !client.lastName?.trim()) { setError('Client name is required.'); return; }
+    }
+    setError('');
+    setStep(s => s + 1);
+  };
+  const prevStep = () => { setError(''); setStep(s => s - 1); };
 
   return (
     <div className="fixed inset-0 bg-slate-950 z-[200] flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-8">
@@ -370,6 +378,7 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) =>
 
       {step > 0 && (
         <footer className="px-6 py-10 border-t border-white/10 bg-slate-950/90 backdrop-blur-md">
+          {error && <p className="max-w-xl mx-auto text-xs font-semibold text-red-400 mb-3 text-center">{error}</p>}
           <div className="max-w-xl mx-auto flex items-center justify-between gap-6">
             {step > 1 ? (
               <button onClick={prevStep} className="px-8 py-5 rounded-2xl border border-white/10 text-xs font-bold uppercase tracking-widest flex items-center"><ChevronLeft size={16} className="mr-2" />Back</button>

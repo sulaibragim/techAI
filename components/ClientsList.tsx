@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { User, Phone, Mail, MapPin, Briefcase, DollarSign, ChevronRight, Search } from 'lucide-react';
 import { useVisibleJobs } from '../store';
 import { Job } from '../types';
+import { formatDate } from '../dateUtils';
 
 interface ClientRecord {
   id: string;
@@ -78,7 +79,7 @@ export const ClientsList: React.FC<{ onJobSelect?: (job: Job) => void }> = ({ on
           {[
             { label: 'Jobs', value: selected.jobs.length, icon: Briefcase },
             { label: 'Total Spent', value: `$${selected.totalSpend.toLocaleString()}`, icon: DollarSign },
-            { label: 'Last Visit', value: selected.lastJobDate, icon: ChevronRight },
+            { label: 'Last Visit', value: formatDate(selected.lastJobDate), icon: ChevronRight },
           ].map(({ label, value, icon: Icon }) => (
             <div key={label} className="bg-slate-900 border border-white/5 rounded-2xl p-5 flex items-center gap-4">
               <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center">
@@ -188,7 +189,7 @@ export const ClientsList: React.FC<{ onJobSelect?: (job: Job) => void }> = ({ on
             className="bg-slate-900 border border-white/5 rounded-2xl p-5 flex items-center gap-4 cursor-pointer hover:border-blue-500/20 transition-all"
           >
             <div className="w-12 h-12 bg-blue-600/10 rounded-xl flex items-center justify-center shrink-0 text-lg font-bold text-blue-400">
-              {client.firstName[0]}{client.lastName[0]}
+              {(client.firstName[0] || '?')}{(client.lastName[0] || '')}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-bold text-white">{client.firstName} {client.lastName}</p>

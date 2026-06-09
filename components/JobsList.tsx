@@ -23,6 +23,7 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
   const canCancel = currentUser ? can.deleteJob(currentUser.role) || currentUser.role === 'manager' : false;
   const canDelete = currentUser ? can.deleteJob(currentUser.role) : false;
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [cancelingId, setCancelingId] = useState<string | null>(null);
 
   const filteredJobs = jobs.filter(j => {
     if (filter === 'pending' && (j.status === 'completed' || j.status === 'cancelled')) return false;
@@ -42,30 +43,34 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
     return true;
   });
 
-  const getButtonConfig = (status: JobStatus) => {
+  // Forward progression through the job lifecycle. Each status advances to the next logical step.
+  const getButtonConfig = (status: JobStatus): { label: string; color: string; nextStatus: JobStatus } => {
     switch (status) {
-      case 'diagnosed':
-        return { label: 'Diagnosed', color: 'bg-yellow-500', nextStatus: 'completed' as JobStatus };
-      case 'completed':
-        return { label: 'Done', color: 'bg-green-600', nextStatus: 'completed' as JobStatus };
-      default:
-        return { label: 'Update', color: 'bg-blue-600 text-white', nextStatus: 'diagnosed' as JobStatus };
+      case 'scheduled':    return { label: 'Start',      color: 'bg-blue-600 text-white', nextStatus: 'enRoute' };
+      case 'enRoute':      return { label: 'Arrived',    color: 'bg-blue-600 text-white', nextStatus: 'onSite' };
+      case 'onSite':       return { label: 'Diagnose',   color: 'bg-blue-600 text-white', nextStatus: 'diagnosed' };
+      case 'diagnosed':    return { label: 'Mark Sold',  color: 'bg-amber-500 text-white', nextStatus: 'sold' };
+      case 'sold':         return { label: 'Complete',   color: 'bg-green-600 text-white', nextStatus: 'completed' };
+      case 'waitingParts': return { label: 'Resume',     color: 'bg-violet-600 text-white', nextStatus: 'diagnosed' };
+      case 'coffee':       return { label: 'Resume',     color: 'bg-blue-600 text-white', nextStatus: 'diagnosed' };
+      case 'completed':    return { label: 'Done',       color: 'bg-green-600 text-white', nextStatus: 'completed' };
+      case 'cancelled':    return { label: 'Closed',     color: 'bg-slate-600 text-white', nextStatus: 'cancelled' };
+      default:             return { label: 'Update',     color: 'bg-blue-600 text-white', nextStatus: 'diagnosed' };
     }
   };
 
   const handleUpdate = (e: React.MouseEvent, jobId: string, currentStatus: JobStatus) => {
     e.stopPropagation();
+    if (currentStatus === 'completed' || currentStatus === 'cancelled') return; // terminal
     const config = getButtonConfig(currentStatus);
     updateJobStatus(jobId, config.nextStatus);
-    if (config.nextStatus === 'completed' && currentStatus === 'diagnosed') {
-        setFilter('completed');
-    }
+    if (config.nextStatus === 'completed') setFilter('completed');
   };
 
-  const handleCancel = (e: React.MouseEvent, jobId: string) => {
-    e.stopPropagation();
+  const handleCancel = (jobId: string) => {
     updateJobStatus(jobId, 'cancelled');
     setFilter('cancelled');
+    setCancelingId(null);
   };
 
   return (
@@ -101,7 +106,7 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
                         key={window}
                         onClick={() => {
                           const target = jobs.find(j => j.id === reschedulingId);
-                          if (target) updateJob({ ...target, scheduledDate: tempDate, scheduledTime: window.split(' ')[0] });
+                          if (target) updateJob({ ...target, scheduledDate: tempDate, scheduledTime: window.split(' ')[0].padStart(5, '0') });
                           setReschedulingId(null);
                         }}
                         className={`w-full py-2 px-3 rounded-lg text-left text-xs font-semibold border transition-all flex justify-between items-center group ${tempDate === new Date().toISOString().split('T')[0] ? 'bg-blue-500/10 border-blue-500/30 text-white hover:bg-blue-600 hover:text-white' : 'bg-white/5 border-white/10 text-slate-300 hover:bg-blue-500/20'}`}
@@ -217,9 +222,9 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
                       <Calendar size={14} />
                    </button>
 
-                   {canCancel && (
+                   {canCancel && job.status !== 'cancelled' && job.status !== 'completed' && (
                      <button
-                       onClick={(e) => handleCancel(e, job.id)}
+                       onClick={(e) => { e.stopPropagation(); setCancelingId(job.id); }}
                        className="w-9 h-9 bg-red-500/10 rounded-xl flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white transition-all border border-red-500/20 active:scale-95"
                        title="Cancel Job"
                      >
@@ -246,6 +251,33 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
           </div>
         )}
       </div>
+
+      {/* CANCEL CONFIRMATION */}
+      <AnimatePresence>
+        {cancelingId && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-md z-[300] flex items-center justify-center p-6"
+          >
+            <motion.div
+              initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}
+              className="bg-slate-900 w-full max-w-sm rounded-2xl border border-amber-500/20 p-8 shadow-2xl space-y-6 text-center"
+            >
+              <div className="w-16 h-16 bg-amber-500/10 rounded-2xl flex items-center justify-center mx-auto">
+                <AlertCircle size={28} className="text-amber-400" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-white">Cancel this job?</h3>
+                <p className="text-sm text-slate-400 mt-2">The job moves to Cancelled. You can still find it under the Cancelled filter.</p>
+              </div>
+              <div className="flex gap-3">
+                <button onClick={() => setCancelingId(null)} className="flex-1 py-3.5 rounded-xl bg-white/5 hover:bg-white/10 text-white font-bold text-xs uppercase tracking-widest">Keep Job</button>
+                <button onClick={() => handleCancel(cancelingId)} className="flex-1 py-3.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs uppercase tracking-widest active:scale-95">Cancel Job</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* DELETE CONFIRMATION */}
       <AnimatePresence>
