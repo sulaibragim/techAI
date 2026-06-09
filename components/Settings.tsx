@@ -75,9 +75,12 @@ export const Settings: React.FC = () => {
         setFreshBusy(false);
         return;
       }
-      // Clear local state so nothing lingers, then re-onboard from a clean slate.
+      // Wipe the persisted client caches BEFORE reload, otherwise the browser
+      // re-uploads its old jobs on the next sync and they reappear.
       useAppStore.setState({ jobs: [], inventory: [], messages: [], calls: [], missedInteractions: [] });
       settings.resetSettings();
+      try { (useAppStore as any).persist?.clearStorage?.(); } catch { /* ignore */ }
+      try { localStorage.removeItem('techai-crm-store-v3'); } catch { /* ignore */ }
       window.location.reload();
     } catch {
       clearTimeout(timer);
