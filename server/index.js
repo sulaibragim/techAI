@@ -21,15 +21,21 @@ const PORT = process.env.PORT || process.env.SERVER_PORT || 3001;
 app.use(helmet());
 
 // CORS — lock to ALLOWED_ORIGINS if set, otherwise reflect origin (auth is token-based, not cookie-based).
+const normalizeOrigin = (o) => o.trim().replace(/\/+$/, '');
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
   .split(',')
-  .map(s => s.trim())
+  .map(normalizeOrigin)
   .filter(Boolean);
 if (allowedOrigins.length === 0) {
   console.warn('[CORS] ALLOWED_ORIGINS not set — reflecting all origins. Set ALLOWED_ORIGINS in production.');
 }
 app.use(cors({
-  origin: allowedOrigins.length > 0 ? allowedOrigins : true,
+  origin: (origin, cb) => {
+    if (!origin) return cb(null, true);                 // non-browser / same-origin
+    if (allowedOrigins.length === 0) return cb(null, true);
+    // Tolerate trailing-slash mismatches between the env value and the browser Origin.
+    cb(null, allowedOrigins.includes(normalizeOrigin(origin)));
+  },
 }));
 
 app.use(express.json({ limit: '5mb' }));

@@ -8,10 +8,14 @@ export default defineConfig(() => {
         port: 3000,
         host: '0.0.0.0',
         proxy: {
+          // Server mounts routes under /api/* — forward as-is (do NOT strip /api).
           '/api': {
             target: 'http://localhost:3001',
             changeOrigin: true,
-            rewrite: (path) => path.replace(/^\/api/, ''),
+          },
+          '/openphone': {
+            target: 'http://localhost:3001',
+            changeOrigin: true,
           },
         },
       },
