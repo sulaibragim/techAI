@@ -21,6 +21,7 @@ interface AuthState {
   login: (email: string, password: string) => boolean;
   loginAs: (userId: string) => void;
   logout: () => void;
+  masterReset: () => void;
 
   addUser: (user: Omit<User, 'id' | 'createdAt'>) => void;
   updateUser: (user: User) => void;
@@ -50,6 +51,12 @@ export const useAuthStore = create<AuthState>()(
       },
       loginAs: (userId) => set({ currentUserId: userId }),
       logout: () => set({ currentUserId: null }),
+      masterReset: () => set((state) => ({
+        users: state.users.length > 0
+          ? state.users.map(u => ({ ...u, password: '1234', active: true }))
+          : DEFAULT_USERS,
+        currentUserId: null,
+      })),
 
       addUser: (userData) => set((state) => ({
         users: [...state.users, { ...userData, id: `u-${Date.now()}`, createdAt: new Date().toISOString() }]

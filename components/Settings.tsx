@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { motion } from 'motion/react';
-import { User, Target, Key, Eye, EyeOff, RotateCcw, Save, Upload, Info, Building2, AlertTriangle, Users, Plus, Trash2, ShieldCheck, History } from 'lucide-react';
+import { User, Target, Key, Eye, EyeOff, RotateCcw, Save, Upload, Info, Building2, AlertTriangle, Users, Plus, Trash2, ShieldCheck, History, Lock, Pencil, Check, X } from 'lucide-react';
 import { useSettingsStore, SETTINGS_DEFAULTS, settingsStorageIsEphemeral } from '../settingsStore';
 import { useAuthStore, useCurrentUser, can, ROLE_LABELS } from '../authStore';
 import { Role } from '../types';
@@ -343,6 +343,39 @@ const TeamSection: React.FC = () => {
   const [showAdd, setShowAdd] = useState(false);
   const [draft, setDraft] = useState({ name: '', email: '', password: '', role: 'technician' as Role, commissionRate: 30 });
   const [err, setErr] = useState('');
+  const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
+  const [editingPassword, setEditingPassword] = useState<string | null>(null);
+  const [editingEmail, setEditingEmail] = useState<string | null>(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [newEmail, setNewEmail] = useState('');
+
+  const togglePasswordVisibility = (id: string) => setVisiblePasswords(p => ({ ...p, [id]: !p[id] }));
+
+  const startEditPassword = (u: { id: string; password?: string }) => {
+    setEditingPassword(u.id);
+    setNewPassword(u.password || '');
+  };
+
+  const savePassword = (u: any) => {
+    if (newPassword.trim()) {
+      updateUser({ ...u, password: newPassword.trim() });
+    }
+    setEditingPassword(null);
+    setNewPassword('');
+  };
+
+  const startEditEmail = (u: { id: string; email: string }) => {
+    setEditingEmail(u.id);
+    setNewEmail(u.email);
+  };
+
+  const saveEmail = (u: any) => {
+    if (newEmail.trim() && newEmail.includes('@')) {
+      updateUser({ ...u, email: newEmail.trim() });
+    }
+    setEditingEmail(null);
+    setNewEmail('');
+  };
 
   const handleAdd = () => {
     if (!draft.name.trim() || !draft.email.trim() || !draft.password.trim()) { setErr('Name, email and password are required.'); return; }
@@ -373,7 +406,7 @@ const TeamSection: React.FC = () => {
           </div>
           <div>
             <h3 className="text-sm font-bold uppercase tracking-widest text-white">Team & Access</h3>
-            <p className="text-xs text-slate-500 mt-0.5">Owner-only · manage staff and roles</p>
+            <p className="text-xs text-slate-500 mt-0.5">Owner-only · manage staff, roles & credentials</p>
           </div>
         </div>
         <button
@@ -389,7 +422,7 @@ const TeamSection: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <input className="bg-slate-800 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-blue-500/50" placeholder="Full name" value={draft.name} onChange={e => setDraft(d => ({ ...d, name: e.target.value }))} />
             <input className="bg-slate-800 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-blue-500/50" placeholder="Email" value={draft.email} onChange={e => setDraft(d => ({ ...d, email: e.target.value }))} />
-            <input className="bg-slate-800 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-blue-500/50" placeholder="Temporary password" value={draft.password} onChange={e => setDraft(d => ({ ...d, password: e.target.value }))} />
+            <input className="bg-slate-800 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-blue-500/50" placeholder="Password" value={draft.password} onChange={e => setDraft(d => ({ ...d, password: e.target.value }))} />
             <select className="bg-slate-800 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-blue-500/50" value={draft.role} onChange={e => setDraft(d => ({ ...d, role: e.target.value as Role }))}>
               {ROLES.map(r => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
             </select>
@@ -411,9 +444,11 @@ const TeamSection: React.FC = () => {
       <div className="space-y-2">
         {users.map(u => {
           const isSelf = u.id === currentUser?.id;
+          const pwVisible = visiblePasswords[u.id];
+          const isEditingPw = editingPassword === u.id;
+          const isEditingEm = editingEmail === u.id;
           return (
             <div key={u.id} className="bg-white/5 border border-white/10 rounded-2xl p-3 space-y-3">
-              {/* identity row */}
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl overflow-hidden bg-slate-800 border border-white/10 shrink-0">
                   <img src={u.photo || `https://i.pravatar.cc/150?u=${u.id}`} className="w-full h-full object-cover" alt="" />
@@ -424,7 +459,25 @@ const TeamSection: React.FC = () => {
                     {isSelf && <span className="text-[9px] font-bold uppercase tracking-wide text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded">You</span>}
                     {!u.active && <span className="text-[9px] font-bold uppercase tracking-wide text-slate-500 bg-white/5 px-1.5 py-0.5 rounded">Disabled</span>}
                   </p>
-                  <p className="text-xs text-slate-500 truncate">{u.email}</p>
+                  {isEditingEm ? (
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <input
+                        type="email"
+                        value={newEmail}
+                        onChange={e => setNewEmail(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && saveEmail(u)}
+                        autoFocus
+                        className="bg-slate-800 border border-blue-500/50 rounded-lg px-2 py-1 text-xs text-white w-48 focus:outline-none"
+                      />
+                      <button onClick={() => saveEmail(u)} className="text-green-400 hover:text-green-300"><Check size={14} /></button>
+                      <button onClick={() => setEditingEmail(null)} className="text-slate-400 hover:text-white"><X size={14} /></button>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-slate-500 truncate flex items-center gap-1.5 group/email">
+                      {u.email}
+                      <button onClick={() => startEditEmail(u)} className="opacity-0 group-hover/email:opacity-100 text-slate-500 hover:text-blue-400 transition-all"><Pencil size={10} /></button>
+                    </p>
+                  )}
                 </div>
                 {!isSelf && (
                   <button
@@ -436,8 +489,35 @@ const TeamSection: React.FC = () => {
                 )}
               </div>
 
-              {/* controls row */}
               <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-center gap-1.5 bg-slate-800 border border-white/10 rounded-lg px-3 py-1.5">
+                  <Lock size={12} className="text-slate-500 shrink-0" />
+                  {isEditingPw ? (
+                    <>
+                      <input
+                        type="text"
+                        value={newPassword}
+                        onChange={e => setNewPassword(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && savePassword(u)}
+                        autoFocus
+                        className="bg-transparent text-sm font-mono text-white w-24 outline-none"
+                      />
+                      <button onClick={() => savePassword(u)} className="text-green-400 hover:text-green-300"><Check size={14} /></button>
+                      <button onClick={() => setEditingPassword(null)} className="text-slate-400 hover:text-white"><X size={14} /></button>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-xs font-mono text-slate-300 select-all">{pwVisible ? u.password : '••••••'}</span>
+                      <button onClick={() => togglePasswordVisibility(u.id)} className="text-slate-500 hover:text-blue-400 transition-colors">
+                        {pwVisible ? <EyeOff size={12} /> : <Eye size={12} />}
+                      </button>
+                      <button onClick={() => startEditPassword(u)} className="text-slate-500 hover:text-blue-400 transition-colors">
+                        <Pencil size={12} />
+                      </button>
+                    </>
+                  )}
+                </div>
+
                 <select
                   value={u.role}
                   disabled={isSelf}
