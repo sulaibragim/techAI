@@ -15,6 +15,7 @@ export interface SettingsState {
   /** Per-month revenue target overrides, keyed "YYYY-MM". Falls back to monthlyRevenueTarget. */
   monthlyTargets: Record<string, number>;
   geminiApiKey: string;
+  onboardingComplete: boolean;
   updateSettings: (patch: Partial<Omit<SettingsState, 'updateSettings' | 'resetSettings' | 'setMonthlyTarget'>>) => void;
   setMonthlyTarget: (monthKey: string, value: number) => void;
   resetSettings: () => void;
@@ -39,6 +40,7 @@ export const SETTINGS_DEFAULTS = {
   dailyRevenueTarget: 1500,
   monthlyTargets: {} as Record<string, number>,
   geminiApiKey: '',
+  onboardingComplete: false,
 };
 
 const DEFAULTS = SETTINGS_DEFAULTS;

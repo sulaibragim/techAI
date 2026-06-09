@@ -63,7 +63,7 @@ function formatDur(s: number | null): string {
   return m > 0 ? `${m}m ${sec}s` : `${sec}s`;
 }
 
-export const PendingJobSuggestions: React.FC = () => {
+export const PendingJobSuggestions: React.FC<{ onJobCreated?: (job: import('../types').Job) => void }> = ({ onJobCreated }) => {
   const { addJob } = useAppStore();
   const { users } = useAuthStore();
   const technicians = users.filter(u => u.role === 'technician' && u.active);
@@ -83,7 +83,7 @@ export const PendingJobSuggestions: React.FC = () => {
 
   useEffect(() => {
     fetchPending();
-    const interval = setInterval(fetchPending, 30000);
+    const interval = setInterval(fetchPending, 10000);
     return () => clearInterval(interval);
   }, [fetchPending]);
 
@@ -125,7 +125,7 @@ export const PendingJobSuggestions: React.FC = () => {
       },
       complaint: s.problemDescription || '',
       diagnosisNotes: s.notes || '',
-      scheduledDate: today.toISOString().split('T')[0],
+      scheduledDate: `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`,
       scheduledTime: `${String(today.getHours()).padStart(2, '0')}:${String(today.getMinutes()).padStart(2, '0')}`,
       durationMinutes: 60,
       status: 'scheduled',
@@ -141,6 +141,12 @@ export const PendingJobSuggestions: React.FC = () => {
 
     await dismiss(pj.callId);
     setCreating(null);
+
+    const allJobs = useAppStore.getState().jobs;
+    const createdJob = allJobs[allJobs.length - 1];
+    if (createdJob && onJobCreated) {
+      onJobCreated(createdJob);
+    }
   };
 
   if (pending.length === 0) return null;

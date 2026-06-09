@@ -19,6 +19,7 @@ import type { TechStatus } from './types';
 import { Settings } from './components/Settings';
 import { ClientsList } from './components/ClientsList';
 import { Login } from './components/Login';
+import { OnboardingWizard } from './components/OnboardingWizard';
 import { Bell, AlertCircle, CheckCircle2, X, Menu } from 'lucide-react';
 import type { TabId } from './types';
 
@@ -62,7 +63,10 @@ const App: React.FC = () => {
     return () => window.removeEventListener('keydown', handler);
   }, [setActiveTab, currentUser]);
 
+  const { onboardingComplete } = useSettingsStore();
+
   if (!currentUser) return <Login />;
+  if (!onboardingComplete && currentUser.role === 'owner') return <OnboardingWizard />;
 
   const renderContent = () => {
     return (
