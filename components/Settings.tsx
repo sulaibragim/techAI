@@ -55,10 +55,23 @@ export const Settings: React.FC = () => {
   const handleStartFresh = async () => {
     setFreshBusy(true);
     setFreshError('');
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 20000);
     try {
-      const res = await fetch(`${API_BASE}/api/admin/reset`, { method: 'POST', headers: { ...authHeaders() } });
+      const res = await fetch(`${API_BASE}/api/admin/reset`, {
+        method: 'POST',
+        headers: { ...authHeaders() },
+        signal: controller.signal,
+      });
+      clearTimeout(timer);
       if (!res.ok) {
-        setFreshError('Server refused the reset. Make sure you are the owner and the server is reachable.');
+        setFreshError(
+          res.status === 404
+            ? 'The reset feature is still rolling out to the server. Wait a minute for the update to finish, then try again.'
+            : res.status === 401 || res.status === 403
+            ? 'Only the owner can reset, and your session must be valid. Try logging out and back in.'
+            : 'The server refused the reset. Try again in a moment.'
+        );
         setFreshBusy(false);
         return;
       }
@@ -67,7 +80,8 @@ export const Settings: React.FC = () => {
       settings.resetSettings();
       window.location.reload();
     } catch {
-      setFreshError('Could not reach the server. Check your connection and try again.');
+      clearTimeout(timer);
+      setFreshError('The server did not respond — it may still be deploying. Wait a minute and try again.');
       setFreshBusy(false);
     }
   };
