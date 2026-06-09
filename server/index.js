@@ -22,7 +22,13 @@ app.get('/health', (_req, res) => res.json({ ok: true }));
 
 app.get('/debug-key', (_req, res) => {
   const key = process.env.OPENPHONE_API_KEY;
-  res.json({ keyPrefix: key?.slice(0, 8), keyLength: key?.length });
+  const gemini = process.env.GEMINI_API_KEY;
+  const viteKey = process.env.VITE_API_KEY;
+  res.json({
+    openphone: { prefix: key?.slice(0, 8), len: key?.length },
+    gemini: { prefix: gemini?.slice(0, 8), len: gemini?.length },
+    viteApiKey: { prefix: viteKey?.slice(0, 8), len: viteKey?.length },
+  });
 });
 
 app.get('/debug-openphone', async (_req, res) => {
