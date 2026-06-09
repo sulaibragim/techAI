@@ -56,6 +56,17 @@ export async function initDB() {
         data JSONB NOT NULL,
         created_at TIMESTAMPTZ DEFAULT NOW()
       );
+
+      CREATE TABLE IF NOT EXISTS job_tombstones (
+        id TEXT PRIMARY KEY,
+        deleted_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS inventory (
+        id TEXT PRIMARY KEY,
+        data JSONB NOT NULL,
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
     `);
 
     const { rows } = await client.query('SELECT COUNT(*) FROM users');

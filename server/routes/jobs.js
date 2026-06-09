@@ -33,9 +33,12 @@ jobsRouter.post('/sync', requireAuth, async (req, res) => {
   const client = await db.connect();
   try {
     await client.query('BEGIN');
+    // Skip any job the user has deleted elsewhere — tombstones prevent resurrection on sync.
+    const { rows: tombs } = await client.query('SELECT id FROM job_tombstones');
+    const deleted = new Set(tombs.map(t => t.id));
     for (const job of jobs) {
       const { id, ...data } = job;
-      if (!id) continue;
+      if (!id || deleted.has(id)) continue;
       if (isTech(req) && data.assignedTo !== req.user.id) continue; // techs cannot write others' jobs
       await client.query(
         `INSERT INTO jobs (id, data, updated_at) VALUES ($1, $2, NOW())
@@ -107,10 +110,14 @@ jobsRouter.put('/:id', requireAuth, async (req, res) => {
   }
 });
 
-// Delete job — owner only.
+// Delete job — owner only. Records a tombstone so the job cannot resurrect via sync.
 jobsRouter.delete('/:id', requireAuth, requireRole('owner'), async (req, res) => {
   try {
     const result = await db.query('DELETE FROM jobs WHERE id = $1', [req.params.id]);
+    await db.query(
+      'INSERT INTO job_tombstones (id) VALUES ($1) ON CONFLICT (id) DO UPDATE SET deleted_at = NOW()',
+      [req.params.id]
+    );
     if (result.rowCount === 0) return res.status(404).json({ error: 'Job not found' });
     res.sendStatus(204);
   } catch (err) {

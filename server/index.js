@@ -7,6 +7,7 @@ import { openphoneRouter } from './routes/openphone.js';
 import { authRouter } from './routes/auth.js';
 import { settingsRouter } from './routes/settings.js';
 import { jobsRouter } from './routes/jobs.js';
+import { inventoryRouter } from './routes/inventory.js';
 import { initDB } from './db.js';
 
 import { fileURLToPath } from 'url';
@@ -58,6 +59,7 @@ app.use('/api/openphone', openphoneRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/settings', settingsRouter);
 app.use('/api/jobs', jobsRouter);
+app.use('/api/inventory', inventoryRouter);
 
 async function start() {
   if (process.env.DATABASE_URL) {

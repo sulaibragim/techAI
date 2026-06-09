@@ -44,6 +44,7 @@ const App: React.FC = () => {
       useAuthStore.getState().syncUsers();
       useSettingsStore.getState().syncSettings();
       useAppStore.getState().syncJobs();
+      useAppStore.getState().syncInventory();
     }
   }, [currentUser?.id]);
 

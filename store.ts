@@ -11,6 +11,12 @@ const getDynamicDate = (offsetDays: number) => {
   return d.toISOString().split('T')[0];
 };
 
+// Collision-resistant id (UUID where available, else timestamp+random).
+const makeId = (): string =>
+  (typeof crypto !== 'undefined' && 'randomUUID' in crypto)
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+
 const INITIAL_JOBS: Job[] = [];
 
 const _DEMO_JOBS_REMOVED: Job[] = [
@@ -327,6 +333,18 @@ function deleteJobOnServer(id: string) {
   fetch(`${API_BASE}/api/jobs/${id}`, { method: 'DELETE', headers: { ...authHeaders() } }).catch(() => {});
 }
 
+function upsertPartOnServer(part: Part) {
+  fetch(`${API_BASE}/api/inventory/${part.id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify(part),
+  }).catch(() => {});
+}
+
+function deletePartOnServer(id: string) {
+  fetch(`${API_BASE}/api/inventory/${id}`, { method: 'DELETE', headers: { ...authHeaders() } }).catch(() => {});
+}
+
 interface AppState {
   jobs: Job[];
   missedInteractions: MissedInteraction[];
@@ -344,6 +362,7 @@ interface AppState {
   removeInventoryItem: (id: string) => void;
   clearMissed: (id: string) => void;
   syncJobs: () => Promise<void>;
+  syncInventory: () => Promise<void>;
 }
 
 export const useAppStore = create<AppState>()(
@@ -359,7 +378,7 @@ export const useAppStore = create<AppState>()(
   addJob: (jobData) => {
     const auth = useAuthStore.getState();
     const creator = auth.users.find(u => u.id === auth.currentUserId);
-    const newJob: Job = { ...jobData, id: `job-${Date.now()}`, createdAt: new Date().toISOString(), createdBy: creator?.id } as Job;
+    const newJob: Job = { ...jobData, id: `job-${makeId()}`, createdAt: new Date().toISOString(), createdBy: creator?.id } as Job;
     set((state) => ({ jobs: [...state.jobs, newJob] }));
     pushJobToServer(newJob);
   },
@@ -381,15 +400,19 @@ export const useAppStore = create<AppState>()(
     const job = get().jobs.find(j => j.id === id);
     if (job) updateJobOnServer(job);
   },
-  updateInventoryItem: (part) => set((state) => ({
-    inventory: state.inventory.map(p => p.id === part.id ? part : p)
-  })),
-  addInventoryItem: (part) => set((state) => ({
-    inventory: [...state.inventory, { ...part, id: `part-${Date.now()}` }]
-  })),
-  removeInventoryItem: (id) => set((state) => ({
-    inventory: state.inventory.filter(p => p.id !== id)
-  })),
+  updateInventoryItem: (part) => {
+    set((state) => ({ inventory: state.inventory.map(p => p.id === part.id ? part : p) }));
+    upsertPartOnServer(part);
+  },
+  addInventoryItem: (part) => {
+    const newPart: Part = { ...part, id: `part-${makeId()}` };
+    set((state) => ({ inventory: [...state.inventory, newPart] }));
+    upsertPartOnServer(newPart);
+  },
+  removeInventoryItem: (id) => {
+    set((state) => ({ inventory: state.inventory.filter(p => p.id !== id) }));
+    deletePartOnServer(id);
+  },
   clearMissed: (id) => set((state) => ({
     missedInteractions: state.missedInteractions.filter(m => m.id !== id)
   })),
@@ -412,6 +435,31 @@ export const useAppStore = create<AppState>()(
       if (res.ok) {
         const serverJobs: Job[] = await res.json();
         if (serverJobs.length > 0) set({ jobs: serverJobs });
+      }
+    } catch {}
+  },
+  syncInventory: async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/inventory`, { headers: { ...authHeaders() } });
+      if (!res.ok) return;
+      const serverParts: Part[] = await res.json();
+      if (serverParts.length > 0) {
+        // Server is the source of truth once it has data.
+        set({ inventory: serverParts });
+      } else {
+        // Server empty — seed it from the local default catalog.
+        const local = get().inventory;
+        if (local.length > 0) {
+          const seed = await fetch(`${API_BASE}/api/inventory/sync`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', ...authHeaders() },
+            body: JSON.stringify(local),
+          });
+          if (seed.ok) {
+            const merged: Part[] = await seed.json();
+            if (merged.length > 0) set({ inventory: merged });
+          }
+        }
       }
     } catch {}
   },

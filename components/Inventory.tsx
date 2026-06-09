@@ -6,7 +6,9 @@ import { useCurrentUser, can } from '../authStore';
 import { Part } from '../types';
 
 export const Inventory: React.FC = () => {
-  const { inventory, addInventoryItem, updateInventoryItem, removeInventoryItem } = useAppStore();
+  const { inventory, addInventoryItem, updateInventoryItem, removeInventoryItem, syncInventory } = useAppStore();
+  const [syncing, setSyncing] = useState(false);
+  const handleSync = async () => { setSyncing(true); try { await syncInventory(); } finally { setSyncing(false); } };
   const currentUser = useCurrentUser();
   const canEdit = currentUser ? can.editInventory(currentUser.role) : false;
   const [search, setSearch] = useState('');
@@ -58,9 +60,9 @@ export const Inventory: React.FC = () => {
           <p className="text-slate-400 text-sm mt-1">Manage van inventory, reordering, and hardware pricing.</p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="flex items-center space-x-2 bg-white/5 border border-white/10 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-white/10 transition-colors active:scale-95">
-            <RefreshCw size={16} />
-            <span>Sync</span>
+          <button onClick={handleSync} disabled={syncing} className="flex items-center space-x-2 bg-white/5 border border-white/10 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-white/10 transition-colors active:scale-95 disabled:opacity-60">
+            <RefreshCw size={16} className={syncing ? 'animate-spin' : ''} />
+            <span>{syncing ? 'Syncing…' : 'Sync'}</span>
           </button>
           {canEdit && (
             <button onClick={() => openEditor()} className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-blue-500/20 hover:bg-blue-500 transition-colors active:scale-95">
