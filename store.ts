@@ -4,6 +4,7 @@ import { Job, JobStatus, MissedInteraction, Message, CallRecord, LineItem, Part,
 import { calculateFinancialMetrics } from './financialUtils';
 import { useSettingsStore } from './settingsStore';
 import { useAuthStore } from './authStore';
+import { API_BASE } from './backendUrl';
 
 const getDynamicDate = (offsetDays: number) => {
   const d = new Date();
@@ -307,6 +308,22 @@ const INITIAL_INVENTORY: Part[] = [
   { id: '7', name: 'Lishi SC1 2-in-1 pick', sku: 'TL-LISHI-SC1', category: 'Tools', stock: 1, reorderPoint: 1, price: 65 },
 ];
 
+function pushJobToServer(job: Job) {
+  fetch(`${API_BASE}/api/jobs`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(job),
+  }).catch(() => {});
+}
+
+function updateJobOnServer(job: Job) {
+  fetch(`${API_BASE}/api/jobs/${job.id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(job),
+  }).catch(() => {});
+}
+
 interface AppState {
   jobs: Job[];
   missedInteractions: MissedInteraction[];
@@ -322,6 +339,7 @@ interface AppState {
   addInventoryItem: (part: Omit<Part, 'id'>) => void;
   removeInventoryItem: (id: string) => void;
   clearMissed: (id: string) => void;
+  syncJobs: () => Promise<void>;
   getFinancialMetrics: () => { totalRevenue: number, targetRevenue: number, closeRate: number, paceIndicator: number };
 }
 
@@ -335,19 +353,22 @@ export const useAppStore = create<AppState>()(
   inventory: INITIAL_INVENTORY,
   activeTab: 'calendar',
   setActiveTab: (tab) => set({ activeTab: tab }),
-  addJob: (jobData) => set((state) => {
+  addJob: (jobData) => {
     const auth = useAuthStore.getState();
     const creator = auth.users.find(u => u.id === auth.currentUserId);
-    return {
-      jobs: [...state.jobs, { ...jobData, id: `job-${Date.now()}`, createdAt: new Date().toISOString(), createdBy: creator?.id }]
-    };
-  }),
-  updateJob: (updatedJob) => set((state) => ({
-    jobs: state.jobs.map(j => j.id === updatedJob.id ? updatedJob : j)
-  })),
-  updateJobStatus: (id, status) => set((state) => ({
-    jobs: state.jobs.map(j => j.id === id ? { ...j, status } : j)
-  })),
+    const newJob: Job = { ...jobData, id: `job-${Date.now()}`, createdAt: new Date().toISOString(), createdBy: creator?.id } as Job;
+    set((state) => ({ jobs: [...state.jobs, newJob] }));
+    pushJobToServer(newJob);
+  },
+  updateJob: (updatedJob) => {
+    set((state) => ({ jobs: state.jobs.map(j => j.id === updatedJob.id ? updatedJob : j) }));
+    updateJobOnServer(updatedJob);
+  },
+  updateJobStatus: (id, status) => {
+    set((state) => ({ jobs: state.jobs.map(j => j.id === id ? { ...j, status } : j) }));
+    const job = get().jobs.find(j => j.id === id);
+    if (job) updateJobOnServer(job);
+  },
   updateInventoryItem: (part) => set((state) => ({
     inventory: state.inventory.map(p => p.id === part.id ? part : p)
   })),
@@ -360,6 +381,28 @@ export const useAppStore = create<AppState>()(
   clearMissed: (id) => set((state) => ({
     missedInteractions: state.missedInteractions.filter(m => m.id !== id)
   })),
+  syncJobs: async () => {
+    try {
+      const local = get().jobs;
+      if (local.length > 0) {
+        const res = await fetch(`${API_BASE}/api/jobs/sync`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(local),
+        });
+        if (res.ok) {
+          const merged: Job[] = await res.json();
+          set({ jobs: merged });
+          return;
+        }
+      }
+      const res = await fetch(`${API_BASE}/api/jobs`);
+      if (res.ok) {
+        const serverJobs: Job[] = await res.json();
+        if (serverJobs.length > 0) set({ jobs: serverJobs });
+      }
+    } catch {}
+  },
   getFinancialMetrics: () => {
     const { monthlyRevenueTarget, monthlyTargets } = useSettingsStore.getState();
     const nowKey = (() => { const n = new Date(); return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}`; })();

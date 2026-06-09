@@ -42,6 +42,7 @@ const App: React.FC = () => {
     if (currentUser) {
       useAuthStore.getState().syncUsers();
       useSettingsStore.getState().syncSettings();
+      useAppStore.getState().syncJobs();
     }
   }, [currentUser?.id]);
 
