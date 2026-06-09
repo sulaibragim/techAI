@@ -122,6 +122,14 @@ export interface Job {
   warranty?: string;
   assignedTo?: string; // User id of the technician responsible
   createdBy?: string;  // User id of whoever created the job
+  callSummary?: string; // AI-generated summary of the intake call
+  callQuality?: {
+    rating: 'excellent' | 'good' | 'needs_improvement' | 'poor';
+    strengths: string[];
+    improvements: string[];
+    missedInfo: string[];
+  };
+  callTranscript?: string; // Raw call transcript for reference
 }
 
 export interface MissedInteraction {

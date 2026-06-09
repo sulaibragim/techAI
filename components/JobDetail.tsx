@@ -1211,6 +1211,69 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                 </div>
               </div>
 
+              {/* CALL SUMMARY (if from phone intake) */}
+              {localJob.callSummary && (
+                <div className="bg-slate-900 p-8 rounded-2xl border border-slate-700 space-y-6 shadow-md">
+                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center">
+                    <Phone size={16} className="mr-3 text-violet-500" /> Call Summary
+                  </h3>
+                  <p className="text-sm text-slate-300 leading-relaxed bg-violet-950/20 border border-violet-500/10 rounded-xl p-4">
+                    {localJob.callSummary}
+                  </p>
+                  {localJob.callQuality && (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-lg border ${
+                          localJob.callQuality.rating === 'excellent' ? 'text-green-400 bg-green-500/10 border-green-500/20' :
+                          localJob.callQuality.rating === 'good' ? 'text-blue-400 bg-blue-500/10 border-blue-500/20' :
+                          localJob.callQuality.rating === 'needs_improvement' ? 'text-amber-400 bg-amber-500/10 border-amber-500/20' :
+                          'text-red-400 bg-red-500/10 border-red-500/20'
+                        }`}>
+                          {localJob.callQuality.rating === 'needs_improvement' ? 'Needs Work' : localJob.callQuality.rating}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        {localJob.callQuality.strengths?.length > 0 && (
+                          <div className="bg-green-500/5 border border-green-500/10 rounded-xl p-3 space-y-1">
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-green-400 mb-1">Strengths</p>
+                            {localJob.callQuality.strengths.map((s, i) => (
+                              <p key={i} className="text-[11px] text-green-400/80">+ {s}</p>
+                            ))}
+                          </div>
+                        )}
+                        {localJob.callQuality.improvements?.length > 0 && (
+                          <div className="bg-amber-500/5 border border-amber-500/10 rounded-xl p-3 space-y-1">
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-amber-400 mb-1">Improve</p>
+                            {localJob.callQuality.improvements.map((s, i) => (
+                              <p key={i} className="text-[11px] text-amber-400/80">! {s}</p>
+                            ))}
+                          </div>
+                        )}
+                        {localJob.callQuality.missedInfo?.length > 0 && (
+                          <div className="bg-red-500/5 border border-red-500/10 rounded-xl p-3 space-y-1">
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-red-400 mb-1">Missing Info</p>
+                            {localJob.callQuality.missedInfo.map((s, i) => (
+                              <p key={i} className="text-[11px] text-red-400/60">? {s}</p>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  {localJob.callTranscript && (
+                    <details className="group">
+                      <summary className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-500 cursor-pointer hover:text-slate-300 transition-colors list-none">
+                        <ClipboardList size={10} className="mr-1" />
+                        View Full Transcript
+                      </summary>
+                      <pre className="mt-2 text-[10px] text-slate-500 leading-relaxed whitespace-pre-wrap bg-slate-900/50 rounded-xl p-3 max-h-40 overflow-y-auto font-mono border border-white/5">
+                        {localJob.callTranscript}
+                      </pre>
+                    </details>
+                  )}
+                </div>
+              )}
+
               {/* OPERATIONAL LOGS */}
               <div className="flex flex-col space-y-8 shrink-0">
                  <div className="bg-slate-900 p-8 rounded-2xl border border-slate-700 flex flex-col space-y-6 shadow-md">

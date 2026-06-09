@@ -46,6 +46,10 @@ openphoneRouter.post('/webhook', async (req, res) => {
       await handleTranscriptCompleted(obj);
     }
 
+    if (event.type === 'call.summary.completed') {
+      handleSummaryCompleted(obj);
+    }
+
     if (event.type === 'message.received') {
       const msg = {
         id: obj.id,
@@ -172,11 +176,37 @@ async function handleTranscriptCompleted(transcriptObj) {
   await enrichWithAI(callId, callerPhone, duration, recordingUrl, transcript);
 }
 
+// ─── Internal: handle call.summary.completed from OpenPhone ─────────────────
+function handleSummaryCompleted(summaryObj) {
+  const callId = summaryObj.callId;
+  const summary = summaryObj.summary || summaryObj.text || '';
+  console.log('[OpenPhone] call.summary.completed for', callId, ':', summary.slice(0, 100));
+
+  const existing = pendingJobSuggestions.get(callId);
+  if (existing) {
+    existing.openPhoneSummary = summary;
+    pendingJobSuggestions.set(callId, existing);
+  } else {
+    pendingJobSuggestions.set(callId, {
+      callId,
+      callerPhone: summaryObj.from || 'unknown',
+      duration: null,
+      recordingUrl: null,
+      transcript: null,
+      suggestion: null,
+      openPhoneSummary: summary,
+      createdAt: new Date().toISOString(),
+      status: 'awaiting_transcript',
+    });
+  }
+}
+
 // ─── Internal: run Gemini on transcript and store suggestion ──────────────────
 async function enrichWithAI(callId, callerPhone, duration, recordingUrl, transcript) {
   console.log('[OpenPhone] Processing transcript with AI for call', callId);
   const suggestion = await processTranscriptWithAI(transcript, callerPhone);
 
+  const existing = pendingJobSuggestions.get(callId);
   pendingJobSuggestions.set(callId, {
     callId,
     callerPhone,
@@ -184,6 +214,7 @@ async function enrichWithAI(callId, callerPhone, duration, recordingUrl, transcr
     recordingUrl,
     transcript,
     suggestion,
+    openPhoneSummary: existing?.openPhoneSummary || null,
     createdAt: new Date().toISOString(),
     status: 'ready',
   });

@@ -3,7 +3,14 @@ import { useAppStore } from '../store';
 import { useAuthStore } from '../authStore';
 import { API_BASE } from '../backendUrl';
 import { TechStatus } from '../types';
-import { Sparkles, Phone, MapPin, Lock, Clock, CheckCircle, X, ChevronDown, ChevronUp, Mic, UserCheck, Circle } from 'lucide-react';
+import { Sparkles, Phone, MapPin, Lock, Clock, CheckCircle, X, ChevronDown, ChevronUp, Mic, UserCheck, Circle, Car, FileText, Star, AlertTriangle, ThumbsUp, ThumbsDown, Info } from 'lucide-react';
+
+interface CallQuality {
+  rating: 'excellent' | 'good' | 'needs_improvement' | 'poor';
+  strengths: string[];
+  improvements: string[];
+  missedInfo: string[];
+}
 
 interface AISuggestion {
   clientName: string;
@@ -11,10 +18,15 @@ interface AISuggestion {
   address: string;
   serviceType: 'residential' | 'automotive' | 'commercial';
   lockType: string;
+  vehicleMake: string | null;
+  vehicleModel: string | null;
+  vehicleYear: string | null;
   problemDescription: string;
   urgency: 'standard' | 'urgent' | 'emergency';
   estimatedPrice: number | null;
   notes: string;
+  callSummary: string;
+  callQuality: CallQuality | null;
 }
 
 interface PendingJob {
@@ -24,6 +36,7 @@ interface PendingJob {
   recordingUrl: string | null;
   transcript: string | null;
   suggestion: AISuggestion | null;
+  openPhoneSummary: string | null;
   createdAt: string;
   status: 'awaiting_transcript' | 'ready';
 }
@@ -38,6 +51,13 @@ const SERVICE_ICON: Record<string, string> = {
   residential: '🏠',
   automotive: '🚗',
   commercial: '🏢',
+};
+
+const QUALITY_BADGE: Record<string, { color: string; icon: typeof Star; label: string }> = {
+  excellent: { color: 'text-green-400 bg-green-500/10 border-green-500/20', icon: Star, label: 'Excellent' },
+  good: { color: 'text-blue-400 bg-blue-500/10 border-blue-500/20', icon: ThumbsUp, label: 'Good' },
+  needs_improvement: { color: 'text-amber-400 bg-amber-500/10 border-amber-500/20', icon: AlertTriangle, label: 'Needs Work' },
+  poor: { color: 'text-red-400 bg-red-500/10 border-red-500/20', icon: ThumbsDown, label: 'Poor' },
 };
 
 const STATUS_DOT: Record<TechStatus, { color: string; label: string }> = {
@@ -120,8 +140,10 @@ export const PendingJobSuggestions: React.FC<{ onJobCreated?: (job: import('../t
       },
       lockDetails: {
         type: lockTypeMap[s.serviceType] || 'Other',
-        brand: '',
-        modelOrYear: s.lockType || '',
+        brand: s.vehicleMake || '',
+        modelOrYear: s.vehicleYear && s.vehicleModel
+          ? `${s.vehicleYear} ${s.vehicleModel}`
+          : s.vehicleModel || s.vehicleYear || s.lockType || '',
       },
       complaint: s.problemDescription || '',
       diagnosisNotes: s.notes || '',
@@ -137,6 +159,9 @@ export const PendingJobSuggestions: React.FC<{ onJobCreated?: (job: import('../t
       photos: [],
       messages: [],
       assignedTo: assignedTechId,
+      callSummary: s.callSummary || pj.openPhoneSummary || undefined,
+      callQuality: s.callQuality || undefined,
+      callTranscript: pj.transcript || undefined,
     });
 
     await dismiss(pj.callId);
@@ -221,6 +246,69 @@ export const PendingJobSuggestions: React.FC<{ onJobCreated?: (job: import('../t
               <div className="px-4 pb-4 space-y-3 border-t border-violet-500/10 pt-3">
                 {s && (
                   <>
+                    {/* Call Summary */}
+                    {(s.callSummary || pj.openPhoneSummary) && (
+                      <div className="bg-slate-900/60 rounded-xl p-3 space-y-1.5 border border-white/5">
+                        <div className="flex items-center gap-1.5">
+                          <FileText size={11} className="text-violet-400" />
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-violet-400">Call Summary</span>
+                        </div>
+                        <p className="text-xs text-slate-300 leading-relaxed">
+                          {s.callSummary || pj.openPhoneSummary}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Call Quality Assessment */}
+                    {s.callQuality && (() => {
+                      const q = s.callQuality;
+                      const badge = QUALITY_BADGE[q.rating] || QUALITY_BADGE.good;
+                      const BadgeIcon = badge.icon;
+                      return (
+                        <div className="bg-slate-900/60 rounded-xl p-3 space-y-2 border border-white/5">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1.5">
+                              <Star size={11} className="text-amber-400" />
+                              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Call Quality</span>
+                            </div>
+                            <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-lg border ${badge.color}`}>
+                              <BadgeIcon size={9} className="inline mr-1" />{badge.label}
+                            </span>
+                          </div>
+                          {q.strengths?.length > 0 && (
+                            <div className="space-y-0.5">
+                              {q.strengths.map((s, i) => (
+                                <div key={i} className="flex items-start gap-1.5 text-[11px] text-green-400/80">
+                                  <span className="mt-0.5">+</span>
+                                  <span>{s}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {q.improvements?.length > 0 && (
+                            <div className="space-y-0.5">
+                              {q.improvements.map((s, i) => (
+                                <div key={i} className="flex items-start gap-1.5 text-[11px] text-amber-400/80">
+                                  <span className="mt-0.5">!</span>
+                                  <span>{s}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {q.missedInfo?.length > 0 && (
+                            <div className="space-y-0.5">
+                              {q.missedInfo.map((s, i) => (
+                                <div key={i} className="flex items-start gap-1.5 text-[11px] text-red-400/60">
+                                  <Info size={9} className="mt-0.5 shrink-0" />
+                                  <span>Missing: {s}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                       {s.address && (
                         <div className="flex items-start gap-2 text-xs text-slate-300">
@@ -228,7 +316,13 @@ export const PendingJobSuggestions: React.FC<{ onJobCreated?: (job: import('../t
                           <span>{s.address}</span>
                         </div>
                       )}
-                      {s.lockType && (
+                      {s.vehicleMake && (
+                        <div className="flex items-start gap-2 text-xs text-slate-300">
+                          <Car size={12} className="text-violet-400 mt-0.5 shrink-0" />
+                          <span>{[s.vehicleYear, s.vehicleMake, s.vehicleModel].filter(Boolean).join(' ')}</span>
+                        </div>
+                      )}
+                      {!s.vehicleMake && s.lockType && (
                         <div className="flex items-start gap-2 text-xs text-slate-300">
                           <Lock size={12} className="text-violet-400 mt-0.5 shrink-0" />
                           <span>{s.lockType}</span>
@@ -259,7 +353,7 @@ export const PendingJobSuggestions: React.FC<{ onJobCreated?: (job: import('../t
                   <details className="group">
                     <summary className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-500 cursor-pointer hover:text-slate-300 transition-colors list-none">
                       <Mic size={10} />
-                      View Transcript
+                      View Full Transcript
                     </summary>
                     <pre className="mt-2 text-[10px] text-slate-500 leading-relaxed whitespace-pre-wrap bg-slate-900/50 rounded-xl p-3 max-h-40 overflow-y-auto font-mono">
                       {pj.transcript}

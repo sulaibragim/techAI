@@ -17,18 +17,37 @@ JSON shape:
   "address": string,
   "serviceType": "residential" | "automotive" | "commercial",
   "lockType": string,
+  "vehicleMake": string | null,
+  "vehicleModel": string | null,
+  "vehicleYear": string | null,
   "problemDescription": string,
   "urgency": "standard" | "urgent" | "emergency",
   "estimatedPrice": number | null,
-  "notes": string
+  "notes": string,
+  "callSummary": string,
+  "callQuality": {
+    "rating": "excellent" | "good" | "needs_improvement" | "poor",
+    "strengths": string[],
+    "improvements": string[],
+    "missedInfo": string[]
+  }
 }
 
 Rules:
 - clientPhone: use the caller number if not mentioned in transcript
 - estimatedPrice: null if not discussed
-- lockType: be specific (e.g. "deadbolt", "car door", "safe", "mailbox")
+- lockType: be specific (e.g. "deadbolt", "car ignition", "safe", "smart lock", "padlock")
+- vehicleMake: car brand if automotive (e.g. "Toyota", "Ford", "BMW"). null if not automotive
+- vehicleModel: car model if mentioned (e.g. "Camry", "F-150"). null if not automotive
+- vehicleYear: year if mentioned (e.g. "2019"). null if not mentioned
 - urgency: "emergency" if locked out now, "urgent" if same-day, "standard" otherwise
-- notes: anything else relevant (gate code, unit number, dog, etc.)`;
+- notes: anything else relevant (gate code, unit number, dog, parking spot, etc.)
+- callSummary: Write a 3-5 sentence professional summary of the call. Include: what the client needs, what was discussed, what was agreed upon (time, price if any), and any special instructions. This is for the manager to review.
+- callQuality: Evaluate how well the dispatcher/manager handled the call:
+  - rating: overall quality
+  - strengths: what was done well (e.g. "confirmed address", "gave ETA", "offered price range")
+  - improvements: what could be better (e.g. "didn't ask about vehicle year", "didn't confirm callback number")
+  - missedInfo: important details that were NOT collected during the call (e.g. "vehicle VIN", "gate code", "parking instructions")`;
 
 export async function processTranscriptWithAI(transcript, callerPhone) {
   try {
