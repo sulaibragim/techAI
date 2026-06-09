@@ -34,7 +34,7 @@ const STATUS_OPTIONS: { id: JobStatus; label: string }[] = [
 const TERM_TYPES = ['1', '10', '15', '20', '30'];
 
 export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: initialJob, onClose }) => {
-  const { jobs, updateJob, inventory, updateInventoryItem } = useAppStore();
+  const { jobs, updateJob, removeJob, inventory, updateInventoryItem } = useAppStore();
   const { companyName, technicianName, companyAddress, companyCity, companyPhone, companyEmail, licenseNumber } = useSettingsStore();
   const currentUser = useCurrentUser();
   const users = useAuthStore(s => s.users);
@@ -56,6 +56,8 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
   const [customBrand, setCustomBrand] = useState('');
   const [showCustomBrandInput, setShowCustomBrandInput] = useState(false);
   
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
   // Billing Prompt State
   const [billingPrompt, setBillingPrompt] = useState<{ open: boolean, type: LineItem['type'] | null, desc: string, price: string, extra?: string, partId?: string }>({
     open: false, type: null, desc: '', price: ''
@@ -757,10 +759,40 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
               </div>
             </div>
           </div>
-          <button onClick={() => { updateJob(localJob); setIsModified(false); logAudit({ action: 'job.update', detail: `Updated job #${localJob.jobNumber}`, jobId: localJob.id }); }} className={`px-10 py-4 rounded-2xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 ${isModified ? 'bg-blue-600 text-white shadow-xl' : 'bg-white/5 text-slate-500'}`}>
-            <Save size={16} className="mr-3 inline" /> {isModified ? 'Save Changes' : 'Up to Date'}
-          </button>
+          <div className="flex items-center gap-3">
+            {can.deleteJob(role) && (
+              <button onClick={() => setShowDeleteConfirm(true)} className="px-6 py-4 rounded-2xl text-xs font-bold uppercase tracking-widest bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500 hover:text-white transition-all active:scale-95">
+                <Trash2 size={16} className="mr-2 inline" /> Delete
+              </button>
+            )}
+            <button onClick={() => { updateJob(localJob); setIsModified(false); logAudit({ action: 'job.update', detail: `Updated job #${localJob.jobNumber}`, jobId: localJob.id }); }} className={`px-10 py-4 rounded-2xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 ${isModified ? 'bg-blue-600 text-white shadow-xl' : 'bg-white/5 text-slate-500'}`}>
+              <Save size={16} className="mr-3 inline" /> {isModified ? 'Save Changes' : 'Up to Date'}
+            </button>
+          </div>
         </header>
+
+        {/* DELETE CONFIRMATION MODAL */}
+        {showDeleteConfirm && (
+          <div className="absolute inset-0 z-[800] bg-black/90 backdrop-blur-2xl flex items-center justify-center p-6">
+            <div className="bg-slate-900 w-full max-w-sm rounded-2xl border border-red-500/20 p-8 shadow-2xl space-y-6 animate-in zoom-in-95 text-center">
+              <div className="w-16 h-16 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto">
+                <Trash2 size={28} className="text-red-500" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-white tracking-tight">Delete Job #{localJob.jobNumber}?</h3>
+                <p className="text-sm text-slate-400 mt-2">This will permanently remove this job, all line items, photos, and messages. This action cannot be undone.</p>
+              </div>
+              <div className="flex gap-3">
+                <button onClick={() => setShowDeleteConfirm(false)} className="flex-1 py-4 rounded-xl bg-white/5 hover:bg-white/10 text-white font-bold text-xs uppercase tracking-widest transition-all">Cancel</button>
+                <button onClick={() => {
+                  logAudit({ action: 'job.delete', detail: `Deleted job #${localJob.jobNumber} (${localJob.client.firstName} ${localJob.client.lastName})`, jobId: localJob.id });
+                  removeJob(localJob.id);
+                  onClose();
+                }} className="flex-1 py-4 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-red-500/20">Delete Forever</button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="flex-1 overflow-y-auto p-6 scrollbar-hide">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch min-h-full">

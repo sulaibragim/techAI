@@ -324,6 +324,10 @@ function updateJobOnServer(job: Job) {
   }).catch(() => {});
 }
 
+function deleteJobOnServer(id: string) {
+  fetch(`${API_BASE}/api/jobs/${id}`, { method: 'DELETE' }).catch(() => {});
+}
+
 interface AppState {
   jobs: Job[];
   missedInteractions: MissedInteraction[];
@@ -334,6 +338,7 @@ interface AppState {
   setActiveTab: (tab: TabId) => void;
   addJob: (job: Omit<Job, 'id' | 'createdAt'>) => void;
   updateJob: (job: Job) => void;
+  removeJob: (id: string) => void;
   updateJobStatus: (id: string, status: JobStatus) => void;
   updateInventoryItem: (part: Part) => void;
   addInventoryItem: (part: Omit<Part, 'id'>) => void;
@@ -363,6 +368,10 @@ export const useAppStore = create<AppState>()(
   updateJob: (updatedJob) => {
     set((state) => ({ jobs: state.jobs.map(j => j.id === updatedJob.id ? updatedJob : j) }));
     updateJobOnServer(updatedJob);
+  },
+  removeJob: (id) => {
+    set((state) => ({ jobs: state.jobs.filter(j => j.id !== id) }));
+    deleteJobOnServer(id);
   },
   updateJobStatus: (id, status) => {
     set((state) => ({ jobs: state.jobs.map(j => j.id === id ? { ...j, status } : j) }));

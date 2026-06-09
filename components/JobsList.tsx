@@ -18,9 +18,11 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
   const [search, setSearch] = useState('');
   const [reschedulingId, setReschedulingId] = useState<string | null>(null);
   const [tempDate, setTempDate] = useState(new Date().toISOString().split('T')[0]);
-  const { updateJobStatus, updateJob } = useAppStore();
+  const { updateJobStatus, updateJob, removeJob } = useAppStore();
   const currentUser = useCurrentUser();
   const canCancel = currentUser ? can.deleteJob(currentUser.role) || currentUser.role === 'manager' : false;
+  const canDelete = currentUser ? can.deleteJob(currentUser.role) : false;
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const filteredJobs = jobs.filter(j => {
     if (filter === 'pending' && (j.status === 'completed' || j.status === 'cancelled')) return false;
@@ -224,6 +226,15 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
                         <X size={14} />
                      </button>
                    )}
+                   {canDelete && (
+                     <button
+                       onClick={(e) => { e.stopPropagation(); setDeletingId(job.id); }}
+                       className="w-9 h-9 bg-red-500/10 rounded-xl flex items-center justify-center text-red-400 hover:bg-red-600 hover:text-white transition-all border border-red-500/20 active:scale-95"
+                       title="Delete Job"
+                     >
+                        <Trash2 size={14} />
+                     </button>
+                   )}
                 </div>
               </div>
             );
@@ -235,6 +246,33 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
           </div>
         )}
       </div>
+
+      {/* DELETE CONFIRMATION */}
+      <AnimatePresence>
+        {deletingId && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-md z-[300] flex items-center justify-center p-6"
+          >
+            <motion.div
+              initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}
+              className="bg-slate-900 w-full max-w-sm rounded-2xl border border-red-500/20 p-8 shadow-2xl space-y-6 text-center"
+            >
+              <div className="w-16 h-16 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto">
+                <Trash2 size={28} className="text-red-500" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-white">Delete this job?</h3>
+                <p className="text-sm text-slate-400 mt-2">This permanently removes the job, invoice, and all data. Cannot be undone.</p>
+              </div>
+              <div className="flex gap-3">
+                <button onClick={() => setDeletingId(null)} className="flex-1 py-3.5 rounded-xl bg-white/5 hover:bg-white/10 text-white font-bold text-xs uppercase tracking-widest">Cancel</button>
+                <button onClick={() => { removeJob(deletingId); setDeletingId(null); }} className="flex-1 py-3.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs uppercase tracking-widest active:scale-95 shadow-lg shadow-red-500/20">Delete</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

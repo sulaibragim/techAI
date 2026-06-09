@@ -1,5 +1,5 @@
 import React, { useMemo, useEffect, useState } from 'react';
-import { useAppStore } from '../store';
+import { useAppStore, useVisibleJobs } from '../store';
 import { MessageSquare, User, Clock, Smartphone, ChevronRight, RefreshCw, Send, Radio } from 'lucide-react';
 import { Job } from '../types';
 import { API_BASE } from '../backendUrl';
@@ -21,7 +21,7 @@ interface LiveMessage {
 }
 
 export const MessagesList: React.FC<MessagesListProps> = ({ onJobSelect }) => {
-  const { jobs } = useAppStore();
+  const jobs = useVisibleJobs();
   const [liveMessages, setLiveMessages] = useState<LiveMessage[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [backendOnline, setBackendOnline] = useState(false);

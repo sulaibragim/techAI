@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { motion } from 'motion/react';
 import { User, Phone, Mail, MapPin, Briefcase, DollarSign, ChevronRight, Search } from 'lucide-react';
-import { useAppStore } from '../store';
+import { useVisibleJobs } from '../store';
 import { Job } from '../types';
 
 interface ClientRecord {
@@ -17,7 +17,7 @@ interface ClientRecord {
 }
 
 export const ClientsList: React.FC<{ onJobSelect?: (job: Job) => void }> = ({ onJobSelect }) => {
-  const { jobs } = useAppStore();
+  const jobs = useVisibleJobs();
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<ClientRecord | null>(null);
 

@@ -8,7 +8,7 @@ import {
   CheckCircle2, Clock, Briefcase, XCircle, ChevronLeft, ChevronRight, GitCompareArrows,
   Download, Trophy, Coffee, Users, CalendarDays, Sparkles, Flame, AlertTriangle, AlertCircle
 } from 'lucide-react';
-import { useAppStore } from '../store';
+import { useAppStore, useVisibleJobs } from '../store';
 import { useSettingsStore } from '../settingsStore';
 import {
   calculatePeriodMetrics, buildMonthlyTrend, buildYearlyTrend, revenueByJobType,
@@ -93,7 +93,7 @@ const Card: React.FC<{ title?: string; icon?: React.ElementType; className?: str
 // ---- Main --------------------------------------------------------------------
 
 export const Dashboard: React.FC = () => {
-  const { jobs } = useAppStore();
+  const jobs = useVisibleJobs();
   const { monthlyRevenueTarget, monthlyTargets, setMonthlyTarget } = useSettingsStore();
 
   const now = new Date();
