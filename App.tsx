@@ -80,10 +80,8 @@ const App: React.FC = () => {
   // session without a token (e.g. after the auth upgrade) is forced to re-login.
   if (!currentUser || !getToken()) return <Login />;
 
-  const isDefaultOwner = currentUser.role === 'owner'
-    && currentUser.email === 'owner@trustkey.az'
-    && currentUser.name === 'Sultan';
-  if (!onboardingComplete && isDefaultOwner) return <OnboardingWizard />;
+  // Onboarding shows for any owner who hasn't completed it (e.g. fresh install or after a reset).
+  if (!onboardingComplete && currentUser.role === 'owner') return <OnboardingWizard />;
 
   const renderContent = () => {
     return (

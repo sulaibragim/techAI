@@ -3,6 +3,9 @@ import { motion } from 'motion/react';
 import { User, Target, Key, Eye, EyeOff, RotateCcw, Save, Upload, Info, Building2, AlertTriangle, Users, Plus, Trash2, ShieldCheck, History, Lock, Pencil, Check, X } from 'lucide-react';
 import { useSettingsStore, SETTINGS_DEFAULTS, settingsStorageIsEphemeral } from '../settingsStore';
 import { useAuthStore, useCurrentUser, can, ROLE_LABELS } from '../authStore';
+import { useAppStore } from '../store';
+import { API_BASE } from '../backendUrl';
+import { authHeaders } from '../apiClient';
 import { Role } from '../types';
 
 const VERSION = '0.0.0';
@@ -43,7 +46,31 @@ export const Settings: React.FC = () => {
   const [saved, setSaved] = useState(false);
   const [photoError, setPhotoError] = useState('');
   const [showReset, setShowReset] = useState(false);
+  const [showStartFresh, setShowStartFresh] = useState(false);
+  const [freshConfirm, setFreshConfirm] = useState('');
+  const [freshBusy, setFreshBusy] = useState(false);
+  const [freshError, setFreshError] = useState('');
   const photoRef = useRef<HTMLInputElement>(null);
+
+  const handleStartFresh = async () => {
+    setFreshBusy(true);
+    setFreshError('');
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/reset`, { method: 'POST', headers: { ...authHeaders() } });
+      if (!res.ok) {
+        setFreshError('Server refused the reset. Make sure you are the owner and the server is reachable.');
+        setFreshBusy(false);
+        return;
+      }
+      // Clear local state so nothing lingers, then re-onboard from a clean slate.
+      useAppStore.setState({ jobs: [], inventory: [], messages: [], calls: [], missedInteractions: [] });
+      settings.resetSettings();
+      window.location.reload();
+    } catch {
+      setFreshError('Could not reach the server. Check your connection and try again.');
+      setFreshBusy(false);
+    }
+  };
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -306,6 +333,68 @@ export const Settings: React.FC = () => {
           <TeamSection />
           <AuditSection />
         </>
+      )}
+
+      {currentUser?.role === 'owner' && (
+        <Section icon={AlertTriangle} title="Danger Zone">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-bold text-white">Start Fresh</p>
+              <p className="text-xs text-slate-400 mt-1 max-w-md">Permanently wipes all jobs, inventory and team members (except your owner account), then re-runs onboarding so you can set up the company from scratch.</p>
+            </div>
+            <button
+              onClick={() => { setShowStartFresh(true); setFreshConfirm(''); setFreshError(''); }}
+              className="shrink-0 px-5 py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold uppercase tracking-widest transition-all active:scale-95"
+            >
+              Start Fresh
+            </button>
+          </div>
+        </Section>
+      )}
+
+      {showStartFresh && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] flex items-center justify-center p-4">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-slate-900 border border-red-500/30 rounded-2xl p-8 max-w-md w-full shadow-2xl space-y-5"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-red-500/10 rounded-2xl flex items-center justify-center shrink-0"><AlertTriangle className="text-red-500" size={24} /></div>
+              <div>
+                <h3 className="text-lg font-bold text-white">Start Fresh — wipe everything?</h3>
+                <p className="text-xs text-red-400 font-semibold">This cannot be undone.</p>
+              </div>
+            </div>
+            <ul className="text-sm text-slate-300 space-y-1 list-disc pl-5">
+              <li>All jobs &amp; invoices</li>
+              <li>All inventory</li>
+              <li>All team members except your owner account</li>
+              <li>Company settings (you'll re-run onboarding)</li>
+            </ul>
+            <div>
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Type <span className="text-white">RESET</span> to confirm</label>
+              <input
+                value={freshConfirm}
+                onChange={e => setFreshConfirm(e.target.value)}
+                placeholder="RESET"
+                autoFocus
+                className="mt-2 w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-red-500/50"
+              />
+            </div>
+            {freshError && <p className="text-xs font-semibold text-red-400">{freshError}</p>}
+            <div className="flex gap-3">
+              <button onClick={() => setShowStartFresh(false)} disabled={freshBusy} className="flex-1 py-3 bg-white/5 border border-white/10 rounded-xl text-slate-300 text-sm font-semibold hover:bg-white/10 transition-all disabled:opacity-50">Cancel</button>
+              <button
+                onClick={handleStartFresh}
+                disabled={freshConfirm.trim().toUpperCase() !== 'RESET' || freshBusy}
+                className="flex-1 py-3 bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-white text-sm font-bold transition-all"
+              >
+                {freshBusy ? 'Wiping…' : 'Wipe & Start Fresh'}
+              </button>
+            </div>
+          </motion.div>
+        </div>
       )}
 
       {showReset && (
