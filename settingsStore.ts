@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { API_BASE } from './backendUrl';
 
 export interface SettingsState {
   technicianName: string;
@@ -12,16 +13,15 @@ export interface SettingsState {
   profilePhoto: string;
   monthlyRevenueTarget: number;
   dailyRevenueTarget: number;
-  /** Per-month revenue target overrides, keyed "YYYY-MM". Falls back to monthlyRevenueTarget. */
   monthlyTargets: Record<string, number>;
   geminiApiKey: string;
   onboardingComplete: boolean;
-  updateSettings: (patch: Partial<Omit<SettingsState, 'updateSettings' | 'resetSettings' | 'setMonthlyTarget'>>) => void;
+  updateSettings: (patch: Partial<Omit<SettingsState, 'updateSettings' | 'resetSettings' | 'setMonthlyTarget' | 'syncSettings'>>) => void;
   setMonthlyTarget: (monthKey: string, value: number) => void;
   resetSettings: () => void;
+  syncSettings: () => Promise<void>;
 }
 
-/** Resolve the effective monthly target for a given year/month (override → global default). */
 export function resolveMonthlyTarget(state: Pick<SettingsState, 'monthlyTargets' | 'monthlyRevenueTarget'>, year: number, month: number): number {
   const key = `${year}-${String(month + 1).padStart(2, '0')}`;
   return state.monthlyTargets?.[key] ?? state.monthlyRevenueTarget;
@@ -45,7 +45,6 @@ export const SETTINGS_DEFAULTS = {
 
 const DEFAULTS = SETTINGS_DEFAULTS;
 
-// EC-4: try localStorage, fall back to sessionStorage if unavailable
 const { storage: safeStorage, ephemeral: storageIsEphemeral } = (() => {
   try {
     localStorage.setItem('__test__', '1');
@@ -58,18 +57,53 @@ const { storage: safeStorage, ephemeral: storageIsEphemeral } = (() => {
 
 export const settingsStorageIsEphemeral = storageIsEphemeral;
 
+function pushToServer(patch: Record<string, any>) {
+  fetch(`${API_BASE}/api/settings`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(patch),
+  }).catch(() => {});
+}
+
 export const useSettingsStore = create<SettingsState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       ...DEFAULTS,
-      updateSettings: (patch) => set((state) => ({ ...state, ...patch })),
-      setMonthlyTarget: (monthKey, value) => set((state) => ({
-        monthlyTargets: { ...state.monthlyTargets, [monthKey]: Math.max(1, value) },
-      })),
-      resetSettings: () => set({ ...DEFAULTS }),
+
+      updateSettings: (patch) => {
+        set((state) => ({ ...state, ...patch }));
+        const clean = { ...patch } as any;
+        delete clean.profilePhoto; // don't send large base64 to server
+        if (Object.keys(clean).length > 0) pushToServer(clean);
+      },
+
+      setMonthlyTarget: (monthKey, value) => {
+        set((state) => ({
+          monthlyTargets: { ...state.monthlyTargets, [monthKey]: Math.max(1, value) },
+        }));
+        const updated = get().monthlyTargets;
+        pushToServer({ monthlyTargets: updated });
+      },
+
+      resetSettings: () => {
+        set({ ...DEFAULTS });
+        pushToServer(DEFAULTS);
+      },
+
+      syncSettings: async () => {
+        try {
+          const res = await fetch(`${API_BASE}/api/settings`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data && Object.keys(data).length > 0) {
+              set((state) => ({ ...state, ...data }));
+            }
+          }
+        } catch {}
+      },
     }),
     {
-      name: 'techai-settings',
+      name: 'techai-settings-v2',
       storage: createJSONStorage(() => safeStorage),
     }
   )

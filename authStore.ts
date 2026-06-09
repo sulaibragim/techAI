@@ -1,11 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { User, Role, AuditEntry, TechStatus } from './types';
-
-// NOTE: This is a client-only prototype auth layer. Passwords are stored in
-// localStorage in plaintext. Before launch, swap this store's backing calls for
-// a real backend (hashed passwords, sessions/JWT). The UI and permission model
-// stay the same — only login()/users persistence move server-side.
+import { API_BASE } from './backendUrl';
 
 const DEFAULT_USERS: User[] = [
   { id: 'u-owner', name: 'Sultan',     email: 'owner@trustkey.az',   password: '1234', role: 'owner',      active: true, createdAt: new Date().toISOString() },
@@ -13,15 +9,33 @@ const DEFAULT_USERS: User[] = [
   { id: 'u-tech',  name: 'Technician', email: 'tech@trustkey.az',    password: '1234', role: 'technician', commissionRate: 30, active: true, createdAt: new Date().toISOString(), techStatus: 'available' },
 ];
 
+const api = (path: string, opts?: RequestInit) =>
+  fetch(`${API_BASE}/api/auth${path}`, {
+    ...opts,
+    headers: { 'Content-Type': 'application/json', ...opts?.headers },
+  });
+
+async function syncUsersFromServer(set: (s: Partial<AuthState>) => void) {
+  try {
+    const res = await api('/users');
+    if (res.ok) {
+      const users: User[] = await res.json();
+      if (users.length > 0) set({ users });
+    }
+  } catch {}
+}
+
 interface AuthState {
   users: User[];
   currentUserId: string | null;
   audit: AuditEntry[];
+  dbConnected: boolean;
 
-  login: (email: string, password: string) => boolean;
+  login: (email: string, password: string) => Promise<boolean>;
   loginAs: (userId: string) => void;
   logout: () => void;
-  masterReset: () => void;
+  masterReset: () => Promise<void>;
+  syncUsers: () => Promise<void>;
 
   addUser: (user: Omit<User, 'id' | 'createdAt'>) => void;
   updateUser: (user: User) => void;
@@ -38,8 +52,28 @@ export const useAuthStore = create<AuthState>()(
       users: DEFAULT_USERS,
       currentUserId: null,
       audit: [],
+      dbConnected: false,
 
-      login: (email, password) => {
+      login: async (email, password) => {
+        try {
+          const res = await api('/login', {
+            method: 'POST',
+            body: JSON.stringify({ email, password }),
+          });
+          if (res.ok) {
+            const { user } = await res.json();
+            set((state) => ({
+              currentUserId: user.id,
+              dbConnected: true,
+              users: state.users.some(u => u.id === user.id)
+                ? state.users.map(u => u.id === user.id ? user : u)
+                : [...state.users, user],
+            }));
+            syncUsersFromServer(set);
+            return true;
+          }
+        } catch {}
+
         const user = get().users.find(
           u => u.email.trim().toLowerCase() === email.trim().toLowerCase() && u.password === password && u.active
         );
@@ -49,29 +83,86 @@ export const useAuthStore = create<AuthState>()(
         }
         return false;
       },
+
       loginAs: (userId) => set({ currentUserId: userId }),
       logout: () => set({ currentUserId: null }),
-      masterReset: () => set((state) => ({
-        users: state.users.length > 0
-          ? state.users.map(u => ({ ...u, password: '1234', active: true }))
-          : DEFAULT_USERS,
-        currentUserId: null,
-      })),
 
-      addUser: (userData) => set((state) => ({
-        users: [...state.users, { ...userData, id: `u-${Date.now()}`, createdAt: new Date().toISOString() }]
-      })),
-      updateUser: (user) => set((state) => ({
-        users: state.users.map(u => u.id === user.id ? user : u)
-      })),
-      removeUser: (id) => set((state) => ({
-        users: state.users.filter(u => u.id !== id),
-        currentUserId: state.currentUserId === id ? null : state.currentUserId,
-      })),
+      masterReset: async () => {
+        try { await api('/master-reset', { method: 'POST' }); } catch {}
+        set((state) => ({
+          users: state.users.length > 0
+            ? state.users.map(u => ({ ...u, password: '1234', active: true }))
+            : DEFAULT_USERS,
+          currentUserId: null,
+        }));
+      },
 
-      setTechStatus: (userId, status) => set((state) => ({
-        users: state.users.map(u => u.id === userId ? { ...u, techStatus: status } : u)
-      })),
+      syncUsers: async () => {
+        await syncUsersFromServer(set);
+      },
+
+      addUser: (userData) => {
+        const newUser: User = { ...userData, id: `u-${Date.now()}`, createdAt: new Date().toISOString() };
+        set((state) => ({ users: [...state.users, newUser] }));
+        api('/users', {
+          method: 'POST',
+          body: JSON.stringify({
+            name: userData.name,
+            email: userData.email,
+            password: userData.password || '1234',
+            role: userData.role,
+            phone: userData.phone,
+            commissionRate: userData.commissionRate,
+            active: userData.active,
+            techStatus: userData.techStatus,
+          }),
+        }).then(async (res) => {
+          if (res.ok) {
+            const serverUser = await res.json();
+            set((state) => ({
+              users: state.users.map(u => u.id === newUser.id ? serverUser : u),
+            }));
+          }
+        }).catch(() => {});
+      },
+
+      updateUser: (user) => {
+        set((state) => ({
+          users: state.users.map(u => u.id === user.id ? user : u),
+        }));
+        api(`/users/${user.id}`, {
+          method: 'PUT',
+          body: JSON.stringify({
+            name: user.name,
+            email: user.email,
+            password: user.password,
+            role: user.role,
+            phone: user.phone,
+            commissionRate: user.commissionRate,
+            active: user.active,
+            techStatus: user.techStatus,
+            photo: user.photo,
+          }),
+        }).catch(() => {});
+      },
+
+      removeUser: (id) => {
+        set((state) => ({
+          users: state.users.filter(u => u.id !== id),
+          currentUserId: state.currentUserId === id ? null : state.currentUserId,
+        }));
+        api(`/users/${id}`, { method: 'DELETE' }).catch(() => {});
+      },
+
+      setTechStatus: (userId, status) => {
+        set((state) => ({
+          users: state.users.map(u => u.id === userId ? { ...u, techStatus: status } : u),
+        }));
+        api(`/users/${userId}`, {
+          method: 'PUT',
+          body: JSON.stringify({ techStatus: status }),
+        }).catch(() => {});
+      },
 
       logAudit: (entry) => {
         const { users, currentUserId } = get();
@@ -90,7 +181,7 @@ export const useAuthStore = create<AuthState>()(
       clearAudit: () => set({ audit: [] }),
     }),
     {
-      name: 'techai-auth-v2',
+      name: 'techai-auth-v3',
       storage: createJSONStorage(() => localStorage),
     }
   )

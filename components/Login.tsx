@@ -15,19 +15,25 @@ export const Login: React.FC = () => {
   const [resetError, setResetError] = useState('');
   const [resetDone, setResetDone] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!login(email, password)) {
-      setError('Incorrect email or password.');
+    setLoading(true);
+    try {
+      const ok = await login(email, password);
+      if (!ok) setError('Incorrect email or password.');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleMasterReset = () => {
+  const handleMasterReset = async () => {
     if (pin !== MASTER_PIN) {
       setResetError('Wrong PIN');
       return;
     }
-    masterReset();
+    await masterReset();
     setShowReset(false);
     setPin('');
     setResetError('');

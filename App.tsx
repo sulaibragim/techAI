@@ -38,6 +38,12 @@ const App: React.FC = () => {
   const selectedJob = jobs.find(j => j.id === selectedJobId);
   const inProgressJob = jobs.find(j => j.status === 'enRoute' || j.status === 'diagnosed');
 
+  useEffect(() => {
+    if (currentUser) {
+      useAuthStore.getState().syncUsers();
+      useSettingsStore.getState().syncSettings();
+    }
+  }, [currentUser?.id]);
 
   // Keyboard shortcuts
   useEffect(() => {
