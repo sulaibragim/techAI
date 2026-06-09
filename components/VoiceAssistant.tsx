@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Mic, X, Bot, User, Minimize2, CheckCircle, KeyRound } from 'lucide-react';
 import { GeminiVoiceAssistant, handleAITool } from '../geminiService';
-import { useSettingsStore } from '../settingsStore';
+import { useSettingsStore, getEffectiveApiKey } from '../settingsStore';
 
 export const VoiceAssistant: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -17,6 +17,7 @@ export const VoiceAssistant: React.FC = () => {
   const assistantRef = useRef<GeminiVoiceAssistant | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { geminiApiKey } = useSettingsStore();
+  const hasApiKey = !!(geminiApiKey || getEffectiveApiKey());
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -108,10 +109,10 @@ export const VoiceAssistant: React.FC = () => {
       )}
       <div className="fixed bottom-20 right-8 z-[100] group/fab">
         <button
-          onClick={geminiApiKey ? toggle : undefined}
+          onClick={hasApiKey ? toggle : undefined}
           disabled={isConnecting}
           className={`w-16 h-16 rounded-full flex items-center justify-center shadow-[0_32px_64px_-16px_rgba(59,130,246,0.5)] transition-all duration-500 ${
-            !geminiApiKey
+            !hasApiKey
               ? 'bg-slate-700 cursor-not-allowed opacity-60'
               : isConnecting
               ? 'bg-slate-600 cursor-wait opacity-70'
@@ -120,9 +121,9 @@ export const VoiceAssistant: React.FC = () => {
               : 'bg-blue-600 hover:scale-110 active:scale-90'
           }`}
         >
-          {isOpen ? <X size={26} /> : geminiApiKey ? <Mic size={26} /> : <KeyRound size={22} />}
+          {isOpen ? <X size={26} /> : hasApiKey ? <Mic size={26} /> : <KeyRound size={22} />}
         </button>
-        {!geminiApiKey && (
+        {!hasApiKey && (
           <div className="absolute bottom-full right-0 mb-2 bg-slate-800 border border-white/10 text-white text-xs font-semibold px-3 py-2 rounded-xl whitespace-nowrap shadow-xl opacity-0 group-hover/fab:opacity-100 transition-opacity pointer-events-none">
             Add API key in Settings
           </div>

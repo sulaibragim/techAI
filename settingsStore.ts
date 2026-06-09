@@ -65,10 +65,26 @@ function pushToServer(patch: Record<string, any>) {
   }).catch(() => {});
 }
 
+function migrateOldSettings(): Partial<typeof DEFAULTS> {
+  try {
+    const old = safeStorage.getItem('techai-settings');
+    if (old) {
+      const parsed = JSON.parse(old);
+      const state = parsed?.state || {};
+      safeStorage.removeItem('techai-settings');
+      return state;
+    }
+  } catch {}
+  return {};
+}
+
+const migrated = migrateOldSettings();
+
 export const useSettingsStore = create<SettingsState>()(
   persist(
     (set, get) => ({
       ...DEFAULTS,
+      ...migrated,
 
       updateSettings: (patch) => {
         set((state) => ({ ...state, ...patch }));
@@ -108,3 +124,11 @@ export const useSettingsStore = create<SettingsState>()(
     }
   )
 );
+
+export function getEffectiveApiKey(): string {
+  const fromStore = useSettingsStore.getState().geminiApiKey;
+  if (fromStore) return fromStore;
+  try {
+    return (import.meta as any).env?.VITE_GEMINI_API_KEY || (import.meta as any).env?.VITE_API_KEY || '';
+  } catch { return ''; }
+}

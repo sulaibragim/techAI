@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Send, Bot, Sparkles, BrainCircuit, KeyRound, Settings, Trash2, BarChart3, Users, Phone, Package, Calendar, MessageSquare } from 'lucide-react';
 import { getStrategicBrainResponse } from '../geminiService';
 import { useAppStore } from '../store';
-import { useSettingsStore } from '../settingsStore';
+import { useSettingsStore, getEffectiveApiKey } from '../settingsStore';
 
 interface ChatMessage {
   id: string;
@@ -135,6 +135,7 @@ export const AIChat: React.FC = () => {
   const [isTyping, setIsTyping] = useState(false);
   const { setActiveTab } = useAppStore();
   const { geminiApiKey } = useSettingsStore();
+  const hasApiKey = !!(geminiApiKey || getEffectiveApiKey());
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -183,7 +184,7 @@ export const AIChat: React.FC = () => {
     localStorage.removeItem(STORAGE_KEY);
   };
 
-  if (!geminiApiKey) {
+  if (!hasApiKey) {
     return (
       <div className="max-w-4xl mx-auto h-[calc(100vh-160px)] flex flex-col items-center justify-center bg-slate-800/30 rounded-2xl border border-white/10 backdrop-blur-xl">
         <div className="text-center space-y-5 px-8 max-w-sm">
