@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
   ChevronRight,
   ChevronLeft,
@@ -87,7 +87,10 @@ const JOB_TEMPLATES = [
 
 export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) => {
   const currentUser = useCurrentUser();
-  const technicians = useAuthStore(s => s.users.filter(u => u.role === 'technician' && u.active));
+  // Select the stable users array, then filter via useMemo. Filtering inside the
+  // selector returns a new array every render and makes Zustand loop infinitely (React #185).
+  const allUsers = useAuthStore(s => s.users);
+  const technicians = useMemo(() => allUsers.filter(u => u.role === 'technician' && u.active), [allUsers]);
   const [step, setStep] = useState(0);
   const [error, setError] = useState('');
   const [client, setClient] = useState<Partial<Client>>({
