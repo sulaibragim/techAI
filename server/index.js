@@ -40,6 +40,16 @@ app.get('/debug-openphone', async (_req, res) => {
   res.json({ key: key?.slice(0, 8), status: r.status, data });
 });
 
+app.get('/debug-gemini', async (_req, res) => {
+  try {
+    const { processTranscriptWithAI } = await import('./services/gemini.js');
+    const result = await processTranscriptWithAI('Customer: Hi my name is Test, I need a locksmith at 123 Main St', '+15551234567');
+    res.json({ status: 'ok', result });
+  } catch (err) {
+    res.json({ status: 'error', message: err.message, stack: err.stack?.slice(0, 500) });
+  }
+});
+
 app.use('/openphone', openphoneRouter);
 app.use('/api/openphone', openphoneRouter);
 
