@@ -10,10 +10,11 @@ import {
 } from 'lucide-react';
 import { useAppStore, useVisibleJobs } from '../store';
 import { useSettingsStore } from '../settingsStore';
+import { useAuthStore } from '../authStore';
 import {
   calculatePeriodMetrics, buildMonthlyTrend, buildYearlyTrend, revenueByJobType,
   topClients, revenueByDayOfWeek, computeRecords, coffeeAnalysis, availableMonths,
-  periodJobsToCSV, MONTH_FULL, MONTH_LABELS, FinancialMetrics
+  revenueByTechnician, periodJobsToCSV, MONTH_FULL, MONTH_LABELS, FinancialMetrics
 } from '../financialUtils';
 
 const TYPE_COLORS: Record<string, string> = {
@@ -120,6 +121,8 @@ export const Dashboard: React.FC = () => {
   const dow = useMemo(() => revenueByDayOfWeek(jobs, viewYear, viewMonth), [jobs, viewYear, viewMonth]);
   const records = useMemo(() => computeRecords(jobs), [jobs]);
   const coffee = useMemo(() => coffeeAnalysis(jobs, viewYear, viewMonth), [jobs, viewYear, viewMonth]);
+  const users = useAuthStore(s => s.users);
+  const techEarnings = useMemo(() => revenueByTechnician(jobs, viewYear, viewMonth, users), [jobs, viewYear, viewMonth, users]);
 
   const prevMonth = useMemo(() => stepMonth(viewYear, viewMonth, -1), [viewYear, viewMonth]);
   const prevMetrics = useMemo(() => calculatePeriodMetrics(jobs, prevMonth.year, prevMonth.month, monthlyTargets[keyOf(prevMonth.year, prevMonth.month)] ?? monthlyRevenueTarget), [jobs, prevMonth, monthlyTargets, monthlyRevenueTarget]);
@@ -448,6 +451,46 @@ export const Dashboard: React.FC = () => {
               )}
             </Card>
           </div>
+
+          {/* TECHNICIAN EARNINGS & COMMISSION */}
+          {techEarnings.length > 0 && (
+            <Card title={`Technician Earnings — ${MONTH_FULL[viewMonth]} ${viewYear}`} icon={Wallet}>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="text-[10px] uppercase tracking-widest text-slate-500 font-bold border-b border-white/5">
+                      <th className="py-2 pr-4">Technician</th>
+                      <th className="py-2 px-4 text-right">Jobs</th>
+                      <th className="py-2 px-4 text-right">Revenue</th>
+                      <th className="py-2 px-4 text-right">Rate</th>
+                      <th className="py-2 pl-4 text-right">Commission</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {techEarnings.map(t => (
+                      <tr key={t.userId} className="hover:bg-white/5 transition-colors">
+                        <td className="py-2.5 pr-4 text-sm font-semibold text-white">{t.name}</td>
+                        <td className="py-2.5 px-4 text-right text-sm text-slate-300 tabular-nums">{t.jobCount}</td>
+                        <td className="py-2.5 px-4 text-right text-sm font-bold text-white tabular-nums">{fmt$(t.revenue)}</td>
+                        <td className="py-2.5 px-4 text-right text-xs text-slate-400 tabular-nums">{t.commissionRate}%</td>
+                        <td className="py-2.5 pl-4 text-right text-sm font-bold text-green-400 tabular-nums">{fmt$(t.commission)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr className="border-t border-white/10 text-sm font-bold">
+                      <td className="py-2.5 pr-4 text-slate-400 uppercase text-xs tracking-widest">Total</td>
+                      <td className="py-2.5 px-4 text-right text-slate-300 tabular-nums">{techEarnings.reduce((s, t) => s + t.jobCount, 0)}</td>
+                      <td className="py-2.5 px-4 text-right text-white tabular-nums">{fmt$(techEarnings.reduce((s, t) => s + t.revenue, 0))}</td>
+                      <td></td>
+                      <td className="py-2.5 pl-4 text-right text-green-400 tabular-nums">{fmt$(techEarnings.reduce((s, t) => s + t.commission, 0))}</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+              <p className="text-[10px] text-slate-500 mt-3">Commission = technician revenue × their rate (set per-technician in Settings → Team). Revenue counts completed & sold jobs assigned to each tech.</p>
+            </Card>
+          )}
 
           {/* YEARLY SEASONALITY  |  DAY OF WEEK */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">

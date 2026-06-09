@@ -1,8 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { Job, JobStatus, MissedInteraction, Message, CallRecord, LineItem, Part, TabId } from './types';
-import { calculateFinancialMetrics } from './financialUtils';
-import { useSettingsStore } from './settingsStore';
 import { useAuthStore } from './authStore';
 import { API_BASE } from './backendUrl';
 import { authHeaders } from './apiClient';
@@ -346,7 +344,6 @@ interface AppState {
   removeInventoryItem: (id: string) => void;
   clearMissed: (id: string) => void;
   syncJobs: () => Promise<void>;
-  getFinancialMetrics: () => { totalRevenue: number, targetRevenue: number, closeRate: number, paceIndicator: number };
 }
 
 export const useAppStore = create<AppState>()(
@@ -375,7 +372,12 @@ export const useAppStore = create<AppState>()(
     deleteJobOnServer(id);
   },
   updateJobStatus: (id, status) => {
-    set((state) => ({ jobs: state.jobs.map(j => j.id === id ? { ...j, status } : j) }));
+    set((state) => ({ jobs: state.jobs.map(j => {
+      if (j.id !== id) return j;
+      const next = { ...j, status };
+      if (status === 'completed' && !j.completedAt) next.completedAt = new Date().toISOString();
+      return next;
+    }) }));
     const job = get().jobs.find(j => j.id === id);
     if (job) updateJobOnServer(job);
   },
@@ -413,17 +415,6 @@ export const useAppStore = create<AppState>()(
       }
     } catch {}
   },
-  getFinancialMetrics: () => {
-    const { monthlyRevenueTarget, monthlyTargets } = useSettingsStore.getState();
-    const nowKey = (() => { const n = new Date(); return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}`; })();
-    const metrics = calculateFinancialMetrics(get().jobs, monthlyTargets?.[nowKey] ?? monthlyRevenueTarget);
-    return {
-      totalRevenue: metrics.totalRevenue,
-      targetRevenue: metrics.monthlyTarget,
-      closeRate: metrics.closeRate,
-      paceIndicator: metrics.jobsSold || 0
-    };
-  }
     }),
     {
       name: 'techai-crm-store-v3',

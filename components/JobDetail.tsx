@@ -234,6 +234,9 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
   const handlePrintInvoice = () => {
     const esc = (s: string) => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     const isPaid = localJob.paymentStatus === 'paid';
+    const isPartial = localJob.paymentStatus === 'partial';
+    const paidAmount = isPaid ? subtotal : (localJob.amountPaid || 0);
+    const balanceDue = Math.max(0, subtotal - paidAmount);
     const lineRows = localJob.lineItems.map((item, idx) => `
       <tr style="border-bottom:1px solid #f1f5f9;">
         <td style="padding:9px 8px;font-size:12px;color:#94a3b8;">${idx + 1}</td>
@@ -317,7 +320,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
       <div class="inv-num">#${esc(localJob.jobNumber)}</div>
       <div class="inv-meta">Date: ${localJob.scheduledDate}</div>
       <div class="inv-meta">Due: Upon Receipt</div>
-      <div><span class="badge">${isPaid ? '✓ Paid in Full' : '⏳ Payment Due'}</span></div>
+      <div><span class="badge">${isPaid ? '✓ Paid in Full' : isPartial ? '◐ Partial Payment' : '⏳ Payment Due'}</span></div>
     </div>
   </div>
 
@@ -369,7 +372,8 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
         <span class="tot-main-label">Total Due</span>
         <span class="tot-main-val">$${subtotal.toFixed(2)}</span>
       </div>
-      ${isPaid ? `<div class="tot-paid"><span>Amount Paid</span><span>— $${subtotal.toFixed(2)}</span></div>` : ''}
+      ${(isPaid || isPartial) ? `<div class="tot-paid"><span>Amount Paid</span><span>— $${paidAmount.toFixed(2)}</span></div>` : ''}
+      ${isPartial ? `<div class="tot-paid" style="color:#b45309;"><span>Balance Due</span><span>$${balanceDue.toFixed(2)}</span></div>` : ''}
     </div>
   </div>
 
@@ -611,12 +615,12 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                   <button onClick={() => { setPaymentSplit(1); setPaymentStep('method'); }} className="p-6 border-2 border-slate-100 rounded-2xl hover:border-blue-600 hover:bg-blue-50 transition-all flex flex-col items-center active:scale-95 shadow-sm">
                     <DollarSign size={24} className="text-blue-600 mb-4" />
                     <span className="text-sm font-bold uppercase">Full Settlement</span>
-                    <span className="text-xl font-bold mt-2">${subtotal}</span>
+                    <span className="text-xl font-bold mt-2">${subtotal.toFixed(2)}</span>
                   </button>
                   <button onClick={() => { setPaymentSplit(0.5); setPaymentStep('method'); }} className="p-6 border-2 border-slate-100 rounded-2xl hover:border-blue-600 hover:bg-blue-50 transition-all flex flex-col items-center active:scale-95 shadow-sm">
                     <Percent size={24} className="text-amber-600 mb-4" />
                     <span className="text-sm font-bold uppercase">50% Deposit</span>
-                    <span className="text-xl font-bold mt-2">${subtotal * 0.5}</span>
+                    <span className="text-xl font-bold mt-2">${(subtotal * 0.5).toFixed(2)}</span>
                   </button>
                 </div>
               </div>
@@ -626,7 +630,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
               <div className="space-y-5 animate-in slide-in-from-right-8">
                 <div className="text-center">
                   <h3 className="text-2xl font-bold tracking-tight mb-2">Select Method</h3>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Total to collect: ${collectingAmount}</p>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Total to collect: ${collectingAmount.toFixed(2)}</p>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   {(['Card', 'Cash', 'Check', 'Zelle'] as const).map(m => (
@@ -640,7 +644,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
               <div className="space-y-5 animate-in slide-in-from-right-8">
                 <div className="text-center">
                   <h3 className="text-2xl font-bold tracking-tight mb-2">Authorize</h3>
-                  <p className="text-xs font-bold text-blue-600 uppercase tracking-widest">Collecting ${collectingAmount} via {paymentMethod}</p>
+                  <p className="text-xs font-bold text-blue-600 uppercase tracking-widest">Collecting ${collectingAmount.toFixed(2)} via {paymentMethod}</p>
                 </div>
                 
                 <div className="space-y-4">
@@ -658,11 +662,19 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                 </div>
                 
                 <button onClick={() => {
-                  const paid: Job = { ...localJob, paymentStatus: 'paid' };
-                  setLocalJob(paid);
-                  updateJob(paid);
+                  const alreadyPaid = localJob.amountPaid || 0;
+                  const newPaid = Math.round((alreadyPaid + collectingAmount) * 100) / 100;
+                  const fullyPaid = newPaid >= subtotal - 0.01;
+                  const settled: Job = {
+                    ...localJob,
+                    amountPaid: newPaid,
+                    paymentMethod,
+                    paymentStatus: fullyPaid ? 'paid' : 'partial',
+                  };
+                  setLocalJob(settled);
+                  updateJob(settled);
                   setIsModified(false);
-                  logAudit({ action: 'payment.collect', detail: `Collected $${collectingAmount} (${paymentMethod}) on #${paid.jobNumber}`, jobId: paid.id });
+                  logAudit({ action: 'payment.collect', detail: `Collected $${collectingAmount.toFixed(2)} (${paymentMethod}) on #${settled.jobNumber} — ${fullyPaid ? 'paid in full' : `balance $${(subtotal - newPaid).toFixed(2)}`}`, jobId: settled.id });
                   setPaymentStep('idle');
                 }} className="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold tracking-tight text-base shadow-2xl active:scale-95 hover:bg-blue-600 transition-all">Confirm Payment</button>
               </div>
@@ -1058,8 +1070,8 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                           <p className="text-xl font-extrabold text-slate-800 tracking-tight">#{localJob.jobNumber}</p>
                           <p className="text-xs text-slate-500">Date: {localJob.scheduledDate}</p>
                           <p className="text-xs text-slate-500">Due: Upon Receipt</p>
-                          <span className={`inline-block mt-1.5 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${localJob.paymentStatus === 'paid' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
-                            {localJob.paymentStatus === 'paid' ? '✓ Paid' : '⏳ Payment Due'}
+                          <span className={`inline-block mt-1.5 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${localJob.paymentStatus === 'paid' ? 'bg-green-100 text-green-700' : localJob.paymentStatus === 'partial' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'}`}>
+                            {localJob.paymentStatus === 'paid' ? '✓ Paid' : localJob.paymentStatus === 'partial' ? '◐ Partial' : '⏳ Payment Due'}
                           </span>
                         </div>
                       </div>
@@ -1131,11 +1143,19 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                               <span className="text-sm font-extrabold text-slate-800 uppercase tracking-wide">Total Due</span>
                               <span className="text-2xl font-extrabold text-slate-900 tabular-nums">${subtotal.toFixed(2)}</span>
                             </div>
-                            {localJob.paymentStatus === 'paid' && (
-                              <div className="flex justify-between text-xs text-green-600 font-bold pt-1">
-                                <span>Amount Paid</span>
-                                <span>— ${subtotal.toFixed(2)}</span>
-                              </div>
+                            {(localJob.paymentStatus === 'paid' || localJob.paymentStatus === 'partial') && (
+                              <>
+                                <div className="flex justify-between text-xs text-green-600 font-bold pt-1">
+                                  <span>Amount Paid</span>
+                                  <span>— ${(localJob.amountPaid ?? subtotal).toFixed(2)}</span>
+                                </div>
+                                {localJob.paymentStatus === 'partial' && (
+                                  <div className="flex justify-between text-xs text-amber-600 font-bold">
+                                    <span>Balance Due</span>
+                                    <span>${Math.max(0, subtotal - (localJob.amountPaid ?? 0)).toFixed(2)}</span>
+                                  </div>
+                                )}
+                              </>
                             )}
                           </div>
                         </div>
@@ -1188,8 +1208,8 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                       <p className="text-base font-bold text-white leading-tight truncate">{companyName}</p>
                       <p className="text-xs text-slate-500 mt-0.5">Invoice #{localJob.jobNumber} · {localJob.scheduledDate}</p>
                     </div>
-                    <span className={`shrink-0 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide ${localJob.paymentStatus === 'paid' ? 'bg-green-500/15 text-green-400' : 'bg-amber-500/15 text-amber-400'}`}>
-                      {localJob.paymentStatus === 'paid' ? 'Paid' : 'Due'}
+                    <span className={`shrink-0 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide ${localJob.paymentStatus === 'paid' ? 'bg-green-500/15 text-green-400' : localJob.paymentStatus === 'partial' ? 'bg-blue-500/15 text-blue-400' : 'bg-amber-500/15 text-amber-400'}`}>
+                      {localJob.paymentStatus === 'paid' ? 'Paid' : localJob.paymentStatus === 'partial' ? 'Partial' : 'Due'}
                     </span>
                   </div>
 

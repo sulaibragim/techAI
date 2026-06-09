@@ -1,4 +1,4 @@
-import { Job } from './types';
+import { Job, User } from './types';
 
 export interface FinancialMetrics {
   totalRevenue: number;
@@ -35,11 +35,20 @@ export const MONTH_FULL = ['January', 'February', 'March', 'April', 'May', 'June
 const DOW_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 const monthKey = (year: number, month: number) => `${year}-${String(month + 1).padStart(2, '0')}`;
-const isSale = (j: Job) => j.lineItems.some(i => i.type === 'labor' || i.type === 'part');
 
+// Single source of truth for revenue recognition: a job earns revenue once it is
+// sold or completed. Used everywhere so Analytics, Workroom and the AI agree.
+const REVENUE_STATUSES = new Set<Job['status']>(['completed', 'sold']);
+export const isRevenueJob = (j: Job) => REVENUE_STATUSES.has(j.status);
+
+// A "sale" is any revenue job that actually produced billable money (service call,
+// labor, parts — anything > $0), not just labor/part line items.
+const isSale = (j: Job) => j.totalAmount > 0;
+
+// Revenue jobs in a given month. (Named "completed" for backwards compatibility.)
 export function completedJobsInMonth(jobs: Job[], year: number, month: number): Job[] {
   const key = monthKey(year, month);
-  return jobs.filter(j => j.status === 'completed' && j.scheduledDate.startsWith(key));
+  return jobs.filter(j => isRevenueJob(j) && j.scheduledDate.startsWith(key));
 }
 
 /** Period-aware metrics engine. Works for any chosen month/year, past or present. */
@@ -50,11 +59,13 @@ export function calculatePeriodMetrics(
   monthlyTarget: number = 20000
 ): FinancialMetrics {
   const now = new Date();
+  const key = monthKey(year, month);
   const completed = completedJobsInMonth(jobs, year, month);
   const totalRevenue = completed.reduce((s, j) => s + j.totalAmount, 0);
 
   const jobsSold = completed.filter(isSale).length;
-  const coffeeCount = completed.length - jobsSold;
+  // Coffee = an explicit no-sale visit this month (its own status), not "completed minus sale".
+  const coffeeCount = jobs.filter(j => j.status === 'coffee' && j.scheduledDate.startsWith(key)).length;
   const totalCount = completed.length;
   const closeRate = totalCount > 0 ? (jobsSold / totalCount) * 100 : 0;
   const averageTicket = jobsSold > 0 ? totalRevenue / jobsSold : 0;
@@ -86,7 +97,7 @@ export function calculatePeriodMetrics(
 
   const remainingRevenue = Math.max(0, monthlyTarget - totalRevenue);
   const requiredDailyRevenue = daysRemaining > 0 ? remainingRevenue / daysRemaining : 0;
-  const requiredSalesPerDay = averageTicket > 0 ? Math.ceil(requiredDailyRevenue / averageTicket) : 2;
+  const requiredSalesPerDay = averageTicket > 0 ? Math.ceil(requiredDailyRevenue / averageTicket) : 0;
 
   const projectedRevenue =
     isCurrentMonth && daysElapsed > 0 ? (totalRevenue / daysElapsed) * daysInMonth : totalRevenue;
@@ -113,7 +124,7 @@ export function buildMonthlyTrend(jobs: Job[], year: number, month: number) {
   return Array.from({ length: daysInMonth }, (_, i) => {
     const dayStr = `${key}-${String(i + 1).padStart(2, '0')}`;
     const revenue = jobs
-      .filter(j => j.status === 'completed' && j.scheduledDate === dayStr)
+      .filter(j => isRevenueJob(j) && j.scheduledDate === dayStr)
       .reduce((s, j) => s + j.totalAmount, 0);
     return { day: String(i + 1), revenue };
   });
@@ -177,7 +188,7 @@ export function revenueByDayOfWeek(jobs: Job[], year: number, month: number) {
 
 /** All-time records. */
 export function computeRecords(jobs: Job[]) {
-  const completed = jobs.filter(j => j.status === 'completed');
+  const completed = jobs.filter(isRevenueJob);
 
   const byDay = new Map<string, number>();
   const byMonth = new Map<string, number>();
@@ -230,6 +241,48 @@ export function availableMonths(jobs: Job[]): { year: number; month: number }[] 
       const [y, m] = k.split('-').map(Number);
       return { year: y, month: m - 1 };
     });
+}
+
+export interface TechnicianEarnings {
+  userId: string;
+  name: string;
+  revenue: number;
+  jobCount: number;
+  commissionRate: number; // percent
+  commission: number;     // revenue * rate, rounded to cents
+}
+
+/** Per-technician revenue and commission for a period (salary engine). */
+export function revenueByTechnician(
+  jobs: Job[],
+  year: number,
+  month: number,
+  users: Pick<User, 'id' | 'name' | 'role' | 'commissionRate'>[]
+): TechnicianEarnings[] {
+  const completed = completedJobsInMonth(jobs, year, month);
+  const byTech = new Map<string, { revenue: number; jobCount: number }>();
+  for (const j of completed) {
+    if (!j.assignedTo) continue;
+    const cur = byTech.get(j.assignedTo) || { revenue: 0, jobCount: 0 };
+    cur.revenue += j.totalAmount;
+    cur.jobCount += 1;
+    byTech.set(j.assignedTo, cur);
+  }
+  return users
+    .filter(u => u.role === 'technician')
+    .map(u => {
+      const agg = byTech.get(u.id) || { revenue: 0, jobCount: 0 };
+      const rate = u.commissionRate ?? 0;
+      return {
+        userId: u.id,
+        name: u.name,
+        revenue: Math.round(agg.revenue * 100) / 100,
+        jobCount: agg.jobCount,
+        commissionRate: rate,
+        commission: Math.round(agg.revenue * (rate / 100) * 100) / 100,
+      };
+    })
+    .sort((a, b) => b.revenue - a.revenue);
 }
 
 /** Build a CSV string of completed jobs for a period (export). */

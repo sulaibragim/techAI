@@ -114,7 +114,10 @@ export interface Job {
   durationMinutes?: number; 
   status: JobStatus;
   lineItems: LineItem[];
-  paymentStatus: 'paid' | 'unpaid';
+  paymentStatus: 'paid' | 'unpaid' | 'partial';
+  amountPaid?: number; // how much has actually been collected (for deposits / partial payments)
+  paymentMethod?: 'Card' | 'Cash' | 'Check' | 'Zelle';
+  completedAt?: string; // ISO timestamp set when the job is marked completed/paid (revenue date)
   totalAmount: number;
   photos: string[];
   messages?: Message[];

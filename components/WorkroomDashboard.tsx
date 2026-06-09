@@ -223,7 +223,7 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
       <div className="flex gap-4 overflow-x-auto scrollbar-hide py-1">
         <AnimatePresence>
           {[
-            { label: 'Revenue', value: `$${metrics.totalRevenue.toLocaleString()}`, detail: 'All time', icon: DollarSign, color: 'blue' },
+            { label: 'Revenue', value: `$${metrics.totalRevenue.toLocaleString()}`, detail: 'This month', icon: DollarSign, color: 'blue' },
             { label: 'Close Rate', value: `${metrics.closeRate.toFixed(0)}%`, detail: 'Sold vs visited', icon: Target, color: 'cyan' },
             { label: 'Total Jobs', value: jobs.length, detail: 'In system', icon: Activity, color: 'slate' },
             { label: 'Completed', value: jobs.filter(j => j.status === 'completed').length, detail: 'Jobs closed', icon: Shield, color: 'cyan' }
