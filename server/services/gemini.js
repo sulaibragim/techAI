@@ -32,9 +32,8 @@ Rules:
 
 export async function processTranscriptWithAI(transcript, callerPhone) {
   try {
-    console.log('[Gemini] Starting processing, key prefix:', (process.env.GEMINI_API_KEY || process.env.VITE_API_KEY)?.slice(0, 8));
     const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
+      model: 'gemini-2.5-flash',
       contents: [
         {
           role: 'user',
@@ -50,11 +49,9 @@ export async function processTranscriptWithAI(transcript, callerPhone) {
     });
 
     const text = response.candidates?.[0]?.content?.parts?.[0]?.text ?? '{}';
-    console.log('[Gemini] Success, response:', text.slice(0, 200));
     return JSON.parse(text);
   } catch (err) {
-    console.error('[Gemini] ERROR:', err?.message, err?.status, err?.statusText);
-    // Return error info instead of null so we can debug
-    return { _error: err?.message || String(err) };
+    console.error('[Gemini] transcript processing error:', err?.message);
+    return null;
   }
 }
