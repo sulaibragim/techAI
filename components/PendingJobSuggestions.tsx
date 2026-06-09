@@ -66,7 +66,7 @@ export const PendingJobSuggestions: React.FC = () => {
       const res = await fetch(`${API_BASE}/api/openphone/pending-jobs`);
       if (!res.ok) return;
       const data: PendingJob[] = await res.json();
-      setPending(data.filter(p => p.status === 'ready' && p.suggestion));
+      setPending(data.filter(p => p.status === 'ready'));
     } catch {
       // backend offline — silently ignore
     }
@@ -144,9 +144,9 @@ export const PendingJobSuggestions: React.FC = () => {
       </div>
 
       {pending.map((pj) => {
-        const s = pj.suggestion!;
+        const s = pj.suggestion;
         const isExpanded = expanded === pj.callId;
-        const urgencyClass = URGENCY_COLOR[s.urgency] || URGENCY_COLOR.standard;
+        const urgencyClass = URGENCY_COLOR[s?.urgency || 'standard'];
 
         return (
           <div
@@ -157,16 +157,23 @@ export const PendingJobSuggestions: React.FC = () => {
             <div className="flex items-center justify-between p-4 gap-3">
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <div className="w-10 h-10 bg-violet-500/10 border border-violet-500/20 rounded-xl flex items-center justify-center text-lg shrink-0">
-                  {SERVICE_ICON[s.serviceType] || '🔑'}
+                  {SERVICE_ICON[s?.serviceType || ''] || '🔑'}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="text-sm font-bold text-white leading-none">
-                      {s.clientName || 'Unknown Caller'}
+                      {s?.clientName || 'Unknown Caller'}
                     </p>
-                    <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-lg border ${urgencyClass}`}>
-                      {s.urgency}
-                    </span>
+                    {s?.urgency && (
+                      <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-lg border ${urgencyClass}`}>
+                        {s.urgency}
+                      </span>
+                    )}
+                    {!s && (
+                      <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-lg border text-amber-400 bg-amber-500/10 border-amber-500/20">
+                        transcript only
+                      </span>
+                    )}
                   </div>
                   <p className="text-xs text-slate-400 mt-0.5 font-semibold">
                     {pj.callerPhone} {pj.duration ? `· ${formatDur(pj.duration)}` : ''}
@@ -203,37 +210,40 @@ export const PendingJobSuggestions: React.FC = () => {
             {/* Expanded details */}
             {isExpanded && (
               <div className="px-4 pb-4 space-y-3 border-t border-violet-500/10 pt-3">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  {s.address && (
-                    <div className="flex items-start gap-2 text-xs text-slate-300">
-                      <MapPin size={12} className="text-violet-400 mt-0.5 shrink-0" />
-                      <span>{s.address}</span>
+                {s && (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      {s.address && (
+                        <div className="flex items-start gap-2 text-xs text-slate-300">
+                          <MapPin size={12} className="text-violet-400 mt-0.5 shrink-0" />
+                          <span>{s.address}</span>
+                        </div>
+                      )}
+                      {s.lockType && (
+                        <div className="flex items-start gap-2 text-xs text-slate-300">
+                          <Lock size={12} className="text-violet-400 mt-0.5 shrink-0" />
+                          <span>{s.lockType}</span>
+                        </div>
+                      )}
+                      {s.clientPhone && (
+                        <div className="flex items-start gap-2 text-xs text-slate-300">
+                          <Phone size={12} className="text-violet-400 mt-0.5 shrink-0" />
+                          <span>{s.clientPhone}</span>
+                        </div>
+                      )}
+                      {s.estimatedPrice && (
+                        <div className="flex items-start gap-2 text-xs text-slate-300">
+                          <Clock size={12} className="text-violet-400 mt-0.5 shrink-0" />
+                          <span>Est. ${s.estimatedPrice}</span>
+                        </div>
+                      )}
                     </div>
-                  )}
-                  {s.lockType && (
-                    <div className="flex items-start gap-2 text-xs text-slate-300">
-                      <Lock size={12} className="text-violet-400 mt-0.5 shrink-0" />
-                      <span>{s.lockType}</span>
-                    </div>
-                  )}
-                  {s.clientPhone && (
-                    <div className="flex items-start gap-2 text-xs text-slate-300">
-                      <Phone size={12} className="text-violet-400 mt-0.5 shrink-0" />
-                      <span>{s.clientPhone}</span>
-                    </div>
-                  )}
-                  {s.estimatedPrice && (
-                    <div className="flex items-start gap-2 text-xs text-slate-300">
-                      <Clock size={12} className="text-violet-400 mt-0.5 shrink-0" />
-                      <span>Est. ${s.estimatedPrice}</span>
-                    </div>
-                  )}
-                </div>
-
-                {s.problemDescription && (
-                  <p className="text-xs text-slate-400 italic bg-slate-900/50 rounded-xl px-3 py-2 leading-relaxed">
-                    "{s.problemDescription}"
-                  </p>
+                    {s.problemDescription && (
+                      <p className="text-xs text-slate-400 italic bg-slate-900/50 rounded-xl px-3 py-2 leading-relaxed">
+                        "{s.problemDescription}"
+                      </p>
+                    )}
+                  </>
                 )}
 
                 {pj.transcript && (
