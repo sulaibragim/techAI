@@ -12,6 +12,7 @@ import { JobDetail } from './components/JobDetail';
 import { MessagesList } from './components/MessagesList';
 import { CallsList } from './components/CallsList';
 import { Inventory } from './components/Inventory';
+import { Accounting } from './components/Accounting';
 import { useAppStore, useVisibleJobs } from './store';
 import { useSettingsStore } from './settingsStore';
 import { useCurrentUser, useAuthStore, visibleTabsFor, ROLE_LABELS } from './authStore';
@@ -31,7 +32,7 @@ const App: React.FC = () => {
   const currentUser = useCurrentUser();
   const jobs = useVisibleJobs();
   const allowedTabs = currentUser ? visibleTabsFor(currentUser.role) : [];
-  const effectiveTab = (allowedTabs.includes(activeTab) ? activeTab : 'calendar') as TabId;
+  const effectiveTab = (allowedTabs.includes(activeTab) ? activeTab : (allowedTabs[0] || 'calendar')) as TabId;
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [notification, setNotification] = useState<{msg: string, type: 'info' | 'success'} | null>(null);
@@ -103,6 +104,7 @@ const App: React.FC = () => {
               case 'calls': return <CallsList />;
               case 'clients': return <ClientsList onJobSelect={(job) => setSelectedJobId(job.id)} />;
               case 'analytics': return <Dashboard />;
+              case 'accounting': return <Accounting />;
               case 'inventory': return <Inventory />;
               case 'brain': return <AIChat />;
               case 'settings': return <Settings />;

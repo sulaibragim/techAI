@@ -285,6 +285,111 @@ export function revenueByTechnician(
     .sort((a, b) => b.revenue - a.revenue);
 }
 
+// ── Accounting helpers ──────────────────────────────────────────────────────
+
+/** How much has actually been collected on a job. */
+export const collectedAmount = (j: Job): number => {
+  if (j.paymentStatus === 'paid') return j.totalAmount;
+  if (j.paymentStatus === 'partial') return j.amountPaid || 0;
+  return 0;
+};
+
+/** Outstanding balance still owed on a job. */
+export const outstandingAmount = (j: Job): number => Math.max(0, j.totalAmount - collectedAmount(j));
+
+export interface AccountingSummary {
+  grossRevenue: number;
+  collected: number;
+  outstanding: number;
+  partsCost: number;
+  grossProfit: number;
+  estimatedTax: number;
+  jobCount: number;
+}
+
+/** Period accounting summary (revenue jobs in the month). */
+export function accountingSummary(jobs: Job[], year: number, month: number, taxRate = 0): AccountingSummary {
+  const inMonth = completedJobsInMonth(jobs, year, month);
+  const grossRevenue = inMonth.reduce((s, j) => s + j.totalAmount, 0);
+  const collected = inMonth.reduce((s, j) => s + collectedAmount(j), 0);
+  const outstanding = inMonth.reduce((s, j) => s + outstandingAmount(j), 0);
+  const partsCost = inMonth.reduce(
+    (s, j) => s + j.lineItems.filter(i => i.type === 'part').reduce((ss, i) => ss + i.unitPrice * i.quantity, 0),
+    0
+  );
+  return {
+    grossRevenue: round2(grossRevenue),
+    collected: round2(collected),
+    outstanding: round2(outstanding),
+    partsCost: round2(partsCost),
+    grossProfit: round2(grossRevenue - partsCost),
+    estimatedTax: round2(grossRevenue * (taxRate / 100)),
+    jobCount: inMonth.length,
+  };
+}
+
+/** Collected revenue split by payment method for a period. */
+export function paymentMethodBreakdown(jobs: Job[], year: number, month: number) {
+  const inMonth = completedJobsInMonth(jobs, year, month);
+  const map = new Map<string, number>();
+  for (const j of inMonth) {
+    const c = collectedAmount(j);
+    if (c <= 0) continue;
+    const m = j.paymentMethod || 'Unspecified';
+    map.set(m, (map.get(m) || 0) + c);
+  }
+  return [...map.entries()].map(([method, amount]) => ({ method, amount: round2(amount) })).sort((a, b) => b.amount - a.amount);
+}
+
+export interface ReceivableRow {
+  id: string;
+  jobNumber: string;
+  client: string;
+  date: string;
+  total: number;
+  paid: number;
+  balance: number;
+  status: Job['status'];
+}
+
+/** Accounts receivable: completed/sold work that is unpaid or partially paid. */
+export function accountsReceivable(jobs: Job[]): ReceivableRow[] {
+  return jobs
+    .filter(j => isRevenueJob(j) && outstandingAmount(j) > 0.01)
+    .map(j => ({
+      id: j.id,
+      jobNumber: j.jobNumber,
+      client: `${j.client.firstName} ${j.client.lastName}`.trim(),
+      date: j.completedAt?.slice(0, 10) || j.scheduledDate,
+      total: round2(j.totalAmount),
+      paid: round2(collectedAmount(j)),
+      balance: round2(outstandingAmount(j)),
+      status: j.status,
+    }))
+    .sort((a, b) => b.date.localeCompare(a.date));
+}
+
+/** Revenue jobs in a period assigned to one technician. */
+export function jobsForTechnician(jobs: Job[], techId: string, year: number, month: number): Job[] {
+  return completedJobsInMonth(jobs, year, month)
+    .filter(j => j.assignedTo === techId)
+    .sort((a, b) => a.scheduledDate.localeCompare(b.scheduledDate));
+}
+
+/** Payroll CSV for a period's technician earnings. */
+export function payrollToCSV(rows: TechnicianEarnings[]): string {
+  const esc = (v: unknown) => {
+    const s = String(v ?? '');
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const header = ['Technician', 'Jobs', 'Revenue', 'Commission Rate (%)', 'Commission'];
+  const body = rows.map(r => [r.name, r.jobCount, r.revenue.toFixed(2), r.commissionRate, r.commission.toFixed(2)]);
+  const totals = ['TOTAL', rows.reduce((s, r) => s + r.jobCount, 0), rows.reduce((s, r) => s + r.revenue, 0).toFixed(2), '', rows.reduce((s, r) => s + r.commission, 0).toFixed(2)];
+  return [header, ...body, totals].map(r => r.map(esc).join(',')).join('\n');
+}
+
+const round2 = (n: number) => Math.round(n * 100) / 100;
+
 /** Build a CSV string of completed jobs for a period (export). */
 export function periodJobsToCSV(jobs: Job[], year: number, month: number): string {
   const completed = completedJobsInMonth(jobs, year, month).sort((a, b) =>

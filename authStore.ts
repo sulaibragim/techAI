@@ -188,28 +188,31 @@ export const useCurrentUser = (): User | null =>
 
 // Permission matrix — single source of truth for what each role may do.
 export const can = {
-  viewAllJobs:   (r: Role) => r !== 'technician',
-  deleteJob:     (r: Role) => r === 'owner',
-  reopenJob:     (r: Role) => r !== 'technician',
-  assignJobs:    (r: Role) => r !== 'technician',
-  manageUsers:   (r: Role) => r === 'owner',
-  viewAnalytics: (r: Role) => r !== 'technician',
-  viewCalls:     (r: Role) => r !== 'technician',
-  viewMessages:  (r: Role) => r !== 'technician',
-  editInventory: (r: Role) => r !== 'technician',
-  viewAudit:     (r: Role) => r === 'owner',
-  useAIBrain:    (r: Role) => r !== 'technician',
+  viewAllJobs:    (r: Role) => r === 'owner' || r === 'manager',
+  deleteJob:      (r: Role) => r === 'owner',
+  reopenJob:      (r: Role) => r === 'owner' || r === 'manager',
+  assignJobs:     (r: Role) => r === 'owner' || r === 'manager',
+  manageUsers:    (r: Role) => r === 'owner',
+  viewAnalytics:  (r: Role) => r === 'owner' || r === 'manager' || r === 'accountant',
+  viewAccounting: (r: Role) => r === 'owner' || r === 'manager' || r === 'accountant',
+  viewCalls:      (r: Role) => r === 'owner' || r === 'manager',
+  viewMessages:   (r: Role) => r === 'owner' || r === 'manager',
+  editInventory:  (r: Role) => r === 'owner' || r === 'manager',
+  viewAudit:      (r: Role) => r === 'owner',
+  useAIBrain:     (r: Role) => r === 'owner' || r === 'manager',
 };
 
 // Which tabs a role may see, in display order.
 export const visibleTabsFor = (r: Role): string[] => {
   if (r === 'technician') return ['calendar', 'jobs', 'inventory', 'settings'];
-  if (r === 'manager')    return ['calendar', 'jobs', 'messages', 'calls', 'clients', 'analytics', 'inventory', 'brain', 'settings'];
-  return ['calendar', 'jobs', 'messages', 'calls', 'clients', 'analytics', 'inventory', 'brain', 'settings'];
+  if (r === 'accountant') return ['accounting', 'analytics', 'settings'];
+  if (r === 'manager')    return ['calendar', 'jobs', 'messages', 'calls', 'clients', 'analytics', 'accounting', 'inventory', 'brain', 'settings'];
+  return ['calendar', 'jobs', 'messages', 'calls', 'clients', 'analytics', 'accounting', 'inventory', 'brain', 'settings'];
 };
 
 export const ROLE_LABELS: Record<Role, string> = {
   owner: 'Owner',
   manager: 'Manager',
   technician: 'Technician',
+  accountant: 'Accountant',
 };

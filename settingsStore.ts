@@ -15,6 +15,7 @@ export interface SettingsState {
   monthlyRevenueTarget: number;
   dailyRevenueTarget: number;
   monthlyTargets: Record<string, number>;
+  taxRate: number; // sales-tax percent applied to taxable revenue (0 = none)
   geminiApiKey: string;
   onboardingComplete: boolean;
   updateSettings: (patch: Partial<Omit<SettingsState, 'updateSettings' | 'resetSettings' | 'setMonthlyTarget' | 'syncSettings'>>) => void;
@@ -40,6 +41,7 @@ export const SETTINGS_DEFAULTS = {
   monthlyRevenueTarget: 5000,
   dailyRevenueTarget: 1500,
   monthlyTargets: {} as Record<string, number>,
+  taxRate: 0,
   geminiApiKey: '',
   onboardingComplete: false,
 };

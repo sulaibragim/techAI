@@ -338,7 +338,7 @@ export const Settings: React.FC = () => {
   );
 };
 
-const ROLES: Role[] = ['owner', 'manager', 'technician'];
+const ROLES: Role[] = ['owner', 'manager', 'technician', 'accountant'];
 
 const TeamSection: React.FC = () => {
   const { users, addUser, updateUser, removeUser } = useAuthStore();

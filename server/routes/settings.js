@@ -10,7 +10,7 @@ settingsRouter.get('/', requireAuth, async (req, res) => {
     const { rows } = await db.query("SELECT value FROM settings WHERE key = 'company'");
     if (rows.length === 0) return res.json({});
     const value = JSON.parse(rows[0].value);
-    if (req.user.role === 'technician') delete value.geminiApiKey;
+    if (req.user.role !== 'owner' && req.user.role !== 'manager') delete value.geminiApiKey;
     res.json(value);
   } catch (err) {
     console.error('[SETTINGS] get error:', err);

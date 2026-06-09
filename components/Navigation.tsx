@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Calendar, Briefcase, BarChart2, BrainCircuit, MessageSquare, Phone, Package, Users, Settings, MoreHorizontal, X, LogOut } from 'lucide-react';
+import { Calendar, Briefcase, BarChart2, BrainCircuit, MessageSquare, Phone, Package, Users, Settings, MoreHorizontal, X, LogOut, Receipt } from 'lucide-react';
 import { useAuthStore, useCurrentUser, visibleTabsFor, ROLE_LABELS } from '../authStore';
 
 interface NavigationProps {
@@ -18,6 +18,7 @@ const PRIMARY_ALL = [
 const MORE_ALL = [
   { id: 'calls', label: 'Calls', icon: Phone },
   { id: 'clients', label: 'Clients', icon: Users },
+  { id: 'accounting', label: 'Books', icon: Receipt },
   { id: 'inventory', label: 'Inventory', icon: Package },
   { id: 'brain', label: 'AI Brain', icon: BrainCircuit },
   { id: 'settings', label: 'Settings', icon: Settings },

@@ -1,6 +1,6 @@
-export type TabId = 'calendar' | 'jobs' | 'messages' | 'calls' | 'clients' | 'analytics' | 'inventory' | 'brain' | 'settings';
+export type TabId = 'calendar' | 'jobs' | 'messages' | 'calls' | 'clients' | 'analytics' | 'accounting' | 'inventory' | 'brain' | 'settings';
 
-export type Role = 'owner' | 'manager' | 'technician';
+export type Role = 'owner' | 'manager' | 'technician' | 'accountant';
 export type TechStatus = 'available' | 'onJob' | 'offDuty';
 
 export interface User {

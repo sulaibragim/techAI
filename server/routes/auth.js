@@ -74,7 +74,7 @@ authRouter.post('/users', requireAuth, requireRole('owner'), async (req, res) =>
   try {
     const { name, email, password, role, phone, commissionRate, active, techStatus } = req.body;
     if (!name || !email) return res.status(400).json({ error: 'Name and email required' });
-    if (role && !['owner', 'manager', 'technician'].includes(role)) {
+    if (role && !['owner', 'manager', 'technician', 'accountant'].includes(role)) {
       return res.status(400).json({ error: 'Invalid role' });
     }
     const id = `u-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -109,7 +109,7 @@ authRouter.put('/users/:id', requireAuth, async (req, res) => {
       active = undefined;
       email = undefined;
     }
-    if (role && !['owner', 'manager', 'technician'].includes(role)) {
+    if (role && !['owner', 'manager', 'technician', 'accountant'].includes(role)) {
       return res.status(400).json({ error: 'Invalid role' });
     }
 
