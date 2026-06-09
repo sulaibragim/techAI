@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { API_BASE } from './backendUrl';
+import { authHeaders } from './apiClient';
 
 export interface SettingsState {
   technicianName: string;
@@ -60,7 +61,7 @@ export const settingsStorageIsEphemeral = storageIsEphemeral;
 function pushToServer(patch: Record<string, any>) {
   fetch(`${API_BASE}/api/settings`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify(patch),
   }).catch(() => {});
 }
@@ -108,11 +109,21 @@ export const useSettingsStore = create<SettingsState>()(
 
       syncSettings: async () => {
         try {
-          const res = await fetch(`${API_BASE}/api/settings`);
+          const res = await fetch(`${API_BASE}/api/settings`, { headers: { ...authHeaders() } });
           if (res.ok) {
             const data = await res.json();
             if (data && Object.keys(data).length > 0) {
-              set((state) => ({ ...state, ...data }));
+              set((state) => {
+                // Never let the server overwrite a non-empty local value with an empty one
+                // (protects the locally-entered Gemini key, profile photo, etc.).
+                const merged: Record<string, any> = { ...state };
+                for (const [k, v] of Object.entries(data)) {
+                  const isEmpty = v === '' || v === null || v === undefined;
+                  if (isEmpty && (state as any)[k]) continue;
+                  merged[k] = v;
+                }
+                return merged;
+              });
             }
           }
         } catch {}
@@ -126,9 +137,6 @@ export const useSettingsStore = create<SettingsState>()(
 );
 
 export function getEffectiveApiKey(): string {
-  const fromStore = useSettingsStore.getState().geminiApiKey;
-  if (fromStore) return fromStore;
-  try {
-    return (import.meta as any).env?.VITE_GEMINI_API_KEY || (import.meta as any).env?.VITE_API_KEY || '';
-  } catch { return ''; }
+  // Key comes only from Settings (localStorage) — never read from bundled env vars.
+  return useSettingsStore.getState().geminiApiKey || '';
 }

@@ -354,9 +354,9 @@ const TeamSection: React.FC = () => {
 
   const togglePasswordVisibility = (id: string) => setVisiblePasswords(p => ({ ...p, [id]: !p[id] }));
 
-  const startEditPassword = (u: { id: string; password?: string }) => {
+  const startEditPassword = (u: { id: string }) => {
     setEditingPassword(u.id);
-    setNewPassword(u.password || '');
+    setNewPassword('');
   };
 
   const savePassword = (u: any) => {
@@ -503,18 +503,16 @@ const TeamSection: React.FC = () => {
                         onChange={e => setNewPassword(e.target.value)}
                         onKeyDown={e => e.key === 'Enter' && savePassword(u)}
                         autoFocus
-                        className="bg-transparent text-sm font-mono text-white w-24 outline-none"
+                        placeholder="New password"
+                        className="bg-transparent text-sm font-mono text-white w-28 outline-none placeholder:text-slate-600"
                       />
                       <button onClick={() => savePassword(u)} className="text-green-400 hover:text-green-300"><Check size={14} /></button>
                       <button onClick={() => setEditingPassword(null)} className="text-slate-400 hover:text-white"><X size={14} /></button>
                     </>
                   ) : (
                     <>
-                      <span className="text-xs font-mono text-slate-300 select-all">{pwVisible ? u.password : '••••••'}</span>
-                      <button onClick={() => togglePasswordVisibility(u.id)} className="text-slate-500 hover:text-blue-400 transition-colors">
-                        {pwVisible ? <EyeOff size={12} /> : <Eye size={12} />}
-                      </button>
-                      <button onClick={() => startEditPassword(u)} className="text-slate-500 hover:text-blue-400 transition-colors">
+                      <span className="text-xs font-mono text-slate-500 select-none" title="Passwords are encrypted and cannot be viewed">••••••</span>
+                      <button onClick={() => startEditPassword(u)} className="text-slate-500 hover:text-blue-400 transition-colors" title="Set new password">
                         <Pencil size={12} />
                       </button>
                     </>

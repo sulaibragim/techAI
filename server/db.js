@@ -1,4 +1,5 @@
 import pg from 'pg';
+import bcrypt from 'bcryptjs';
 
 const { Pool } = pg;
 
@@ -59,14 +60,15 @@ export async function initDB() {
 
     const { rows } = await client.query('SELECT COUNT(*) FROM users');
     if (parseInt(rows[0].count) === 0) {
+      const hash = bcrypt.hashSync('1234', 10);
       await client.query(`
         INSERT INTO users (id, name, email, password, role, active, commission_rate)
         VALUES
-          ('u-owner', 'Sultan', 'owner@trustkey.az', '1234', 'owner', true, 0),
-          ('u-mgr', 'Manager', 'manager@trustkey.az', '1234', 'manager', true, 0),
-          ('u-tech', 'Technician', 'tech@trustkey.az', '1234', 'technician', true, 30)
-      `);
-      console.log('[DB] Seeded default users');
+          ('u-owner', 'Sultan', 'owner@trustkey.az', $1, 'owner', true, 0),
+          ('u-mgr', 'Manager', 'manager@trustkey.az', $1, 'manager', true, 0),
+          ('u-tech', 'Technician', 'tech@trustkey.az', $1, 'technician', true, 30)
+      `, [hash]);
+      console.log('[DB] Seeded default users (hashed passwords)');
     }
 
     const settingsCheck = await client.query("SELECT COUNT(*) FROM settings WHERE key = 'company'");

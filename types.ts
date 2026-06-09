@@ -7,7 +7,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  password: string; // NOTE: prototype only — plaintext local storage. Replace with backend auth before production.
+  password?: string; // Only set transiently when creating/changing a password; never persisted client-side.
   role: Role;
   phone?: string;
   photo?: string;

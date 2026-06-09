@@ -2,17 +2,18 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { User, Role, AuditEntry, TechStatus } from './types';
 import { API_BASE } from './backendUrl';
+import { setToken, authHeaders } from './apiClient';
 
 const DEFAULT_USERS: User[] = [
-  { id: 'u-owner', name: 'Sultan',     email: 'owner@trustkey.az',   password: '1234', role: 'owner',      active: true, createdAt: new Date().toISOString() },
-  { id: 'u-mgr',   name: 'Manager',    email: 'manager@trustkey.az', password: '1234', role: 'manager',    active: true, createdAt: new Date().toISOString() },
-  { id: 'u-tech',  name: 'Technician', email: 'tech@trustkey.az',    password: '1234', role: 'technician', commissionRate: 30, active: true, createdAt: new Date().toISOString(), techStatus: 'available' },
+  { id: 'u-owner', name: 'Sultan',     email: 'owner@trustkey.az',   role: 'owner',      active: true, createdAt: new Date().toISOString() },
+  { id: 'u-mgr',   name: 'Manager',    email: 'manager@trustkey.az', role: 'manager',    active: true, createdAt: new Date().toISOString() },
+  { id: 'u-tech',  name: 'Technician', email: 'tech@trustkey.az',    role: 'technician', commissionRate: 30, active: true, createdAt: new Date().toISOString(), techStatus: 'available' },
 ];
 
 const api = (path: string, opts?: RequestInit) =>
   fetch(`${API_BASE}/api/auth${path}`, {
     ...opts,
-    headers: { 'Content-Type': 'application/json', ...opts?.headers },
+    headers: { 'Content-Type': 'application/json', ...authHeaders(), ...opts?.headers },
   });
 
 async function syncUsersFromServer(set: (s: Partial<AuthState>) => void) {
@@ -61,7 +62,8 @@ export const useAuthStore = create<AuthState>()(
             body: JSON.stringify({ email, password }),
           });
           if (res.ok) {
-            const { user } = await res.json();
+            const { user, token } = await res.json();
+            if (token) setToken(token);
             set((state) => ({
               currentUserId: user.id,
               dbConnected: true,
@@ -73,19 +75,12 @@ export const useAuthStore = create<AuthState>()(
             return true;
           }
         } catch {}
-
-        const user = get().users.find(
-          u => u.email.trim().toLowerCase() === email.trim().toLowerCase() && u.password === password && u.active
-        );
-        if (user) {
-          set({ currentUserId: user.id });
-          return true;
-        }
+        // No offline fallback — authentication requires the server (security).
         return false;
       },
 
       loginAs: (userId) => set({ currentUserId: userId }),
-      logout: () => set({ currentUserId: null }),
+      logout: () => { setToken(null); set({ currentUserId: null }); },
 
       masterReset: async () => {
         try { await api('/master-reset', { method: 'POST' }); } catch {}

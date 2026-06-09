@@ -76,7 +76,6 @@ const App: React.FC = () => {
 
   const isDefaultOwner = currentUser.role === 'owner'
     && currentUser.email === 'owner@trustkey.az'
-    && currentUser.password === '1234'
     && currentUser.name === 'Sultan';
   if (!onboardingComplete && isDefaultOwner) return <OnboardingWizard />;
 

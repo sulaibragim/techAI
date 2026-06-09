@@ -1,23 +1,30 @@
 import { Router } from 'express';
 import { db } from '../db.js';
+import { requireAuth, requireRole } from '../middleware/auth.js';
 
 export const settingsRouter = Router();
 
-// Get all settings
-settingsRouter.get('/', async (_req, res) => {
+// Get settings — any authenticated user. The Gemini key is withheld from technicians.
+settingsRouter.get('/', requireAuth, async (req, res) => {
   try {
     const { rows } = await db.query("SELECT value FROM settings WHERE key = 'company'");
     if (rows.length === 0) return res.json({});
-    res.json(JSON.parse(rows[0].value));
+    const value = JSON.parse(rows[0].value);
+    if (req.user.role === 'technician') delete value.geminiApiKey;
+    res.json(value);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[SETTINGS] get error:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// Update settings (merge patch)
-settingsRouter.put('/', async (req, res) => {
+// Update settings (merge patch) — owner or manager only.
+settingsRouter.put('/', requireAuth, requireRole('owner', 'manager'), async (req, res) => {
   try {
     const patch = req.body;
+    if (!patch || typeof patch !== 'object' || Array.isArray(patch)) {
+      return res.status(400).json({ error: 'Invalid settings payload' });
+    }
     const { rows } = await db.query("SELECT value FROM settings WHERE key = 'company'");
     const current = rows.length > 0 ? JSON.parse(rows[0].value) : {};
     const merged = { ...current, ...patch };
@@ -28,6 +35,7 @@ settingsRouter.put('/', async (req, res) => {
     );
     res.json(merged);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[SETTINGS] update error:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });

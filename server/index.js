@@ -1,5 +1,7 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import { openphoneRouter } from './routes/openphone.js';
 import { authRouter } from './routes/auth.js';
@@ -15,12 +17,39 @@ dotenv.config({ path: path.resolve(__dirname, '../.env.local') });
 const app = express();
 const PORT = process.env.PORT || process.env.SERVER_PORT || 3001;
 
+app.use(helmet());
+
+// CORS — lock to ALLOWED_ORIGINS if set, otherwise reflect origin (auth is token-based, not cookie-based).
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
+if (allowedOrigins.length === 0) {
+  console.warn('[CORS] ALLOWED_ORIGINS not set — reflecting all origins. Set ALLOWED_ORIGINS in production.');
+}
 app.use(cors({
-  origin: '*',
+  origin: allowedOrigins.length > 0 ? allowedOrigins : true,
 }));
 
 app.use(express.json({ limit: '5mb' }));
-app.use(express.raw({ type: 'application/json' }));
+
+// Global rate limit — generous, just a flood guard.
+app.use('/api', rateLimit({
+  windowMs: 60 * 1000,
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+}));
+
+// Strict rate limit on login to stop brute-force / credential stuffing.
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many login attempts, try again later' },
+});
+app.use('/api/auth/login', loginLimiter);
 
 app.get('/health', (_req, res) => res.json({ ok: true }));
 

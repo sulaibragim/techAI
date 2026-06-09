@@ -5,6 +5,7 @@ import { calculateFinancialMetrics } from './financialUtils';
 import { useSettingsStore } from './settingsStore';
 import { useAuthStore } from './authStore';
 import { API_BASE } from './backendUrl';
+import { authHeaders } from './apiClient';
 
 const getDynamicDate = (offsetDays: number) => {
   const d = new Date();
@@ -311,7 +312,7 @@ const INITIAL_INVENTORY: Part[] = [
 function pushJobToServer(job: Job) {
   fetch(`${API_BASE}/api/jobs`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify(job),
   }).catch(() => {});
 }
@@ -319,13 +320,13 @@ function pushJobToServer(job: Job) {
 function updateJobOnServer(job: Job) {
   fetch(`${API_BASE}/api/jobs/${job.id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify(job),
   }).catch(() => {});
 }
 
 function deleteJobOnServer(id: string) {
-  fetch(`${API_BASE}/api/jobs/${id}`, { method: 'DELETE' }).catch(() => {});
+  fetch(`${API_BASE}/api/jobs/${id}`, { method: 'DELETE', headers: { ...authHeaders() } }).catch(() => {});
 }
 
 interface AppState {
@@ -396,7 +397,7 @@ export const useAppStore = create<AppState>()(
       if (local.length > 0) {
         const res = await fetch(`${API_BASE}/api/jobs/sync`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...authHeaders() },
           body: JSON.stringify(local),
         });
         if (res.ok) {
@@ -405,7 +406,7 @@ export const useAppStore = create<AppState>()(
           return;
         }
       }
-      const res = await fetch(`${API_BASE}/api/jobs`);
+      const res = await fetch(`${API_BASE}/api/jobs`, { headers: { ...authHeaders() } });
       if (res.ok) {
         const serverJobs: Job[] = await res.json();
         if (serverJobs.length > 0) set({ jobs: serverJobs });

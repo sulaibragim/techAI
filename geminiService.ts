@@ -6,7 +6,8 @@ import { useAuthStore } from './authStore';
 import { API_BASE } from './backendUrl';
 
 const resolveApiKey = (): string => {
-  const key = useSettingsStore.getState().geminiApiKey || import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.VITE_API_KEY || '';
+  // Key comes only from Settings (localStorage) — never baked into the client bundle.
+  const key = useSettingsStore.getState().geminiApiKey || '';
   if (!key) throw new Error('Gemini API key not configured. Go to Settings → AI Configuration to add your key.');
   return key;
 };
