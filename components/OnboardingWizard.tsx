@@ -280,13 +280,20 @@ export const OnboardingWizard: React.FC = () => {
 
           {/* Navigation buttons */}
           <div className="flex items-center justify-between mt-6 pt-4 border-t border-white/10">
-            {stepIdx > 0 ? (
-              <button onClick={prev} className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-white transition-colors px-4 py-2">
-                <ChevronLeft size={14} /> Back
-              </button>
-            ) : (
-              <div />
-            )}
+            <div className="flex items-center gap-2">
+              {stepIdx > 0 ? (
+                <button onClick={prev} className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-white transition-colors px-4 py-2">
+                  <ChevronLeft size={14} /> Back
+                </button>
+              ) : (
+                <button
+                  onClick={() => updateSettings({ onboardingComplete: true })}
+                  className="text-xs font-semibold text-slate-500 hover:text-slate-300 transition-colors px-4 py-2"
+                >
+                  Skip Setup
+                </button>
+              )}
+            </div>
 
             {stepIdx < STEPS.length - 1 ? (
               <button
