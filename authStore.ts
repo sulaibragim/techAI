@@ -34,7 +34,7 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
       users: DEFAULT_USERS,
-      currentUserId: 'u-owner', // auto-logged in as owner so the prototype is never locked out
+      currentUserId: null,
       audit: [],
 
       login: (email, password) => {
@@ -78,7 +78,7 @@ export const useAuthStore = create<AuthState>()(
       clearAudit: () => set({ audit: [] }),
     }),
     {
-      name: 'techai-auth-v1',
+      name: 'techai-auth-v2',
       storage: createJSONStorage(() => localStorage),
     }
   )

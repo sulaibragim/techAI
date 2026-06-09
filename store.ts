@@ -11,7 +11,9 @@ const getDynamicDate = (offsetDays: number) => {
   return d.toISOString().split('T')[0];
 };
 
-const INITIAL_JOBS: Job[] = [
+const INITIAL_JOBS: Job[] = [];
+
+const _DEMO_JOBS_REMOVED: Job[] = [
   {
     id: 'job-1',
     jobNumber: 'LK-8402',
@@ -291,43 +293,9 @@ const INITIAL_JOBS: Job[] = [
   { id: 'job-h21', jobNumber: 'LK-8150', client: { id: 'c-h21', firstName: 'Oscar', lastName: 'Diaz', phone: '(555) 040-4450', email: 'od@example.com', address: '88 Harbor View, San Diego, CA' }, lockDetails: { type: 'Commercial', brand: 'Falcon', modelOrYear: 'D Series Mortise' }, complaint: 'Restaurant after-hours lockout, manager locked in office.', diagnosisNotes: 'Picked office lock. Recommended keypad upgrade.', scheduledDate: getDynamicDate(-27), scheduledTime: '21:00', durationMinutes: 35, status: 'completed', paymentStatus: 'paid', photos: [], lineItems: [{ id: 'h21-1', type: 'service_call', description: 'Emergency after-hours commercial', unitPrice: 175, quantity: 1 }], totalAmount: 175 }
 ];
 
-const INITIAL_MISSED_INTERACTIONS: MissedInteraction[] = [
-  {
-    id: 'm-1',
-    type: 'call',
-    timestamp: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
-    from: 'Elena Rostova',
-    avatar: 'https://i.pravatar.cc/150?u=tech2'
-  },
-  {
-    id: 'm-2',
-    type: 'message',
-    timestamp: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
-    from: 'James Wilson',
-    avatar: 'https://i.pravatar.cc/150?u=tech3'
-  },
-  {
-    id: 'm-3',
-    type: 'call',
-    timestamp: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
-    from: 'Property Management Inc',
-    avatar: 'https://i.pravatar.cc/150?u=tech4'
-  }
-];
-
-const INITIAL_MESSAGES: Message[] = [
-  { id: '1', timestamp: new Date(Date.now() - 1000 * 60 * 60).toISOString(), sender: 'system', content: 'Inbound message from (555) 293-1124', method: 'sms' },
-  { id: '2', timestamp: new Date(Date.now() - 1000 * 60 * 59).toISOString(), sender: 'client', content: 'Hi, are you guys open? I locked my keys in my car.', method: 'sms' },
-  { id: '3', timestamp: new Date(Date.now() - 1000 * 60 * 58).toISOString(), sender: 'assistant', content: 'Yes, we are available 24/7. To help me give you an exact quote, what is the year, make, and model of your vehicle?', method: 'sms' },
-  { id: '4', timestamp: new Date(Date.now() - 1000 * 60 * 55).toISOString(), sender: 'client', content: 'It is a 2015 Ford Focus.', method: 'sms' },
-  { id: '5', timestamp: new Date(Date.now() - 1000 * 60 * 54).toISOString(), sender: 'assistant', content: 'Thank you! For a 2015 Ford Focus standard lockout, our dispatch/unlock fee is $85 total. Would you like me to send a technician your way now?', method: 'sms' }
-];
-
-const INITIAL_CALLS: CallRecord[] = [
-  { id: '1', timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), duration: '3m 12s', from: 'Robert Johnson', phone: '(555) 882-9402', type: 'missed', avatar: 'https://i.pravatar.cc/150?u=tech5' },
-  { id: '2', timestamp: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(), duration: '1m 45s', from: 'Alice Smith', phone: '(555) 112-9938', type: 'incoming', avatar: 'https://i.pravatar.cc/150?u=tech6' },
-  { id: '3', timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), duration: '5m 20s', from: 'Homeowner', phone: '(555) 304-2001', type: 'incoming', avatar: 'https://i.pravatar.cc/150?u=tech7' }
-];
+const INITIAL_MISSED_INTERACTIONS: MissedInteraction[] = [];
+const INITIAL_MESSAGES: Message[] = [];
+const INITIAL_CALLS: CallRecord[] = [];
 
 const INITIAL_INVENTORY: Part[] = [
   { id: '1', name: 'Schlage SC1 Key Blank', sku: 'KB-SC1-BR', category: 'Key Blanks', stock: 154, reorderPoint: 50, price: 1.5 },
@@ -405,7 +373,7 @@ export const useAppStore = create<AppState>()(
   }
     }),
     {
-      name: 'techai-crm-store-v2',
+      name: 'techai-crm-store-v3',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         jobs: state.jobs,

@@ -1,17 +1,10 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Lock, Mail, KeyRound, ArrowRight, ShieldCheck, Briefcase, Wrench } from 'lucide-react';
-import { useAuthStore, ROLE_LABELS } from '../authStore';
-import { Role } from '../types';
-
-const ROLE_ICON: Record<Role, React.ElementType> = {
-  owner: ShieldCheck,
-  manager: Briefcase,
-  technician: Wrench,
-};
+import { Lock, Mail, ArrowRight } from 'lucide-react';
+import { useAuthStore } from '../authStore';
 
 export const Login: React.FC = () => {
-  const { login, users, loginAs } = useAuthStore();
+  const { login } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -79,27 +72,7 @@ export const Login: React.FC = () => {
           </button>
         </form>
 
-        {/* Quick demo sign-in — prototype only, remove when real accounts exist */}
-        <div className="mt-6">
-          <p className="text-center text-[10px] font-bold uppercase tracking-widest text-slate-600 mb-3 flex items-center justify-center gap-2">
-            <KeyRound size={11} /> Demo sign-in
-          </p>
-          <div className="grid grid-cols-3 gap-2">
-            {users.filter(u => u.active).slice(0, 3).map(u => {
-              const Icon = ROLE_ICON[u.role];
-              return (
-                <button
-                  key={u.id}
-                  onClick={() => loginAs(u.id)}
-                  className="flex flex-col items-center gap-1.5 py-3 rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:border-blue-500/40 hover:text-white transition-all active:scale-95"
-                >
-                  <Icon size={16} className="text-blue-400" />
-                  <span className="text-[10px] font-bold uppercase tracking-wide">{ROLE_LABELS[u.role]}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        <p className="text-center text-[10px] text-slate-600 mt-6">TrustKey Locksmith CRM v1.0</p>
       </motion.div>
     </div>
   );
