@@ -191,9 +191,9 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
   };
 
   const pipelineColumns = [
-    { id: 'new', label: 'New Tasks', statuses: ['scheduled', 'enRoute'], defaultStatus: 'scheduled' as JobStatus },
-    { id: 'diagnostics', label: 'Diagnostics', statuses: ['diagnosed', 'sold', 'waitingParts', 'coffee'], defaultStatus: 'diagnosed' as JobStatus },
-    { id: 'completed', label: 'Completed', statuses: ['completed'], defaultStatus: 'completed' as JobStatus }
+    { id: 'new', label: 'New Tasks', statuses: ['scheduled', 'enRoute', 'onSite'], defaultStatus: 'scheduled' as JobStatus },
+    { id: 'diagnostics', label: 'In Progress', statuses: ['diagnosed', 'sold', 'waitingParts', 'coffee'], defaultStatus: 'diagnosed' as JobStatus },
+    { id: 'completed', label: 'Closed', statuses: ['completed', 'cancelled'], defaultStatus: 'completed' as JobStatus }
   ];
 
   const handleDragStart = (e: React.DragEvent, job: Job) => {

@@ -2,10 +2,13 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Package, Search, Plus, AlertCircle, RefreshCw, X, Minus, Trash2 } from 'lucide-react';
 import { useAppStore } from '../store';
+import { useCurrentUser, can } from '../authStore';
 import { Part } from '../types';
 
 export const Inventory: React.FC = () => {
   const { inventory, addInventoryItem, updateInventoryItem, removeInventoryItem } = useAppStore();
+  const currentUser = useCurrentUser();
+  const canEdit = currentUser ? can.editInventory(currentUser.role) : false;
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<string>('All');
   
@@ -59,10 +62,12 @@ export const Inventory: React.FC = () => {
             <RefreshCw size={16} />
             <span>Sync</span>
           </button>
-          <button onClick={() => openEditor()} className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-blue-500/20 hover:bg-blue-500 transition-colors active:scale-95">
-            <Plus size={16} />
-            <span>Add Item</span>
-          </button>
+          {canEdit && (
+            <button onClick={() => openEditor()} className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-blue-500/20 hover:bg-blue-500 transition-colors active:scale-95">
+              <Plus size={16} />
+              <span>Add Item</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -140,7 +145,9 @@ export const Inventory: React.FC = () => {
                     </td>
                     <td className="p-4 text-right font-mono text-sm text-slate-300">${item.price.toFixed(2)}</td>
                     <td className="p-4 pr-6 text-right">
-                      <button onClick={() => openEditor(item)} className="text-blue-400 hover:text-blue-300 text-xs font-bold uppercase tracking-wider transition-colors active:scale-95">Edit</button>
+                      {canEdit && (
+                        <button onClick={() => openEditor(item)} className="text-blue-400 hover:text-blue-300 text-xs font-bold uppercase tracking-wider transition-colors active:scale-95">Edit</button>
+                      )}
                     </td>
                   </motion.tr>
                 );
@@ -246,9 +253,9 @@ export const Inventory: React.FC = () => {
               </div>
 
               <div className="mt-8 flex gap-3">
-                {editingPart.id && (
-                  <button 
-                    onClick={() => { removeInventoryItem(editingPart.id!); setIsEditing(false); }} 
+                {editingPart.id && canEdit && (
+                  <button
+                    onClick={() => { removeInventoryItem(editingPart.id!); setIsEditing(false); }}
                     className="px-4 py-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-500 font-bold transition-colors border border-red-500/20 flex items-center justify-center shrink-0 active:scale-95"
                   >
                     <Trash2 size={20} />

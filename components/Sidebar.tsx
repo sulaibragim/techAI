@@ -2,7 +2,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Calendar, Briefcase, BarChart2, Settings, LogOut, BrainCircuit, Phone, MessageSquare, AlertCircle, X, Activity, Package, Users } from 'lucide-react';
-import { useAppStore } from '../store';
+import { useAppStore, useVisibleJobs } from '../store';
 import { useAuthStore, useCurrentUser, visibleTabsFor, ROLE_LABELS } from '../authStore';
 
 function formatRelativeTime(isoString: string): string {
@@ -31,7 +31,8 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onTabChange }) => {
-  const { missedInteractions, clearMissed, jobs, inventory } = useAppStore();
+  const { missedInteractions, clearMissed, inventory } = useAppStore();
+  const visibleJobs = useVisibleJobs();
   const logout = useAuthStore(s => s.logout);
   const currentUser = useCurrentUser();
   const lowStockCount = inventory.filter(p => p.stock <= p.reorderPoint).length;
@@ -50,7 +51,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onTabChange }) => 
   ];
   const tabs = ALL_TABS.filter(t => allowed.includes(t.id));
 
-  const inProgressJob = jobs.find(j => j.status === 'enRoute' || j.status === 'diagnosed');
+  const inProgressJob = visibleJobs.find(j => j.status === 'enRoute' || j.status === 'diagnosed');
 
   return (
     <aside className="hidden md:flex flex-col w-56 bg-slate-900 border-r border-white/10 h-screen sticky top-0 py-6 shadow-2xl z-40">

@@ -983,6 +983,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
               <div className="flex flex-col rounded-2xl overflow-hidden shadow-2xl border border-white/10">
 
                 {/* ── TOOLBAR (dark) ── */}
+                {role !== 'technician' && (
                 <div className="bg-slate-900 px-5 py-2.5 flex items-center gap-2 flex-wrap border-b border-white/10">
                   <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mr-1">Add:</span>
                   {([
@@ -999,6 +1000,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                     </button>
                   ))}
                 </div>
+                )}
 
                 {/* ════ DESKTOP: fixed A4 sheet (matches printed page) ════ */}
                 <div className="hidden md:block bg-slate-800 p-6 overflow-x-auto scrollbar-hide">
@@ -1076,7 +1078,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                                 <p className="col-span-2 text-xs text-slate-600 text-right pt-0.5">${item.unitPrice.toFixed(2)}</p>
                                 <div className="col-span-2 flex items-start justify-end gap-0.5">
                                   <span className="text-xs font-bold text-slate-800 tabular-nums">${(item.unitPrice * item.quantity).toFixed(2)}</span>
-                                  <button onClick={() => handleRemoveLineItem(item.id)} className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-300 hover:text-red-500 transition-all shrink-0 mt-0.5"><Trash2 size={11} /></button>
+                                  {role !== 'technician' && <button onClick={() => handleRemoveLineItem(item.id)} className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-300 hover:text-red-500 transition-all shrink-0 mt-0.5"><Trash2 size={11} /></button>}
                                 </div>
                               </div>
                             ))
@@ -1177,7 +1179,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                           </div>
                           <div className="flex items-center gap-2 shrink-0">
                             <span className="text-sm font-bold text-white tabular-nums">${(item.unitPrice * item.quantity).toFixed(2)}</span>
-                            <button onClick={() => handleRemoveLineItem(item.id)} className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 text-slate-400 active:text-red-400 active:scale-90 transition-all"><Trash2 size={15} /></button>
+                            {role !== 'technician' && <button onClick={() => handleRemoveLineItem(item.id)} className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 text-slate-400 active:text-red-400 active:scale-90 transition-all"><Trash2 size={15} /></button>}
                           </div>
                         </div>
                       ))
@@ -1194,17 +1196,27 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
 
                 {/* ── ACTION BAR (dark) ── */}
                 <div className="bg-slate-900 px-5 py-3 grid grid-cols-2 gap-3">
-                  <button
-                    onClick={() => setPaymentStep('split')}
-                    disabled={localJob.paymentStatus === 'paid'}
-                    className={`py-3 rounded-xl font-bold uppercase text-xs tracking-wider transition-all flex items-center justify-center gap-2 active:scale-95 ${
+                  {role !== 'technician' ? (
+                    <button
+                      onClick={() => setPaymentStep('split')}
+                      disabled={localJob.paymentStatus === 'paid'}
+                      className={`py-3 rounded-xl font-bold uppercase text-xs tracking-wider transition-all flex items-center justify-center gap-2 active:scale-95 ${
+                        localJob.paymentStatus === 'paid'
+                          ? 'bg-green-500/10 text-green-400 border border-green-500/20 cursor-default'
+                          : 'bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-900/30'
+                      }`}
+                    >
+                      {localJob.paymentStatus === 'paid' ? <><CheckCircle2 size={14} /> Settled</> : <><CreditCard size={14} /> Collect Payment</>}
+                    </button>
+                  ) : (
+                    <div className={`py-3 rounded-xl font-bold uppercase text-xs tracking-wider flex items-center justify-center gap-2 ${
                       localJob.paymentStatus === 'paid'
-                        ? 'bg-green-500/10 text-green-400 border border-green-500/20 cursor-default'
-                        : 'bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-900/30'
-                    }`}
-                  >
-                    {localJob.paymentStatus === 'paid' ? <><CheckCircle2 size={14} /> Settled</> : <><CreditCard size={14} /> Collect Payment</>}
-                  </button>
+                        ? 'bg-green-500/10 text-green-400 border border-green-500/20'
+                        : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                    }`}>
+                      {localJob.paymentStatus === 'paid' ? <><CheckCircle2 size={14} /> Settled</> : <><CreditCard size={14} /> Payment Pending</>}
+                    </div>
+                  )}
                   <button onClick={handlePrintInvoice} className="py-3 rounded-xl font-bold uppercase text-xs tracking-wider bg-white/5 text-slate-300 hover:bg-white/10 border border-white/10 flex items-center justify-center gap-2 active:scale-95 transition-all">
                     <Printer size={14} /> Print Invoice
                   </button>

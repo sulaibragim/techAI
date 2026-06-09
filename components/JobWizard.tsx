@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { Job, Client, LockDetails, LineItem } from '../types';
 import { BRANDS as INITIAL_BRANDS, LOCK_TYPES } from '../constants';
+import { useAuthStore, useCurrentUser } from '../authStore';
 
 interface JobWizardProps {
   onComplete: (job: Job) => void;
@@ -85,6 +86,8 @@ const JOB_TEMPLATES = [
 
 
 export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) => {
+  const currentUser = useCurrentUser();
+  const technicians = useAuthStore(s => s.users.filter(u => u.role === 'technician' && u.active));
   const [step, setStep] = useState(0);
   const [client, setClient] = useState<Partial<Client>>({
     firstName: '',
@@ -151,24 +154,40 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) =>
     }
   };
 
+  const [assignedTo, setAssignedTo] = useState<string>(
+    currentUser?.role === 'technician' ? (currentUser?.id || '') : ''
+  );
+
   const handleComplete = () => {
     const initials = (client.firstName?.[0] || 'J') + (client.lastName?.[0] || 'D');
     const numPart = Math.floor(1000 + Math.random() * 9000).toString();
-    
+
+    const fullClient: Client = {
+      id: `c-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      firstName: client.firstName || '',
+      lastName: client.lastName || '',
+      phone: client.phone || '',
+      email: client.email || '',
+      address: client.address || '',
+      secondaryPhone: client.secondaryPhone,
+      secondaryEmail: client.secondaryEmail,
+    };
+
     const newJob: Job = {
       id: Math.random().toString(36).substr(2, 9),
       jobNumber: `${numPart}${initials.toUpperCase()}`,
-      client: client as Client,
+      client: fullClient,
       lockDetails: lockDetails as LockDetails,
       complaint,
       diagnosisNotes: '',
       scheduledDate: new Date().toISOString().split('T')[0],
       scheduledTime: '09:00',
-      status: 'diagnosed',
+      status: 'scheduled',
       lineItems: [],
       paymentStatus: 'unpaid',
       totalAmount: 0,
-      photos
+      photos,
+      assignedTo: assignedTo || undefined,
     };
     onComplete(newJob);
   };
@@ -267,6 +286,19 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) =>
                   <label className="text-xs font-bold text-slate-400 uppercase block mb-1.5">Service Address</label>
                   <textarea className="w-full bg-transparent border-none text-sm font-semibold text-white outline-none min-h-[80px] resize-none" value={client.address} onChange={e => setClient({...client, address: e.target.value})} placeholder="123 Main St..." />
                 </div>
+                {currentUser?.role !== 'technician' && technicians.length > 0 && (
+                  <div className="bg-slate-900 p-5 rounded-3xl border border-white/10">
+                    <label className="text-xs font-bold text-slate-400 uppercase block mb-1.5">Assign Technician</label>
+                    <select
+                      className="w-full bg-transparent text-sm font-semibold text-white outline-none"
+                      value={assignedTo}
+                      onChange={e => setAssignedTo(e.target.value)}
+                    >
+                      <option value="">Unassigned</option>
+                      {technicians.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                    </select>
+                  </div>
+                )}
               </div>
             </div>
           )}

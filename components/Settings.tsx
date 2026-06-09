@@ -115,13 +115,15 @@ export const Settings: React.FC = () => {
           <h2 className="text-2xl font-bold text-white">Preferences</h2>
         </div>
         <div className="flex items-center space-x-3">
-          <button
-            onClick={() => setShowReset(true)}
-            className="flex items-center space-x-2 px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-slate-400 hover:text-red-400 hover:border-red-500/30 transition-all text-xs font-semibold uppercase tracking-wider"
-          >
-            <RotateCcw size={14} />
-            <span>Reset</span>
-          </button>
+          {currentUser && currentUser.role !== 'technician' && (
+            <button
+              onClick={() => setShowReset(true)}
+              className="flex items-center space-x-2 px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-slate-400 hover:text-red-400 hover:border-red-500/30 transition-all text-xs font-semibold uppercase tracking-wider"
+            >
+              <RotateCcw size={14} />
+              <span>Reset</span>
+            </button>
+          )}
           <button
             onClick={handleSave}
             className="flex items-center space-x-2 px-6 py-2 bg-blue-600 hover:bg-blue-500 rounded-xl text-white transition-all text-xs font-bold uppercase tracking-wider"
@@ -133,6 +135,7 @@ export const Settings: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Profile is visible to all — they can change their own name/photo */}
         <Section icon={User} title="Profile">
           <div className="flex items-center space-x-4 mb-2">
             <div
@@ -175,7 +178,7 @@ export const Settings: React.FC = () => {
           </div>
         </Section>
 
-        <Section icon={Building2} title="Company Info">
+        {currentUser && currentUser.role !== 'technician' && <Section icon={Building2} title="Company Info">
           <div>
             <label className={labelCls}>Street Address</label>
             <input
@@ -230,9 +233,9 @@ export const Settings: React.FC = () => {
             />
           </div>
           <p className="text-xs text-slate-500 -mt-1">Appears on all printed invoices</p>
-        </Section>
+        </Section>}
 
-        <Section icon={Target} title="Business Targets">
+        {currentUser && currentUser.role !== 'technician' && <Section icon={Target} title="Business Targets">
           <div>
             <label className={labelCls}>Monthly Revenue Target ($)</label>
             <input
@@ -256,9 +259,9 @@ export const Settings: React.FC = () => {
             />
             <p className="text-xs text-slate-500 mt-1">Used in daily goal tracker</p>
           </div>
-        </Section>
+        </Section>}
 
-        <Section icon={Key} title="AI Configuration">
+        {currentUser && currentUser.role !== 'technician' && <Section icon={Key} title="AI Configuration">
           <div>
             <label className={labelCls}>Gemini API Key</label>
             <div className="relative">
@@ -278,7 +281,7 @@ export const Settings: React.FC = () => {
             </div>
             <p className="text-xs text-slate-500 mt-1">Overrides VITE_API_KEY from .env.local</p>
           </div>
-        </Section>
+        </Section>}
 
         <Section icon={Info} title="About">
           <div className="space-y-3">

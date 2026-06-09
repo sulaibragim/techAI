@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Job, JobStatus, STATUS_COLORS } from '../types';
 import { MapPin, Clock, ArrowRight, Calendar, X, Hash, CheckCircle2, Activity, Trash2, AlertCircle, Wrench, Search } from 'lucide-react';
 import { useAppStore } from '../store';
+import { useCurrentUser, can } from '../authStore';
 
 interface JobsListProps {
   jobs: Job[];
@@ -18,6 +19,8 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
   const [reschedulingId, setReschedulingId] = useState<string | null>(null);
   const [tempDate, setTempDate] = useState(new Date().toISOString().split('T')[0]);
   const { updateJobStatus, updateJob } = useAppStore();
+  const currentUser = useCurrentUser();
+  const canCancel = currentUser ? can.deleteJob(currentUser.role) || currentUser.role === 'manager' : false;
 
   const filteredJobs = jobs.filter(j => {
     if (filter === 'pending' && (j.status === 'completed' || j.status === 'cancelled')) return false;
@@ -212,13 +215,15 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
                       <Calendar size={14} />
                    </button>
 
-                   <button
-                     onClick={(e) => handleCancel(e, job.id)}
-                     className="w-9 h-9 bg-red-500/10 rounded-xl flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white transition-all border border-red-500/20 active:scale-95"
-                     title="Cancel Job"
-                   >
-                      <X size={14} />
-                   </button>
+                   {canCancel && (
+                     <button
+                       onClick={(e) => handleCancel(e, job.id)}
+                       className="w-9 h-9 bg-red-500/10 rounded-xl flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white transition-all border border-red-500/20 active:scale-95"
+                       title="Cancel Job"
+                     >
+                        <X size={14} />
+                     </button>
+                   )}
                 </div>
               </div>
             );
