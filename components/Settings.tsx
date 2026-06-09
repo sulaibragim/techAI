@@ -7,6 +7,22 @@ import { Role } from '../types';
 
 const VERSION = '0.0.0';
 
+const Section = ({ icon: Icon, title, children }: { icon: React.ElementType; title: string; children: React.ReactNode }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 12 }}
+    animate={{ opacity: 1, y: 0 }}
+    className="bg-slate-900 border border-white/5 rounded-2xl p-6"
+  >
+    <div className="flex items-center space-x-3 mb-6">
+      <div className="w-8 h-8 bg-blue-500/10 rounded-lg flex items-center justify-center">
+        <Icon size={16} className="text-blue-400" />
+      </div>
+      <h3 className="text-sm font-bold uppercase tracking-widest text-white">{title}</h3>
+    </div>
+    <div className="space-y-5">{children}</div>
+  </motion.div>
+);
+
 export const Settings: React.FC = () => {
   const settings = useSettingsStore();
   const currentUser = useCurrentUser();
@@ -78,22 +94,6 @@ export const Settings: React.FC = () => {
 
   const inputCls = "w-full bg-slate-800 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 transition-all text-sm";
   const labelCls = "block text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2";
-
-  const Section = ({ icon: Icon, title, children }: { icon: React.ElementType; title: string; children: React.ReactNode }) => (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-slate-900 border border-white/5 rounded-2xl p-6"
-    >
-      <div className="flex items-center space-x-3 mb-6">
-        <div className="w-8 h-8 bg-blue-500/10 rounded-lg flex items-center justify-center">
-          <Icon size={16} className="text-blue-400" />
-        </div>
-        <h3 className="text-sm font-bold uppercase tracking-widest text-white">{title}</h3>
-      </div>
-      <div className="space-y-5">{children}</div>
-    </motion.div>
-  );
 
   return (
     <motion.div
