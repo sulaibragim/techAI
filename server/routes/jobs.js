@@ -134,6 +134,12 @@ jobsRouter.put('/:id', requireAuth, async (req, res) => {
     }
 
     const { id: _id, ...data } = req.body;
+
+    // A tech working their own job may bill it, change status, add notes/photos, or
+    // decline (which clears the assignee) — but must not hand it to a DIFFERENT tech.
+    if (isTech(req) && data.assignedTo && data.assignedTo !== req.user.id) {
+      return res.status(403).json({ error: 'Technicians cannot reassign a job to someone else' });
+    }
     const result = await db.query(
       'UPDATE jobs SET data = $2, updated_at = NOW() WHERE id = $1',
       [req.params.id, JSON.stringify(data)]
