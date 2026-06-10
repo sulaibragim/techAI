@@ -22,32 +22,50 @@ const TAB_META: Record<string, { label: string; icon: React.ComponentType<{ size
   settings:   { label: 'Settings', icon: Settings },
 };
 
+// At most this many items fit comfortably across a phone width. Up to this count
+// the items stretch to fill the bar evenly; beyond it the bar scrolls horizontally.
+const MAX_FIT = 5;
+
 export const Navigation: React.FC<NavigationProps> = ({ currentTab, onTabChange }) => {
   const logout = useAuthStore(s => s.logout);
   const currentUser = useCurrentUser();
   const tabs = (currentUser ? visibleTabsFor(currentUser.role) : []).filter(id => TAB_META[id]);
 
+  // +1 for the Log out button. ≤5 → stretch evenly; >5 → swipeable scroll strip.
+  const scrolls = tabs.length + 1 > MAX_FIT;
+
   const scrollRef = useRef<HTMLDivElement>(null);
   const activeRef = useRef<HTMLButtonElement>(null);
 
-  // Keep the current tab visible: smoothly centre it whenever it changes so the
-  // user never has to hunt for the active item after deep-linking or AI nav.
+  // In scroll mode, keep the current tab visible by centring it on change.
   useEffect(() => {
-    activeRef.current?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-  }, [currentTab]);
+    if (scrolls) activeRef.current?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  }, [currentTab, scrolls]);
+
+  const itemBase = 'relative flex flex-col items-center justify-center gap-1 h-14 rounded-2xl transition-colors active:scale-95';
+  // Stretch evenly (flex-1) when everything fits; fixed-width snap targets when scrolling.
+  const itemSize = scrolls ? 'shrink-0 snap-center min-w-[58px] px-2' : 'flex-1 min-w-0 px-1';
 
   return (
     <nav
       className="fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-xl border-t border-white/10"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
-      {/* Edge fades hint that the strip scrolls horizontally */}
-      <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-slate-900/95 to-transparent z-10" />
-      <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-slate-900/95 to-transparent z-10" />
+      {/* Edge fades hint horizontal scroll — only shown when the bar actually scrolls */}
+      {scrolls && (
+        <>
+          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-slate-900/95 to-transparent z-10" />
+          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-slate-900/95 to-transparent z-10" />
+        </>
+      )}
 
       <div
         ref={scrollRef}
-        className="flex items-stretch gap-1 overflow-x-auto scrollbar-hide px-3 py-1.5 snap-x snap-mandatory overscroll-x-contain"
+        className={
+          scrolls
+            ? 'flex items-stretch gap-1 overflow-x-auto scrollbar-hide px-3 py-1.5 snap-x snap-mandatory overscroll-x-contain'
+            : 'flex items-stretch gap-1 px-2 py-1.5'
+        }
       >
         {tabs.map((id) => {
           const { label, icon: Icon } = TAB_META[id];
@@ -59,9 +77,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentTab, onTabChange 
               onClick={() => onTabChange(id)}
               aria-label={label}
               aria-current={isActive ? 'page' : undefined}
-              className={`relative shrink-0 snap-center flex flex-col items-center justify-center gap-1 min-w-[58px] h-14 px-2 rounded-2xl transition-colors active:scale-95 ${
-                isActive ? 'text-blue-400 bg-blue-500/10' : 'text-slate-400 hover:text-slate-200'
-              }`}
+              className={`${itemBase} ${itemSize} ${isActive ? 'text-blue-400 bg-blue-500/10' : 'text-slate-400 hover:text-slate-200'}`}
             >
               {isActive && <span className="absolute top-0 left-1/2 -translate-x-1/2 w-7 h-0.5 rounded-full bg-blue-400" />}
               <Icon size={20} />
@@ -70,11 +86,11 @@ export const Navigation: React.FC<NavigationProps> = ({ currentTab, onTabChange 
           );
         })}
 
-        {/* Log out lives at the end of the strip, visually separated in danger red */}
+        {/* Log out — danger red, last item */}
         <button
           onClick={logout}
           aria-label="Log out"
-          className="shrink-0 snap-center flex flex-col items-center justify-center gap-1 min-w-[58px] h-14 px-2 rounded-2xl text-red-400/80 hover:text-red-400 active:scale-95 transition-colors ml-1 border-l border-white/10"
+          className={`${itemBase} ${itemSize} text-red-400/80 hover:text-red-400 ${scrolls ? 'ml-1 border-l border-white/10' : ''}`}
         >
           <LogOut size={20} />
           <span className="text-[11px] font-semibold leading-none">Exit</span>
