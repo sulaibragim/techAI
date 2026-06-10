@@ -19,6 +19,7 @@ import { useAppStore } from '../store';
 import { useAuthStore, useCurrentUser, can } from '../authStore';
 import { BRANDS, LOCK_TYPES as LOCK_ICONS } from '../constants';
 import { formatTimestamp } from '../dateUtils';
+import { sendSms } from '../smsService';
 
 const STATUS_OPTIONS: { id: JobStatus; label: string }[] = [
   { id: 'scheduled', label: 'Scheduled' },
@@ -83,6 +84,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [draftMessage, setDraftMessage] = useState('');
+  const [otwState, setOtwState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
 
   const handleSendMessage = () => {
     if (!draftMessage.trim()) return;
@@ -98,6 +100,37 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
     setLocalJob(updatedJob);
     updateJob(updatedJob);
     setDraftMessage('');
+  };
+
+  // "On My Way": flip the job to En Route (saved immediately so it sticks) and text
+  // the client a heads-up. The status change always lands; the SMS is best-effort.
+  const handleOnMyWay = async () => {
+    if (otwState === 'sending') return;
+    const enRouteJob: Job = { ...localJob, status: 'enRoute' };
+    setLocalJob(enRouteJob);
+    updateJob(enRouteJob);
+    setIsModified(false);
+    logAudit({ action: 'job.enroute', detail: `On the way to #${enRouteJob.jobNumber} (${enRouteJob.client.firstName} ${enRouteJob.client.lastName})`, jobId: enRouteJob.id });
+
+    const phone = (localJob.client.phone || '').trim();
+    if (!phone) { setOtwState('error'); setTimeout(() => setOtwState('idle'), 4000); return; }
+
+    setOtwState('sending');
+    const techName = users.find(u => u.id === localJob.assignedTo)?.name || technicianName;
+    const eta = localJob.scheduledTime ? ` around ${localJob.scheduledTime}` : ' shortly';
+    const text = `Hi ${localJob.client.firstName || 'there'}, this is ${techName} from ${companyName}. I'm on my way and will arrive${eta}. Reply here if you need anything.`;
+    const ok = await sendSms(phone, text);
+
+    if (ok) {
+      const smsMsg: Message = { id: Math.random().toString(36).slice(2), sender: 'technician', content: text, timestamp: new Date().toISOString(), method: 'sms' };
+      const withMsg: Job = { ...enRouteJob, messages: [...(enRouteJob.messages || []), smsMsg] };
+      setLocalJob(withMsg);
+      updateJob(withMsg);
+      setOtwState('sent');
+    } else {
+      setOtwState('error');
+    }
+    setTimeout(() => setOtwState('idle'), 4000);
   };
 
   useEffect(() => {
@@ -984,6 +1017,24 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                     <button onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(localJob.client.address)}`)} className="p-1.5 bg-blue-600/10 text-blue-400 rounded-lg hover:bg-blue-600 hover:text-white transition-all"><Navigation size={12} /></button>
                   </div>
                 </div>
+
+                {/* ON MY WAY — flips status to En Route and texts the client a heads-up */}
+                {!jobIsClosed && (
+                  <button
+                    onClick={handleOnMyWay}
+                    disabled={otwState === 'sending'}
+                    className={`w-full flex items-center justify-center gap-2.5 py-3.5 rounded-xl font-bold text-sm uppercase tracking-widest transition-all active:scale-95 shadow-lg disabled:cursor-wait ${
+                      otwState === 'sent' ? 'bg-emerald-600 text-white shadow-emerald-900/30'
+                      : otwState === 'error' ? 'bg-amber-500/15 text-amber-400 border border-amber-500/40'
+                      : 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-900/30'
+                    }`}
+                  >
+                    {otwState === 'sent' ? (<><CheckCircle2 size={16} /> Client Notified</>)
+                      : otwState === 'sending' ? (<><Car size={16} className="animate-pulse" /> Notifying Client…</>)
+                      : otwState === 'error' ? (<><Car size={16} /> En Route Set · SMS Failed</>)
+                      : (<><Car size={16} /> On My Way</>)}
+                  </button>
+                )}
 
                 {/* ASSIGNED TECHNICIAN */}
                 <div className="relative z-10 pt-4 border-t border-slate-700">
