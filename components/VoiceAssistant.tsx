@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Mic, X, Bot, User, Minimize2, CheckCircle, KeyRound } from 'lucide-react';
 import { GeminiVoiceAssistant, handleAITool } from '../geminiService';
-import { useSettingsStore, getEffectiveApiKey } from '../settingsStore';
+import { useSettingsStore } from '../settingsStore';
 
 export const VoiceAssistant: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,8 +16,7 @@ export const VoiceAssistant: React.FC = () => {
 
   const assistantRef = useRef<GeminiVoiceAssistant | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { geminiApiKey } = useSettingsStore();
-  const hasApiKey = !!(geminiApiKey || getEffectiveApiKey());
+  const hasApiKey = useSettingsStore(s => s.aiAvailable);
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -128,7 +127,7 @@ export const VoiceAssistant: React.FC = () => {
         </button>
         {!hasApiKey && (
           <div className="absolute bottom-full right-0 mb-2 bg-slate-800 border border-white/10 text-white text-xs font-semibold px-3 py-2 rounded-xl whitespace-nowrap shadow-xl opacity-0 group-hover/fab:opacity-100 transition-opacity pointer-events-none">
-            Add API key in Settings
+            AI не настроен на сервере
           </div>
         )}
       </div>

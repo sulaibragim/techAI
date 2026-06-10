@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { motion } from 'motion/react';
-import { User, Target, Key, Eye, EyeOff, RotateCcw, Save, Upload, Info, Building2, AlertTriangle, Users, Plus, Trash2, ShieldCheck, History, Lock, Pencil, Check, X } from 'lucide-react';
+import { User, Target, Key, RotateCcw, Save, Upload, Info, Building2, AlertTriangle, Users, Plus, Trash2, ShieldCheck, History, Lock, Pencil, Check, X } from 'lucide-react';
 import { useSettingsStore, SETTINGS_DEFAULTS, settingsStorageIsEphemeral } from '../settingsStore';
 import { useAuthStore, useCurrentUser, can, ROLE_LABELS } from '../authStore';
 import { useAppStore } from '../store';
@@ -40,9 +40,7 @@ export const Settings: React.FC = () => {
     profilePhoto: settings.profilePhoto,
     monthlyRevenueTarget: settings.monthlyRevenueTarget,
     dailyRevenueTarget: settings.dailyRevenueTarget,
-    geminiApiKey: settings.geminiApiKey,
   });
-  const [showKey, setShowKey] = useState(false);
   const [saved, setSaved] = useState(false);
   const [photoError, setPhotoError] = useState('');
   const [showReset, setShowReset] = useState(false);
@@ -141,7 +139,6 @@ export const Settings: React.FC = () => {
       profilePhoto: SETTINGS_DEFAULTS.profilePhoto,
       monthlyRevenueTarget: SETTINGS_DEFAULTS.monthlyRevenueTarget,
       dailyRevenueTarget: SETTINGS_DEFAULTS.dailyRevenueTarget,
-      geminiApiKey: SETTINGS_DEFAULTS.geminiApiKey,
     });
     setShowReset(false);
   };
@@ -316,24 +313,23 @@ export const Settings: React.FC = () => {
         </Section>}
 
         {currentUser && currentUser.role !== 'technician' && <Section icon={Key} title="AI Configuration">
-          <div>
-            <label className={labelCls}>Gemini API Key</label>
-            <div className="relative">
-              <input
-                className={inputCls + ' pr-12'}
-                type={showKey ? 'text' : 'password'}
-                value={form.geminiApiKey}
-                onChange={e => setForm(f => ({ ...f, geminiApiKey: e.target.value }))}
-                placeholder="AIza..."
-              />
-              <button
-                onClick={() => setShowKey(v => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-blue-400 transition-colors"
-              >
-                {showKey ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-semibold text-white">AI Brain</p>
+              <p className="text-xs text-slate-500 mt-1">
+                {settings.aiAvailable
+                  ? 'Ключ Gemini хранится на сервере. В браузер не передаётся.'
+                  : 'Не настроен. Задайте GEMINI_API_KEY в переменных окружения сервера (Railway).'}
+              </p>
             </div>
-            <p className="text-xs text-slate-500 mt-1">Overrides VITE_API_KEY from .env.local</p>
+            <span className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider ${
+              settings.aiAvailable
+                ? 'bg-green-500/10 text-green-400 border border-green-500/20'
+                : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+            }`}>
+              {settings.aiAvailable ? <Check size={13} /> : <AlertTriangle size={13} />}
+              {settings.aiAvailable ? 'Configured' : 'Not set'}
+            </span>
           </div>
         </Section>}
 

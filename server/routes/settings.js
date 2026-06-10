@@ -4,13 +4,14 @@ import { requireAuth, requireRole } from '../middleware/auth.js';
 
 export const settingsRouter = Router();
 
-// Get settings — any authenticated user. The Gemini key is withheld from technicians.
+// Get settings — any authenticated user. The Gemini key is never returned to any client;
+// it lives only in the server env (GEMINI_API_KEY). Any legacy key still in the DB is stripped.
 settingsRouter.get('/', requireAuth, async (req, res) => {
   try {
     const { rows } = await db.query("SELECT value FROM settings WHERE key = 'company'");
     if (rows.length === 0) return res.json({});
     const value = JSON.parse(rows[0].value);
-    if (req.user.role !== 'owner' && req.user.role !== 'manager') delete value.geminiApiKey;
+    delete value.geminiApiKey;
     res.json(value);
   } catch (err) {
     console.error('[SETTINGS] get error:', err);

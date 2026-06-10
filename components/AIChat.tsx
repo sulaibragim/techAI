@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Send, Bot, Sparkles, BrainCircuit, KeyRound, Settings, Trash2, BarChart3, Users, Phone, Package, Calendar, MessageSquare } from 'lucide-react';
 import { getStrategicBrainResponse } from '../geminiService';
 import { useAppStore } from '../store';
-import { useSettingsStore, getEffectiveApiKey } from '../settingsStore';
+import { useSettingsStore } from '../settingsStore';
 
 interface ChatMessage {
   id: string;
@@ -134,8 +134,7 @@ export const AIChat: React.FC = () => {
   const [messages, setMessages] = useState<ChatMessage[]>(loadHistory);
   const [isTyping, setIsTyping] = useState(false);
   const { setActiveTab } = useAppStore();
-  const { geminiApiKey } = useSettingsStore();
-  const hasApiKey = !!(geminiApiKey || getEffectiveApiKey());
+  const aiAvailable = useSettingsStore(s => s.aiAvailable);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -184,7 +183,7 @@ export const AIChat: React.FC = () => {
     localStorage.removeItem(STORAGE_KEY);
   };
 
-  if (!hasApiKey) {
+  if (!aiAvailable) {
     return (
       <div className="max-w-4xl mx-auto h-[calc(100vh-160px)] flex flex-col items-center justify-center bg-slate-800/30 rounded-2xl border border-white/10 backdrop-blur-xl">
         <div className="text-center space-y-5 px-8 max-w-sm">
@@ -192,8 +191,8 @@ export const AIChat: React.FC = () => {
             <KeyRound size={28} className="text-blue-400" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-white mb-2">API Key Required</h3>
-            <p className="text-sm text-slate-400 leading-relaxed">Add your Gemini API key in Settings to activate the AI Brain.</p>
+            <h3 className="text-lg font-bold text-white mb-2">AI пока недоступен</h3>
+            <p className="text-sm text-slate-400 leading-relaxed">Ключ Gemini настраивается на сервере (GEMINI_API_KEY). Если только что задали — обнови страницу.</p>
           </div>
           <button
             onClick={() => setActiveTab('settings')}

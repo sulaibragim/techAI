@@ -4,13 +4,29 @@ import { useSettingsStore } from './settingsStore';
 import { useAppStore } from './store';
 import { useAuthStore } from './authStore';
 import { API_BASE } from './backendUrl';
+import { authHeaders } from './apiClient';
 
-const resolveApiKey = (): string => {
-  // Key comes only from Settings (localStorage) — never baked into the client bundle.
-  const key = useSettingsStore.getState().geminiApiKey || '';
-  if (!key) throw new Error('Gemini API key not configured. Go to Settings → AI Configuration to add your key.');
-  return key;
-};
+const CHAT_MODEL = 'gemini-2.5-flash';
+
+// One text-chat turn via the backend proxy. The API key never reaches the browser —
+// the server injects it. Tool execution stays on the client (data lives in the Zustand store).
+async function callModel(contents: any[]): Promise<{ text: string; functionCalls: any[] | null }> {
+  const res = await fetch(`${API_BASE}/api/ai/generate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({
+      model: CHAT_MODEL,
+      contents,
+      systemInstruction: getSystemInstruction(),
+      tools: AI_TOOLS,
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'AI request failed');
+  }
+  return res.json();
+}
 
 export function decode(base64: string) {
   const binaryString = atob(base64);
@@ -498,77 +514,34 @@ export async function getStrategicBrainResponse(
   message: string,
   history: { text: string, role: 'user' | 'model' }[],
 ) {
-  const ai = new GoogleGenAI({ apiKey: resolveApiKey() });
-
   const contents: any[] = history.map(h => ({
     role: h.role,
     parts: [{ text: h.text }]
   }));
   contents.push({ role: 'user', parts: [{ text: message }] });
 
-  const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents,
-    config: {
-      systemInstruction: getSystemInstruction(),
-      tools: AI_TOOLS,
-    },
-  });
+  // Loop: keep relaying turns through the backend while the model asks for tool calls.
+  // Tools run locally (handleAITool) against the Zustand store; results feed the next turn.
+  const MAX_ROUNDS = 4;
+  let lastText = '';
+  for (let round = 0; round < MAX_ROUNDS; round++) {
+    const { text, functionCalls } = await callModel(contents);
+    lastText = text || lastText;
+    if (!functionCalls || functionCalls.length === 0) return text;
 
-  const functionCalls = response.functionCalls;
-  if (functionCalls) {
+    contents.push({ role: 'model', parts: functionCalls.map(fc => ({ functionCall: fc })) });
+
     const results: any[] = [];
     for (const fc of functionCalls) {
       const result = await handleAITool(fc.name, fc.args);
-      results.push({
-        functionResponse: {
-          id: fc.id,
-          name: fc.name,
-          response: { result }
-        }
-      });
+      results.push({ functionResponse: { id: fc.id, name: fc.name, response: { result } } });
     }
-
-    const secondResponse = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: [
-        ...contents,
-        { role: 'model', parts: functionCalls.map(fc => ({ functionCall: fc })) },
-        { role: 'user', parts: results }
-      ],
-      config: {
-        systemInstruction: getSystemInstruction(),
-        tools: AI_TOOLS,
-      }
-    });
-
-    // Handle chained tool calls
-    if (secondResponse.functionCalls) {
-      const chainedResults: any[] = [];
-      for (const fc of secondResponse.functionCalls) {
-        const result = await handleAITool(fc.name, fc.args);
-        chainedResults.push({
-          functionResponse: { id: fc.id, name: fc.name, response: { result } }
-        });
-      }
-      const thirdResponse = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: [
-          ...contents,
-          { role: 'model', parts: functionCalls.map(fc => ({ functionCall: fc })) },
-          { role: 'user', parts: results },
-          { role: 'model', parts: secondResponse.functionCalls.map(fc => ({ functionCall: fc })) },
-          { role: 'user', parts: chainedResults },
-        ],
-        config: { systemInstruction: getSystemInstruction(), tools: AI_TOOLS }
-      });
-      return thirdResponse.text;
-    }
-
-    return secondResponse.text;
+    contents.push({ role: 'user', parts: results });
   }
 
-  return response.text;
+  // Tool budget exhausted — one final turn to summarize.
+  const final = await callModel(contents);
+  return final.text || lastText;
 }
 
 export class GeminiVoiceAssistant {
@@ -587,7 +560,17 @@ export class GeminiVoiceAssistant {
     onTranscript: (text: string, role: 'user' | 'assistant', isFinal: boolean) => void;
     onAction: (action: string, data: any) => any | Promise<any>;
   }) {
-    const ai = new GoogleGenAI({ apiKey: resolveApiKey() });
+    // Fetch a short-lived ephemeral token from the backend — the real key stays server-side.
+    const tokenRes = await fetch(`${API_BASE}/api/ai/live-token`, {
+      method: 'POST',
+      headers: { ...authHeaders() },
+    });
+    if (!tokenRes.ok) {
+      const err = await tokenRes.json().catch(() => ({}));
+      throw new Error(err.error || 'Failed to start voice session');
+    }
+    const { token, model } = await tokenRes.json();
+    const ai = new GoogleGenAI({ apiKey: token, httpOptions: { apiVersion: 'v1alpha' } });
     if (!this.audioContext) {
       this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
       this.inputAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
@@ -596,7 +579,7 @@ export class GeminiVoiceAssistant {
     const stream = this.stream;
 
     this.sessionPromise = ai.live.connect({
-      model: 'gemini-2.5-flash-native-audio-preview-09-2025',
+      model: model || 'gemini-2.5-flash-native-audio-preview-09-2025',
       config: {
         responseModalities: [Modality.AUDIO],
         systemInstruction: getSystemInstruction(),

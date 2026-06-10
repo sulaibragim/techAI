@@ -45,6 +45,7 @@ const App: React.FC = () => {
     if (currentUser) {
       useAuthStore.getState().syncUsers();
       useSettingsStore.getState().syncSettings();
+      useSettingsStore.getState().checkAiAvailable();
       useAppStore.getState().syncJobs();
       useAppStore.getState().syncInventory();
     }

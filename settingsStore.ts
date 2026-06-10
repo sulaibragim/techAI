@@ -16,12 +16,13 @@ export interface SettingsState {
   dailyRevenueTarget: number;
   monthlyTargets: Record<string, number>;
   taxRate: number; // sales-tax percent applied to taxable revenue (0 = none)
-  geminiApiKey: string;
   onboardingComplete: boolean;
-  updateSettings: (patch: Partial<Omit<SettingsState, 'updateSettings' | 'resetSettings' | 'setMonthlyTarget' | 'syncSettings'>>) => void;
+  aiAvailable: boolean; // runtime flag: is GEMINI_API_KEY configured on the server?
+  updateSettings: (patch: Partial<Omit<SettingsState, 'updateSettings' | 'resetSettings' | 'setMonthlyTarget' | 'syncSettings' | 'checkAiAvailable' | 'aiAvailable'>>) => void;
   setMonthlyTarget: (monthKey: string, value: number) => void;
   resetSettings: () => void;
   syncSettings: () => Promise<void>;
+  checkAiAvailable: () => Promise<void>;
 }
 
 export function resolveMonthlyTarget(state: Pick<SettingsState, 'monthlyTargets' | 'monthlyRevenueTarget'>, year: number, month: number): number {
@@ -42,7 +43,6 @@ export const SETTINGS_DEFAULTS = {
   dailyRevenueTarget: 1500,
   monthlyTargets: {} as Record<string, number>,
   taxRate: 0,
-  geminiApiKey: '',
   onboardingComplete: false,
 };
 
@@ -88,6 +88,7 @@ export const useSettingsStore = create<SettingsState>()(
     (set, get) => ({
       ...DEFAULTS,
       ...migrated,
+      aiAvailable: false,
 
       updateSettings: (patch) => {
         set((state) => ({ ...state, ...patch }));
@@ -130,6 +131,16 @@ export const useSettingsStore = create<SettingsState>()(
           }
         } catch {}
       },
+
+      checkAiAvailable: async () => {
+        try {
+          const res = await fetch(`${API_BASE}/api/ai/status`, { headers: { ...authHeaders() } });
+          if (res.ok) {
+            const data = await res.json();
+            set({ aiAvailable: !!data.enabled });
+          }
+        } catch {}
+      },
     }),
     {
       name: 'techai-settings-v2',
@@ -137,8 +148,3 @@ export const useSettingsStore = create<SettingsState>()(
     }
   )
 );
-
-export function getEffectiveApiKey(): string {
-  // Key comes only from Settings (localStorage) — never read from bundled env vars.
-  return useSettingsStore.getState().geminiApiKey || '';
-}
