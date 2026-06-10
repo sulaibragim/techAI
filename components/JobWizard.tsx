@@ -166,6 +166,12 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) =>
     const initials = (client.firstName?.[0] || 'J') + (client.lastName?.[0] || 'D');
     const numPart = Math.floor(1000 + Math.random() * 9000).toString();
 
+    // A fresh intake lands on the calendar at the moment it came in: today, current hour.
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const scheduledDate = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+    const scheduledTime = `${pad(now.getHours())}:00`;
+
     const fullClient: Client = {
       id: `c-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       firstName: client.firstName || '',
@@ -184,8 +190,8 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) =>
       lockDetails: lockDetails as LockDetails,
       complaint,
       diagnosisNotes: '',
-      scheduledDate: new Date().toISOString().split('T')[0],
-      scheduledTime: '09:00',
+      scheduledDate,
+      scheduledTime,
       status: 'scheduled',
       lineItems: [],
       paymentStatus: 'unpaid',

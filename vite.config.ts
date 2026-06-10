@@ -8,12 +8,14 @@ export default defineConfig(() => {
         port: 3000,
         host: '0.0.0.0',
         proxy: {
-          // Server mounts routes under /api/* — forward as-is (do NOT strip /api).
-          '/api': {
+          // Regex keys (leading ^) so the proxy only matches real API routes and
+          // never swallows frontend source modules like /apiClient.ts. The trailing
+          // slash means "/api/jobs" is proxied but "/apiClient.ts" is served by Vite.
+          '^/api/': {
             target: 'http://localhost:3001',
             changeOrigin: true,
           },
-          '/openphone': {
+          '^/openphone/': {
             target: 'http://localhost:3001',
             changeOrigin: true,
           },

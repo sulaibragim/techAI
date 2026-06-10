@@ -127,19 +127,19 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
           <h2 className="text-2xl font-extrabold tracking-tight text-white leading-none">Dispatch Queue</h2>
           <p className="text-xs text-blue-400 font-semibold uppercase tracking-widest mt-2">Operational Hub</p>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="relative">
+        <div className="flex items-center gap-2 md:gap-3">
+          <div className="relative flex-1 md:flex-none">
             <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search jobs…"
-              className="bg-slate-900 border border-white/10 rounded-xl pl-8 pr-3 py-2.5 text-xs font-semibold text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 transition-all w-48"
+              className="bg-slate-900 border border-white/10 rounded-xl pl-8 pr-3 py-2.5 text-xs font-semibold text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 transition-all w-full md:w-48"
             />
           </div>
           <button
             onClick={onAddJob}
-            className="bg-blue-600 hover:bg-white text-white px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-wider shadow-[0_0_20px_rgba(0,229,255,0.3)] transition-all"
+            className="shrink-0 whitespace-nowrap bg-blue-600 hover:bg-white hover:text-blue-700 text-white px-4 md:px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-wider shadow-[0_0_20px_rgba(0,229,255,0.3)] transition-all"
           >
             New Intake
           </button>

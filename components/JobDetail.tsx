@@ -428,6 +428,17 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
   };
   const collectingAmount = subtotal * paymentSplit;
 
+  // Friendly schedule label: "Today · 09:00", "Tomorrow · 14:00", or "Tue, Jun 9 · 09:00".
+  const schedLabel = (() => {
+    const d = new Date(localJob.scheduledDate + 'T00:00:00');
+    if (isNaN(d.getTime())) return `${localJob.scheduledDate} · ${localJob.scheduledTime}`;
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const diff = Math.round((d.getTime() - today.getTime()) / 86400000);
+    const day = diff === 0 ? 'Today' : diff === 1 ? 'Tomorrow' : diff === -1 ? 'Yesterday'
+      : d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    return `${day} · ${localJob.scheduledTime}`;
+  })();
+
   return (
     <div className="fixed inset-0 bg-slate-950/98 backdrop-blur-3xl z-[150] flex items-center justify-center p-0 md:p-6 animate-in fade-in duration-300 overflow-hidden">
       
@@ -694,20 +705,46 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
       <div className="bg-slate-900 w-full max-w-[1600px] h-full max-h-[96vh] md:rounded-2xl border border-white/10 shadow-2xl flex flex-col relative overflow-hidden">
         
         {/* HEADER BAR */}
-        <header className="px-10 py-6 flex items-center justify-between border-b border-white/10 bg-slate-900/80 z-50 shrink-0">
-          <div className="flex items-center space-x-6">
-            <button onClick={onClose} className="p-4 bg-slate-800 rounded-2xl text-slate-300 hover:text-white transition-all active:scale-90"><ChevronLeft size={24} /></button>
-            <div className="flex items-center space-x-4">
-              <h2 className="text-xl font-bold text-white tracking-tight">Job <span className="text-blue-500">#{localJob.jobNumber}</span></h2>
-              
+        <header className="px-3 py-3 md:px-10 md:py-5 border-b border-white/10 bg-slate-900/80 z-50 shrink-0 md:flex md:items-center md:justify-between md:gap-4">
+          <div className="md:flex md:items-center md:gap-6 space-y-3 md:space-y-0 min-w-0">
+
+            {/* Top row: back · identity · (mobile actions) */}
+            <div className="flex items-center gap-2.5 min-w-0">
+              <button onClick={onClose} className="shrink-0 p-2.5 md:p-3.5 bg-white/5 hover:bg-white/10 rounded-xl md:rounded-2xl text-slate-300 hover:text-white transition-all active:scale-90"><ChevronLeft size={20} /></button>
+              <div className="min-w-0 flex-1">
+                <h2 className="text-base md:text-xl font-bold text-white tracking-tight leading-tight truncate">Job <span className="text-blue-500">#{localJob.jobNumber}</span></h2>
+                <p className="text-[11px] md:text-xs text-slate-400 truncate mt-0.5">{localJob.client.firstName} {localJob.client.lastName} · {localJob.lockDetails.type}</p>
+              </div>
+              {/* Compact actions on mobile */}
+              <div className="flex items-center gap-2 shrink-0 md:hidden">
+                {can.deleteJob(role) && (
+                  <button onClick={() => setShowDeleteConfirm(true)} aria-label="Delete job" className="p-2.5 rounded-xl bg-red-500/10 text-red-500 border border-red-500/20 active:scale-95 transition-all"><Trash2 size={16} /></button>
+                )}
+                <button
+                  onClick={() => { updateJob(localJob); setIsModified(false); logAudit({ action: 'job.update', detail: `Updated job #${localJob.jobNumber}`, jobId: localJob.id }); }}
+                  aria-label={isModified ? 'Save changes' : 'Saved'}
+                  className={`p-2.5 rounded-xl transition-all active:scale-95 ${isModified ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40' : 'bg-white/5 text-emerald-400/80'}`}
+                >
+                  {isModified ? <Save size={16} /> : <CheckCircle2 size={16} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Chips row: status · schedule */}
+            <div className="flex items-center gap-2 md:gap-3 flex-wrap">
               <div className="relative">
-                <button onClick={() => { if (!lockedForTech) setShowStatusPicker(!showStatusPicker); }} disabled={lockedForTech} className="px-6 py-2.5 bg-white/5 rounded-xl text-xs font-bold uppercase tracking-wider border border-white/10 flex items-center space-x-3 active:scale-95 transition-all disabled:opacity-70 disabled:cursor-not-allowed" style={{ color: STATUS_COLORS[localJob.status] }}>
-                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: STATUS_COLORS[localJob.status] }} />
+                <button
+                  onClick={() => { if (!lockedForTech) setShowStatusPicker(!showStatusPicker); }}
+                  disabled={lockedForTech}
+                  className="inline-flex items-center gap-2 pl-2.5 pr-3 py-1.5 rounded-full text-[11px] md:text-xs font-bold uppercase tracking-wider border active:scale-95 transition-all disabled:cursor-not-allowed"
+                  style={{ color: STATUS_COLORS[localJob.status], borderColor: STATUS_COLORS[localJob.status] + '40', backgroundColor: STATUS_COLORS[localJob.status] + '14' }}
+                >
+                  <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: STATUS_COLORS[localJob.status] }} />
                   <span>{localJob.status}</span>
-                  {lockedForTech && <Lock size={11} />}
+                  {lockedForTech ? <Lock size={11} className="opacity-70" /> : <ChevronDown size={12} className="opacity-60" />}
                 </button>
                 {showStatusPicker && !lockedForTech && (
-                  <div className="absolute top-full left-0 mt-3 w-64 bg-slate-800 border border-white/10 rounded-[1.5rem] shadow-2xl z-[200] p-2 animate-in slide-in-from-top-2">
+                  <div className="absolute top-full left-0 mt-3 w-64 max-w-[calc(100vw-1.5rem)] bg-slate-800 border border-white/10 rounded-[1.5rem] shadow-2xl z-[200] p-2 animate-in slide-in-from-top-2">
                     {STATUS_OPTIONS.map(s => (
                       <button key={s.id} onClick={() => { handleLocalChange({ status: s.id }); setShowStatusPicker(false); }} className={`w-full text-left px-4 py-3 rounded-xl text-xs font-bold uppercase transition-all flex items-center justify-between active:scale-95 ${localJob.status === s.id ? 'bg-blue-600 text-white' : 'hover:bg-white/5 text-slate-300'}`}>
                         <span>{s.label}</span>
@@ -718,78 +755,90 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                 )}
               </div>
 
-              {/* SCHEDULE BUTTON AT TOP */}
-              <div className="relative">
-                <button 
-                  onClick={() => setShowCalendar(!showCalendar)}
-                  className="px-6 py-2.5 bg-blue-600/10 text-blue-500 rounded-xl text-xs font-bold uppercase tracking-wider border border-blue-500/20 flex items-center space-x-3 active:scale-95 transition-all"
-                >
-                  <CalendarIcon size={14} />
-                  <span>{localJob.scheduledDate} @ {localJob.scheduledTime}</span>
-                </button>
-                {showCalendar && (
-                  <div className="absolute top-full left-0 mt-3 w-[400px] bg-slate-800 border border-white/10 rounded-[2.5rem] p-8 z-[300] shadow-2xl animate-in zoom-in-95 space-y-6">
-                    <div className="flex justify-between items-center mb-4">
-                      <h4 className="text-sm font-bold text-white uppercase tracking-widest">Select Date & Time</h4>
-                      <button onClick={() => setShowCalendar(false)} className="p-2 text-slate-400 hover:text-white"><X size={20} /></button>
-                    </div>
-                    
-                    {/* 4 WEEK DATE PICKER */}
-                    <div className="grid grid-cols-7 gap-2 max-h-[200px] overflow-y-auto pr-2 scrollbar-hide">
-                      {Array.from({ length: 28 }).map((_, i) => {
-                        const d = new Date();
-                        d.setDate(d.getDate() + i);
-                        const dateStr = d.toISOString().split('T')[0];
-                        const isSelected = calendarDate === dateStr;
-                        return (
-                          <button 
-                            key={dateStr} 
-                            onClick={() => setCalendarDate(dateStr)}
-                            className={`aspect-square rounded-xl flex flex-col items-center justify-center border transition-all active:scale-90 ${isSelected ? 'bg-blue-600 border-blue-400 text-white' : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'}`}
-                          >
-                            <span className="text-xs font-bold uppercase">{d.toLocaleDateString('en-US', { weekday: 'short' })}</span>
-                            <span className="text-xs font-bold">{d.getDate()}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    {/* TIME PICKER */}
-                    <div className="grid grid-cols-3 gap-3 pt-4 border-t border-white/10">
-                      {TIME_SLOTS.map(time => {
-                        const taken = isTimeSlotTaken(calendarDate, time);
-                        const isCurrent = localJob.scheduledDate === calendarDate && localJob.scheduledTime === time;
-                        return (
-                          <button 
-                            key={time} 
-                            disabled={taken}
-                            onClick={() => {
-                              handleLocalChange({ scheduledDate: calendarDate, scheduledTime: time });
-                              setShowCalendar(false);
-                            }}
-                            className={`py-4 rounded-xl text-xs font-bold uppercase border transition-all active:scale-95 ${isCurrent ? 'bg-blue-600 border-blue-400 text-white' : taken ? 'bg-red-600/20 border-red-600/30 text-red-500 cursor-not-allowed' : 'bg-white/5 border-white/10 text-slate-300 hover:text-white'}`}
-                          >
-                            {time}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
+              {/* SCHEDULE PILL — opens the date/time sheet */}
+              <button
+                onClick={() => setShowCalendar(true)}
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] md:text-xs font-bold uppercase tracking-wider bg-blue-500/10 text-blue-400 border border-blue-500/20 active:scale-95 transition-all min-w-0 max-w-full"
+              >
+                <CalendarIcon size={13} className="shrink-0" />
+                <span className="truncate">{schedLabel}</span>
+                <ChevronDown size={12} className="opacity-60 shrink-0" />
+              </button>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+
+          {/* Desktop actions */}
+          <div className="hidden md:flex items-center gap-3 shrink-0">
             {can.deleteJob(role) && (
-              <button onClick={() => setShowDeleteConfirm(true)} className="px-6 py-4 rounded-2xl text-xs font-bold uppercase tracking-widest bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500 hover:text-white transition-all active:scale-95">
+              <button onClick={() => setShowDeleteConfirm(true)} className="px-6 py-3.5 rounded-2xl text-xs font-bold uppercase tracking-widest bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500 hover:text-white transition-all active:scale-95">
                 <Trash2 size={16} className="mr-2 inline" /> Delete
               </button>
             )}
-            <button onClick={() => { updateJob(localJob); setIsModified(false); logAudit({ action: 'job.update', detail: `Updated job #${localJob.jobNumber}`, jobId: localJob.id }); }} className={`px-10 py-4 rounded-2xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 ${isModified ? 'bg-blue-600 text-white shadow-xl' : 'bg-white/5 text-slate-500'}`}>
-              <Save size={16} className="mr-3 inline" /> {isModified ? 'Save Changes' : 'Up to Date'}
+            <button onClick={() => { updateJob(localJob); setIsModified(false); logAudit({ action: 'job.update', detail: `Updated job #${localJob.jobNumber}`, jobId: localJob.id }); }} className={`px-9 py-3.5 rounded-2xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 ${isModified ? 'bg-blue-600 text-white shadow-xl' : 'bg-white/5 text-slate-500'}`}>
+              {isModified ? <><Save size={16} className="mr-2.5 inline" /> Save Changes</> : <><CheckCircle2 size={16} className="mr-2.5 inline" /> Up to Date</>}
             </button>
           </div>
         </header>
+
+        {/* SCHEDULE PICKER — centred modal on desktop, bottom sheet on mobile (never clips off-screen) */}
+        {showCalendar && (
+          <div
+            onClick={() => setShowCalendar(false)}
+            className="fixed inset-0 z-[300] bg-black/70 backdrop-blur-sm flex items-end md:items-center justify-center p-0 md:p-6 animate-in fade-in"
+          >
+            <div
+              onClick={e => e.stopPropagation()}
+              className="bg-slate-800 border border-white/10 rounded-t-3xl md:rounded-3xl p-5 md:p-8 w-full max-w-md shadow-2xl animate-in slide-in-from-bottom-6 md:zoom-in-95 space-y-5 max-h-[88vh] overflow-y-auto scrollbar-hide"
+              style={{ paddingBottom: 'calc(1.25rem + env(safe-area-inset-bottom))' }}
+            >
+              <div className="flex justify-between items-center">
+                <h4 className="text-sm font-bold text-white uppercase tracking-widest">Select Date &amp; Time</h4>
+                <button onClick={() => setShowCalendar(false)} className="p-2 -mr-2 text-slate-400 hover:text-white"><X size={20} /></button>
+              </div>
+
+              {/* 4 WEEK DATE PICKER */}
+              <div className="grid grid-cols-7 gap-1.5 md:gap-2 max-h-[240px] overflow-y-auto pr-1 scrollbar-hide">
+                {Array.from({ length: 28 }).map((_, i) => {
+                  const d = new Date();
+                  d.setDate(d.getDate() + i);
+                  const dateStr = d.toISOString().split('T')[0];
+                  const isSelected = calendarDate === dateStr;
+                  return (
+                    <button
+                      key={dateStr}
+                      onClick={() => setCalendarDate(dateStr)}
+                      className={`aspect-square rounded-xl flex flex-col items-center justify-center border transition-all active:scale-90 ${isSelected ? 'bg-blue-600 border-blue-400 text-white' : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'}`}
+                    >
+                      <span className="text-[10px] md:text-xs font-bold uppercase">{d.toLocaleDateString('en-US', { weekday: 'short' })}</span>
+                      <span className="text-xs font-bold">{d.getDate()}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* TIME PICKER */}
+              <div className="grid grid-cols-3 gap-2 md:gap-3 pt-4 border-t border-white/10">
+                {TIME_SLOTS.map(time => {
+                  const taken = isTimeSlotTaken(calendarDate, time);
+                  const isCurrent = localJob.scheduledDate === calendarDate && localJob.scheduledTime === time;
+                  return (
+                    <button
+                      key={time}
+                      disabled={taken}
+                      onClick={() => {
+                        handleLocalChange({ scheduledDate: calendarDate, scheduledTime: time });
+                        setShowCalendar(false);
+                      }}
+                      className={`py-3.5 md:py-4 rounded-xl text-xs font-bold uppercase border transition-all active:scale-95 ${isCurrent ? 'bg-blue-600 border-blue-400 text-white' : taken ? 'bg-red-600/20 border-red-600/30 text-red-500 cursor-not-allowed' : 'bg-white/5 border-white/10 text-slate-300 hover:text-white'}`}
+                    >
+                      {time}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* DELETE CONFIRMATION MODAL */}
         {showDeleteConfirm && (
@@ -821,22 +870,22 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
             <div className="lg:col-span-4 flex flex-col space-y-8">
               
               {/* CLIENT INFO CARD - NEW LAYOUT */}
-              <section className="bg-slate-900 p-8 rounded-2xl border border-slate-700 space-y-6 shadow-md relative overflow-hidden">
+              <section className="bg-slate-900 p-5 md:p-8 rounded-2xl border border-slate-700 space-y-6 shadow-md relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/5 blur-3xl rounded-full -mr-16 -mt-16" />
-                
-                <div className="flex justify-between items-start relative z-10">
-                  <div className="space-y-1">
-                    <h3 className="text-3xl font-bold text-white tracking-tight leading-none">
+
+                <div className="flex justify-between items-start gap-3 relative z-10">
+                  <div className="space-y-1 min-w-0">
+                    <h3 className="text-2xl md:text-3xl font-bold text-white tracking-tight leading-tight break-words">
                       {localJob.client.firstName} {localJob.client.lastName}
                     </h3>
                     <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: STATUS_COLORS[localJob.status] }}>{localJob.lockDetails.type} · {localJob.lockDetails.brand || 'Unknown'}</p>
                   </div>
-                  <button 
+                  <button
                     onClick={() => setIsEditingClient(true)}
-                    className="p-3 bg-slate-800 text-slate-300 rounded-xl hover:bg-slate-700 hover:text-white transition-all active:scale-90 flex items-center space-x-2"
+                    className="shrink-0 p-3 bg-slate-800 text-slate-300 rounded-xl hover:bg-slate-700 hover:text-white transition-all active:scale-90 flex items-center gap-2"
                   >
                     <Edit2 size={16} />
-                    <span className="text-xs font-bold uppercase">Edit Records</span>
+                    <span className="text-xs font-bold uppercase hidden sm:inline">Edit Records</span>
                   </button>
                 </div>
 

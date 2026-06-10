@@ -396,9 +396,11 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
           const dayRevenue = tipJobs.reduce((s, j) => s + (j.totalAmount || 0), 0);
           const dateLabel = new Date(year, month, popDay.day).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 
-          const EW = 248;
+          const EW = Math.min(248, window.innerWidth - 16);
           const EH = 58 + tipJobs.length * 54 + 10;
-          const NAV = 140;
+          // Left gutter to avoid: the desktop sidebar (~140px) exists only at md+.
+          // On mobile there is no sidebar, so keep the popup flush to the screen edge.
+          const NAV = window.innerWidth < 768 ? 8 : 140;
 
           // Position popup BELOW the cell (no overlap → no self-dismiss)
           let ex = popDay.cx - EW / 2;

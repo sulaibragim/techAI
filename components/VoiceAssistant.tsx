@@ -107,11 +107,14 @@ export const VoiceAssistant: React.FC = () => {
           <span className="font-bold text-white text-xs uppercase tracking-wider">{notificationText}</span>
         </div>
       )}
-      <div className="fixed bottom-20 right-8 z-[100] group/fab">
+      <div
+        className="fixed bottom-24 right-4 md:bottom-20 md:right-8 z-[100] group/fab"
+        style={{ marginBottom: 'env(safe-area-inset-bottom)' }}
+      >
         <button
           onClick={hasApiKey ? toggle : undefined}
           disabled={isConnecting}
-          className={`w-16 h-16 rounded-full flex items-center justify-center shadow-[0_32px_64px_-16px_rgba(59,130,246,0.5)] transition-all duration-500 ${
+          className={`w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center shadow-[0_32px_64px_-16px_rgba(59,130,246,0.5)] transition-all duration-500 ${
             !hasApiKey
               ? 'bg-slate-700 cursor-not-allowed opacity-60'
               : isConnecting
@@ -130,7 +133,7 @@ export const VoiceAssistant: React.FC = () => {
         )}
       </div>
       {isOpen && (
-        <div className="fixed bottom-40 right-8 w-[380px] max-w-[calc(100vw-2rem)] h-[520px] bg-slate-900/95 backdrop-blur-3xl z-[90] flex flex-col rounded-2xl border border-white/10 shadow-2xl animate-in zoom-in-95">
+        <div className="fixed bottom-44 right-4 md:bottom-40 md:right-8 w-[380px] max-w-[calc(100vw-2rem)] h-[min(520px,70vh)] bg-slate-900/95 backdrop-blur-3xl z-[90] flex flex-col rounded-2xl border border-white/10 shadow-2xl animate-in zoom-in-95">
           <div className="p-5 border-b border-white/10 flex items-center justify-between shrink-0">
             <div className="flex items-center space-x-3">
                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-violet-600 rounded-xl flex items-center justify-center text-white shadow-xl shadow-blue-900/40"><Bot size={20} /></div>
