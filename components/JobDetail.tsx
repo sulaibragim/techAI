@@ -721,6 +721,20 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                   <label className="text-xs font-bold text-slate-400 uppercase block mb-1">ZIP Code</label>
                   <input inputMode="numeric" className="w-full bg-transparent text-white font-bold outline-none text-sm" value={localJob.client.zip || ''} onChange={e => handleClientChange({ zip: e.target.value })} placeholder="33139" />
                 </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
+                    <label className="text-xs font-bold text-slate-400 uppercase block mb-1">Unit / Apt</label>
+                    <input className="w-full bg-transparent text-white font-bold outline-none text-sm" value={localJob.client.unit || ''} onChange={e => handleClientChange({ unit: e.target.value })} />
+                  </div>
+                  <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
+                    <label className="text-xs font-bold text-slate-400 uppercase block mb-1">Gate / Callbox Code</label>
+                    <input className="w-full bg-transparent text-white font-bold outline-none text-sm" value={localJob.client.gateCode || ''} onChange={e => handleClientChange({ gateCode: e.target.value })} />
+                  </div>
+                </div>
+                <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
+                  <label className="text-xs font-bold text-slate-400 uppercase block mb-1">Access Notes</label>
+                  <input className="w-full bg-transparent text-white font-bold outline-none text-sm" value={localJob.client.accessNotes || ''} onChange={e => handleClientChange({ accessNotes: e.target.value })} placeholder="Parking, buzzer, dog on site…" />
+                </div>
                 <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
                   <label className="text-xs font-bold text-slate-400 uppercase block mb-1">Secondary Address</label>
                   <input className="w-full bg-transparent text-white font-bold outline-none text-sm" value={localJob.client.secondaryAddress || ''} onChange={e => handleClientChange({ secondaryAddress: e.target.value })} />
@@ -882,6 +896,15 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                 <span className="truncate">{schedLabel}</span>
                 <ChevronDown size={12} className="opacity-60 shrink-0" />
               </button>
+
+              {localJob.priority && (() => {
+                const pr = {
+                  emergency: { label: 'Emergency', cls: 'bg-red-500/10 text-red-400 border-red-500/30' },
+                  today: { label: 'Today', cls: 'bg-amber-500/10 text-amber-400 border-amber-500/30' },
+                  scheduled: { label: 'Scheduled', cls: 'bg-blue-500/10 text-blue-400 border-blue-500/30' },
+                }[localJob.priority];
+                return <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] md:text-xs font-bold uppercase tracking-wider border ${pr.cls}`}>{pr.label}</span>;
+              })()}
             </div>
           </div>
 
@@ -1103,6 +1126,13 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                     </div>
                     <button onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([localJob.client.address, localJob.client.zip].filter(Boolean).join(', '))}`)} className="p-1.5 bg-blue-600/10 text-blue-400 rounded-lg hover:bg-blue-600 hover:text-white transition-all"><Navigation size={12} /></button>
                   </div>
+                  {(localJob.client.unit || localJob.client.gateCode || localJob.client.accessNotes) && (
+                    <div className="pt-2.5 mt-1 border-t border-slate-700/50 space-y-1.5">
+                      {localJob.client.unit && <div className="flex items-center gap-2 text-xs"><span className="text-slate-500 uppercase font-bold w-14 shrink-0">Unit</span><span className="text-white font-semibold">{localJob.client.unit}</span></div>}
+                      {localJob.client.gateCode && <div className="flex items-center gap-2 text-xs"><span className="text-slate-500 uppercase font-bold w-14 shrink-0">Gate</span><span className="text-white font-semibold font-mono">{localJob.client.gateCode}</span></div>}
+                      {localJob.client.accessNotes && <div className="flex items-start gap-2 text-xs"><span className="text-slate-500 uppercase font-bold w-14 shrink-0 pt-0.5">Note</span><span className="text-amber-300/90 font-medium">{localJob.client.accessNotes}</span></div>}
+                    </div>
+                  )}
                 </div>
 
                 {/* ON MY WAY — flips status to En Route and texts the client a heads-up */}

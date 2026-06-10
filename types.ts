@@ -60,6 +60,9 @@ export interface Client {
   secondaryEmail?: string;
   address: string;
   zip?: string;
+  unit?: string;        // apartment / suite / unit number
+  gateCode?: string;    // gate / callbox / building entry code
+  accessNotes?: string; // parking, "buzzer broken", where to meet, etc.
   secondaryAddress?: string;
   photo?: string;
   notes?: string;
@@ -114,6 +117,7 @@ export interface Job {
   scheduledTime: string; // HH:mm format
   durationMinutes?: number; 
   status: JobStatus;
+  priority?: 'emergency' | 'today' | 'scheduled'; // dispatch urgency set at intake
   lineItems: LineItem[];
   paymentStatus: 'paid' | 'unpaid' | 'partial';
   amountPaid?: number; // how much has actually been collected (for deposits / partial payments)
