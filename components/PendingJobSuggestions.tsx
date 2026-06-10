@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useAppStore } from '../store';
 import { useAuthStore } from '../authStore';
 import { API_BASE } from '../backendUrl';
+import { authHeaders } from '../apiClient';
 import { TechStatus } from '../types';
 import { Sparkles, Phone, MapPin, Lock, Clock, CheckCircle, X, ChevronDown, ChevronUp, Mic, UserCheck, Circle, Car, FileText, Star, AlertTriangle, ThumbsUp, ThumbsDown, Info } from 'lucide-react';
 
@@ -94,7 +95,7 @@ export const PendingJobSuggestions: React.FC<{ onJobCreated?: (job: import('../t
 
   const fetchPending = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/openphone/pending-jobs`);
+      const res = await fetch(`${API_BASE}/api/openphone/pending-jobs`, { headers: { ...authHeaders() } });
       if (!res.ok) return;
       const data: PendingJob[] = await res.json();
       setPending(data.filter(p => p.status === 'ready'));
@@ -109,7 +110,7 @@ export const PendingJobSuggestions: React.FC<{ onJobCreated?: (job: import('../t
 
   const dismiss = async (callId: string) => {
     try {
-      await fetch(`${API_BASE}/api/openphone/pending-jobs/${callId}`, { method: 'DELETE' });
+      await fetch(`${API_BASE}/api/openphone/pending-jobs/${callId}`, { method: 'DELETE', headers: { ...authHeaders() } });
     } catch {}
     setPending(p => p.filter(x => x.callId !== callId));
   };

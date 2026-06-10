@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { processTranscriptWithAI } from '../services/gemini.js';
+import { requireAuth } from '../middleware/auth.js';
 
 export const openphoneRouter = Router();
 
@@ -70,17 +71,17 @@ openphoneRouter.post('/webhook', async (req, res) => {
 });
 
 // ─── GET recent calls (from webhook store, not REST API) ─────────────────────
-openphoneRouter.get('/calls', (_req, res) => {
+openphoneRouter.get('/calls', requireAuth, (_req, res) => {
   res.json({ data: recentCalls, totalItems: recentCalls.length });
 });
 
 // ─── GET recent messages (from webhook store) ─────────────────────────────────
-openphoneRouter.get('/messages', (_req, res) => {
+openphoneRouter.get('/messages', requireAuth, (_req, res) => {
   res.json({ data: recentMessages, totalItems: recentMessages.length });
 });
 
 // ─── POST send SMS ────────────────────────────────────────────────────────────
-openphoneRouter.post('/messages/send', async (req, res) => {
+openphoneRouter.post('/messages/send', requireAuth, async (req, res) => {
   try {
     const { to, content, phoneNumberId } = req.body;
     const response = await fetch('https://api.openphone.com/v1/messages', {
@@ -109,7 +110,7 @@ openphoneRouter.post('/messages/send', async (req, res) => {
 });
 
 // ─── GET phone numbers ────────────────────────────────────────────────────────
-openphoneRouter.get('/phone-numbers', async (_req, res) => {
+openphoneRouter.get('/phone-numbers', requireAuth, async (_req, res) => {
   try {
     const r = await fetch('https://api.openphone.com/v1/phone-numbers', {
       headers: { Authorization: process.env.OPENPHONE_API_KEY },
@@ -121,11 +122,11 @@ openphoneRouter.get('/phone-numbers', async (_req, res) => {
 });
 
 // ─── Pending job suggestions (from AI-processed transcripts) ─────────────────
-openphoneRouter.get('/pending-jobs', (_req, res) => {
+openphoneRouter.get('/pending-jobs', requireAuth, (_req, res) => {
   res.json(Array.from(pendingJobSuggestions.values()));
 });
 
-openphoneRouter.delete('/pending-jobs/:callId', (req, res) => {
+openphoneRouter.delete('/pending-jobs/:callId', requireAuth, (req, res) => {
   pendingJobSuggestions.delete(req.params.callId);
   res.sendStatus(204);
 });

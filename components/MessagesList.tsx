@@ -4,6 +4,7 @@ import { formatTimestamp } from '../dateUtils';
 import { MessageSquare, User, Clock, Smartphone, ChevronRight, RefreshCw, Send, Radio } from 'lucide-react';
 import { Job } from '../types';
 import { API_BASE } from '../backendUrl';
+import { authHeaders } from '../apiClient';
 
 const PHONE_NUMBER_ID = 'PNkhFHiD2G';
 
@@ -34,7 +35,7 @@ export const MessagesList: React.FC<MessagesListProps> = ({ onJobSelect }) => {
   const fetchMessages = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/api/openphone/messages?phoneNumberId=${PHONE_NUMBER_ID}`);
+      const res = await fetch(`${API_BASE}/api/openphone/messages?phoneNumberId=${PHONE_NUMBER_ID}`, { headers: { ...authHeaders() } });
       if (!res.ok) throw new Error(`${res.status}`);
       const data = await res.json();
       setLiveMessages(data.data || []);
@@ -66,7 +67,7 @@ export const MessagesList: React.FC<MessagesListProps> = ({ onJobSelect }) => {
     try {
       await fetch(`${API_BASE}/api/openphone/messages/send`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
         body: JSON.stringify({ to, content: replyText.trim(), phoneNumberId: PHONE_NUMBER_ID }),
       });
       setReplyText('');

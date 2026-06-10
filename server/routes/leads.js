@@ -8,18 +8,19 @@ export const leadsRouter = Router();
 // Accept plain HTML form posts too (application/x-www-form-urlencoded), not just JSON.
 leadsRouter.use(express.urlencoded({ extended: true }));
 
-const INTAKE_SECRET = process.env.LEAD_INTAKE_SECRET || '';
-if (!INTAKE_SECRET) {
-  console.warn('[LEADS] LEAD_INTAKE_SECRET not set — the public lead endpoint is OPEN. Set it in production.');
+const WEBHOOK_SECRET = process.env.WEBSITE_WEBHOOK_SECRET || '';
+if (!WEBHOOK_SECRET) {
+  console.warn('[INBOUND] WEBSITE_WEBHOOK_SECRET not set — the public lead endpoint is OPEN. Set it in production.');
 }
 
 // ─── Public lead intake — the website form posts here ─────────────────────────
 // No login: the site is unauthenticated. Guarded by a shared secret instead.
+// Field names match the website contract: { name, phone, email, service, city, note, source }.
 leadsRouter.post('/', async (req, res) => {
-  if (INTAKE_SECRET) {
-    const provided = req.headers['x-intake-secret'] || req.body?.secret || '';
-    if (provided !== INTAKE_SECRET) {
-      return res.status(401).json({ error: 'Invalid intake secret' });
+  if (WEBHOOK_SECRET) {
+    const provided = req.headers['x-webhook-secret'] || req.body?.secret || '';
+    if (provided !== WEBHOOK_SECRET) {
+      return res.status(401).json({ error: 'Invalid webhook secret' });
     }
   }
 
@@ -27,8 +28,11 @@ leadsRouter.post('/', async (req, res) => {
     name = '',
     phone = '',
     email = '',
-    address = '',
+    service = '',
     problem = '',
+    city = '',
+    address = '',
+    note = '',
     source,
   } = req.body || {};
 
@@ -39,6 +43,10 @@ leadsRouter.post('/', async (req, res) => {
   // Best-effort split of a single "name" field into first / last.
   const [firstName, ...rest] = String(name).trim().split(/\s+/).filter(Boolean);
   const lastName = rest.join(' ');
+
+  // Map the site's free-form fields onto the CRM Job shape.
+  const complaint = [String(service || problem).trim(), String(note).trim()].filter(Boolean).join(' — ');
+  const addr = String(address || city).trim();
 
   const now = new Date();
   const id = `job-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -53,12 +61,12 @@ leadsRouter.post('/', async (req, res) => {
       lastName,
       phone: String(phone).trim(),
       email: String(email).trim(),
-      address: String(address).trim(),
-      notes: '',
+      address: addr,
+      notes: String(note).trim(),
       tags: ['Сайт'],
     },
     lockDetails: { type: 'Other', brand: '', modelOrYear: '' },
-    complaint: String(problem).trim(),
+    complaint,
     diagnosisNotes: '',
     scheduledDate: now.toISOString().slice(0, 10),
     scheduledTime: '',

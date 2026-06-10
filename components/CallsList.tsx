@@ -3,6 +3,7 @@ import { useAppStore } from '../store';
 import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Clock, PhoneCall, RefreshCw, Radio } from 'lucide-react';
 import { CallRecord } from '../types';
 import { API_BASE } from '../backendUrl';
+import { authHeaders } from '../apiClient';
 
 const PHONE_NUMBER_ID = 'PNkhFHiD2G';
 
@@ -44,7 +45,7 @@ export const CallsList: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE}/api/openphone/calls?phoneNumberId=${PHONE_NUMBER_ID}`);
+      const res = await fetch(`${API_BASE}/api/openphone/calls?phoneNumberId=${PHONE_NUMBER_ID}`, { headers: { ...authHeaders() } });
       if (!res.ok) throw new Error(`${res.status}`);
       const data = await res.json();
       setLiveCalls((data.data || []).map(mapOpenPhoneCall));
