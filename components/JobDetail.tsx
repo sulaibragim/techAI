@@ -54,6 +54,12 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
   const [isEditingClient, setIsEditingClient] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
   const [calendarDate, setCalendarDate] = useState(localJob.scheduledDate);
+  // Which month the schedule calendar is showing (first of the month).
+  const [calMonth, setCalMonth] = useState<Date>(() => {
+    const d = new Date(localJob.scheduledDate + 'T00:00:00');
+    const base = isNaN(d.getTime()) ? new Date() : d;
+    return new Date(base.getFullYear(), base.getMonth(), 1);
+  });
   const [customBrand, setCustomBrand] = useState('');
   const [showCustomBrandInput, setShowCustomBrandInput] = useState(false);
   
@@ -113,6 +119,13 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
       setCalendarDate(initialJob.scheduledDate);
     }
   }, [initialJob, isModified, localJob.id]);
+
+  // When the schedule sheet opens, jump the calendar to the selected date's month.
+  useEffect(() => {
+    if (!showCalendar) return;
+    const d = new Date(calendarDate + 'T00:00:00');
+    if (!isNaN(d.getTime())) setCalMonth(new Date(d.getFullYear(), d.getMonth(), 1));
+  }, [showCalendar]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const startCamera = async () => {
     setShowCamera(true);
@@ -796,25 +809,70 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                 <button onClick={() => setShowCalendar(false)} className="p-2 -mr-2 text-slate-400 hover:text-white"><X size={20} /></button>
               </div>
 
-              {/* 4 WEEK DATE PICKER */}
-              <div className="grid grid-cols-7 gap-1.5 md:gap-2 max-h-[240px] overflow-y-auto pr-1 scrollbar-hide">
-                {Array.from({ length: 28 }).map((_, i) => {
-                  const d = new Date();
-                  d.setDate(d.getDate() + i);
-                  const dateStr = d.toISOString().split('T')[0];
-                  const isSelected = calendarDate === dateStr;
-                  return (
+              {/* MONTH CALENDAR */}
+              {(() => {
+                const todayCal = new Date(); todayCal.setHours(0, 0, 0, 0);
+                const y = calMonth.getFullYear();
+                const m = calMonth.getMonth();
+                const startOffset = new Date(y, m, 1).getDay();
+                const totalDays = new Date(y, m + 1, 0).getDate();
+                const atCurrentMonth = y === todayCal.getFullYear() && m === todayCal.getMonth();
+                const cells: React.ReactNode[] = [];
+                for (let i = 0; i < startOffset; i++) cells.push(<div key={`b${i}`} />);
+                for (let day = 1; day <= totalDays; day++) {
+                  const ds = `${y}-${String(m + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                  const cellDate = new Date(y, m, day);
+                  const isPast = cellDate < todayCal;
+                  const isSelected = calendarDate === ds;
+                  const isToday = cellDate.getTime() === todayCal.getTime();
+                  cells.push(
                     <button
-                      key={dateStr}
-                      onClick={() => setCalendarDate(dateStr)}
-                      className={`aspect-square rounded-xl flex flex-col items-center justify-center border transition-all active:scale-90 ${isSelected ? 'bg-blue-600 border-blue-400 text-white' : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'}`}
+                      key={ds}
+                      type="button"
+                      disabled={isPast}
+                      onClick={() => setCalendarDate(ds)}
+                      className={`aspect-square rounded-xl flex items-center justify-center text-xs font-bold border transition-all active:scale-90 ${
+                        isSelected ? 'bg-blue-600 border-blue-400 text-white shadow-lg shadow-blue-900/30'
+                        : isPast ? 'border-transparent text-slate-700 cursor-not-allowed'
+                        : isToday ? 'bg-blue-500/10 border-blue-500/40 text-blue-300'
+                        : 'bg-white/5 border-white/10 text-slate-300 hover:border-blue-500/40 hover:text-white'
+                      }`}
                     >
-                      <span className="text-[10px] md:text-xs font-bold uppercase">{d.toLocaleDateString('en-US', { weekday: 'short' })}</span>
-                      <span className="text-xs font-bold">{d.getDate()}</span>
+                      {day}
                     </button>
                   );
-                })}
-              </div>
+                }
+                return (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <button
+                        type="button"
+                        disabled={atCurrentMonth}
+                        onClick={() => setCalMonth(new Date(y, m - 1, 1))}
+                        className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/5 text-slate-300 hover:text-white hover:bg-blue-600 disabled:opacity-25 disabled:hover:bg-white/5 disabled:cursor-not-allowed transition-all"
+                      >
+                        <ChevronLeft size={16} />
+                      </button>
+                      <span className="text-sm font-bold text-white tracking-tight">
+                        {calMonth.toLocaleDateString('en-US', { month: 'long' })} <span className="text-blue-400">{y}</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setCalMonth(new Date(y, m + 1, 1))}
+                        className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/5 text-slate-300 hover:text-white hover:bg-blue-600 transition-all"
+                      >
+                        <ChevronRight size={16} />
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-7 gap-1">
+                      {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map(d => (
+                        <div key={d} className="text-center text-[9px] font-bold text-slate-500 uppercase tracking-wider">{d}</div>
+                      ))}
+                    </div>
+                    <div className="grid grid-cols-7 gap-1">{cells}</div>
+                  </div>
+                );
+              })()}
 
               {/* TIME PICKER */}
               <div className="grid grid-cols-3 gap-2 md:gap-3 pt-4 border-t border-white/10">
