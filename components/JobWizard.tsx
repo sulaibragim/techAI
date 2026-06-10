@@ -201,6 +201,8 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) =>
       totalAmount: 0,
       photos,
       assignedTo: assignedTo || undefined,
+      acceptanceStatus: assignedTo ? (assignedTo === currentUser?.id ? 'accepted' : 'pending') : undefined,
+      acceptedAt: (assignedTo && assignedTo === currentUser?.id) ? new Date().toISOString() : undefined,
     };
     onComplete(newJob);
   };

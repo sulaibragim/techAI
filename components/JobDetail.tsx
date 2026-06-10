@@ -109,7 +109,13 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
   // the client a heads-up. The status change always lands; the SMS is best-effort.
   const handleOnMyWay = async () => {
     if (otwState === 'sending') return;
-    const enRouteJob: Job = { ...localJob, status: 'enRoute' };
+    // Heading out implies acceptance, so clear a pending assignment too.
+    const enRouteJob: Job = {
+      ...localJob,
+      status: 'enRoute',
+      acceptanceStatus: localJob.acceptanceStatus === 'pending' ? 'accepted' : localJob.acceptanceStatus,
+      acceptedAt: localJob.acceptanceStatus === 'pending' ? new Date().toISOString() : localJob.acceptedAt,
+    };
     setLocalJob(enRouteJob);
     updateJob(enRouteJob);
     setIsModified(false);
@@ -137,12 +143,36 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
   };
 
   const assignTech = (assignedTo: string | undefined) => {
-    const updated: Job = { ...localJob, assignedTo };
+    const isSelf = !!assignedTo && assignedTo === currentUser?.id;
+    const updated: Job = {
+      ...localJob,
+      assignedTo,
+      // A fresh assignment awaits the tech's acceptance — unless they assigned it to themselves.
+      acceptanceStatus: assignedTo ? (isSelf ? 'accepted' : 'pending') : undefined,
+      acceptedAt: isSelf ? new Date().toISOString() : undefined,
+    };
     setLocalJob(updated);
     updateJob(updated);
     setIsModified(false);
     const techName = technicians.find(t => t.id === assignedTo)?.name || 'Unassigned';
     logAudit({ action: 'job.assign', detail: `Assigned #${updated.jobNumber} to ${techName}`, jobId: updated.id });
+  };
+
+  const acceptJob = () => {
+    const updated: Job = { ...localJob, acceptanceStatus: 'accepted', acceptedAt: new Date().toISOString() };
+    setLocalJob(updated);
+    updateJob(updated);
+    setIsModified(false);
+    logAudit({ action: 'job.accept', detail: `Accepted job #${updated.jobNumber}`, jobId: updated.id });
+  };
+
+  const declineJob = () => {
+    // Sending it back to dispatch: clear the assignee so a manager can reassign.
+    const updated: Job = { ...localJob, acceptanceStatus: 'declined', assignedTo: undefined };
+    setLocalJob(updated);
+    updateJob(updated);
+    setIsModified(false);
+    logAudit({ action: 'job.decline', detail: `Declined job #${updated.jobNumber}`, jobId: updated.id });
   };
 
   useEffect(() => {
@@ -1001,6 +1031,21 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
               <section className="bg-slate-900 p-5 md:p-8 rounded-2xl border border-slate-700 space-y-6 shadow-md relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/5 blur-3xl rounded-full -mr-16 -mt-16" />
 
+                {/* TECH ACCEPTANCE — only the assigned tech sees this, only while pending */}
+                {currentUser?.role === 'technician' && localJob.assignedTo === currentUser?.id && localJob.acceptanceStatus === 'pending' && (
+                  <div className="relative z-10 bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 space-y-3">
+                    <div className="flex items-center gap-2 text-amber-300">
+                      <ClipboardList size={16} />
+                      <span className="text-sm font-bold">New job assigned to you</span>
+                    </div>
+                    <p className="text-xs text-amber-200/70 leading-relaxed">Accept to confirm you’ll take this job, or decline to send it back to dispatch.</p>
+                    <div className="flex gap-3">
+                      <button onClick={acceptJob} className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-xl font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-all"><CheckCircle2 size={14} /> Accept</button>
+                      <button onClick={declineJob} className="flex-1 bg-white/5 hover:bg-red-600/20 text-red-300 border border-red-500/30 py-3 rounded-xl font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-all"><X size={14} /> Decline</button>
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex justify-between items-start gap-3 relative z-10">
                   <div className="space-y-1 min-w-0">
                     <h3 className="text-2xl md:text-3xl font-bold text-white tracking-tight leading-tight break-words">
@@ -1102,6 +1147,27 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                     </>
                   ) : (
                     <p className="text-sm font-semibold text-white">{users.find(u => u.id === localJob.assignedTo)?.name || 'Unassigned'}</p>
+                  )}
+
+                  {/* ACCEPTANCE STATUS — so the dispatcher knows the tech responded */}
+                  {(localJob.acceptanceStatus && (localJob.assignedTo || localJob.acceptanceStatus === 'declined')) && (
+                    <div className="mt-3">
+                      {localJob.acceptanceStatus === 'pending' && (
+                        <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                          <Clock size={11} /> Awaiting tech acceptance
+                        </span>
+                      )}
+                      {localJob.acceptanceStatus === 'accepted' && (
+                        <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                          <CheckCircle2 size={11} /> Accepted{localJob.acceptedAt ? ` · ${formatTimestamp(localJob.acceptedAt)}` : ''}
+                        </span>
+                      )}
+                      {localJob.acceptanceStatus === 'declined' && (
+                        <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1.5 rounded-lg bg-red-500/10 text-red-400 border border-red-500/30">
+                          <X size={11} /> Declined — reassign
+                        </span>
+                      )}
+                    </div>
                   )}
                 </div>
               </section>

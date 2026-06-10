@@ -125,6 +125,8 @@ export interface Job {
   distance?: number; // Miles for Kanban card
   warranty?: string;
   assignedTo?: string; // User id of the technician responsible
+  acceptanceStatus?: 'pending' | 'accepted' | 'declined'; // tech's response to the assignment
+  acceptedAt?: string; // ISO timestamp when the tech accepted
   createdBy?: string;  // User id of whoever created the job
   callSummary?: string; // AI-generated summary of the intake call
   callQuality?: {
