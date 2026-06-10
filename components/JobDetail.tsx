@@ -1084,7 +1084,8 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
               <div className="flex flex-col rounded-2xl overflow-hidden shadow-2xl border border-white/10">
 
                 {/* ── TOOLBAR (dark) ── */}
-                {role !== 'technician' && (
+                {/* Field techs price the job on-site; only a closed job is read-only to them. */}
+                {!lockedForTech && (
                 <div className="bg-slate-900 px-5 py-2.5 flex items-center gap-2 flex-wrap border-b border-white/10">
                   <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mr-1">Add:</span>
                   {([
@@ -1179,7 +1180,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                                 <p className="col-span-2 text-xs text-slate-600 text-right pt-0.5">${item.unitPrice.toFixed(2)}</p>
                                 <div className="col-span-2 flex items-start justify-end gap-0.5">
                                   <span className="text-xs font-bold text-slate-800 tabular-nums">${(item.unitPrice * item.quantity).toFixed(2)}</span>
-                                  {role !== 'technician' && <button onClick={() => handleRemoveLineItem(item.id)} className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-300 hover:text-red-500 transition-all shrink-0 mt-0.5"><Trash2 size={11} /></button>}
+                                  {!lockedForTech && <button onClick={() => handleRemoveLineItem(item.id)} className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-300 hover:text-red-500 transition-all shrink-0 mt-0.5"><Trash2 size={11} /></button>}
                                 </div>
                               </div>
                             ))
@@ -1288,7 +1289,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                           </div>
                           <div className="flex items-center gap-2 shrink-0">
                             <span className="text-sm font-bold text-white tabular-nums">${(item.unitPrice * item.quantity).toFixed(2)}</span>
-                            {role !== 'technician' && <button onClick={() => handleRemoveLineItem(item.id)} className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 text-slate-400 active:text-red-400 active:scale-90 transition-all"><Trash2 size={15} /></button>}
+                            {!lockedForTech && <button onClick={() => handleRemoveLineItem(item.id)} className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 text-slate-400 active:text-red-400 active:scale-90 transition-all"><Trash2 size={15} /></button>}
                           </div>
                         </div>
                       ))
@@ -1305,7 +1306,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
 
                 {/* ── ACTION BAR (dark) ── */}
                 <div className="bg-slate-900 px-5 py-3 grid grid-cols-2 gap-3">
-                  {role !== 'technician' ? (
+                  {!lockedForTech ? (
                     <button
                       onClick={() => setPaymentStep('split')}
                       disabled={localJob.paymentStatus === 'paid'}
