@@ -1300,35 +1300,39 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                     <span className="text-xs font-bold text-slate-300 uppercase tracking-widest">Total Due</span>
                     <span className="text-2xl font-extrabold text-white tabular-nums">${subtotal.toFixed(2)}</span>
                   </div>
-
-                  <p className="text-[10px] text-slate-600 text-center">“Print Invoice” generates the full A4 page for the client.</p>
                 </div>
 
-                {/* ── ACTION BAR (dark) ── */}
-                <div className="bg-slate-900 px-5 py-3 grid grid-cols-2 gap-3">
+                {/* ── ACTION BAR — one primary CTA + a compact print action ── */}
+                <div className="bg-slate-900 px-4 py-3 flex items-center gap-2.5">
                   {!lockedForTech ? (
                     <button
                       onClick={() => setPaymentStep('split')}
                       disabled={localJob.paymentStatus === 'paid'}
-                      className={`py-3 rounded-xl font-bold uppercase text-xs tracking-wider transition-all flex items-center justify-center gap-2 active:scale-95 ${
+                      className={`flex-1 py-3.5 rounded-xl font-bold uppercase text-xs tracking-wider transition-all flex items-center justify-center gap-2 active:scale-95 ${
                         localJob.paymentStatus === 'paid'
                           ? 'bg-green-500/10 text-green-400 border border-green-500/20 cursor-default'
                           : 'bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-900/30'
                       }`}
                     >
-                      {localJob.paymentStatus === 'paid' ? <><CheckCircle2 size={14} /> Settled</> : <><CreditCard size={14} /> Collect Payment</>}
+                      {localJob.paymentStatus === 'paid' ? <><CheckCircle2 size={15} /> Settled</> : <><CreditCard size={15} /> Collect Payment</>}
                     </button>
                   ) : (
-                    <div className={`py-3 rounded-xl font-bold uppercase text-xs tracking-wider flex items-center justify-center gap-2 ${
+                    <div className={`flex-1 py-3.5 rounded-xl font-bold uppercase text-xs tracking-wider flex items-center justify-center gap-2 ${
                       localJob.paymentStatus === 'paid'
                         ? 'bg-green-500/10 text-green-400 border border-green-500/20'
                         : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
                     }`}>
-                      {localJob.paymentStatus === 'paid' ? <><CheckCircle2 size={14} /> Settled</> : <><CreditCard size={14} /> Payment Pending</>}
+                      {localJob.paymentStatus === 'paid' ? <><CheckCircle2 size={15} /> Settled</> : <><CreditCard size={15} /> Payment Pending</>}
                     </div>
                   )}
-                  <button onClick={handlePrintInvoice} className="py-3 rounded-xl font-bold uppercase text-xs tracking-wider bg-white/5 text-slate-300 hover:bg-white/10 border border-white/10 flex items-center justify-center gap-2 active:scale-95 transition-all">
-                    <Printer size={14} /> Print Invoice
+                  <button
+                    onClick={handlePrintInvoice}
+                    aria-label="Print invoice"
+                    title="Print invoice"
+                    className="shrink-0 h-[46px] px-4 rounded-xl bg-white/5 text-slate-300 hover:bg-white/10 border border-white/10 flex items-center justify-center gap-2 active:scale-95 transition-all"
+                  >
+                    <Printer size={17} />
+                    <span className="hidden md:inline text-xs font-bold uppercase tracking-wider">Print</span>
                   </button>
                 </div>
               </div>
