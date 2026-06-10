@@ -35,7 +35,10 @@ const App: React.FC = () => {
   const effectiveTab = (allowedTabs.includes(activeTab) ? activeTab : (allowedTabs[0] || 'calendar')) as TabId;
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+  const [clientFocusId, setClientFocusId] = useState<string | null>(null);
   const [notification, setNotification] = useState<{msg: string, type: 'info' | 'success'} | null>(null);
+
+  const openClient = (clientId: string) => { setClientFocusId(clientId); setActiveTab('clients'); };
 
   const selectedJob = jobs.find(j => j.id === selectedJobId);
   const ACTIVE_STATUSES = ['enRoute', 'onSite', 'diagnosed', 'sold', 'waitingParts'];
@@ -102,8 +105,8 @@ const App: React.FC = () => {
               case 'calendar': return <WorkroomDashboard onJobSelect={(j) => setSelectedJobId(j.id)} onAddJob={() => setIsWizardOpen(true)} />;
               case 'jobs': return <JobsList jobs={jobs} onAddJob={() => setIsWizardOpen(true)} onJobSelect={(job) => setSelectedJobId(job.id)} />;
               case 'messages': return <MessagesList onJobSelect={(job) => setSelectedJobId(job.id)} />;
-              case 'calls': return <CallsList />;
-              case 'clients': return <ClientsList onJobSelect={(job) => setSelectedJobId(job.id)} />;
+              case 'calls': return <CallsList onClientSelect={openClient} />;
+              case 'clients': return <ClientsList onJobSelect={(job) => setSelectedJobId(job.id)} focusClientId={clientFocusId} onFocusConsumed={() => setClientFocusId(null)} />;
               case 'analytics': return <Dashboard />;
               case 'accounting': return <Accounting />;
               case 'inventory': return <Inventory />;

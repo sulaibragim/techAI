@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { useAppStore } from '../store';
-import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Clock, PhoneCall, RefreshCw, Radio } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useAppStore, useVisibleJobs } from '../store';
+import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Clock, PhoneCall, RefreshCw, Radio, History, ChevronRight } from 'lucide-react';
 import { CallRecord } from '../types';
 import { API_BASE } from '../backendUrl';
+import { buildClients, findClientByPhone } from '../clientUtils';
 
 const PHONE_NUMBER_ID = 'PNkhFHiD2G';
 
@@ -33,8 +34,10 @@ function mapOpenPhoneCall(c: any): CallRecord {
   };
 }
 
-export const CallsList: React.FC = () => {
+export const CallsList: React.FC<{ onClientSelect?: (clientId: string) => void }> = ({ onClientSelect }) => {
   const { calls: storeCalls } = useAppStore();
+  const jobs = useVisibleJobs();
+  const clients = useMemo(() => buildClients(jobs), [jobs]);
   const [liveCalls, setLiveCalls] = useState<CallRecord[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -128,30 +131,47 @@ export const CallsList: React.FC = () => {
             <p className="text-base font-bold tracking-tight">No call history yet</p>
           </div>
         ) : (
-          callHistory.map((call) => (
+          callHistory.map((call) => {
+            const client = findClientByPhone(clients, call.phone);
+            const displayName = client ? `${client.firstName} ${client.lastName}`.trim() : call.from;
+            const initials = client ? `${client.firstName[0] || ''}${client.lastName[0] || ''}`.toUpperCase() : '';
+            const openHistory = () => { if (client) onClientSelect?.(client.id); };
+            return (
             <div
               key={call.id}
-              className={`bg-slate-900/80 backdrop-blur-3xl p-4 rounded-2xl border border-white/10 ${getBorderColor(call.type)} hover:scale-[1.01] transition-all flex items-center justify-between group shadow-xl relative`}
+              onClick={openHistory}
+              role={client ? 'button' : undefined}
+              className={`bg-slate-900/80 backdrop-blur-3xl p-4 rounded-2xl border border-white/10 ${getBorderColor(call.type)} hover:scale-[1.01] transition-all flex items-center justify-between group shadow-xl relative ${client ? 'cursor-pointer' : ''}`}
             >
               <div className="flex items-center space-x-5 flex-1 min-w-0">
-                <div className="w-12 h-12 bg-slate-950 rounded-xl overflow-hidden flex items-center justify-center border border-white/10 shadow-inner shrink-0">
+                <div className={`w-12 h-12 rounded-xl overflow-hidden flex items-center justify-center border shrink-0 ${client ? 'bg-blue-600/10 border-blue-500/30 text-blue-400 font-bold' : 'bg-slate-950 border-white/10 shadow-inner'}`}>
                   {call.avatar ? (
                     <img src={call.avatar} className="w-full h-full object-cover" alt="" />
+                  ) : client ? (
+                    <span className="text-sm tracking-tight">{initials}</span>
                   ) : (
                     <Phone size={18} className="text-slate-600" />
                   )}
                 </div>
 
-                <div className="flex-1 min-w-0 space-y-0.5">
+                <div className="flex-1 min-w-0 space-y-1">
                   <div className="flex items-center space-x-2">
                     <h3 className="text-base font-bold text-white tracking-tight truncate leading-none">
-                      {call.from}
+                      {displayName}
                     </h3>
                     <div className="bg-white/5 px-2 py-0.5 rounded-lg">
                       {getCallIcon(call.type)}
                     </div>
                   </div>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{call.phone}</p>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{call.phone}</p>
+                    {client && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded-full">
+                        <History size={10} />
+                        {client.jobs.length} job{client.jobs.length !== 1 ? 's' : ''}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -163,16 +183,28 @@ export const CallsList: React.FC = () => {
                 {call.duration && (
                   <span className="text-xs font-bold text-blue-500 uppercase tracking-widest">{call.duration}</span>
                 )}
-                <button
-                  onClick={(e) => { e.stopPropagation(); window.location.href = `tel:${call.phone}`; }}
-                  className="p-2 bg-green-600/10 text-green-400 hover:bg-green-600 hover:text-white rounded-xl transition-all active:scale-90"
-                  title="Call back"
-                >
-                  <PhoneCall size={14} />
-                </button>
+                <div className="flex items-center gap-2">
+                  {client && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); openHistory(); }}
+                      className="inline-flex items-center gap-1 px-2.5 py-2 bg-blue-600/10 text-blue-400 hover:bg-blue-600 hover:text-white rounded-xl transition-all active:scale-90 text-[10px] font-bold uppercase tracking-wider"
+                      title="View work history"
+                    >
+                      History <ChevronRight size={12} />
+                    </button>
+                  )}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); window.location.href = `tel:${call.phone}`; }}
+                    className="p-2 bg-green-600/10 text-green-400 hover:bg-green-600 hover:text-white rounded-xl transition-all active:scale-90"
+                    title="Call back"
+                  >
+                    <PhoneCall size={14} />
+                  </button>
+                </div>
               </div>
             </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>
