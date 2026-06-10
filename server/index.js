@@ -10,6 +10,7 @@ import { aiRouter } from './routes/ai.js';
 import { jobsRouter } from './routes/jobs.js';
 import { inventoryRouter } from './routes/inventory.js';
 import { adminRouter } from './routes/admin.js';
+import { leadsRouter } from './routes/leads.js';
 import { initDB } from './db.js';
 
 import { fileURLToPath } from 'url';
@@ -60,6 +61,16 @@ const loginLimiter = rateLimit({
 });
 app.use('/api/auth/login', loginLimiter);
 
+// Tighter limit on the public lead intake — it's unauthenticated, so cap the flood harder.
+const leadsLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many submissions, try again later' },
+});
+app.use('/api/leads', leadsLimiter);
+
 app.get('/health', (_req, res) => res.json({ ok: true }));
 
 app.use('/openphone', openphoneRouter);
@@ -70,6 +81,7 @@ app.use('/api/ai', aiRouter);
 app.use('/api/jobs', jobsRouter);
 app.use('/api/inventory', inventoryRouter);
 app.use('/api/admin', adminRouter);
+app.use('/api/leads', leadsRouter);
 
 async function start() {
   if (process.env.DATABASE_URL) {
