@@ -29,6 +29,7 @@ async function notifyAssignedTech(assigneeId, job, actingUserId) {
       c.address && `Address: ${c.address}`,
       job.complaint && `Issue: ${job.complaint}`,
       when && `When: ${when}`,
+      'Open the app and tap Accept to take this job.',
     ].filter(Boolean).join('\n');
     await sendSMS(tech.phone, text);
   } catch (err) {

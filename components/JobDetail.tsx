@@ -179,11 +179,13 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
   };
 
   const acceptJob = () => {
-    const updated: Job = { ...localJob, acceptanceStatus: 'accepted', acceptedAt: new Date().toISOString() };
+    // Accepting starts the job: it goes En Route (blue). The client heads-up SMS is a
+    // separate step (the On My Way button) so it fires when the tech actually departs.
+    const updated: Job = { ...localJob, acceptanceStatus: 'accepted', acceptedAt: new Date().toISOString(), status: 'enRoute' };
     setLocalJob(updated);
     updateJob(updated);
     setIsModified(false);
-    logAudit({ action: 'job.accept', detail: `Accepted job #${updated.jobNumber}`, jobId: updated.id });
+    logAudit({ action: 'job.accept', detail: `Accepted job #${updated.jobNumber} — moved to En Route`, jobId: updated.id });
   };
 
   const declineJob = () => {
@@ -1086,7 +1088,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                       <ClipboardList size={16} />
                       <span className="text-sm font-bold">New job assigned to you</span>
                     </div>
-                    <p className="text-xs text-amber-200/70 leading-relaxed">Accept to confirm you’ll take this job, or decline to send it back to dispatch.</p>
+                    <p className="text-xs text-amber-200/70 leading-relaxed">Accept to take this job — it moves to En Route. Or decline to send it back to dispatch. (Use “On My Way” to text the client your ETA.)</p>
                     <div className="flex gap-3">
                       <button onClick={acceptJob} className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-xl font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-all"><CheckCircle2 size={14} /> Accept</button>
                       <button onClick={declineJob} className="flex-1 bg-white/5 hover:bg-red-600/20 text-red-300 border border-red-500/30 py-3 rounded-xl font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-all"><X size={14} /> Decline</button>
