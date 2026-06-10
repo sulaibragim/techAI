@@ -80,24 +80,26 @@ leadsRouter.post('/', async (req, res) => {
     return res.status(500).json({ error: 'Internal server error' });
   }
 
-  // Notify the owner by SMS — fire-and-forget, never blocks the response to the site.
-  notifyOwner(data).catch(err => console.error('[LEADS] notify error:', err));
+  // Notify dispatchers by SMS — fire-and-forget, never blocks the response to the site.
+  notifyDispatchers(data).catch(err => console.error('[LEADS] notify error:', err));
 
   res.status(201).json({ ok: true, id, jobNumber });
 });
 
-async function notifyOwner(job) {
-  let to = process.env.LEAD_NOTIFY_PHONE;
-  if (!to) {
-    try {
-      const { rows } = await db.query(
-        "SELECT phone FROM users WHERE role = 'owner' AND phone IS NOT NULL AND phone <> '' LIMIT 1"
-      );
-      to = rows[0]?.phone;
-    } catch { /* DB optional — skip */ }
-  }
-  if (!to) {
-    console.warn('[LEADS] no LEAD_NOTIFY_PHONE / owner phone — skipping SMS notification');
+// A fresh lead isn't assigned to anyone yet, so it goes to whoever dispatches:
+// every active owner/manager with a phone, plus an optional LEAD_NOTIFY_PHONE override.
+async function notifyDispatchers(job) {
+  const recipients = new Set();
+  if (process.env.LEAD_NOTIFY_PHONE) recipients.add(process.env.LEAD_NOTIFY_PHONE.trim());
+  try {
+    const { rows } = await db.query(
+      "SELECT phone FROM users WHERE role IN ('owner', 'manager') AND active = true AND phone IS NOT NULL AND phone <> ''"
+    );
+    for (const r of rows) recipients.add(r.phone.trim());
+  } catch { /* DB optional — fall back to env only */ }
+
+  if (recipients.size === 0) {
+    console.warn('[LEADS] no owner/manager phone and no LEAD_NOTIFY_PHONE — skipping SMS notification');
     return;
   }
 
@@ -111,5 +113,7 @@ async function notifyOwner(job) {
     job.complaint && `Проблема: ${job.complaint}`,
   ].filter(Boolean).join('\n');
 
-  await sendSMS(to, text);
+  for (const to of recipients) {
+    await sendSMS(to, text);
+  }
 }
