@@ -20,6 +20,8 @@ import { useAuthStore, useCurrentUser, can } from '../authStore';
 import { BRANDS, LOCK_TYPES as LOCK_ICONS } from '../constants';
 import { formatTimestamp } from '../dateUtils';
 import { sendSms } from '../smsService';
+import { geocodeAddress } from '../googleMaps';
+import { haversineMiles, approxEtaMinutes, formatMiles, LatLng } from '../geoUtils';
 
 const STATUS_OPTIONS: { id: JobStatus; label: string }[] = [
   { id: 'scheduled', label: 'Scheduled' },
@@ -85,6 +87,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
 
   const [draftMessage, setDraftMessage] = useState('');
   const [otwState, setOtwState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [clientCoords, setClientCoords] = useState<LatLng | null>(null);
 
   const handleSendMessage = () => {
     if (!draftMessage.trim()) return;
@@ -133,6 +136,15 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
     setTimeout(() => setOtwState('idle'), 4000);
   };
 
+  const assignTech = (assignedTo: string | undefined) => {
+    const updated: Job = { ...localJob, assignedTo };
+    setLocalJob(updated);
+    updateJob(updated);
+    setIsModified(false);
+    const techName = technicians.find(t => t.id === assignedTo)?.name || 'Unassigned';
+    logAudit({ action: 'job.assign', detail: `Assigned #${updated.jobNumber} to ${techName}`, jobId: updated.id });
+  };
+
   useEffect(() => {
     window.scrollTo(0, 0);
     // Stop any live camera stream if the modal unmounts while the camera is open.
@@ -159,6 +171,15 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
     const d = new Date(calendarDate + 'T00:00:00');
     if (!isNaN(d.getTime())) setCalMonth(new Date(d.getFullYear(), d.getMonth(), 1));
   }, [showCalendar]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Geocode the client's address so we can rank technicians by distance to the job.
+  useEffect(() => {
+    let active = true;
+    const addr = localJob.client.address;
+    if (!addr) { setClientCoords(null); return; }
+    geocodeAddress(addr).then(c => { if (active) setClientCoords(c); });
+    return () => { active = false; };
+  }, [localJob.client.address]);
 
   const startCamera = async () => {
     setShowCamera(true);
@@ -284,6 +305,18 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
   const subtotal = localJob.lineItems.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
   // The technician who actually did the job (falls back to the company's default name).
   const assignedTechName = users.find(u => u.id === localJob.assignedTo)?.name || technicianName;
+
+  // Rank technicians by straight-line distance to the geocoded client address.
+  // Those with a known location sort first (nearest → farthest); the rest follow.
+  const rankedTechs = technicians
+    .map(t => ({ tech: t, miles: (clientCoords && t.lastLocation) ? haversineMiles(clientCoords, t.lastLocation) : null }))
+    .sort((a, b) => {
+      if (a.miles == null && b.miles == null) return 0;
+      if (a.miles == null) return 1;
+      if (b.miles == null) return -1;
+      return a.miles - b.miles;
+    });
+  const nearestTech = rankedTechs.find(r => r.miles != null) || null;
 
   const handlePrintInvoice = () => {
     const esc = (s: string) => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -1040,22 +1073,29 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                 <div className="relative z-10 pt-4 border-t border-slate-700">
                   <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Assigned Technician</p>
                   {can.assignJobs(role) ? (
-                    <select
-                      value={localJob.assignedTo || ''}
-                      onChange={e => {
-                        const assignedTo = e.target.value || undefined;
-                        const updated = { ...localJob, assignedTo };
-                        setLocalJob(updated);
-                        updateJob(updated);
-                        setIsModified(false);
-                        const techName = technicians.find(t => t.id === assignedTo)?.name || 'Unassigned';
-                        logAudit({ action: 'job.assign', detail: `Assigned #${updated.jobNumber} to ${techName}`, jobId: updated.id });
-                      }}
-                      className="w-full bg-slate-800 border border-slate-600 rounded-xl px-4 py-2.5 text-sm font-semibold text-white focus:outline-none focus:border-blue-500/50"
-                    >
-                      <option value="">Unassigned</option>
-                      {technicians.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-                    </select>
+                    <>
+                      <select
+                        value={localJob.assignedTo || ''}
+                        onChange={e => assignTech(e.target.value || undefined)}
+                        className="w-full bg-slate-800 border border-slate-600 rounded-xl px-4 py-2.5 text-sm font-semibold text-white focus:outline-none focus:border-blue-500/50"
+                      >
+                        <option value="">Unassigned</option>
+                        {rankedTechs.map(({ tech, miles }) => (
+                          <option key={tech.id} value={tech.id}>
+                            {tech.name}{miles != null ? ` — ${formatMiles(miles)} mi · ~${approxEtaMinutes(miles)} min` : ''}
+                          </option>
+                        ))}
+                      </select>
+                      {nearestTech && nearestTech.tech.id !== localJob.assignedTo && (
+                        <button
+                          onClick={() => assignTech(nearestTech.tech.id)}
+                          className="mt-2 w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20 transition-all active:scale-95"
+                        >
+                          <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider"><Navigation size={13} /> Nearest: {nearestTech.tech.name}</span>
+                          <span className="text-xs font-bold">{formatMiles(nearestTech.miles!)} mi · ~{approxEtaMinutes(nearestTech.miles!)} min</span>
+                        </button>
+                      )}
+                    </>
                   ) : (
                     <p className="text-sm font-semibold text-white">{users.find(u => u.id === localJob.assignedTo)?.name || 'Unassigned'}</p>
                   )}
