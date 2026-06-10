@@ -84,13 +84,15 @@ const App: React.FC = () => {
   if (!onboardingComplete && currentUser.role === 'owner') return <OnboardingWizard />;
 
   const renderContent = () => {
+    // No AnimatePresence/exit here on purpose: mode="wait" holds the outgoing tab
+    // until its exit animation finishes, so if rAF ever stalls (backgrounded tab,
+    // low-power device) the incoming tab never mounts and the screen looks frozen.
+    // A keyed enter-only fade swaps instantly and can never get stuck.
     return (
-      <AnimatePresence mode="wait">
         <motion.div
           key={effectiveTab}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
           transition={{ duration: 0.18, ease: "easeInOut" }}
           className="h-full"
         >
@@ -110,7 +112,6 @@ const App: React.FC = () => {
             }
           })()}
         </motion.div>
-      </AnimatePresence>
     );
   };
 
