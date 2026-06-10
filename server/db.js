@@ -67,6 +67,9 @@ export async function initDB() {
         data JSONB NOT NULL,
         updated_at TIMESTAMPTZ DEFAULT NOW()
       );
+
+      -- Live technician location for proximity-based dispatch (added later; idempotent).
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS last_location JSONB;
     `);
 
     const { rows } = await client.query('SELECT COUNT(*) FROM users');

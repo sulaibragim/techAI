@@ -21,6 +21,7 @@ import {
 import { Job, Client, LockDetails, LineItem } from '../types';
 import { BRANDS as INITIAL_BRANDS, LOCK_TYPES } from '../constants';
 import { useAuthStore, useCurrentUser } from '../authStore';
+import { TechPicker } from './TechPicker';
 
 interface JobWizardProps {
   onComplete: (job: Job) => void;
@@ -100,7 +101,8 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) =>
     secondaryPhone: '',
     email: '',
     secondaryEmail: '',
-    address: ''
+    address: '',
+    zip: ''
   });
   const [lockDetails, setLockDetails] = useState<Partial<LockDetails>>({
     type: 'Automotive',
@@ -179,6 +181,7 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) =>
       phone: client.phone || '',
       email: client.email || '',
       address: client.address || '',
+      zip: client.zip || '',
       secondaryPhone: client.secondaryPhone,
       secondaryEmail: client.secondaryEmail,
     };
@@ -212,6 +215,7 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) =>
     if (step === 1) {
       if (!client.phone?.trim()) { setError('Phone number is required.'); return; }
       if (!client.firstName?.trim() && !client.lastName?.trim()) { setError('Client name is required.'); return; }
+      if (!client.zip?.trim()) { setError('ZIP code is required.'); return; }
     }
     setError('');
     setStep(s => s + 1);
@@ -299,21 +303,26 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) =>
                     <input className="w-full bg-transparent border-none text-sm font-semibold text-white outline-none" value={client.email} onChange={e => setClient({...client, email: e.target.value})} placeholder="jane@example.com" />
                   </div>
                 </div>
-                <div className="bg-slate-900 p-5 rounded-3xl border border-white/10">
-                  <label className="text-xs font-bold text-slate-400 uppercase block mb-1.5">Service Address</label>
-                  <textarea className="w-full bg-transparent border-none text-sm font-semibold text-white outline-none min-h-[80px] resize-none" value={client.address} onChange={e => setClient({...client, address: e.target.value})} placeholder="123 Main St..." />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="md:col-span-2 bg-slate-900 p-5 rounded-3xl border border-white/10">
+                    <label className="text-xs font-bold text-slate-400 uppercase block mb-1.5">Service Address</label>
+                    <textarea className="w-full bg-transparent border-none text-sm font-semibold text-white outline-none min-h-[80px] resize-none" value={client.address} onChange={e => setClient({...client, address: e.target.value})} placeholder="123 Main St..." />
+                  </div>
+                  <div className="bg-slate-900 p-5 rounded-3xl border border-white/10">
+                    <label className="text-xs font-bold text-slate-400 uppercase block mb-1.5">ZIP Code</label>
+                    <input inputMode="numeric" className="w-full bg-transparent border-none text-sm font-semibold text-white outline-none" value={client.zip} onChange={e => setClient({...client, zip: e.target.value})} placeholder="33139" />
+                    <p className="text-[10px] text-slate-500 mt-1.5 leading-snug">Required — pins the address for accurate distance.</p>
+                  </div>
                 </div>
                 {currentUser?.role !== 'technician' && technicians.length > 0 && (
                   <div className="bg-slate-900 p-5 rounded-3xl border border-white/10">
-                    <label className="text-xs font-bold text-slate-400 uppercase block mb-1.5">Assign Technician</label>
-                    <select
-                      className="w-full bg-transparent text-sm font-semibold text-white outline-none"
+                    <label className="text-xs font-bold text-slate-400 uppercase block mb-3">Assign Technician — who’s closest</label>
+                    <TechPicker
+                      technicians={technicians}
+                      address={[client.address, client.zip].filter(Boolean).join(', ')}
                       value={assignedTo}
-                      onChange={e => setAssignedTo(e.target.value)}
-                    >
-                      <option value="">Unassigned</option>
-                      {technicians.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-                    </select>
+                      onChange={id => setAssignedTo(id || '')}
+                    />
                   </div>
                 )}
               </div>

@@ -28,14 +28,31 @@ import type { TabId } from './types';
 const App: React.FC = () => {
   const { addJob, activeTab, setActiveTab } = useAppStore();
   const { profilePhoto } = useSettingsStore();
-  const { setTechStatus } = useAuthStore();
+  const { setTechStatus, setTechLocation } = useAuthStore();
   const currentUser = useCurrentUser();
   const jobs = useVisibleJobs();
   const allowedTabs = currentUser ? visibleTabsFor(currentUser.role) : [];
   const effectiveTab = (allowedTabs.includes(activeTab) ? activeTab : (allowedTabs[0] || 'calendar')) as TabId;
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+  const [clientFocusId, setClientFocusId] = useState<string | null>(null);
   const [notification, setNotification] = useState<{msg: string, type: 'info' | 'success'} | null>(null);
+
+  const openClient = (clientId: string) => { setClientFocusId(clientId); setActiveTab('clients'); };
+
+  // When a technician marks themselves Available, grab their current GPS so dispatch
+  // can rank them by distance to a client. Permission denial / no-GPS just no-ops.
+  const handleTechStatusChange = (status: TechStatus) => {
+    if (!currentUser) return;
+    setTechStatus(currentUser.id, status);
+    if (status === 'available' && typeof navigator !== 'undefined' && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        pos => setTechLocation(currentUser.id, { lat: pos.coords.latitude, lng: pos.coords.longitude, updatedAt: new Date().toISOString() }),
+        () => {},
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+      );
+    }
+  };
 
   const selectedJob = jobs.find(j => j.id === selectedJobId);
   const ACTIVE_STATUSES = ['enRoute', 'onSite', 'diagnosed', 'sold', 'waitingParts'];
@@ -102,8 +119,8 @@ const App: React.FC = () => {
               case 'calendar': return <WorkroomDashboard onJobSelect={(j) => setSelectedJobId(j.id)} onAddJob={() => setIsWizardOpen(true)} />;
               case 'jobs': return <JobsList jobs={jobs} onAddJob={() => setIsWizardOpen(true)} onJobSelect={(job) => setSelectedJobId(job.id)} />;
               case 'messages': return <MessagesList onJobSelect={(job) => setSelectedJobId(job.id)} />;
-              case 'calls': return <CallsList />;
-              case 'clients': return <ClientsList onJobSelect={(job) => setSelectedJobId(job.id)} />;
+              case 'calls': return <CallsList onClientSelect={openClient} />;
+              case 'clients': return <ClientsList onJobSelect={(job) => setSelectedJobId(job.id)} focusClientId={clientFocusId} onFocusConsumed={() => setClientFocusId(null)} />;
               case 'analytics': return <Dashboard />;
               case 'accounting': return <Accounting />;
               case 'inventory': return <Inventory />;
@@ -175,7 +192,7 @@ const App: React.FC = () => {
             {currentUser.role === 'technician' && (
               <select
                 value={currentUser.techStatus || 'offDuty'}
-                onChange={e => setTechStatus(currentUser.id, e.target.value as TechStatus)}
+                onChange={e => handleTechStatusChange(e.target.value as TechStatus)}
                 className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1.5 rounded-lg border cursor-pointer transition-all ${
                   currentUser.techStatus === 'available' ? 'bg-green-500/10 border-green-500/30 text-green-400' :
                   currentUser.techStatus === 'onJob' ? 'bg-amber-500/10 border-amber-500/30 text-amber-400' :

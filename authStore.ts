@@ -43,6 +43,7 @@ interface AuthState {
   removeUser: (id: string) => void;
 
   setTechStatus: (userId: string, status: TechStatus) => void;
+  setTechLocation: (userId: string, loc: { lat: number; lng: number; updatedAt: string }) => void;
   logAudit: (entry: Omit<AuditEntry, 'id' | 'timestamp' | 'userId' | 'userName' | 'role'>) => void;
   clearAudit: () => void;
 }
@@ -156,6 +157,16 @@ export const useAuthStore = create<AuthState>()(
         api(`/users/${userId}`, {
           method: 'PUT',
           body: JSON.stringify({ techStatus: status }),
+        }).catch(() => {});
+      },
+
+      setTechLocation: (userId, loc) => {
+        set((state) => ({
+          users: state.users.map(u => u.id === userId ? { ...u, lastLocation: loc } : u),
+        }));
+        api(`/users/${userId}`, {
+          method: 'PUT',
+          body: JSON.stringify({ lastLocation: loc }),
         }).catch(() => {});
       },
 

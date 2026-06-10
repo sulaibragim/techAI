@@ -1,51 +1,30 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'motion/react';
 import { User, Phone, Mail, MapPin, Briefcase, DollarSign, ChevronRight, Search } from 'lucide-react';
 import { useVisibleJobs } from '../store';
 import { Job } from '../types';
 import { formatDate } from '../dateUtils';
+import { ClientRecord, buildClients } from '../clientUtils';
 
-interface ClientRecord {
-  id: string;
-  firstName: string;
-  lastName: string;
-  phone: string;
-  email: string;
-  address: string;
-  jobs: Job[];
-  totalSpend: number;
-  lastJobDate: string;
-}
-
-export const ClientsList: React.FC<{ onJobSelect?: (job: Job) => void }> = ({ onJobSelect }) => {
+export const ClientsList: React.FC<{
+  onJobSelect?: (job: Job) => void;
+  focusClientId?: string | null;
+  onFocusConsumed?: () => void;
+}> = ({ onJobSelect, focusClientId, onFocusConsumed }) => {
   const jobs = useVisibleJobs();
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<ClientRecord | null>(null);
 
-  const clients = useMemo<ClientRecord[]>(() => {
-    const map = new Map<string, ClientRecord>();
-    jobs.forEach(j => {
-      const key = j.client.phone || j.client.email || `${j.client.firstName}-${j.client.lastName}`;
-      if (!map.has(key)) {
-        map.set(key, {
-          id: key,
-          firstName: j.client.firstName,
-          lastName: j.client.lastName,
-          phone: j.client.phone,
-          email: j.client.email || '',
-          address: j.client.address || '',
-          jobs: [],
-          totalSpend: 0,
-          lastJobDate: j.scheduledDate,
-        });
-      }
-      const rec = map.get(key)!;
-      rec.jobs.push(j);
-      rec.totalSpend += j.totalAmount;
-      if (j.scheduledDate > rec.lastJobDate) rec.lastJobDate = j.scheduledDate;
-    });
-    return Array.from(map.values()).sort((a, b) => b.lastJobDate.localeCompare(a.lastJobDate));
-  }, [jobs]);
+  const clients = useMemo<ClientRecord[]>(() => buildClients(jobs), [jobs]);
+
+  // Deep-link: when another tab (e.g. a known caller in Call History) asks to open
+  // a specific client, jump straight into that profile.
+  useEffect(() => {
+    if (!focusClientId) return;
+    const match = clients.find(c => c.id === focusClientId);
+    if (match) setSelected(match);
+    onFocusConsumed?.();
+  }, [focusClientId, clients]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
