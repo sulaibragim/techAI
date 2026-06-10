@@ -59,13 +59,15 @@ const App: React.FC = () => {
   const inProgressJob = jobs.find(j => ACTIVE_STATUSES.includes(j.status));
 
   useEffect(() => {
-    if (currentUser) {
-      useAuthStore.getState().syncUsers();
-      useSettingsStore.getState().syncSettings();
-      useSettingsStore.getState().checkAiAvailable();
-      useAppStore.getState().syncJobs();
-      useAppStore.getState().syncInventory();
-    }
+    if (!currentUser) return;
+    useAuthStore.getState().syncUsers();
+    useSettingsStore.getState().syncSettings();
+    useSettingsStore.getState().checkAiAvailable();
+    useAppStore.getState().syncJobs();
+    useAppStore.getState().syncInventory();
+    // Poll for new jobs (e.g. website leads) so they surface live without a manual reload.
+    const interval = setInterval(() => useAppStore.getState().syncJobs(), 15000);
+    return () => clearInterval(interval);
   }, [currentUser?.id]);
 
   // Keyboard shortcuts

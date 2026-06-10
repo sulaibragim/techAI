@@ -126,6 +126,8 @@ export interface Job {
   warranty?: string;
   assignedTo?: string; // User id of the technician responsible
   createdBy?: string;  // User id of whoever created the job
+  source?: string;     // Where the job came from, e.g. 'web' for website leads
+  isNewLead?: boolean; // Unhandled website lead — surfaced in its own column/banner until taken
   callSummary?: string; // AI-generated summary of the intake call
   callQuality?: {
     rating: 'excellent' | 'good' | 'needs_improvement' | 'poor';

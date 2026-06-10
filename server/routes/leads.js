@@ -76,6 +76,7 @@ leadsRouter.post('/', async (req, res) => {
     totalAmount: 0,
     photos: [],
     source: source || 'web',
+    isNewLead: true,
   };
 
   try {

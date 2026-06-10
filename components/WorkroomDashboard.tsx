@@ -1,16 +1,40 @@
 
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   DollarSign, Clock, Target,
   AlertCircle, Activity, Plus, ChevronLeft, ChevronRight,
-  ArrowLeft, Zap, Shield
+  ArrowLeft, Zap, Shield, Bell, Phone, MapPin, Globe
 } from 'lucide-react';
 import { useAppStore, useVisibleJobs } from '../store';
 import { useSettingsStore } from '../settingsStore';
 import { Job, JobStatus, STATUS_COLORS } from '../types';
 import { calculateFinancialMetrics } from '../financialUtils';
 import { PendingJobSuggestions } from './PendingJobSuggestions';
+
+// Short two-note chime via Web Audio (no asset file). Best-effort — silent if the browser blocks it.
+function playLeadChime() {
+  try {
+    const Ctx = (window.AudioContext || (window as any).webkitAudioContext);
+    if (!Ctx) return;
+    const ctx = new Ctx();
+    const start = ctx.currentTime;
+    [880, 1175].forEach((freq, i) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.value = freq;
+      o.connect(g); g.connect(ctx.destination);
+      const t = start + i * 0.16;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.25, t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.32);
+      o.start(t);
+      o.stop(t + 0.34);
+    });
+    setTimeout(() => ctx.close().catch(() => {}), 900);
+  } catch {}
+}
 
 // --- SUB-COMPONENTS ---
 
@@ -108,23 +132,25 @@ const KanbanCard: React.FC<{ job: Job; onSelect: () => void; onDragStart: (e: Re
     draggable
     onDragStart={(e: any) => onDragStart(e, job)}
     onClick={onSelect}
-    className="bg-slate-900/50 backdrop-blur-xl p-4 rounded-xl border border-white/10 shadow-lg mb-3 cursor-grab active:cursor-grabbing hover:border-blue-500/50 transition-all group shrink-0 w-full"
+    className={`bg-slate-900/50 backdrop-blur-xl p-4 rounded-xl border shadow-lg mb-3 cursor-grab active:cursor-grabbing transition-all group shrink-0 w-full ${job.isNewLead ? 'border-amber-500/60 ring-1 ring-amber-500/40 shadow-amber-500/10 hover:border-amber-400' : 'border-white/10 hover:border-blue-500/50'}`}
   >
     <div className="flex justify-between items-start mb-3">
       <div className="flex items-center space-x-2">
-        <div className="w-8 h-8 bg-white/5 text-blue-400 rounded-lg flex items-center justify-center">
-          <Clock size={14} />
+        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${job.isNewLead ? 'bg-amber-500/15 text-amber-400' : 'bg-white/5 text-blue-400'}`}>
+          {job.isNewLead ? <Globe size={14} /> : <Clock size={14} />}
         </div>
         <div>
           <p className="text-sm font-semibold text-white tracking-tight truncate max-w-[130px]">{job.client.firstName} {job.client.lastName}</p>
-          <p className="text-xs font-medium text-slate-400 mt-0.5">{job.scheduledTime}</p>
+          <p className="text-xs font-medium text-slate-400 mt-0.5">{job.isNewLead ? job.client.phone : job.scheduledTime}</p>
         </div>
       </div>
-      <div className="bg-white/5 px-2 py-1 rounded-lg text-xs font-medium text-slate-300">
-         {job.distance || '2.1'} mi
-      </div>
+      {job.isNewLead ? (
+        <span className="bg-amber-500/15 text-amber-400 px-2 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-wider">🌐 Сайт</span>
+      ) : (
+        <div className="bg-white/5 px-2 py-1 rounded-lg text-xs font-medium text-slate-300">{job.distance || '2.1'} mi</div>
+      )}
     </div>
-    <p className="text-xs font-medium text-slate-300 mb-3 truncate">{job.lockDetails.type} — {job.lockDetails.brand || 'Elite'}</p>
+    <p className="text-xs font-medium text-slate-300 mb-3 truncate">{job.isNewLead ? (job.complaint || 'Новая заявка с сайта') : `${job.lockDetails.type} — ${job.lockDetails.brand || 'Elite'}`}</p>
 
     <div className="flex items-center justify-between pt-3 border-t border-white/10">
       <span className="text-sm font-bold text-blue-400">${job.totalAmount > 0 ? job.totalAmount.toLocaleString() : 'TBD'}</span>
@@ -137,12 +163,28 @@ const KanbanCard: React.FC<{ job: Job; onSelect: () => void; onDragStart: (e: Re
 );
 
 export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAddJob: () => void }> = ({ onJobSelect, onAddJob }) => {
-  const { updateJobStatus } = useAppStore();
+  const { updateJobStatus, updateJob } = useAppStore();
   const jobs = useVisibleJobs();
   const { monthlyRevenueTarget, monthlyTargets, dailyRevenueTarget } = useSettingsStore();
   const nowRef = new Date();
   const effectiveMonthlyTarget = monthlyTargets[`${nowRef.getFullYear()}-${String(nowRef.getMonth() + 1).padStart(2, '0')}`] ?? monthlyRevenueTarget;
   const metrics = useMemo(() => calculateFinancialMetrics(jobs, effectiveMonthlyTarget), [jobs, effectiveMonthlyTarget]);
+
+  // Unhandled website leads — surfaced in their own banner + Kanban column until taken.
+  const newLeads = useMemo(() => jobs.filter(j => j.isNewLead), [jobs]);
+
+  // Chime when a new lead arrives while the dashboard is open (not on first load).
+  const prevLeadCount = useRef<number | null>(null);
+  useEffect(() => {
+    if (prevLeadCount.current !== null && newLeads.length > prevLeadCount.current) playLeadChime();
+    prevLeadCount.current = newLeads.length;
+  }, [newLeads.length]);
+
+  // Opening a lead marks it handled (clears the "new" flag) and opens the job card.
+  const openLead = (job: Job) => {
+    if (job.isNewLead) updateJob({ ...job, isNewLead: false });
+    onJobSelect(job);
+  };
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
@@ -191,10 +233,15 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
   };
 
   const pipelineColumns = [
-    { id: 'new', label: 'New Tasks', statuses: ['scheduled', 'enRoute', 'onSite'], defaultStatus: 'scheduled' as JobStatus },
-    { id: 'diagnostics', label: 'In Progress', statuses: ['diagnosed', 'sold', 'waitingParts', 'coffee'], defaultStatus: 'diagnosed' as JobStatus },
-    { id: 'completed', label: 'Closed', statuses: ['completed', 'cancelled'], defaultStatus: 'completed' as JobStatus }
+    { id: 'leads', label: 'New Leads', statuses: [] as JobStatus[], defaultStatus: 'scheduled' as JobStatus, isLeads: true },
+    { id: 'new', label: 'New Tasks', statuses: ['scheduled', 'enRoute', 'onSite'] as JobStatus[], defaultStatus: 'scheduled' as JobStatus, isLeads: false },
+    { id: 'diagnostics', label: 'In Progress', statuses: ['diagnosed', 'sold', 'waitingParts', 'coffee'] as JobStatus[], defaultStatus: 'diagnosed' as JobStatus, isLeads: false },
+    { id: 'completed', label: 'Closed', statuses: ['completed', 'cancelled'] as JobStatus[], defaultStatus: 'completed' as JobStatus, isLeads: false }
   ];
+
+  // New leads live in their own column; every other column excludes them so a lead shows once.
+  const jobsInColumn = (col: typeof pipelineColumns[number]) =>
+    col.isLeads ? newLeads : jobs.filter(j => !j.isNewLead && col.statuses.includes(j.status));
 
   const handleDragStart = (e: React.DragEvent, job: Job) => {
     e.dataTransfer.setData('jobId', job.id);
@@ -204,9 +251,15 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
     e.preventDefault();
     const jobId = e.dataTransfer.getData('jobId');
     const col = pipelineColumns.find(c => c.id === columnId);
-    if (col) {
-      updateJobStatus(jobId, col.defaultStatus);
+    if (!col) return;
+    const job = jobs.find(j => j.id === jobId);
+    if (col.isLeads) {
+      if (job && !job.isNewLead) updateJob({ ...job, isNewLead: true }); // rare: re-flag
+      return;
     }
+    // Moving into a status column clears the lead flag and sets the status in one write.
+    if (job?.isNewLead) updateJob({ ...job, isNewLead: false, status: col.defaultStatus });
+    else updateJobStatus(jobId, col.defaultStatus);
   };
 
   const todayStr = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`;
@@ -215,6 +268,53 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
 
   return (
     <div className="space-y-6 pb-32 animate-in fade-in duration-700">
+
+      {/* New website leads — loud "don't miss it" banner */}
+      <AnimatePresence>
+        {newLeads.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            className="rounded-2xl border border-amber-500/40 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent p-4 shadow-[0_0_30px_rgba(245,158,11,0.08)]"
+          >
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center shrink-0">
+                <Bell size={16} className="animate-pulse" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-amber-300 tracking-tight">
+                  {newLeads.length === 1 ? 'Новая заявка с сайта' : `${newLeads.length} новых заявок с сайта`}
+                </p>
+                <p className="text-xs text-amber-400/70 font-medium">Возьмите в работу, чтобы не упустить клиента</p>
+              </div>
+            </div>
+            <div className="space-y-2">
+              {newLeads.slice(0, 4).map(lead => (
+                <div key={lead.id} className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-3 py-2">
+                  <Globe size={14} className="text-amber-400 shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-white truncate">{lead.client.firstName} {lead.client.lastName}</p>
+                    <p className="text-xs text-slate-400 truncate flex items-center gap-3">
+                      {lead.client.phone && <span className="flex items-center gap-1 shrink-0"><Phone size={10} />{lead.client.phone}</span>}
+                      {lead.client.address && <span className="flex items-center gap-1 truncate"><MapPin size={10} />{lead.client.address}</span>}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => openLead(lead)}
+                    className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-900 text-xs font-bold uppercase tracking-wider transition-all active:scale-95 shrink-0"
+                  >
+                    Открыть
+                  </button>
+                </div>
+              ))}
+              {newLeads.length > 4 && (
+                <p className="text-xs text-amber-400/70 font-medium pl-1">…и ещё {newLeads.length - 4} — смотри колонку «New Leads» ниже</p>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* AI pending job suggestions from call transcripts */}
       <PendingJobSuggestions onJobCreated={onJobSelect} />
@@ -486,8 +586,10 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
             <span>New Job</span>
           </button>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 px-2">
-          {pipelineColumns.map((col) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 px-2">
+          {pipelineColumns.map((col) => {
+            const colJobs = jobsInColumn(col);
+            return (
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -495,24 +597,31 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
               key={col.id}
               onDragOver={(e: any) => e.preventDefault()}
               onDrop={(e: any) => handleDrop(e, col.id)}
-              className="bg-slate-900/50 backdrop-blur-md rounded-2xl border border-white/10 flex flex-col h-[460px] overflow-hidden shadow-2xl"
+              className={`bg-slate-900/50 backdrop-blur-md rounded-2xl border flex flex-col h-[460px] overflow-hidden shadow-2xl ${col.isLeads && colJobs.length > 0 ? 'border-amber-500/40' : 'border-white/10'}`}
             >
               <div className="p-4 border-b border-white/10 flex items-center justify-between bg-white/[0.01]">
                 <div className="flex items-center space-x-2">
-                  <div className={`w-2 h-2 rounded-full ${col.id === 'new' ? 'bg-blue-500' : col.id === 'diagnostics' ? 'bg-yellow-500' : 'bg-green-500'}`} />
+                  <div className={`w-2 h-2 rounded-full ${col.id === 'leads' ? 'bg-amber-500 animate-pulse' : col.id === 'new' ? 'bg-blue-500' : col.id === 'diagnostics' ? 'bg-yellow-500' : 'bg-green-500'}`} />
                   <span className="text-xs font-bold uppercase tracking-widest text-slate-300">{col.label}</span>
                 </div>
-                <span className="bg-white/5 px-2.5 py-1 rounded-lg text-xs font-extrabold text-blue-500">
-                  {jobs.filter(j => col.statuses.includes(j.status)).length}
+                <span className={`bg-white/5 px-2.5 py-1 rounded-lg text-xs font-extrabold ${col.isLeads ? 'text-amber-400' : 'text-blue-500'}`}>
+                  {colJobs.length}
                 </span>
               </div>
               <div className="flex-1 overflow-y-auto p-4 scrollbar-hide space-y-3">
-                {jobs.filter(j => col.statuses.includes(j.status)).map(job => (
-                  <KanbanCard key={job.id} job={job} onSelect={() => onJobSelect(job)} onDragStart={handleDragStart} />
+                {colJobs.length === 0 && col.isLeads && (
+                  <div className="h-full flex flex-col items-center justify-center text-center opacity-30">
+                    <Globe size={24} className="mb-2" />
+                    <p className="text-xs font-semibold">Заявок с сайта пока нет</p>
+                  </div>
+                )}
+                {colJobs.map(job => (
+                  <KanbanCard key={job.id} job={job} onSelect={() => (col.isLeads ? openLead(job) : onJobSelect(job))} onDragStart={handleDragStart} />
                 ))}
               </div>
             </motion.div>
-          ))}
+            );
+          })}
         </div>
       </section>
     </div>
