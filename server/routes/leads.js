@@ -45,7 +45,7 @@ leadsRouter.post('/', async (req, res) => {
   const lastName = rest.join(' ');
 
   // Map the site's free-form fields onto the CRM Job shape.
-  const complaint = [String(service || problem).trim(), String(note).trim()].filter(Boolean).join(' — ');
+  const complaint = [String(service || problem).trim(), String(note).trim()].filter(Boolean).join(' - ');
   const addr = String(address || city).trim();
 
   const now = new Date();
@@ -57,13 +57,13 @@ leadsRouter.post('/', async (req, res) => {
     createdAt: now.toISOString(),
     client: {
       id: `client-${Date.now()}`,
-      firstName: firstName || 'Заявка',
-      lastName,
+      firstName: firstName || 'Website',
+      lastName: lastName || (firstName ? '' : 'Lead'),
       phone: String(phone).trim(),
       email: String(email).trim(),
       address: addr,
       notes: String(note).trim(),
-      tags: ['Сайт'],
+      tags: ['Website'],
     },
     lockDetails: { type: 'Other', brand: '', modelOrYear: '' },
     complaint,
@@ -115,11 +115,11 @@ async function notifyDispatchers(job) {
   const c = job.client;
   const fullName = [c.firstName, c.lastName].filter(Boolean).join(' ');
   const text = [
-    '🔔 Новая заявка с сайта',
-    fullName && `Имя: ${fullName}`,
-    c.phone && `Тел: ${c.phone}`,
-    c.address && `Адрес: ${c.address}`,
-    job.complaint && `Проблема: ${job.complaint}`,
+    'New website lead',
+    fullName && `Name: ${fullName}`,
+    c.phone && `Phone: ${c.phone}`,
+    c.address && `Address: ${c.address}`,
+    job.complaint && `Issue: ${job.complaint}`,
   ].filter(Boolean).join('\n');
 
   for (const to of recipients) {

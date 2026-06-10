@@ -145,12 +145,12 @@ const KanbanCard: React.FC<{ job: Job; onSelect: () => void; onDragStart: (e: Re
         </div>
       </div>
       {job.isNewLead ? (
-        <span className="bg-amber-500/15 text-amber-400 px-2 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-wider">🌐 Сайт</span>
+        <span className="bg-amber-500/15 text-amber-400 px-2 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-wider">🌐 Web</span>
       ) : (
         <div className="bg-white/5 px-2 py-1 rounded-lg text-xs font-medium text-slate-300">{job.distance || '2.1'} mi</div>
       )}
     </div>
-    <p className="text-xs font-medium text-slate-300 mb-3 truncate">{job.isNewLead ? (job.complaint || 'Новая заявка с сайта') : `${job.lockDetails.type} — ${job.lockDetails.brand || 'Elite'}`}</p>
+    <p className="text-xs font-medium text-slate-300 mb-3 truncate">{job.isNewLead ? (job.complaint || 'New website lead') : `${job.lockDetails.type} — ${job.lockDetails.brand || 'Elite'}`}</p>
 
     <div className="flex items-center justify-between pt-3 border-t border-white/10">
       <span className="text-sm font-bold text-blue-400">${job.totalAmount > 0 ? job.totalAmount.toLocaleString() : 'TBD'}</span>
@@ -284,9 +284,9 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
               </div>
               <div>
                 <p className="text-sm font-bold text-amber-300 tracking-tight">
-                  {newLeads.length === 1 ? 'Новая заявка с сайта' : `${newLeads.length} новых заявок с сайта`}
+                  {newLeads.length === 1 ? 'New website lead' : `${newLeads.length} new website leads`}
                 </p>
-                <p className="text-xs text-amber-400/70 font-medium">Возьмите в работу, чтобы не упустить клиента</p>
+                <p className="text-xs text-amber-400/70 font-medium">Grab it before the lead goes cold</p>
               </div>
             </div>
             <div className="space-y-2">
@@ -304,12 +304,12 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
                     onClick={() => openLead(lead)}
                     className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-900 text-xs font-bold uppercase tracking-wider transition-all active:scale-95 shrink-0"
                   >
-                    Открыть
+                    Open
                   </button>
                 </div>
               ))}
               {newLeads.length > 4 && (
-                <p className="text-xs text-amber-400/70 font-medium pl-1">…и ещё {newLeads.length - 4} — смотри колонку «New Leads» ниже</p>
+                <p className="text-xs text-amber-400/70 font-medium pl-1">…and {newLeads.length - 4} more — see the New Leads column below</p>
               )}
             </div>
           </motion.div>
@@ -612,7 +612,7 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
                 {colJobs.length === 0 && col.isLeads && (
                   <div className="h-full flex flex-col items-center justify-center text-center opacity-30">
                     <Globe size={24} className="mb-2" />
-                    <p className="text-xs font-semibold">Заявок с сайта пока нет</p>
+                    <p className="text-xs font-semibold">No website leads yet</p>
                   </div>
                 )}
                 {colJobs.map(job => (

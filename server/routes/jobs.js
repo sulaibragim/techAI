@@ -22,13 +22,13 @@ async function notifyAssignedTech(assigneeId, job, actingUserId) {
     const name = [c.firstName, c.lastName].filter(Boolean).join(' ');
     const when = [job.scheduledDate, job.scheduledTime].filter(Boolean).join(' ');
     const text = [
-      '🔧 Тебе назначена работа',
-      job.jobNumber && `Заявка #${job.jobNumber}`,
-      name && `Клиент: ${name}`,
-      c.phone && `Тел: ${c.phone}`,
-      c.address && `Адрес: ${c.address}`,
-      job.complaint && `Проблема: ${job.complaint}`,
-      when && `Когда: ${when}`,
+      'New job assigned to you',
+      job.jobNumber && `Job #${job.jobNumber}`,
+      name && `Client: ${name}`,
+      c.phone && `Phone: ${c.phone}`,
+      c.address && `Address: ${c.address}`,
+      job.complaint && `Issue: ${job.complaint}`,
+      when && `When: ${when}`,
     ].filter(Boolean).join('\n');
     await sendSMS(tech.phone, text);
   } catch (err) {
