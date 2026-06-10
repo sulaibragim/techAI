@@ -34,7 +34,22 @@ const INITIAL_INVENTORY: Part[] = [
   { id: '7', name: 'Lishi SC1 2-in-1 pick', sku: 'TL-LISHI-SC1', category: 'Tools', stock: 1, reorderPoint: 1, price: 65 },
 ];
 
+// Tracks jobs with a recent local write the server may not have committed yet. The
+// live poll (App.tsx) consults this so an in-flight optimistic update — e.g. "payment
+// confirmed", a status change, or a delete — isn't reverted/resurrected before its
+// PUT/DELETE lands. Entries auto-expire after PENDING_WRITE_TTL_MS.
+const PENDING_WRITE_TTL_MS = 12000;
+const pendingJobWrites = new Map<string, number>();
+export function markJobPending(id: string) { pendingJobWrites.set(id, Date.now()); }
+export function hasPendingJobWrite(id: string): boolean {
+  const t = pendingJobWrites.get(id);
+  if (t === undefined) return false;
+  if (Date.now() - t > PENDING_WRITE_TTL_MS) { pendingJobWrites.delete(id); return false; }
+  return true;
+}
+
 function pushJobToServer(job: Job) {
+  markJobPending(job.id);
   fetch(`${API_BASE}/api/jobs`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
@@ -43,6 +58,7 @@ function pushJobToServer(job: Job) {
 }
 
 function updateJobOnServer(job: Job) {
+  markJobPending(job.id);
   fetch(`${API_BASE}/api/jobs/${job.id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
@@ -51,6 +67,7 @@ function updateJobOnServer(job: Job) {
 }
 
 function deleteJobOnServer(id: string) {
+  markJobPending(id);
   fetch(`${API_BASE}/api/jobs/${id}`, { method: 'DELETE', headers: { ...authHeaders() } }).catch(() => {});
 }
 
@@ -213,7 +230,6 @@ export const useVisibleJobs = (): Job[] => {
 
 export const useAIActions = () => {
   const handleAction = async (action: string, data: any): Promise<{ status: string; [key: string]: any }> => {
-    console.log("AI Action Triggered", action, data);
     try {
       if (action === 'navigate_to') {
         if (data?.tab) {

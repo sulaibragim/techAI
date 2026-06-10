@@ -1,9 +1,9 @@
-const CACHE_NAME = 'trustkey-v2';
+const CACHE_NAME = 'trustkey-v3';
 const PRECACHE_URLS = [
   '/',
   '/manifest.json',
-  '/icons/icon-192.svg',
-  '/icons/icon-512.svg'
+  '/icons/icon-192.png',
+  '/icons/icon-512.png'
 ];
 
 self.addEventListener('install', event => {

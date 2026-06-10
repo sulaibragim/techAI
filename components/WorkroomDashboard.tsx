@@ -193,7 +193,7 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
-  const monthName = currentDate.toLocaleString('default', { month: 'long' });
+  const monthName = currentDate.toLocaleString('en-US', { month: 'long' });
 
   const calendarDays = useMemo(() => {
     const days = [];
@@ -363,7 +363,7 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
                        <span className="text-xs font-medium tracking-wide">Back to Hub</span>
                     </button>
                     <div className="text-right">
-                       <h3 className="text-lg font-bold text-white">{new Date(selectedDay + 'T00:00:00').toLocaleDateString('default', { month: 'long', day: 'numeric' })}</h3>
+                       <h3 className="text-lg font-bold text-white">{new Date(selectedDay + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}</h3>
                        <p className="text-xs text-blue-500 mt-0.5">Active Schedule</p>
                     </div>
                   </div>

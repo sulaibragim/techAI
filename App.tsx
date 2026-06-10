@@ -13,7 +13,7 @@ import { MessagesList } from './components/MessagesList';
 import { CallsList } from './components/CallsList';
 import { Inventory } from './components/Inventory';
 import { Accounting } from './components/Accounting';
-import { useAppStore, useVisibleJobs } from './store';
+import { useAppStore, useVisibleJobs, hasPendingJobWrite } from './store';
 import { useSettingsStore } from './settingsStore';
 import { useCurrentUser, useAuthStore, visibleTabsFor, ROLE_LABELS } from './authStore';
 import { getToken, authHeaders } from './apiClient';
@@ -123,6 +123,7 @@ const App: React.FC = () => {
         for (const sj of serverJobs) {
           const lj = localById.get(sj.id);
           if (!lj) continue; // brand-new jobs just appear in the list
+          if (hasPendingJobWrite(sj.id)) continue; // our own in-flight change — don't self-notify
           if (sj.status === 'completed' && lj.status !== 'completed') {
             notes.push(`${techName(sj.assignedTo)} completed #${sj.jobNumber}`);
           } else if ((sj.amountPaid || 0) > (lj.amountPaid || 0) && (sj.paymentStatus === 'paid' || sj.paymentStatus === 'partial')) {
@@ -134,8 +135,21 @@ const App: React.FC = () => {
           }
         }
 
-        if (JSON.stringify(local) !== JSON.stringify(serverJobs)) {
-          useAppStore.setState({ jobs: serverJobs });
+        // Merge rather than blindly replace: for any job with an in-flight local write,
+        // keep the optimistic local version (or drop it if we just deleted it locally) so
+        // the poll can't revert a "payment confirmed"/status change before its PUT lands.
+        const merged: Job[] = serverJobs.flatMap(sj => {
+          if (hasPendingJobWrite(sj.id)) {
+            const lj = localById.get(sj.id);
+            return lj ? [lj] : []; // keep our edit; or honor our local delete
+          }
+          return [sj];
+        });
+        const serverIds = new Set(serverJobs.map(j => j.id));
+        const localPendingNew = local.filter(lj => !serverIds.has(lj.id) && hasPendingJobWrite(lj.id));
+        const nextJobs = [...merged, ...localPendingNew];
+        if (JSON.stringify(local) !== JSON.stringify(nextJobs)) {
+          useAppStore.setState({ jobs: nextJobs });
         }
         if (notes.length && !stopped) {
           setNotification({ msg: notes.length > 1 ? `${notes[0]} (+${notes.length - 1} more)` : notes[0], type: 'success' });

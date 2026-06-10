@@ -23,8 +23,9 @@ export default defineConfig(() => {
       },
       plugins: [react()],
       // NOTE: The Gemini API key is intentionally NOT injected into the client bundle.
-      // Enter it at runtime in Settings → AI Configuration (kept in localStorage only).
-      // Do not set VITE_GEMINI_API_KEY in the build env, or it will be exposed in the public JS.
+      // It lives only on the server (Railway env GEMINI_API_KEY); the browser talks to the
+      // backend AI proxy (/api/ai) and uses ephemeral tokens for voice. Never set a
+      // VITE_GEMINI_API_KEY in the build env, or it will be exposed in the public JS.
       resolve: {
         alias: {
           '@': path.resolve(__dirname, '.'),
