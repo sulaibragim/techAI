@@ -172,14 +172,14 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
     if (!isNaN(d.getTime())) setCalMonth(new Date(d.getFullYear(), d.getMonth(), 1));
   }, [showCalendar]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Geocode the client's address so we can rank technicians by distance to the job.
+  // Geocode the client's address (with ZIP for accuracy) to rank techs by distance.
   useEffect(() => {
     let active = true;
-    const addr = localJob.client.address;
+    const addr = [localJob.client.address, localJob.client.zip].filter(Boolean).join(', ');
     if (!addr) { setClientCoords(null); return; }
     geocodeAddress(addr).then(c => { if (active) setClientCoords(c); });
     return () => { active = false; };
-  }, [localJob.client.address]);
+  }, [localJob.client.address, localJob.client.zip]);
 
   const startCamera = async () => {
     setShowCamera(true);
@@ -683,6 +683,10 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                   <input className="w-full bg-transparent text-white font-bold outline-none text-sm" value={localJob.client.address} onChange={e => handleClientChange({ address: e.target.value })} />
                 </div>
                 <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
+                  <label className="text-xs font-bold text-slate-400 uppercase block mb-1">ZIP Code</label>
+                  <input inputMode="numeric" className="w-full bg-transparent text-white font-bold outline-none text-sm" value={localJob.client.zip || ''} onChange={e => handleClientChange({ zip: e.target.value })} placeholder="33139" />
+                </div>
+                <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
                   <label className="text-xs font-bold text-slate-400 uppercase block mb-1">Secondary Address</label>
                   <input className="w-full bg-transparent text-white font-bold outline-none text-sm" value={localJob.client.secondaryAddress || ''} onChange={e => handleClientChange({ secondaryAddress: e.target.value })} />
                 </div>
@@ -1047,7 +1051,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                       <MapPin size={13} className="text-blue-500 shrink-0" />
                       <span className="text-xs font-semibold text-white truncate max-w-[170px]">{localJob.client.address}</span>
                     </div>
-                    <button onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(localJob.client.address)}`)} className="p-1.5 bg-blue-600/10 text-blue-400 rounded-lg hover:bg-blue-600 hover:text-white transition-all"><Navigation size={12} /></button>
+                    <button onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([localJob.client.address, localJob.client.zip].filter(Boolean).join(', '))}`)} className="p-1.5 bg-blue-600/10 text-blue-400 rounded-lg hover:bg-blue-600 hover:text-white transition-all"><Navigation size={12} /></button>
                   </div>
                 </div>
 

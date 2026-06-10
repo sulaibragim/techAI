@@ -59,6 +59,7 @@ export interface Client {
   email: string;
   secondaryEmail?: string;
   address: string;
+  zip?: string;
   secondaryAddress?: string;
   photo?: string;
   notes?: string;
