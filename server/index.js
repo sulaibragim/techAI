@@ -10,6 +10,7 @@ import { aiRouter } from './routes/ai.js';
 import { jobsRouter } from './routes/jobs.js';
 import { inventoryRouter } from './routes/inventory.js';
 import { adminRouter } from './routes/admin.js';
+import { geocodeRouter } from './routes/geocode.js';
 import { initDB } from './db.js';
 
 import { fileURLToPath } from 'url';
@@ -70,6 +71,7 @@ app.use('/api/ai', aiRouter);
 app.use('/api/jobs', jobsRouter);
 app.use('/api/inventory', inventoryRouter);
 app.use('/api/admin', adminRouter);
+app.use('/api/geocode', geocodeRouter);
 
 async function start() {
   if (process.env.DATABASE_URL) {

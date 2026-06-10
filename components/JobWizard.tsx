@@ -21,6 +21,7 @@ import {
 import { Job, Client, LockDetails, LineItem } from '../types';
 import { BRANDS as INITIAL_BRANDS, LOCK_TYPES } from '../constants';
 import { useAuthStore, useCurrentUser } from '../authStore';
+import { TechPicker } from './TechPicker';
 
 interface JobWizardProps {
   onComplete: (job: Job) => void;
@@ -305,15 +306,13 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) =>
                 </div>
                 {currentUser?.role !== 'technician' && technicians.length > 0 && (
                   <div className="bg-slate-900 p-5 rounded-3xl border border-white/10">
-                    <label className="text-xs font-bold text-slate-400 uppercase block mb-1.5">Assign Technician</label>
-                    <select
-                      className="w-full bg-transparent text-sm font-semibold text-white outline-none"
+                    <label className="text-xs font-bold text-slate-400 uppercase block mb-3">Assign Technician — who’s closest</label>
+                    <TechPicker
+                      technicians={technicians}
+                      address={client.address}
                       value={assignedTo}
-                      onChange={e => setAssignedTo(e.target.value)}
-                    >
-                      <option value="">Unassigned</option>
-                      {technicians.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-                    </select>
+                      onChange={id => setAssignedTo(id || '')}
+                    />
                   </div>
                 )}
               </div>

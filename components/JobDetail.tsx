@@ -20,7 +20,7 @@ import { useAuthStore, useCurrentUser, can } from '../authStore';
 import { BRANDS, LOCK_TYPES as LOCK_ICONS } from '../constants';
 import { formatTimestamp } from '../dateUtils';
 import { sendSms } from '../smsService';
-import { geocodeAddress } from '../googleMaps';
+import { geocodeAddress } from '../geocoding';
 import { haversineMiles, approxEtaMinutes, formatMiles, LatLng } from '../geoUtils';
 
 const STATUS_OPTIONS: { id: JobStatus; label: string }[] = [
