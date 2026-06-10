@@ -22,6 +22,7 @@ import { formatTimestamp } from '../dateUtils';
 import { sendSms } from '../smsService';
 import { geocodeAddress } from '../geocoding';
 import { haversineMiles, approxEtaMinutes, formatMiles, LatLng } from '../geoUtils';
+import { getDriveEta, getWeather, buildOnMyWayMessage } from '../dispatchMessage';
 
 const STATUS_OPTIONS: { id: JobStatus; label: string }[] = [
   { id: 'scheduled', label: 'Scheduled' },
@@ -105,8 +106,19 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
     setDraftMessage('');
   };
 
-  // "On My Way": flip the job to En Route (saved immediately so it sticks) and text
-  // the client a heads-up. The status change always lands; the SMS is best-effort.
+  // Tech's live position when they tap On My Way (fresh GPS; resolves null if denied/no GPS).
+  const getCurrentLocation = (): Promise<LatLng | null> => new Promise(resolve => {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) return resolve(null);
+    navigator.geolocation.getCurrentPosition(
+      pos => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => resolve(null),
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 30000 }
+    );
+  });
+
+  // "On My Way": flip the job to En Route (saved immediately so it sticks) and text the
+  // client a smart heads-up — real drive-time ETA from the tech's current spot plus a
+  // weather-aware tip. Status change always lands; everything else degrades gracefully.
   const handleOnMyWay = async () => {
     if (otwState === 'sending') return;
     // Heading out implies acceptance, so clear a pending assignment too.
@@ -126,8 +138,16 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
 
     setOtwState('sending');
     const techName = users.find(u => u.id === localJob.assignedTo)?.name || technicianName;
-    const eta = localJob.scheduledTime ? ` around ${localJob.scheduledTime}` : ' shortly';
-    const text = `Hi ${localJob.client.firstName || 'there'}, this is ${techName} from ${companyName}. I'm on my way and will arrive${eta}. Reply here if you need anything.`;
+    const isCar = localJob.lockDetails.type === 'Automotive';
+
+    const techLoc = (await getCurrentLocation()) || (currentUser?.lastLocation ? { lat: currentUser.lastLocation.lat, lng: currentUser.lastLocation.lng } : null);
+    let clientLoc = clientCoords;
+    if (!clientLoc) clientLoc = await geocodeAddress([localJob.client.address, localJob.client.zip].filter(Boolean).join(', '));
+
+    const etaMinutes = (techLoc && clientLoc) ? await getDriveEta(techLoc, clientLoc) : null;
+    const weather = clientLoc ? await getWeather(clientLoc) : null;
+
+    const text = buildOnMyWayMessage({ firstName: localJob.client.firstName, techName, companyName, etaMinutes, isCar, weather });
     const ok = await sendSms(phone, text);
 
     if (ok) {
