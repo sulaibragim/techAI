@@ -31,8 +31,8 @@ export const MessagesList: React.FC<MessagesListProps> = ({ onJobSelect }) => {
   const [replyText, setReplyText] = useState('');
   const [sending, setSending] = useState(false);
 
-  const fetchMessages = async () => {
-    setLoading(true);
+  const fetchMessages = async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const res = await fetch(`${API_BASE}/api/openphone/messages?phoneNumberId=${PHONE_NUMBER_ID}`);
       if (!res.ok) throw new Error(`${res.status}`);
@@ -42,13 +42,18 @@ export const MessagesList: React.FC<MessagesListProps> = ({ onJobSelect }) => {
     } catch {
       setLiveMessages(null);
       setBackendOnline(false);
-      setActiveTab('jobs');
+      if (!silent) setActiveTab('jobs');
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
-  useEffect(() => { fetchMessages(); }, []);
+  // Initial load + silent auto-refresh so new client messages aren't missed.
+  useEffect(() => {
+    fetchMessages();
+    const id = setInterval(() => { if (document.visibilityState === 'visible') fetchMessages(true); }, 15000);
+    return () => clearInterval(id);
+  }, []);
 
   const jobThreads = useMemo(() => {
     return jobs
@@ -99,7 +104,7 @@ export const MessagesList: React.FC<MessagesListProps> = ({ onJobSelect }) => {
             </div>
           )}
           <button
-            onClick={fetchMessages}
+            onClick={() => fetchMessages()}
             disabled={loading}
             className="p-2.5 bg-slate-900 border border-white/10 rounded-xl text-slate-400 hover:text-white hover:border-blue-500/30 transition-all active:scale-95 disabled:opacity-40"
             title="Refresh"

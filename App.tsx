@@ -16,8 +16,9 @@ import { Accounting } from './components/Accounting';
 import { useAppStore, useVisibleJobs } from './store';
 import { useSettingsStore } from './settingsStore';
 import { useCurrentUser, useAuthStore, visibleTabsFor, ROLE_LABELS } from './authStore';
-import { getToken } from './apiClient';
-import type { TechStatus } from './types';
+import { getToken, authHeaders } from './apiClient';
+import { API_BASE } from './backendUrl';
+import type { Job, TechStatus } from './types';
 import { Settings } from './components/Settings';
 import { ClientsList } from './components/ClientsList';
 import { Login } from './components/Login';
@@ -91,6 +92,57 @@ const App: React.FC = () => {
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [setActiveTab, currentUser]);
+
+  // Auto-dismiss toast notifications after a few seconds.
+  useEffect(() => {
+    if (!notification) return;
+    const t = setTimeout(() => setNotification(null), 6000);
+    return () => clearTimeout(t);
+  }, [notification]);
+
+  // Live sync: poll the server for job changes made on other devices (a tech finishing a
+  // job, collecting payment, accepting/declining) so the dispatcher sees them without a
+  // manual refresh. Pull-only — never push a stale local job over a teammate's update.
+  useEffect(() => {
+    if (!currentUser) return;
+    let stopped = false;
+    const poll = async () => {
+      if (document.visibilityState === 'hidden') return;
+      try {
+        const res = await fetch(`${API_BASE}/api/jobs`, { headers: { ...authHeaders() } });
+        if (!res.ok || stopped) return;
+        const serverJobs: Job[] = await res.json();
+        const local = useAppStore.getState().jobs;
+        const localById = new Map(local.map(j => [j.id, j]));
+        const users = useAuthStore.getState().users;
+        const techName = (id?: string) => users.find(u => u.id === id)?.name || 'Technician';
+
+        const notes: string[] = [];
+        for (const sj of serverJobs) {
+          const lj = localById.get(sj.id);
+          if (!lj) continue; // brand-new jobs just appear in the list
+          if (sj.status === 'completed' && lj.status !== 'completed') {
+            notes.push(`${techName(sj.assignedTo)} completed #${sj.jobNumber}`);
+          } else if ((sj.amountPaid || 0) > (lj.amountPaid || 0) && (sj.paymentStatus === 'paid' || sj.paymentStatus === 'partial')) {
+            notes.push(`Payment on #${sj.jobNumber}: $${(sj.amountPaid || sj.totalAmount || 0).toLocaleString()}`);
+          } else if (sj.acceptanceStatus === 'accepted' && lj.acceptanceStatus !== 'accepted') {
+            notes.push(`${techName(sj.assignedTo)} accepted #${sj.jobNumber}`);
+          } else if (sj.acceptanceStatus === 'declined' && lj.acceptanceStatus !== 'declined') {
+            notes.push(`#${sj.jobNumber} was declined — reassign`);
+          }
+        }
+
+        if (JSON.stringify(local) !== JSON.stringify(serverJobs)) {
+          useAppStore.setState({ jobs: serverJobs });
+        }
+        if (notes.length && !stopped) {
+          setNotification({ msg: notes.length > 1 ? `${notes[0]} (+${notes.length - 1} more)` : notes[0], type: 'success' });
+        }
+      } catch { /* offline — retry next tick */ }
+    };
+    const id = setInterval(poll, 8000);
+    return () => { stopped = true; clearInterval(id); };
+  }, [currentUser?.id]);
 
   const { onboardingComplete } = useSettingsStore();
 

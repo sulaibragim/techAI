@@ -43,8 +43,8 @@ export const CallsList: React.FC<{ onClientSelect?: (clientId: string) => void }
   const [error, setError] = useState<string | null>(null);
   const [isLive, setIsLive] = useState(true);
 
-  const fetchCalls = async () => {
-    setLoading(true);
+  const fetchCalls = async (silent = false) => {
+    if (!silent) setLoading(true);
     setError(null);
     try {
       const res = await fetch(`${API_BASE}/api/openphone/calls?phoneNumberId=${PHONE_NUMBER_ID}`);
@@ -57,11 +57,16 @@ export const CallsList: React.FC<{ onClientSelect?: (clientId: string) => void }
       setLiveCalls(null);
       setIsLive(false);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
-  useEffect(() => { fetchCalls(); }, []);
+  // Initial load + silent auto-refresh so incoming calls aren't missed.
+  useEffect(() => {
+    fetchCalls();
+    const id = setInterval(() => { if (document.visibilityState === 'visible') fetchCalls(true); }, 15000);
+    return () => clearInterval(id);
+  }, []);
 
   const callHistory = liveCalls ?? storeCalls ?? [];
 
@@ -97,7 +102,7 @@ export const CallsList: React.FC<{ onClientSelect?: (clientId: string) => void }
             </div>
           )}
           <button
-            onClick={fetchCalls}
+            onClick={() => fetchCalls()}
             disabled={loading}
             className="p-2.5 bg-slate-900 border border-white/10 rounded-xl text-slate-400 hover:text-white hover:border-blue-500/30 transition-all active:scale-95 disabled:opacity-40"
             title="Refresh"
