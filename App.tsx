@@ -247,7 +247,7 @@ const App: React.FC = () => {
              <h3 className="text-lg md:text-2xl font-bold capitalize tracking-tight text-white">{effectiveTab === 'calendar' ? 'Workroom' : effectiveTab}</h3>
           </div>
           <div className="flex items-center space-x-3 md:space-x-6">
-            <button className="relative group">
+            <button onClick={() => setActiveTab('calendar')} title="New-lead alerts (Workroom)" className="relative group">
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -255,7 +255,9 @@ const App: React.FC = () => {
                 >
                     <Bell size={15} />
                 </motion.div>
-                <div className="absolute top-0 right-0 w-2 h-2 bg-blue-600 rounded-full border-2 border-[#030303] animate-pulse shadow-lg" />
+                {jobs.some(j => j.isNewLead) && (
+                  <div className="absolute top-0 right-0 w-2 h-2 bg-blue-600 rounded-full border-2 border-[#030303] animate-pulse shadow-lg" />
+                )}
             </button>
             {currentUser.role === 'technician' && (
               <select
@@ -278,6 +280,9 @@ const App: React.FC = () => {
                     <p className="text-xs font-medium text-blue-400 uppercase tracking-widest mt-0.5">{ROLE_LABELS[currentUser.role]}</p>
                 </div>
                 <motion.div
+                  onClick={() => setActiveTab('settings')}
+                  role="button"
+                  title="Open settings"
                   whileHover={{ scale: 1.05, borderColor: "rgba(0, 229, 255, 0.5)" }}
                   className="w-7 h-7 md:w-9 md:h-9 bg-gray-900 border border-white/10 rounded-lg overflow-hidden shadow-md group cursor-pointer transition-all"
                 >

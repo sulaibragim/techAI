@@ -24,7 +24,12 @@ export function normalizePhone(raw?: string): string {
 export function buildClients(jobs: Job[]): ClientRecord[] {
   const map = new Map<string, ClientRecord>();
   jobs.forEach(j => {
-    const key = j.client.phone || j.client.email || `${j.client.firstName}-${j.client.lastName}`;
+    // Key by the NORMALIZED phone so "(305) 555-0199" and "3055550199" are the same
+    // person (was raw phone → split into two client records). Fall back to email/name.
+    const key =
+      normalizePhone(j.client.phone) ||
+      (j.client.email || '').trim().toLowerCase() ||
+      `${j.client.firstName}-${j.client.lastName}`.trim().toLowerCase();
     if (!map.has(key)) {
       map.set(key, {
         id: key,
