@@ -421,7 +421,7 @@ export async function handleAITool(name: string, args: any): Promise<any> {
 
     case 'get_calls': {
       try {
-        const res = await fetch(`${API_BASE}/api/openphone/calls`);
+        const res = await fetch(`${API_BASE}/api/openphone/calls`, { headers: { ...authHeaders() } });
         if (!res.ok) return { status: 'error', message: 'Failed to fetch calls' };
         const data = await res.json();
         return { status: 'success', calls: data.data?.slice(0, 20) || [], total: data.totalItems || 0 };
@@ -432,7 +432,7 @@ export async function handleAITool(name: string, args: any): Promise<any> {
 
     case 'get_messages': {
       try {
-        const res = await fetch(`${API_BASE}/api/openphone/messages`);
+        const res = await fetch(`${API_BASE}/api/openphone/messages`, { headers: { ...authHeaders() } });
         if (!res.ok) return { status: 'error', message: 'Failed to fetch messages' };
         const data = await res.json();
         return { status: 'success', messages: data.data?.slice(0, 20) || [], total: data.totalItems || 0 };
@@ -445,7 +445,7 @@ export async function handleAITool(name: string, args: any): Promise<any> {
       try {
         const res = await fetch(`${API_BASE}/api/openphone/messages/send`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...authHeaders() },
           body: JSON.stringify({
             to: args.to,
             content: args.content,

@@ -456,13 +456,15 @@ const TeamSection: React.FC = () => {
   const { users, addUser, updateUser, removeUser } = useAuthStore();
   const currentUser = useCurrentUser();
   const [showAdd, setShowAdd] = useState(false);
-  const [draft, setDraft] = useState({ name: '', email: '', password: '', role: 'technician' as Role, commissionRate: 30 });
+  const [draft, setDraft] = useState({ name: '', email: '', password: '', phone: '', role: 'technician' as Role, commissionRate: 30 });
   const [err, setErr] = useState('');
   const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
   const [editingPassword, setEditingPassword] = useState<string | null>(null);
   const [editingEmail, setEditingEmail] = useState<string | null>(null);
+  const [editingPhone, setEditingPhone] = useState<string | null>(null);
   const [newPassword, setNewPassword] = useState('');
   const [newEmail, setNewEmail] = useState('');
+  const [newPhone, setNewPhone] = useState('');
 
   const togglePasswordVisibility = (id: string) => setVisiblePasswords(p => ({ ...p, [id]: !p[id] }));
 
@@ -492,6 +494,17 @@ const TeamSection: React.FC = () => {
     setNewEmail('');
   };
 
+  const startEditPhone = (u: { id: string; phone?: string }) => {
+    setEditingPhone(u.id);
+    setNewPhone(u.phone || '');
+  };
+
+  const savePhone = (u: any) => {
+    updateUser({ ...u, phone: newPhone.trim() || undefined });
+    setEditingPhone(null);
+    setNewPhone('');
+  };
+
   const handleAdd = () => {
     if (!draft.name.trim() || !draft.email.trim() || !draft.password.trim()) { setErr('Name, email and password are required.'); return; }
     if (users.some(u => u.email.trim().toLowerCase() === draft.email.trim().toLowerCase())) { setErr('That email is already in use.'); return; }
@@ -499,11 +512,12 @@ const TeamSection: React.FC = () => {
       name: draft.name.trim(),
       email: draft.email.trim(),
       password: draft.password,
+      phone: draft.phone.trim() || undefined,
       role: draft.role,
       commissionRate: draft.role === 'technician' ? draft.commissionRate : undefined,
       active: true,
     });
-    setDraft({ name: '', email: '', password: '', role: 'technician', commissionRate: 30 });
+    setDraft({ name: '', email: '', password: '', phone: '', role: 'technician', commissionRate: 30 });
     setErr('');
     setShowAdd(false);
   };
@@ -537,6 +551,7 @@ const TeamSection: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <input className="bg-slate-800 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-blue-500/50" placeholder="Full name" value={draft.name} onChange={e => setDraft(d => ({ ...d, name: e.target.value }))} />
             <input className="bg-slate-800 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-blue-500/50" placeholder="Email" value={draft.email} onChange={e => setDraft(d => ({ ...d, email: e.target.value }))} />
+            <input type="tel" className="bg-slate-800 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-blue-500/50" placeholder="Phone (for SMS alerts, +1...)" value={draft.phone} onChange={e => setDraft(d => ({ ...d, phone: e.target.value }))} />
             <input className="bg-slate-800 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-blue-500/50" placeholder="Password" value={draft.password} onChange={e => setDraft(d => ({ ...d, password: e.target.value }))} />
             <select className="bg-slate-800 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-blue-500/50" value={draft.role} onChange={e => setDraft(d => ({ ...d, role: e.target.value as Role }))}>
               {ROLES.map(r => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
@@ -562,6 +577,7 @@ const TeamSection: React.FC = () => {
           const pwVisible = visiblePasswords[u.id];
           const isEditingPw = editingPassword === u.id;
           const isEditingEm = editingEmail === u.id;
+          const isEditingPhone = editingPhone === u.id;
           return (
             <div key={u.id} className="bg-white/5 border border-white/10 rounded-2xl p-3 space-y-3">
               <div className="flex items-center gap-3">
@@ -591,6 +607,26 @@ const TeamSection: React.FC = () => {
                     <p className="text-xs text-slate-500 truncate flex items-center gap-1.5 group/email">
                       {u.email}
                       <button onClick={() => startEditEmail(u)} className="opacity-0 group-hover/email:opacity-100 text-slate-500 hover:text-blue-400 transition-all"><Pencil size={10} /></button>
+                    </p>
+                  )}
+                  {isEditingPhone ? (
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <input
+                        type="tel"
+                        value={newPhone}
+                        onChange={e => setNewPhone(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && savePhone(u)}
+                        autoFocus
+                        placeholder="+1..."
+                        className="bg-slate-800 border border-blue-500/50 rounded-lg px-2 py-1 text-xs text-white w-40 focus:outline-none"
+                      />
+                      <button onClick={() => savePhone(u)} className="text-green-400 hover:text-green-300"><Check size={14} /></button>
+                      <button onClick={() => setEditingPhone(null)} className="text-slate-400 hover:text-white"><X size={14} /></button>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-slate-500 truncate flex items-center gap-1.5 group/phone">
+                      {u.phone || <span className="italic text-slate-600">No phone — add for SMS</span>}
+                      <button onClick={() => startEditPhone(u)} className="opacity-0 group-hover/phone:opacity-100 text-slate-500 hover:text-blue-400 transition-all"><Pencil size={10} /></button>
                     </p>
                   )}
                 </div>

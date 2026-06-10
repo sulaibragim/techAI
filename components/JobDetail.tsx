@@ -195,6 +195,11 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
     }
   }, [initialJob, isModified, localJob.id]);
 
+  // Opening a website lead marks it handled — drops it from the "new leads" banner/column.
+  useEffect(() => {
+    if (initialJob.isNewLead) updateJob({ ...initialJob, isNewLead: false });
+  }, [initialJob.id]);
+
   // When the schedule sheet opens, jump the calendar to the selected date's month.
   useEffect(() => {
     if (!showCalendar) return;

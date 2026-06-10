@@ -1,10 +1,40 @@
 import { Router } from 'express';
 import { db } from '../db.js';
 import { requireAuth, requireRole } from '../middleware/auth.js';
+import { sendSMS } from '../services/openphone.js';
 
 export const jobsRouter = Router();
 
 const isTech = (req) => req.user.role === 'technician';
+
+// SMS the technician a job was just assigned to. Best-effort; never blocks the request.
+// Skips self-assignment (a tech picking up their own job shouldn't text themselves).
+async function notifyAssignedTech(assigneeId, job, actingUserId) {
+  if (!assigneeId || assigneeId === actingUserId) return;
+  try {
+    const { rows } = await db.query('SELECT name, phone FROM users WHERE id = $1', [assigneeId]);
+    const tech = rows[0];
+    if (!tech?.phone) {
+      console.warn('[JOBS] assigned tech has no phone — skipping SMS', assigneeId);
+      return;
+    }
+    const c = job.client || {};
+    const name = [c.firstName, c.lastName].filter(Boolean).join(' ');
+    const when = [job.scheduledDate, job.scheduledTime].filter(Boolean).join(' ');
+    const text = [
+      'New job assigned to you',
+      job.jobNumber && `Job #${job.jobNumber}`,
+      name && `Client: ${name}`,
+      c.phone && `Phone: ${c.phone}`,
+      c.address && `Address: ${c.address}`,
+      job.complaint && `Issue: ${job.complaint}`,
+      when && `When: ${when}`,
+    ].filter(Boolean).join('\n');
+    await sendSMS(tech.phone, text);
+  } catch (err) {
+    console.error('[JOBS] notify tech error:', err);
+  }
+}
 
 // Get jobs — technicians see only jobs assigned to them.
 jobsRouter.get('/', requireAuth, async (req, res) => {
@@ -82,6 +112,9 @@ jobsRouter.post('/', requireAuth, async (req, res) => {
       'INSERT INTO jobs (id, data) VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET data = $2, updated_at = NOW()',
       [jobId, JSON.stringify(data)]
     );
+    if (data.assignedTo) {
+      notifyAssignedTech(data.assignedTo, data, req.user.id).catch(e => console.error('[JOBS] notify error:', e));
+    }
     res.json({ id: jobId, ...data });
   } catch (err) {
     console.error('[JOBS] create error:', err);
@@ -92,17 +125,26 @@ jobsRouter.post('/', requireAuth, async (req, res) => {
 // Update job — technicians may only update jobs assigned to them.
 jobsRouter.put('/:id', requireAuth, async (req, res) => {
   try {
-    if (isTech(req)) {
-      const { rows } = await db.query("SELECT data->>'assignedTo' AS assigned FROM jobs WHERE id = $1", [req.params.id]);
-      if (rows.length === 0) return res.status(404).json({ error: 'Job not found' });
-      if (rows[0].assigned !== req.user.id) return res.status(403).json({ error: 'Insufficient permissions' });
+    const { rows: existing } = await db.query("SELECT data->>'assignedTo' AS assigned FROM jobs WHERE id = $1", [req.params.id]);
+    if (existing.length === 0) return res.status(404).json({ error: 'Job not found' });
+    const prevAssigned = existing[0].assigned || null;
+
+    if (isTech(req) && prevAssigned !== req.user.id) {
+      return res.status(403).json({ error: 'Insufficient permissions' });
     }
+
     const { id: _id, ...data } = req.body;
     const result = await db.query(
       'UPDATE jobs SET data = $2, updated_at = NOW() WHERE id = $1',
       [req.params.id, JSON.stringify(data)]
     );
     if (result.rowCount === 0) return res.status(404).json({ error: 'Job not found' });
+
+    // Newly assigned (or reassigned) to a different tech → text them.
+    if (data.assignedTo && data.assignedTo !== prevAssigned) {
+      notifyAssignedTech(data.assignedTo, data, req.user.id).catch(e => console.error('[JOBS] notify error:', e));
+    }
+
     res.json({ id: req.params.id, ...data });
   } catch (err) {
     console.error('[JOBS] update error:', err);

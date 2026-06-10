@@ -1,4 +1,5 @@
 import { API_BASE } from './backendUrl';
+import { authHeaders } from './apiClient';
 
 // OpenPhone number the company sends from (same id used in the Calls/Messages views).
 export const OPENPHONE_PHONE_NUMBER_ID = 'PNkhFHiD2G';
@@ -9,7 +10,7 @@ export async function sendSms(to: string, content: string): Promise<boolean> {
   try {
     const res = await fetch(`${API_BASE}/api/openphone/messages/send`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: JSON.stringify({ to, content, phoneNumberId: OPENPHONE_PHONE_NUMBER_ID }),
     });
     return res.ok;

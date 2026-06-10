@@ -10,6 +10,7 @@ import { aiRouter } from './routes/ai.js';
 import { jobsRouter } from './routes/jobs.js';
 import { inventoryRouter } from './routes/inventory.js';
 import { adminRouter } from './routes/admin.js';
+import { leadsRouter } from './routes/leads.js';
 import { geocodeRouter } from './routes/geocode.js';
 import { initDB } from './db.js';
 
@@ -61,6 +62,16 @@ const loginLimiter = rateLimit({
 });
 app.use('/api/auth/login', loginLimiter);
 
+// Tighter limit on the public lead intake — it's unauthenticated, so cap the flood harder.
+const inboundLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many submissions, try again later' },
+});
+app.use('/api/jobs/inbound', inboundLimiter);
+
 app.get('/health', (_req, res) => res.json({ ok: true }));
 
 app.use('/openphone', openphoneRouter);
@@ -68,6 +79,7 @@ app.use('/api/openphone', openphoneRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/settings', settingsRouter);
 app.use('/api/ai', aiRouter);
+app.use('/api/jobs/inbound', leadsRouter);   // public webhook — must precede the auth-guarded jobs router
 app.use('/api/jobs', jobsRouter);
 app.use('/api/inventory', inventoryRouter);
 app.use('/api/admin', adminRouter);

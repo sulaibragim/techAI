@@ -3,6 +3,7 @@ import { useAppStore, useVisibleJobs } from '../store';
 import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Clock, PhoneCall, RefreshCw, Radio, History, ChevronRight } from 'lucide-react';
 import { CallRecord } from '../types';
 import { API_BASE } from '../backendUrl';
+import { authHeaders } from '../apiClient';
 import { buildClients, findClientByPhone } from '../clientUtils';
 
 const PHONE_NUMBER_ID = 'PNkhFHiD2G';
@@ -47,7 +48,7 @@ export const CallsList: React.FC<{ onClientSelect?: (clientId: string) => void }
     if (!silent) setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE}/api/openphone/calls?phoneNumberId=${PHONE_NUMBER_ID}`);
+      const res = await fetch(`${API_BASE}/api/openphone/calls?phoneNumberId=${PHONE_NUMBER_ID}`, { headers: { ...authHeaders() } });
       if (!res.ok) throw new Error(`${res.status}`);
       const data = await res.json();
       setLiveCalls((data.data || []).map(mapOpenPhoneCall));
