@@ -66,9 +66,9 @@ const App: React.FC = () => {
     useSettingsStore.getState().checkAiAvailable();
     useAppStore.getState().syncJobs();
     useAppStore.getState().syncInventory();
-    // Poll for new jobs (e.g. website leads) so they surface live without a manual reload.
-    const interval = setInterval(() => useAppStore.getState().syncJobs(), 15000);
-    return () => clearInterval(interval);
+    // Ongoing live updates (including new website leads) are handled by the pull-only
+    // job poll below — no periodic two-way syncJobs here, which could overwrite a
+    // teammate's newer server update with a stale local copy.
   }, [currentUser?.id]);
 
   // Keyboard shortcuts
