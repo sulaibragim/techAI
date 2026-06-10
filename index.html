@@ -25,13 +25,43 @@
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
     <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
-            .then(reg => console.log('SW registered:', reg.scope))
-            .catch(err => console.warn('SW registration failed:', err));
-        });
-      }
+      // Auto-update: detect a new deploy and reload to pick it up — but only while the tab
+      // is in the background, so a tech/manager is never interrupted mid-action. No manual
+      // hard-refresh needed.
+      (function () {
+        let pending = false;
+        let baselineHtml = null;
+
+        const applyWhenIdle = () => {
+          if (pending && document.hidden) window.location.reload();
+        };
+        document.addEventListener('visibilitychange', applyWhenIdle);
+
+        async function checkVersion() {
+          try {
+            const html = await (await fetch('/', { cache: 'no-store' })).text();
+            if (baselineHtml === null) { baselineHtml = html; return; }
+            if (html !== baselineHtml) { pending = true; applyWhenIdle(); }
+          } catch (e) { /* offline — try again next tick */ }
+        }
+
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+              .then(reg => {
+                console.log('SW registered:', reg.scope);
+                setInterval(() => reg.update().catch(() => {}), 60000);
+              })
+              .catch(err => console.warn('SW registration failed:', err));
+          });
+          // A new service worker taking control means new assets are ready.
+          navigator.serviceWorker.addEventListener('controllerchange', () => { pending = true; applyWhenIdle(); });
+        }
+
+        // Poll the built index.html for asset changes (covers deploys without an SW change).
+        setInterval(checkVersion, 120000);
+        window.addEventListener('load', checkVersion);
+      })();
     </script>
 </body>
 </html>
