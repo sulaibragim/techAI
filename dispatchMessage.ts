@@ -16,6 +16,18 @@ export async function getDriveEta(from: LatLng, to: LatLng): Promise<number | nu
   try { return approxEtaMinutes(haversineMiles(from, to)); } catch { return null; }
 }
 
+// Driving distance + time (real road via OSRM, falling back to straight-line).
+export async function getRouteInfo(from: LatLng, to: LatLng): Promise<{ minutes: number; miles: number } | null> {
+  try {
+    const res = await fetch(`${API_BASE}/api/dispatch/route?from=${from.lat},${from.lng}&to=${to.lat},${to.lng}`);
+    if (res.ok) {
+      const d = await res.json();
+      if (typeof d.minutes === 'number' && typeof d.miles === 'number') return { minutes: d.minutes, miles: d.miles };
+    }
+  } catch { /* fall through */ }
+  try { const miles = haversineMiles(from, to); return { miles: +miles.toFixed(1), minutes: approxEtaMinutes(miles) }; } catch { return null; }
+}
+
 export async function getWeather(at: LatLng): Promise<Weather | null> {
   try {
     const res = await fetch(`${API_BASE}/api/dispatch/weather?lat=${at.lat}&lng=${at.lng}`);

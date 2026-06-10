@@ -22,7 +22,7 @@ import { formatTimestamp } from '../dateUtils';
 import { sendSms } from '../smsService';
 import { geocodeAddress } from '../geocoding';
 import { haversineMiles, approxEtaMinutes, formatMiles, LatLng } from '../geoUtils';
-import { getDriveEta, getWeather, buildOnMyWayMessage } from '../dispatchMessage';
+import { getDriveEta, getRouteInfo, getWeather, buildOnMyWayMessage } from '../dispatchMessage';
 
 const STATUS_OPTIONS: { id: JobStatus; label: string }[] = [
   { id: 'scheduled', label: 'Scheduled' },
@@ -89,6 +89,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
   const [draftMessage, setDraftMessage] = useState('');
   const [otwState, setOtwState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const [clientCoords, setClientCoords] = useState<LatLng | null>(null);
+  const [routeToClient, setRouteToClient] = useState<{ miles: number; minutes: number } | null>(null);
 
   const handleSendMessage = () => {
     if (!draftMessage.trim()) return;
@@ -237,6 +238,23 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
     geocodeAddress(addr).then(c => { if (active) setClientCoords(c); });
     return () => { active = false; };
   }, [localJob.client.address, localJob.client.zip]);
+
+  // How far the technician is from the client — shown next to On My Way so they know the drive.
+  useEffect(() => {
+    let active = true;
+    if (!clientCoords) { setRouteToClient(null); return; }
+    (async () => {
+      let techLoc: LatLng | null = null;
+      if (currentUser && localJob.assignedTo === currentUser.id) techLoc = await getCurrentLocation(); // assigned tech → live GPS
+      const assignedTech = users.find(u => u.id === localJob.assignedTo);
+      if (!techLoc && assignedTech?.lastLocation) techLoc = { lat: assignedTech.lastLocation.lat, lng: assignedTech.lastLocation.lng };
+      if (!techLoc && currentUser?.lastLocation) techLoc = { lat: currentUser.lastLocation.lat, lng: currentUser.lastLocation.lng };
+      if (!techLoc) { if (active) setRouteToClient(null); return; }
+      const r = await getRouteInfo(techLoc, clientCoords);
+      if (active) setRouteToClient(r);
+    })();
+    return () => { active = false; };
+  }, [clientCoords, localJob.assignedTo, currentUser?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const startCamera = async () => {
     setShowCamera(true);
@@ -1159,20 +1177,28 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
 
                 {/* ON MY WAY — flips status to En Route and texts the client a heads-up */}
                 {!jobIsClosed && (
-                  <button
-                    onClick={handleOnMyWay}
-                    disabled={otwState === 'sending'}
-                    className={`w-full flex items-center justify-center gap-2.5 py-3.5 rounded-xl font-bold text-sm uppercase tracking-widest transition-all active:scale-95 shadow-lg disabled:cursor-wait ${
-                      otwState === 'sent' ? 'bg-emerald-600 text-white shadow-emerald-900/30'
-                      : otwState === 'error' ? 'bg-amber-500/15 text-amber-400 border border-amber-500/40'
-                      : 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-900/30'
-                    }`}
-                  >
-                    {otwState === 'sent' ? (<><CheckCircle2 size={16} /> Client Notified</>)
-                      : otwState === 'sending' ? (<><Car size={16} className="animate-pulse" /> Notifying Client…</>)
-                      : otwState === 'error' ? (<><Car size={16} /> En Route Set · SMS Failed</>)
-                      : (<><Car size={16} /> On My Way</>)}
-                  </button>
+                  <div className="space-y-2">
+                    {routeToClient && (
+                      <div className="flex items-center justify-center gap-2 text-xs font-bold text-slate-300">
+                        <Navigation size={13} className="text-blue-400" />
+                        <span>{formatMiles(routeToClient.miles)} mi · ~{routeToClient.minutes} min to client</span>
+                      </div>
+                    )}
+                    <button
+                      onClick={handleOnMyWay}
+                      disabled={otwState === 'sending'}
+                      className={`w-full flex items-center justify-center gap-2.5 py-3.5 rounded-xl font-bold text-sm uppercase tracking-widest transition-all active:scale-95 shadow-lg disabled:cursor-wait ${
+                        otwState === 'sent' ? 'bg-emerald-600 text-white shadow-emerald-900/30'
+                        : otwState === 'error' ? 'bg-amber-500/15 text-amber-400 border border-amber-500/40'
+                        : 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-900/30'
+                      }`}
+                    >
+                      {otwState === 'sent' ? (<><CheckCircle2 size={16} /> Client Notified</>)
+                        : otwState === 'sending' ? (<><Car size={16} className="animate-pulse" /> Notifying Client…</>)
+                        : otwState === 'error' ? (<><Car size={16} /> En Route Set · SMS Failed</>)
+                        : (<><Car size={16} /> On My Way</>)}
+                    </button>
+                  </div>
                 )}
 
                 {/* ASSIGNED TECHNICIAN */}
