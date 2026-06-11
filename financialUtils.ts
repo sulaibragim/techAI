@@ -298,6 +298,161 @@ export function revenueByTechnician(
     .sort((a, b) => b.revenue - a.revenue);
 }
 
+// ── Technician & planning analytics ─────────────────────────────────────────
+
+export type DayLevel = 'great' | 'good' | 'low' | 'coffee' | 'idle';
+
+export interface DayPerf {
+  date: string;   // YYYY-MM-DD
+  day: number;    // 1..31
+  dow: number;    // 0=Sun
+  revenue: number;
+  soldCount: number;
+  coffeeCount: number;
+  jobs: Job[];
+  level: DayLevel;
+}
+
+/**
+ * Day-by-day sales performance for a month, optionally scoped to one technician.
+ * Levels are relative to this month's average revenue across active days, so a
+ * "great" day means great for this period, not against a fixed dollar amount.
+ */
+export function dailyPerformance(jobs: Job[], year: number, month: number, techId?: string): DayPerf[] {
+  const pool = techId ? jobs.filter(j => j.assignedTo === techId) : jobs;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const key = monthKey(year, month);
+  const days: DayPerf[] = Array.from({ length: daysInMonth }, (_, i) => ({
+    date: `${key}-${String(i + 1).padStart(2, '0')}`,
+    day: i + 1,
+    dow: new Date(year, month, i + 1).getDay(),
+    revenue: 0, soldCount: 0, coffeeCount: 0, jobs: [], level: 'idle' as DayLevel,
+  }));
+  for (const j of pool) {
+    const d = isRevenueJob(j) ? revenueDateStr(j) : j.status === 'coffee' ? j.scheduledDate : null;
+    if (!d || !d.startsWith(key)) continue;
+    const idx = Number(d.slice(8, 10)) - 1;
+    if (idx < 0 || idx >= daysInMonth) continue;
+    const bucket = days[idx];
+    bucket.jobs.push(j);
+    if (j.status === 'coffee') bucket.coffeeCount += 1;
+    else { bucket.revenue += j.totalAmount; if (isSale(j)) bucket.soldCount += 1; }
+  }
+  const active = days.filter(d => d.revenue > 0);
+  const avg = active.length ? active.reduce((s, d) => s + d.revenue, 0) / active.length : 0;
+  for (const d of days) {
+    if (d.revenue <= 0) d.level = d.coffeeCount > 0 ? 'coffee' : 'idle';
+    else if (d.revenue >= avg * 1.5) d.level = 'great';
+    else if (d.revenue >= avg * 0.75) d.level = 'good';
+    else d.level = 'low';
+  }
+  return days;
+}
+
+export interface TechStats extends TechnicianEarnings {
+  active: boolean;
+  soldCount: number;
+  coffeeCount: number;
+  closeRate: number;
+  avgTicket: number;
+  activeDays: number;
+  revenuePerActiveDay: number;
+  bestDay: { date: string; revenue: number };
+}
+
+/** Full per-technician scorecard for a period — leaderboard + deep-dive source. */
+export function technicianStats(
+  jobs: Job[],
+  year: number,
+  month: number,
+  users: Pick<User, 'id' | 'name' | 'role' | 'commissionRate' | 'active'>[]
+): TechStats[] {
+  const key = monthKey(year, month);
+  return users
+    .filter(u => u.role === 'technician')
+    .map(u => {
+      const mine = jobs.filter(j => j.assignedTo === u.id);
+      const completed = mine.filter(j => isRevenueJob(j) && revenueDateStr(j).startsWith(key));
+      const revenue = completed.reduce((s, j) => s + j.totalAmount, 0);
+      const soldCount = completed.filter(isSale).length;
+      const coffeeCount = mine.filter(j => j.status === 'coffee' && j.scheduledDate.startsWith(key)).length;
+      const opportunities = soldCount + coffeeCount;
+      const byDay = new Map<string, number>();
+      for (const j of completed) {
+        const d = revenueDateStr(j);
+        byDay.set(d, (byDay.get(d) || 0) + j.totalAmount);
+      }
+      let bestDay = { date: '', revenue: 0 };
+      for (const [date, rev] of byDay) if (rev > bestDay.revenue) bestDay = { date, revenue: rev };
+      const rate = u.commissionRate ?? 0;
+      return {
+        userId: u.id,
+        name: u.name,
+        active: u.active,
+        revenue: round2(revenue),
+        jobCount: completed.length,
+        commissionRate: rate,
+        commission: round2(revenue * (rate / 100)),
+        soldCount,
+        coffeeCount,
+        closeRate: opportunities > 0 ? (soldCount / opportunities) * 100 : 0,
+        avgTicket: soldCount > 0 ? revenue / soldCount : 0,
+        activeDays: byDay.size,
+        revenuePerActiveDay: byDay.size > 0 ? revenue / byDay.size : 0,
+        bestDay,
+      };
+    })
+    .sort((a, b) => b.revenue - a.revenue);
+}
+
+/** Revenue + job count for the trailing N months, optionally per technician. */
+export function technicianTrend(jobs: Job[], techId: string | null, year: number, month: number, monthsBack = 6) {
+  const pool = techId ? jobs.filter(j => j.assignedTo === techId) : jobs;
+  return Array.from({ length: monthsBack }, (_, i) => {
+    const d = new Date(year, month - (monthsBack - 1 - i), 1);
+    const completed = completedJobsInMonth(pool, d.getFullYear(), d.getMonth());
+    return {
+      label: `${MONTH_LABELS[d.getMonth()]}${d.getMonth() === 0 ? ` '${String(d.getFullYear()).slice(2)}` : ''}`,
+      revenue: completed.reduce((s, j) => s + j.totalAmount, 0),
+      count: completed.length,
+    };
+  });
+}
+
+export interface PlanMonth {
+  label: string;
+  monthIndex: number;
+  actual: number;
+  target: number;
+  pct: number;
+  isPast: boolean;
+  isCurrent: boolean;
+  hit: boolean;
+}
+
+/** Plan vs fact for every month of a year — the owner's annual planning board. */
+export function yearPlanning(jobs: Job[], year: number, targets: Record<string, number>, fallbackTarget: number) {
+  const now = new Date();
+  const months: PlanMonth[] = MONTH_LABELS.map((label, m) => {
+    const completed = completedJobsInMonth(jobs, year, m);
+    const actual = completed.reduce((s, j) => s + j.totalAmount, 0);
+    const target = targets[monthKey(year, m)] ?? fallbackTarget;
+    const isPast = year < now.getFullYear() || (year === now.getFullYear() && m < now.getMonth());
+    const isCurrent = year === now.getFullYear() && m === now.getMonth();
+    return { label, monthIndex: m, actual, target, pct: target > 0 ? (actual / target) * 100 : 0, isPast, isCurrent, hit: actual >= target };
+  });
+  const elapsed = months.filter(m => m.isPast || m.isCurrent);
+  return {
+    months,
+    yearActual: months.reduce((s, m) => s + m.actual, 0),
+    yearTarget: months.reduce((s, m) => s + m.target, 0),
+    ytdActual: elapsed.reduce((s, m) => s + m.actual, 0),
+    ytdTarget: elapsed.reduce((s, m) => s + m.target, 0),
+    monthsHit: months.filter(m => m.isPast && m.hit).length,
+    monthsClosed: months.filter(m => m.isPast).length,
+  };
+}
+
 // ── Accounting helpers ──────────────────────────────────────────────────────
 
 /** How much has actually been collected on a job. */

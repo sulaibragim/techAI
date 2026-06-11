@@ -6,7 +6,8 @@ import {
 import {
   TrendingUp, TrendingDown, Wallet, Target as TargetIcon, BrainCircuit, Activity,
   CheckCircle2, Clock, Briefcase, XCircle, ChevronLeft, ChevronRight, GitCompareArrows,
-  Download, Trophy, Coffee, Users, CalendarDays, Sparkles, Flame, AlertTriangle, AlertCircle
+  Download, Trophy, Coffee, Users, CalendarDays, Sparkles, Flame, AlertTriangle, AlertCircle,
+  Building2, HardHat
 } from 'lucide-react';
 import { useAppStore, useVisibleJobs } from '../store';
 import { useSettingsStore } from '../settingsStore';
@@ -14,8 +15,9 @@ import { useAuthStore } from '../authStore';
 import {
   calculatePeriodMetrics, buildMonthlyTrend, buildYearlyTrend, revenueByJobType,
   topClients, revenueByDayOfWeek, computeRecords, coffeeAnalysis, availableMonths,
-  revenueByTechnician, periodJobsToCSV, MONTH_FULL, MONTH_LABELS, FinancialMetrics
+  revenueByTechnician, periodJobsToCSV, yearPlanning, MONTH_FULL, MONTH_LABELS, FinancialMetrics
 } from '../financialUtils';
+import { TechAnalytics } from './TechAnalytics';
 
 const TYPE_COLORS: Record<string, string> = {
   Automotive: '#3B82F6',
@@ -100,6 +102,7 @@ export const Dashboard: React.FC = () => {
   const now = new Date();
   const [viewYear, setViewYear] = useState(now.getFullYear());
   const [viewMonth, setViewMonth] = useState(now.getMonth());
+  const [viewMode, setViewMode] = useState<'company' | 'team'>('company');
   const [compareMode, setCompareMode] = useState(false);
   const prevDefault = stepMonth(now.getFullYear(), now.getMonth(), -1);
   const [cmpYear, setCmpYear] = useState(prevDefault.year);
@@ -123,6 +126,7 @@ export const Dashboard: React.FC = () => {
   const coffee = useMemo(() => coffeeAnalysis(jobs, viewYear, viewMonth), [jobs, viewYear, viewMonth]);
   const users = useAuthStore(s => s.users);
   const techEarnings = useMemo(() => revenueByTechnician(jobs, viewYear, viewMonth, users), [jobs, viewYear, viewMonth, users]);
+  const yearPlan = useMemo(() => yearPlanning(jobs, viewYear, monthlyTargets, monthlyRevenueTarget), [jobs, viewYear, monthlyTargets, monthlyRevenueTarget]);
 
   const prevMonth = useMemo(() => stepMonth(viewYear, viewMonth, -1), [viewYear, viewMonth]);
   const prevMetrics = useMemo(() => calculatePeriodMetrics(jobs, prevMonth.year, prevMonth.month, monthlyTargets[keyOf(prevMonth.year, prevMonth.month)] ?? monthlyRevenueTarget), [jobs, prevMonth, monthlyTargets, monthlyRevenueTarget]);
@@ -173,18 +177,34 @@ export const Dashboard: React.FC = () => {
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-white leading-none">Financial Performance</h2>
           <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-2">
-            {compareMode ? 'Comparison Mode' : periodLabel}
+            {compareMode ? 'Comparison Mode' : viewMode === 'team' ? `Team Performance — ${periodLabel}` : periodLabel}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          {!compareMode && <MonthPicker year={viewYear} month={viewMonth} months={months} onChange={(y, m) => { setViewYear(y); setViewMonth(m); }} />}
-          <button
-            onClick={() => setCompareMode(v => !v)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all border ${compareMode ? 'bg-blue-600 text-white border-blue-500' : 'bg-slate-900 text-slate-300 border-white/10 hover:text-white hover:border-blue-500/40'}`}
-          >
-            <GitCompareArrows size={14} /> {compareMode ? 'Exit Compare' : 'Compare'}
-          </button>
-          {!compareMode && (
+          <div className="flex bg-slate-900 p-1 rounded-xl border border-white/10 shadow-lg">
+            <button
+              onClick={() => setViewMode('company')}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${viewMode === 'company' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+            >
+              <Building2 size={14} /> Company
+            </button>
+            <button
+              onClick={() => { setViewMode('team'); setCompareMode(false); }}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${viewMode === 'team' ? 'bg-purple-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+            >
+              <HardHat size={14} /> Technicians
+            </button>
+          </div>
+          {!compareMode && <MonthPicker year={viewYear} month={viewMonth} months={months} onChange={(y, m) => { setViewYear(y); setViewMonth(m); }} accent={viewMode === 'team' ? 'purple' : 'blue'} />}
+          {viewMode === 'company' && (
+            <button
+              onClick={() => setCompareMode(v => !v)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all border ${compareMode ? 'bg-blue-600 text-white border-blue-500' : 'bg-slate-900 text-slate-300 border-white/10 hover:text-white hover:border-blue-500/40'}`}
+            >
+              <GitCompareArrows size={14} /> {compareMode ? 'Exit Compare' : 'Compare'}
+            </button>
+          )}
+          {viewMode === 'company' && !compareMode && (
             <button
               onClick={handleExport}
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider bg-slate-900 text-slate-300 border border-white/10 hover:text-white hover:border-blue-500/40 transition-all"
@@ -195,7 +215,9 @@ export const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {compareMode ? (
+      {viewMode === 'team' ? (
+        <TechAnalytics jobs={jobs} users={users} year={viewYear} month={viewMonth} />
+      ) : compareMode ? (
         <CompareView
           jobs={jobs} months={months} target={targetGoal}
           A={A} B={B} viewYear={viewYear} viewMonth={viewMonth} cmpYear={cmpYear} cmpMonth={cmpMonth}
@@ -224,6 +246,27 @@ export const Dashboard: React.FC = () => {
                         className="w-full bg-slate-950 border border-white/10 rounded-xl px-10 py-3 text-xl font-bold text-white outline-none focus:border-blue-500 transition-all shadow-inner"
                       />
                     </div>
+                    {(() => {
+                      const presets = [
+                        { label: 'Repeat last', value: Math.round(prevMetrics.totalRevenue), show: prevMetrics.totalRevenue > 0 },
+                        { label: '+10% vs last', value: Math.round(prevMetrics.totalRevenue * 1.1), show: prevMetrics.totalRevenue > 0 },
+                        { label: 'Beat best month', value: Math.round(records.bestMonth.revenue), show: records.bestMonth.revenue > 0 },
+                      ].filter(p => p.show && p.value >= 1);
+                      if (presets.length === 0) return null;
+                      return (
+                        <div className="flex flex-wrap gap-1.5 mt-2.5">
+                          {presets.map(p => (
+                            <button
+                              key={p.label}
+                              onClick={() => setTargetGoal(p.value)}
+                              className={`px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider border transition-all ${targetGoal === p.value ? 'bg-blue-600 text-white border-blue-500' : 'bg-white/5 text-slate-400 border-white/10 hover:text-white hover:border-blue-500/40'}`}
+                            >
+                              {p.label} · {fmt$(p.value)}
+                            </button>
+                          ))}
+                        </div>
+                      );
+                    })()}
                   </div>
                   {A.isPastMonth ? (
                     <div className="grid grid-cols-2 gap-3">
@@ -400,6 +443,51 @@ export const Dashboard: React.FC = () => {
               </div>
             ))}
           </div>
+
+          {/* YEAR PLANNING BOARD */}
+          <Card title={`Year Planning — ${viewYear}`} icon={CalendarDays}>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
+              <div className="bg-white/5 p-3.5 rounded-xl border border-blue-500/15">
+                <p className="text-xs font-bold text-slate-500 uppercase mb-1">Year to Date</p>
+                <p className="text-lg font-bold text-white">{fmt$(yearPlan.ytdActual)} <span className="text-xs text-slate-500 font-semibold">/ {fmt$(yearPlan.ytdTarget)} planned</span></p>
+              </div>
+              <div className="bg-white/5 p-3.5 rounded-xl border border-white/10">
+                <p className="text-xs font-bold text-slate-500 uppercase mb-1">Annual Goal</p>
+                <p className="text-lg font-bold text-white">{fmt$(yearPlan.yearTarget)} <span className={`text-xs font-semibold ${yearPlan.yearTarget > 0 && yearPlan.yearActual / yearPlan.yearTarget >= 1 ? 'text-green-400' : 'text-slate-500'}`}>· {yearPlan.yearTarget > 0 ? Math.round((yearPlan.yearActual / yearPlan.yearTarget) * 100) : 0}% done</span></p>
+              </div>
+              <div className="bg-white/5 p-3.5 rounded-xl border border-green-500/15">
+                <p className="text-xs font-bold text-slate-500 uppercase mb-1">Targets Hit</p>
+                <p className="text-lg font-bold text-green-400">{yearPlan.monthsHit}<span className="text-xs text-slate-500 font-semibold"> of {yearPlan.monthsClosed} closed month{yearPlan.monthsClosed === 1 ? '' : 's'}</span></p>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2">
+              {yearPlan.months.map(m => {
+                const selected = m.monthIndex === viewMonth;
+                const tone = m.isCurrent ? 'border-blue-500/40' : m.isPast ? (m.hit ? 'border-green-500/30' : 'border-amber-500/25') : 'border-white/5';
+                const bar = m.isCurrent ? 'bg-blue-500' : m.hit ? 'bg-green-500' : m.isPast ? 'bg-amber-500' : 'bg-slate-600';
+                return (
+                  <button
+                    key={m.monthIndex}
+                    onClick={() => setViewMonth(m.monthIndex)}
+                    className={`bg-white/5 p-3 rounded-xl border text-left transition-all hover:bg-white/10 ${tone} ${selected ? 'ring-2 ring-blue-400' : ''}`}
+                  >
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className={`text-[10px] font-bold uppercase tracking-wider ${m.isCurrent ? 'text-blue-400' : 'text-slate-500'}`}>{m.label}</span>
+                      {m.isPast && (m.hit
+                        ? <CheckCircle2 size={11} className="text-green-400" />
+                        : <XCircle size={11} className="text-amber-500/70" />)}
+                      {m.isCurrent && <Clock size={11} className="text-blue-400" />}
+                    </div>
+                    <p className="text-sm font-bold text-white tabular-nums leading-none mb-2">{m.actual > 0 ? fmt$(m.actual) : <span className="text-slate-600">—</span>}</p>
+                    <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+                      <div className={`h-full rounded-full ${bar}`} style={{ width: `${Math.min(m.pct, 100)}%` }} />
+                    </div>
+                    <p className="text-[9px] font-bold text-slate-500 mt-1.5 uppercase tracking-wider">{Math.round(m.pct)}% of {fmt$(m.target)}</p>
+                  </button>
+                );
+              })}
+            </div>
+          </Card>
 
           {/* REVENUE BY TYPE  |  TOP CLIENTS */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
