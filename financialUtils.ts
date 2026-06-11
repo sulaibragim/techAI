@@ -453,6 +453,40 @@ export function yearPlanning(jobs: Job[], year: number, targets: Record<string, 
   };
 }
 
+export const HOUR_SLOT_LABELS = ['12a', '3a', '6a', '9a', '12p', '3p', '6p', '9p'];
+
+export interface HourDowCell { revenue: number; count: number; }
+
+/**
+ * Revenue by 3-hour slot × day of week over the trailing `monthsBack` months
+ * ending at the given month. Full 24h coverage — night lockouts are real money
+ * for a locksmith. Slot comes from the job's scheduled time.
+ */
+export function revenueByHourDow(jobs: Job[], year: number, month: number, monthsBack = 6) {
+  const start = new Date(year, month - (monthsBack - 1), 1);
+  const end = new Date(year, month + 1, 1); // exclusive
+  const grid: HourDowCell[][] = Array.from({ length: 7 }, () =>
+    HOUR_SLOT_LABELS.map(() => ({ revenue: 0, count: 0 }))
+  );
+  for (const j of jobs) {
+    if (!isRevenueJob(j)) continue;
+    const d = new Date(revenueDateStr(j) + 'T00:00:00');
+    if (isNaN(d.getTime()) || d < start || d >= end) continue;
+    const hour = Number((j.scheduledTime || '').slice(0, 2));
+    if (!Number.isFinite(hour) || hour < 0 || hour > 23) continue;
+    const cell = grid[d.getDay()][Math.floor(hour / 3)];
+    cell.revenue += j.totalAmount;
+    cell.count += 1;
+  }
+  let max = 0;
+  let best = { dow: -1, slot: -1, revenue: 0 };
+  grid.forEach((row, dow) => row.forEach((c, slot) => {
+    if (c.revenue > max) max = c.revenue;
+    if (c.revenue > best.revenue) best = { dow, slot, revenue: c.revenue };
+  }));
+  return { grid, max, best, monthsBack };
+}
+
 // ── Accounting helpers ──────────────────────────────────────────────────────
 
 /** How much has actually been collected on a job. */

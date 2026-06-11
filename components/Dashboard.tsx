@@ -15,7 +15,8 @@ import { useAuthStore } from '../authStore';
 import {
   calculatePeriodMetrics, buildMonthlyTrend, buildYearlyTrend, revenueByJobType,
   topClients, revenueByDayOfWeek, computeRecords, coffeeAnalysis, availableMonths,
-  revenueByTechnician, periodJobsToCSV, yearPlanning, MONTH_FULL, MONTH_LABELS, FinancialMetrics
+  revenueByTechnician, periodJobsToCSV, yearPlanning, revenueByHourDow, HOUR_SLOT_LABELS,
+  MONTH_FULL, MONTH_LABELS, FinancialMetrics
 } from '../financialUtils';
 import { TechAnalytics } from './TechAnalytics';
 
@@ -127,6 +128,7 @@ export const Dashboard: React.FC = () => {
   const users = useAuthStore(s => s.users);
   const techEarnings = useMemo(() => revenueByTechnician(jobs, viewYear, viewMonth, users), [jobs, viewYear, viewMonth, users]);
   const yearPlan = useMemo(() => yearPlanning(jobs, viewYear, monthlyTargets, monthlyRevenueTarget), [jobs, viewYear, monthlyTargets, monthlyRevenueTarget]);
+  const hourDow = useMemo(() => revenueByHourDow(jobs, viewYear, viewMonth), [jobs, viewYear, viewMonth]);
 
   const prevMonth = useMemo(() => stepMonth(viewYear, viewMonth, -1), [viewYear, viewMonth]);
   const prevMetrics = useMemo(() => calculatePeriodMetrics(jobs, prevMonth.year, prevMonth.month, monthlyTargets[keyOf(prevMonth.year, prevMonth.month)] ?? monthlyRevenueTarget), [jobs, prevMonth, monthlyTargets, monthlyRevenueTarget]);
@@ -608,6 +610,61 @@ export const Dashboard: React.FC = () => {
               </div>
             </Card>
           </div>
+
+          {/* MONEY CLOCK — HOUR × DAY HEATMAP */}
+          <Card title="Money Clock — When Revenue Comes In" icon={Clock}>
+            {hourDow.max === 0 ? (
+              <p className="text-sm text-slate-500 py-8 text-center">No paid jobs in the last 6 months.</p>
+            ) : (
+              <>
+                <div className="overflow-x-auto">
+                  <div className="min-w-[440px] grid gap-1" style={{ gridTemplateColumns: '40px repeat(8, 1fr)' }}>
+                    <div />
+                    {HOUR_SLOT_LABELS.map(l => (
+                      <div key={l} className="text-center text-[9px] font-bold text-slate-500 uppercase">{l}</div>
+                    ))}
+                    {hourDow.grid.map((row, dow) => {
+                      const dayShort = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][dow];
+                      const dayFull = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][dow];
+                      return (
+                        <React.Fragment key={dow}>
+                          <div className="text-[9px] font-bold text-slate-500 uppercase flex items-center">{dayShort}</div>
+                          {row.map((c, s) => {
+                            const isBest = dow === hourDow.best.dow && s === hourDow.best.slot;
+                            const alpha = c.revenue > 0 ? 0.15 + 0.85 * (c.revenue / hourDow.max) : 0;
+                            return (
+                              <div
+                                key={s}
+                                title={`${dayFull} ${HOUR_SLOT_LABELS[s]}–${HOUR_SLOT_LABELS[(s + 1) % 8]}: ${fmt$(c.revenue)} · ${c.count} job${c.count === 1 ? '' : 's'}`}
+                                className={`h-7 rounded-md transition-all hover:scale-105 cursor-default ${c.revenue === 0 ? 'bg-white/[0.03]' : ''} ${isBest ? 'ring-2 ring-amber-400' : ''}`}
+                                style={c.revenue > 0 ? { backgroundColor: `rgba(16,185,129,${alpha})` } : undefined}
+                              />
+                            );
+                          })}
+                        </React.Fragment>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
+                  <div className="flex items-center gap-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                    <span>Less</span>
+                    {[0.15, 0.4, 0.65, 1].map(a => (
+                      <span key={a} className="w-4 h-4 rounded" style={{ backgroundColor: `rgba(16,185,129,${a})` }} />
+                    ))}
+                    <span>More</span>
+                    <span className="ml-2 flex items-center gap-1.5"><span className="w-4 h-4 rounded ring-2 ring-amber-400" /> Hottest</span>
+                  </div>
+                  {hourDow.best.revenue > 0 && (
+                    <p className="text-xs font-semibold text-amber-400">
+                      Hottest window: {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][hourDow.best.dow]} {HOUR_SLOT_LABELS[hourDow.best.slot]}–{HOUR_SLOT_LABELS[(hourDow.best.slot + 1) % 8]} — {fmt$(hourDow.best.revenue)}. Keep techs on shift here.
+                    </p>
+                  )}
+                </div>
+                <p className="text-[10px] text-slate-500 mt-2">Paid jobs by scheduled hour × weekday, trailing 6 months ending {periodLabel}. Use it to plan shifts and on-call coverage.</p>
+              </>
+            )}
+          </Card>
 
           {/* RECORDS  |  COFFEE LOSS */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">

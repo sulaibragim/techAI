@@ -15,11 +15,13 @@ export interface SettingsState {
   monthlyRevenueTarget: number;
   dailyRevenueTarget: number;
   monthlyTargets: Record<string, number>;
+  techTargets: Record<string, number>; // per-technician personal monthly revenue goal (user id → $)
   taxRate: number; // sales-tax percent applied to taxable revenue (0 = none)
   onboardingComplete: boolean;
   aiAvailable: boolean; // runtime flag: is GEMINI_API_KEY configured on the server?
-  updateSettings: (patch: Partial<Omit<SettingsState, 'updateSettings' | 'resetSettings' | 'setMonthlyTarget' | 'syncSettings' | 'checkAiAvailable' | 'aiAvailable'>>) => void;
+  updateSettings: (patch: Partial<Omit<SettingsState, 'updateSettings' | 'resetSettings' | 'setMonthlyTarget' | 'setTechTarget' | 'syncSettings' | 'checkAiAvailable' | 'aiAvailable'>>) => void;
   setMonthlyTarget: (monthKey: string, value: number) => void;
+  setTechTarget: (userId: string, value: number) => void;
   resetSettings: () => void;
   syncSettings: () => Promise<void>;
   checkAiAvailable: () => Promise<void>;
@@ -42,6 +44,7 @@ export const SETTINGS_DEFAULTS = {
   monthlyRevenueTarget: 5000,
   dailyRevenueTarget: 1500,
   monthlyTargets: {} as Record<string, number>,
+  techTargets: {} as Record<string, number>,
   taxRate: 0,
   onboardingComplete: false,
 };
@@ -103,6 +106,16 @@ export const useSettingsStore = create<SettingsState>()(
         }));
         const updated = get().monthlyTargets;
         pushToServer({ monthlyTargets: updated });
+      },
+
+      setTechTarget: (userId, value) => {
+        set((state) => {
+          const next = { ...state.techTargets };
+          if (value > 0) next[userId] = value;
+          else delete next[userId];
+          return { techTargets: next };
+        });
+        pushToServer({ techTargets: get().techTargets });
       },
 
       resetSettings: () => {

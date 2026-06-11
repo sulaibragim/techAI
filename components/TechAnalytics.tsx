@@ -4,13 +4,15 @@ import {
 } from 'recharts';
 import {
   ChevronLeft, ChevronRight, Users, Trophy, Wallet, CalendarDays, Activity,
-  Download, Sparkles, Crown, Coffee, Target, TrendingUp, X,
+  Download, Sparkles, Crown, Coffee, Target, TrendingUp, X, Flag,
 } from 'lucide-react';
 import { Job, User, STATUS_COLORS } from '../types';
 import {
   dailyPerformance, technicianStats, technicianTrend, payrollToCSV,
   DayPerf, TechStats, MONTH_FULL,
 } from '../financialUtils';
+import { useSettingsStore } from '../settingsStore';
+import { useCurrentUser } from '../authStore';
 
 const fmt$ = (n: number) => `$${Math.round(n).toLocaleString()}`;
 const DOW = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
@@ -216,6 +218,7 @@ const TeamOverview: React.FC<{
   periodLabel: string;
   onSelect: (id: string) => void;
 }> = ({ jobs, stats, userById, year, month, periodLabel, onSelect }) => {
+  const techTargets = useSettingsStore(s => s.techTargets);
   const teamRevenue = stats.reduce((s, t) => s + t.revenue, 0);
   const teamJobs = stats.reduce((s, t) => s + t.jobCount, 0);
   const teamCommission = stats.reduce((s, t) => s + t.commission, 0);
@@ -286,6 +289,11 @@ const TeamOverview: React.FC<{
                   <span>{fmt$(t.revenuePerActiveDay)}/day</span>
                   <span className="text-green-400">{fmt$(t.commission)} comm.</span>
                   {t.coffeeCount > 0 && <span className="text-red-400">{t.coffeeCount} no-sale</span>}
+                  {(techTargets[t.userId] ?? 0) > 0 && (
+                    <span className={(t.revenue / techTargets[t.userId]) >= 1 ? 'text-green-400' : 'text-blue-300'}>
+                      {Math.round((t.revenue / techTargets[t.userId]) * 100)}% of goal
+                    </span>
+                  )}
                 </div>
               </div>
               <ChevronRight size={16} className="text-slate-600 group-hover:text-purple-400 transition-colors shrink-0" />
@@ -346,6 +354,18 @@ const TechDeepDive: React.FC<{
 }> = ({ jobs, tech, allStats, year, month, periodLabel }) => {
   const days = useMemo(() => dailyPerformance(jobs, year, month, tech.userId), [jobs, year, month, tech.userId]);
   const trend = useMemo(() => technicianTrend(jobs, tech.userId, year, month), [jobs, tech.userId, year, month]);
+
+  const { techTargets, setTechTarget } = useSettingsStore();
+  const me = useCurrentUser();
+  const canEditGoal = me?.role === 'owner' || me?.role === 'manager';
+  const goal = techTargets[tech.userId] ?? 0;
+  const now = new Date();
+  const isCurrentMonth = year === now.getFullYear() && month === now.getMonth();
+  const isPastMonth = year < now.getFullYear() || (year === now.getFullYear() && month < now.getMonth());
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const daysLeft = isCurrentMonth ? Math.max(0, daysInMonth - now.getDate()) : 0;
+  const goalPct = goal > 0 ? (tech.revenue / goal) * 100 : 0;
+  const goalRemaining = Math.max(0, goal - tech.revenue);
 
   const rank = allStats.findIndex(s => s.userId === tech.userId) + 1;
   const activePeers = allStats.filter(s => s.jobCount > 0 || s.coffeeCount > 0);
@@ -416,6 +436,71 @@ const TechDeepDive: React.FC<{
           </div>
         ))}
       </div>
+
+      {/* Personal goal */}
+      <Card className="!border-green-500/20 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-green-600/5 blur-3xl -mr-16 -mt-16" />
+        <div className="flex flex-col md:flex-row md:items-center gap-5">
+          <div className="md:w-72 shrink-0">
+            <h3 className="text-xs font-bold text-green-400 uppercase tracking-widest mb-3 flex items-center">
+              <Flag size={13} className="mr-2" /> Personal Goal — {MONTH_FULL[month]}
+            </h3>
+            {canEditGoal ? (
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
+                <input
+                  type="number"
+                  value={goal || ''}
+                  placeholder="No goal set"
+                  onChange={e => setTechTarget(tech.userId, Math.max(0, Number(e.target.value) || 0))}
+                  className="w-full bg-slate-950 border border-white/10 rounded-xl px-10 py-2.5 text-lg font-bold text-white outline-none focus:border-green-500 transition-all shadow-inner placeholder:text-slate-600 placeholder:text-sm placeholder:font-semibold"
+                />
+              </div>
+            ) : (
+              <p className="text-2xl font-bold text-white tracking-tighter">{goal > 0 ? fmt$(goal) : <span className="text-sm text-slate-500 font-semibold">No goal set</span>}</p>
+            )}
+          </div>
+          <div className="flex-1">
+            {goal > 0 ? (
+              <div className="space-y-2.5">
+                <div className="flex justify-between items-end">
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{fmt$(tech.revenue)} of {fmt$(goal)}</span>
+                  <span className={`text-lg font-bold ${goalPct >= 100 ? 'text-green-400' : 'text-white'}`}>{goalPct.toFixed(0)}%</span>
+                </div>
+                <div className="h-2.5 bg-white/5 rounded-full overflow-hidden p-0.5 border border-white/10">
+                  <div
+                    className={`h-full rounded-full transition-all duration-1000 ${goalPct >= 100 ? 'bg-green-500 shadow-[0_0_10px_#22c55e]' : 'bg-green-600'}`}
+                    style={{ width: `${Math.min(goalPct, 100)}%` }}
+                  />
+                </div>
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {goalPct >= 100 ? (
+                    <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-green-500/15 text-green-400 border border-green-500/30">Goal smashed 🎉</span>
+                  ) : (
+                    <>
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white/5 text-slate-300 border border-white/10">{fmt$(goalRemaining)} to go</span>
+                      {isCurrentMonth && (
+                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-500/10 text-blue-300 border border-blue-500/20">
+                          {daysLeft > 0 ? `${fmt$(goalRemaining / daysLeft)}/day for ${daysLeft} days` : 'Last day — push!'}
+                        </span>
+                      )}
+                      {isPastMonth && (
+                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20">Missed by {fmt$(goalRemaining)}</span>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <p className="text-xs text-slate-500 font-semibold">
+                {canEditGoal
+                  ? `Set a monthly revenue goal for ${tech.name.split(' ')[0]} — progress, daily pace and a "to go" tracker will appear here. The goal applies to every month.`
+                  : 'No personal goal set for this technician yet.'}
+              </p>
+            )}
+          </div>
+        </div>
+      </Card>
 
       {/* Sales calendar + vs team */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
