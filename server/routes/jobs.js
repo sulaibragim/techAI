@@ -37,6 +37,31 @@ async function notifyAssignedTech(assigneeId, job, actingUserId) {
   }
 }
 
+// Look up a user's display name for notification text.
+async function userName(id) {
+  try {
+    const { rows } = await db.query('SELECT name FROM users WHERE id = $1', [id]);
+    return rows[0]?.name || 'A technician';
+  } catch { return 'A technician'; }
+}
+
+// Alert the dispatchers (active owners/managers with a phone, plus LEAD_NOTIFY_PHONE)
+// about a tech lifecycle milestone. Best-effort SMS; skips the acting user so nobody
+// texts themselves.
+async function notifyDispatchers(text, excludeUserId) {
+  try {
+    const recipients = new Set();
+    if (process.env.LEAD_NOTIFY_PHONE) recipients.add(process.env.LEAD_NOTIFY_PHONE.trim());
+    const { rows } = await db.query(
+      "SELECT id, phone FROM users WHERE role IN ('owner', 'manager') AND active = true AND phone IS NOT NULL AND phone <> ''"
+    );
+    for (const r of rows) { if (r.id !== excludeUserId) recipients.add(r.phone.trim()); }
+    for (const to of recipients) await sendSMS(to, text);
+  } catch (err) {
+    console.error('[JOBS] dispatcher notify error:', err);
+  }
+}
+
 // Get jobs — technicians see only jobs assigned to them.
 jobsRouter.get('/', requireAuth, async (req, res) => {
   try {
@@ -126,9 +151,14 @@ jobsRouter.post('/', requireAuth, async (req, res) => {
 // Update job — technicians may only update jobs assigned to them.
 jobsRouter.put('/:id', requireAuth, async (req, res) => {
   try {
-    const { rows: existing } = await db.query("SELECT data->>'assignedTo' AS assigned FROM jobs WHERE id = $1", [req.params.id]);
+    const { rows: existing } = await db.query(
+      "SELECT data->>'assignedTo' AS assigned, data->>'status' AS status, data->>'acceptanceStatus' AS acceptance FROM jobs WHERE id = $1",
+      [req.params.id]
+    );
     if (existing.length === 0) return res.status(404).json({ error: 'Job not found' });
     const prevAssigned = existing[0].assigned || null;
+    const prevStatus = existing[0].status || null;
+    const prevAcceptance = existing[0].acceptance || null;
 
     if (isTech(req) && prevAssigned !== req.user.id) {
       return res.status(403).json({ error: 'Insufficient permissions' });
@@ -150,6 +180,24 @@ jobsRouter.put('/:id', requireAuth, async (req, res) => {
     // Newly assigned (or reassigned) to a different tech → text them.
     if (data.assignedTo && data.assignedTo !== prevAssigned) {
       notifyAssignedTech(data.assignedTo, data, req.user.id).catch(e => console.error('[JOBS] notify error:', e));
+    }
+
+    // Tech lifecycle milestones → alert the dispatchers (owner/manager) by SMS. "On My
+    // Way" sets both enRoute and accepted at once, so prefer the stronger "on the way"
+    // alert and skip the redundant "accepted". Fire-and-forget so the response isn't held.
+    const wentEnRoute = data.status === 'enRoute' && prevStatus !== 'enRoute';
+    const justAccepted = data.acceptanceStatus === 'accepted' && prevAcceptance !== 'accepted';
+    const justDeclined = data.acceptanceStatus === 'declined' && prevAcceptance !== 'declined';
+    if (wentEnRoute || justAccepted || justDeclined) {
+      (async () => {
+        const actor = await userName(req.user.id);
+        const label = `#${data.jobNumber || req.params.id}`;
+        const who = [data.client?.firstName, data.client?.lastName].filter(Boolean).join(' ');
+        const suffix = who ? ` — ${who}` : '';
+        if (wentEnRoute) await notifyDispatchers(`${actor} is on the way to job ${label}${suffix}`, req.user.id);
+        else if (justAccepted) await notifyDispatchers(`${actor} accepted job ${label}${suffix}`, req.user.id);
+        if (justDeclined) await notifyDispatchers(`${actor} DECLINED job ${label}${suffix} — needs reassignment`, req.user.id);
+      })().catch(e => console.error('[JOBS] lifecycle notify error:', e));
     }
 
     res.json({ id: req.params.id, ...data });

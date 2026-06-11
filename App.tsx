@@ -128,6 +128,8 @@ const App: React.FC = () => {
             notes.push(`${techName(sj.assignedTo)} completed #${sj.jobNumber}`);
           } else if ((sj.amountPaid || 0) > (lj.amountPaid || 0) && (sj.paymentStatus === 'paid' || sj.paymentStatus === 'partial')) {
             notes.push(`Payment on #${sj.jobNumber}: $${(sj.amountPaid || sj.totalAmount || 0).toLocaleString()}`);
+          } else if (sj.status === 'enRoute' && lj.status !== 'enRoute') {
+            notes.push(`${techName(sj.assignedTo)} is on the way to #${sj.jobNumber}`);
           } else if (sj.acceptanceStatus === 'accepted' && lj.acceptanceStatus !== 'accepted') {
             notes.push(`${techName(sj.assignedTo)} accepted #${sj.jobNumber}`);
           } else if (sj.acceptanceStatus === 'declined' && lj.acceptanceStatus !== 'declined') {
