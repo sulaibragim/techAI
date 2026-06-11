@@ -1,4 +1,4 @@
-import { Job, User } from './types';
+import { Job, User, Expense } from './types';
 
 export interface FinancialMetrics {
   totalRevenue: number;
@@ -592,17 +592,15 @@ export function payrollToCSV(rows: TechnicianEarnings[]): string {
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
-/** Build a CSV string of completed jobs for a period (export). */
-export function periodJobsToCSV(jobs: Job[], year: number, month: number): string {
-  const completed = completedJobsInMonth(jobs, year, month).sort((a, b) =>
-    a.scheduledDate.localeCompare(b.scheduledDate)
-  );
-  const esc = (v: unknown) => {
-    const s = String(v ?? '');
-    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-  };
+const csvEsc = (v: unknown) => {
+  const s = String(v ?? '');
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+};
+
+/** Build a CSV string from an arbitrary list of revenue jobs. */
+export function jobsToCSV(list: Job[]): string {
   const header = ['Date', 'Job #', 'Client', 'Type', 'Brand', 'Outcome', 'Parts Cost', 'Total'];
-  const rows = completed.map(j => {
+  const rows = list.map(j => {
     const partsCost = j.lineItems
       .filter(i => i.type === 'part')
       .reduce((s, i) => s + i.unitPrice * i.quantity, 0);
@@ -617,5 +615,59 @@ export function periodJobsToCSV(jobs: Job[], year: number, month: number): strin
       j.totalAmount.toFixed(2),
     ];
   });
-  return [header, ...rows].map(r => r.map(esc).join(',')).join('\n');
+  return [header, ...rows].map(r => r.map(csvEsc).join(',')).join('\n');
+}
+
+/** Build a CSV string of completed jobs for a period (export). */
+export function periodJobsToCSV(jobs: Job[], year: number, month: number): string {
+  return jobsToCSV(
+    completedJobsInMonth(jobs, year, month).sort((a, b) => a.scheduledDate.localeCompare(b.scheduledDate))
+  );
+}
+
+// ── Period spans (month / quarter / year) ───────────────────────────────────
+
+export type PeriodMode = 'month' | 'quarter' | 'year';
+
+/** The months covered by the chosen reporting period. */
+export function monthsInPeriod(year: number, month: number, mode: PeriodMode): { year: number; month: number }[] {
+  if (mode === 'quarter') {
+    const q = Math.floor(month / 3) * 3;
+    return [0, 1, 2].map(i => ({ year, month: q + i }));
+  }
+  if (mode === 'year') return Array.from({ length: 12 }, (_, m) => ({ year, month: m }));
+  return [{ year, month }];
+}
+
+/** All revenue jobs across a span of months, date-sorted. */
+export function jobsInMonths(jobs: Job[], span: { year: number; month: number }[]): Job[] {
+  return span
+    .flatMap(m => completedJobsInMonth(jobs, m.year, m.month))
+    .sort((a, b) => revenueDateStr(a).localeCompare(revenueDateStr(b)));
+}
+
+// ── Expense ledger helpers ───────────────────────────────────────────────────
+
+/** Expenses dated within a span of months, newest first. */
+export function expensesInMonths(expenses: Expense[], span: { year: number; month: number }[]): Expense[] {
+  const keys = new Set(span.map(m => monthKey(m.year, m.month)));
+  return expenses
+    .filter(e => e.date && keys.has(e.date.slice(0, 7)))
+    .sort((a, b) => b.date.localeCompare(a.date));
+}
+
+/** Totals per expense category, largest first. */
+export function expensesByCategory(list: Expense[]): { category: string; amount: number }[] {
+  const map = new Map<string, number>();
+  for (const e of list) map.set(e.category, (map.get(e.category) || 0) + e.amount);
+  return [...map.entries()]
+    .map(([category, amount]) => ({ category, amount: round2(amount) }))
+    .sort((a, b) => b.amount - a.amount);
+}
+
+export function expensesToCSV(list: Expense[]): string {
+  const header = ['Date', 'Category', 'Amount', 'Note'];
+  const rows = list.map(e => [e.date, e.category, e.amount.toFixed(2), e.note || '']);
+  const total = ['TOTAL', '', list.reduce((s, e) => s + e.amount, 0).toFixed(2), ''];
+  return [header, ...rows, total].map(r => r.map(csvEsc).join(',')).join('\n');
 }

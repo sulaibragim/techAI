@@ -192,7 +192,7 @@ const App: React.FC = () => {
               case 'calls': return <CallsList onClientSelect={openClient} />;
               case 'clients': return <ClientsList onJobSelect={(job) => setSelectedJobId(job.id)} focusClientId={clientFocusId} onFocusConsumed={() => setClientFocusId(null)} />;
               case 'analytics': return <Dashboard />;
-              case 'accounting': return <Accounting />;
+              case 'accounting': return <Accounting onJobSelect={(job) => setSelectedJobId(job.id)} />;
               case 'inventory': return <Inventory />;
               case 'brain': return <AIChat />;
               case 'settings': return <Settings />;

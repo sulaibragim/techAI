@@ -122,8 +122,15 @@ export const useAppStore = create<AppState>()(
     return newJob;
   },
   updateJob: (updatedJob) => {
-    set((state) => ({ jobs: state.jobs.map(j => j.id === updatedJob.id ? updatedJob : j) }));
-    updateJobOnServer(updatedJob);
+    // Stamp the cash-flow date when money first lands on a job. Only on a payment-status
+    // transition, so editing an old already-paid job doesn't fake today's date.
+    const next = { ...updatedJob };
+    const prev = get().jobs.find(j => j.id === next.id);
+    const gotPaid = (next.paymentStatus === 'paid' || next.paymentStatus === 'partial') &&
+      prev?.paymentStatus !== next.paymentStatus;
+    if (gotPaid && !next.paidAt) next.paidAt = new Date().toISOString();
+    set((state) => ({ jobs: state.jobs.map(j => j.id === next.id ? next : j) }));
+    updateJobOnServer(next);
   },
   removeJob: (id) => {
     set((state) => ({ jobs: state.jobs.filter(j => j.id !== id) }));

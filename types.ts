@@ -122,6 +122,7 @@ export interface Job {
   paymentStatus: 'paid' | 'unpaid' | 'partial';
   amountPaid?: number; // how much has actually been collected (for deposits / partial payments)
   paymentMethod?: 'Card' | 'Cash' | 'Check' | 'Zelle';
+  paidAt?: string;      // ISO timestamp of the first payment received (cash-flow date)
   completedAt?: string; // ISO timestamp set when the job is marked completed/paid (revenue date)
   totalAmount: number;
   photos: string[];
@@ -142,6 +143,26 @@ export interface Job {
     missedInfo: string[];
   };
   callTranscript?: string; // Raw call transcript for reference
+}
+
+export const EXPENSE_CATEGORIES = [
+  'Keys & Stock',       // key blanks, remotes, cylinders bought for inventory
+  'Fuel',
+  'Advertising',
+  'Tools & Equipment',
+  'Rent',
+  'Phone & Software',
+  'Other',
+] as const;
+export type ExpenseCategory = typeof EXPENSE_CATEGORIES[number];
+
+export interface Expense {
+  id: string;
+  date: string; // YYYY-MM-DD
+  category: ExpenseCategory;
+  amount: number;
+  note?: string;
+  createdBy?: string; // user id
 }
 
 export interface MissedInteraction {

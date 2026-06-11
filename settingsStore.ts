@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { API_BASE } from './backendUrl';
 import { authHeaders } from './apiClient';
+import { Expense } from './types';
 
 export interface SettingsState {
   technicianName: string;
@@ -16,12 +17,15 @@ export interface SettingsState {
   dailyRevenueTarget: number;
   monthlyTargets: Record<string, number>;
   techTargets: Record<string, number>; // per-technician personal monthly revenue goal (user id → $)
+  expenses: Expense[]; // business expense ledger (keys & stock, fuel, ads, …)
   taxRate: number; // sales-tax percent applied to taxable revenue (0 = none)
   onboardingComplete: boolean;
   aiAvailable: boolean; // runtime flag: is GEMINI_API_KEY configured on the server?
-  updateSettings: (patch: Partial<Omit<SettingsState, 'updateSettings' | 'resetSettings' | 'setMonthlyTarget' | 'setTechTarget' | 'syncSettings' | 'checkAiAvailable' | 'aiAvailable'>>) => void;
+  updateSettings: (patch: Partial<Omit<SettingsState, 'updateSettings' | 'resetSettings' | 'setMonthlyTarget' | 'setTechTarget' | 'addExpense' | 'removeExpense' | 'syncSettings' | 'checkAiAvailable' | 'aiAvailable'>>) => void;
   setMonthlyTarget: (monthKey: string, value: number) => void;
   setTechTarget: (userId: string, value: number) => void;
+  addExpense: (expense: Omit<Expense, 'id'>) => void;
+  removeExpense: (id: string) => void;
   resetSettings: () => void;
   syncSettings: () => Promise<void>;
   checkAiAvailable: () => Promise<void>;
@@ -45,6 +49,7 @@ export const SETTINGS_DEFAULTS = {
   dailyRevenueTarget: 1500,
   monthlyTargets: {} as Record<string, number>,
   techTargets: {} as Record<string, number>,
+  expenses: [] as Expense[],
   taxRate: 0,
   onboardingComplete: false,
 };
@@ -116,6 +121,17 @@ export const useSettingsStore = create<SettingsState>()(
           return { techTargets: next };
         });
         pushToServer({ techTargets: get().techTargets });
+      },
+
+      addExpense: (expense) => {
+        const entry: Expense = { ...expense, id: `exp-${Date.now()}-${Math.random().toString(36).slice(2, 7)}` };
+        set((state) => ({ expenses: [entry, ...state.expenses] }));
+        pushToServer({ expenses: get().expenses });
+      },
+
+      removeExpense: (id) => {
+        set((state) => ({ expenses: state.expenses.filter(e => e.id !== id) }));
+        pushToServer({ expenses: get().expenses });
       },
 
       resetSettings: () => {
