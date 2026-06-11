@@ -138,7 +138,7 @@ export const Accounting: React.FC = () => {
               <input
                 type="number" step="0.01" min="0" disabled={!isOwner}
                 value={taxRate}
-                onChange={e => updateSettings({ taxRate: parseFloat(e.target.value) || 0 })}
+                onChange={e => updateSettings({ taxRate: Math.min(100, Math.max(0, parseFloat(e.target.value) || 0)) })}
                 className="w-20 bg-slate-950 border border-white/10 rounded-lg px-3 py-2 text-sm font-mono text-white text-right outline-none focus:border-blue-500/50 disabled:opacity-60"
               />
               <span className="text-sm font-bold text-slate-400">%</span>
@@ -244,9 +244,7 @@ export const Accounting: React.FC = () => {
       <div className="bg-slate-900 border border-white/10 rounded-2xl p-6 shadow-lg">
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center"><Receipt size={16} className="mr-2 text-amber-500" /> Outstanding Invoices (A/R) · {fmt$(totalReceivable)}</h3>
-          {receivables.length > 0 && (
-            <button onClick={() => downloadCSV(`transactions-${year}-${String(month + 1).padStart(2, '0')}.csv`, periodJobsToCSV(jobs, year, month))} className="flex items-center gap-1.5 text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors"><Download size={13} /> Transactions CSV</button>
-          )}
+          <button onClick={() => downloadCSV(`transactions-${year}-${String(month + 1).padStart(2, '0')}.csv`, periodJobsToCSV(jobs, year, month))} className="flex items-center gap-1.5 text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors"><Download size={13} /> {periodLabel} CSV</button>
         </div>
         {receivables.length === 0 ? (
           <p className="text-sm text-slate-500 py-6 text-center">Nothing outstanding — all completed work is paid. 🎉</p>
