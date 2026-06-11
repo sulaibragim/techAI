@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useAppStore } from '../store';
 import { useAuthStore } from '../authStore';
 import { API_BASE } from '../backendUrl';
 import { authHeaders } from '../apiClient';
 import { TechStatus } from '../types';
-import { Sparkles, Phone, MapPin, Lock, Clock, CheckCircle, X, ChevronDown, ChevronUp, Mic, UserCheck, Circle, Car, FileText, Star, AlertTriangle, ThumbsUp, ThumbsDown, Info } from 'lucide-react';
+import { Sparkles, Phone, MapPin, Lock, Clock, CheckCircle, X, ChevronDown, ChevronUp, Mic, UserCheck, Circle, Car, FileText, Star, AlertTriangle, ThumbsUp, ThumbsDown, Info, User } from 'lucide-react';
 
 interface CallQuality {
   rating: 'excellent' | 'good' | 'needs_improvement' | 'poor';
@@ -92,6 +92,11 @@ export const PendingJobSuggestions: React.FC<{ onJobCreated?: (job: import('../t
   const [expanded, setExpanded] = useState<string | null>(null);
   const [creating, setCreating] = useState<string | null>(null);
   const [selectedTech, setSelectedTech] = useState<Record<string, string>>({});
+  // Editable client fields, so a caller the AI couldn't identify can be named before creating.
+  const [editFields, setEditFields] = useState<Record<string, { name?: string; phone?: string; address?: string }>>({});
+  const setField = (callId: string, key: 'name' | 'phone' | 'address', value: string) =>
+    setEditFields(prev => ({ ...prev, [callId]: { ...prev[callId], [key]: value } }));
+  const seenRef = useRef<Set<string>>(new Set());
 
   const fetchPending = useCallback(async () => {
     try {
@@ -108,6 +113,18 @@ export const PendingJobSuggestions: React.FC<{ onJobCreated?: (job: import('../t
     return () => clearInterval(interval);
   }, [fetchPending]);
 
+  // Auto-open a newly arrived card so its actions (assign / create) are immediately
+  // visible — don't make the user hunt for the expand chevron. Only fires once per
+  // card, so a manual collapse sticks.
+  useEffect(() => {
+    for (const pj of pending) {
+      if (!seenRef.current.has(pj.callId)) {
+        seenRef.current.add(pj.callId);
+        setExpanded(pj.callId);
+      }
+    }
+  }, [pending]);
+
   const dismiss = async (callId: string) => {
     try {
       await fetch(`${API_BASE}/api/openphone/pending-jobs/${callId}`, { method: 'DELETE', headers: { ...authHeaders() } });
@@ -116,10 +133,13 @@ export const PendingJobSuggestions: React.FC<{ onJobCreated?: (job: import('../t
   };
 
   const approve = async (pj: PendingJob) => {
-    if (!pj.suggestion) return;
     setCreating(pj.callId);
-    const s = pj.suggestion;
-    const { firstName, lastName } = splitName(s.clientName || '');
+    const s = pj.suggestion; // may be null (transcript-only or AI extraction failed)
+    const edited = editFields[pj.callId] || {};
+    const nameVal = (edited.name ?? s?.clientName ?? '').trim();
+    const phoneVal = (edited.phone ?? s?.clientPhone ?? pj.callerPhone ?? '').trim();
+    const addressVal = (edited.address ?? s?.address ?? '').trim();
+    const { firstName, lastName } = splitName(nameVal);
     const today = new Date();
     const lockTypeMap: Record<string, 'Automotive' | 'Residential' | 'Commercial' | 'Secure / Safe' | 'Other'> = {
       automotive: 'Automotive',
@@ -135,35 +155,35 @@ export const PendingJobSuggestions: React.FC<{ onJobCreated?: (job: import('../t
         id: `c-${Date.now()}`,
         firstName: firstName || 'Unknown',
         lastName,
-        phone: s.clientPhone || pj.callerPhone,
+        phone: phoneVal,
         email: '',
-        address: s.address || '',
+        address: addressVal,
       },
       lockDetails: {
-        type: lockTypeMap[s.serviceType] || 'Other',
-        brand: s.vehicleMake || '',
-        modelOrYear: s.vehicleYear && s.vehicleModel
+        type: lockTypeMap[s?.serviceType || ''] || 'Other',
+        brand: s?.vehicleMake || '',
+        modelOrYear: s?.vehicleYear && s?.vehicleModel
           ? `${s.vehicleYear} ${s.vehicleModel}`
-          : s.vehicleModel || s.vehicleYear || s.lockType || '',
+          : s?.vehicleModel || s?.vehicleYear || s?.lockType || '',
       },
-      complaint: s.problemDescription || '',
-      diagnosisNotes: s.notes || '',
+      complaint: s?.problemDescription || (pj.transcript ? 'Created from call — see transcript' : ''),
+      diagnosisNotes: s?.notes || '',
       scheduledDate: `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`,
       scheduledTime: `${String(today.getHours()).padStart(2, '0')}:${String(today.getMinutes()).padStart(2, '0')}`,
       durationMinutes: 60,
       status: 'scheduled',
-      lineItems: s.estimatedPrice
+      lineItems: s?.estimatedPrice
         ? [{ id: `li-${Date.now()}`, type: 'service_call', description: 'Estimate', unitPrice: s.estimatedPrice, quantity: 1 }]
         : [],
       paymentStatus: 'unpaid',
-      totalAmount: s.estimatedPrice || 0,
+      totalAmount: s?.estimatedPrice || 0,
       photos: [],
       messages: [],
       assignedTo: assignedTechId,
       // Mirror the wizard: an assigned tech must accept/decline; unassigned stays clear.
       acceptanceStatus: assignedTechId ? 'pending' : undefined,
-      callSummary: s.callSummary || pj.openPhoneSummary || undefined,
-      callQuality: s.callQuality || undefined,
+      callSummary: s?.callSummary || pj.openPhoneSummary || undefined,
+      callQuality: s?.callQuality || undefined,
       callTranscript: pj.transcript || undefined,
     });
 
@@ -198,7 +218,10 @@ export const PendingJobSuggestions: React.FC<{ onJobCreated?: (job: import('../t
             className="bg-violet-950/30 border border-violet-500/20 rounded-2xl overflow-hidden shadow-xl"
           >
             <div className="flex items-center justify-between p-4 gap-3">
-              <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div
+                onClick={() => setExpanded(isExpanded ? null : pj.callId)}
+                className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer"
+              >
                 <div className="w-10 h-10 bg-violet-500/10 border border-violet-500/20 rounded-xl flex items-center justify-center text-lg shrink-0">
                   {SERVICE_ICON[s?.serviceType || ''] || '🔑'}
                 </div>
@@ -362,6 +385,34 @@ export const PendingJobSuggestions: React.FC<{ onJobCreated?: (job: import('../t
                   </details>
                 )}
 
+                {/* Editable client — name a caller the AI couldn't identify before creating */}
+                <div className="bg-slate-900/50 rounded-xl p-3 space-y-2">
+                  <div className="flex items-center gap-1.5">
+                    <User size={11} className="text-violet-400" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Client</span>
+                  </div>
+                  <input
+                    value={editFields[pj.callId]?.name ?? s?.clientName ?? ''}
+                    onChange={e => setField(pj.callId, 'name', e.target.value)}
+                    placeholder="Client name"
+                    className="w-full bg-slate-800 border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder:text-slate-500 outline-none focus:border-violet-500/50"
+                  />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                    <input
+                      value={editFields[pj.callId]?.phone ?? s?.clientPhone ?? pj.callerPhone ?? ''}
+                      onChange={e => setField(pj.callId, 'phone', e.target.value)}
+                      placeholder="Phone"
+                      className="w-full bg-slate-800 border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder:text-slate-500 outline-none focus:border-violet-500/50"
+                    />
+                    <input
+                      value={editFields[pj.callId]?.address ?? s?.address ?? ''}
+                      onChange={e => setField(pj.callId, 'address', e.target.value)}
+                      placeholder="Address"
+                      className="w-full bg-slate-800 border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder:text-slate-500 outline-none focus:border-violet-500/50"
+                    />
+                  </div>
+                </div>
+
                 {/* Assign technician */}
                 {technicians.length > 0 && (
                   <div className="bg-slate-900/50 rounded-xl p-3 space-y-2">
@@ -393,22 +444,20 @@ export const PendingJobSuggestions: React.FC<{ onJobCreated?: (job: import('../t
                   </div>
                 )}
 
-                {/* Create Job button */}
-                {s && (
-                  <button
-                    onClick={() => approve(pj)}
-                    disabled={creating === pj.callId}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all active:scale-[0.98] disabled:opacity-50"
-                  >
-                    <CheckCircle size={14} />
-                    {creating === pj.callId
-                      ? 'Creating…'
-                      : selectedTech[pj.callId]
-                        ? `Assign to ${technicians.find(t => t.id === selectedTech[pj.callId])?.name} & Create Job`
-                        : 'Create Job (Unassigned)'
-                    }
-                  </button>
-                )}
+                {/* Create Job button — always available, even when the AI extracted nothing */}
+                <button
+                  onClick={() => approve(pj)}
+                  disabled={creating === pj.callId}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all active:scale-[0.98] disabled:opacity-50"
+                >
+                  <CheckCircle size={14} />
+                  {creating === pj.callId
+                    ? 'Creating…'
+                    : selectedTech[pj.callId]
+                      ? `Assign to ${technicians.find(t => t.id === selectedTech[pj.callId])?.name} & Create Job`
+                      : 'Create Job (Unassigned)'
+                  }
+                </button>
               </div>
             )}
           </div>
