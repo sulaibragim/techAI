@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import crypto from 'node:crypto';
 import { processTranscriptWithAI } from '../services/gemini.js';
+import { toE164 } from '../services/openphone.js';
 import { requireAuth } from '../middleware/auth.js';
 
 export const openphoneRouter = Router();
@@ -110,20 +111,25 @@ openphoneRouter.get('/messages', requireAuth, (_req, res) => {
 openphoneRouter.post('/messages/send', requireAuth, async (req, res) => {
   try {
     const { to, content, phoneNumberId } = req.body;
+    const toAddr = toE164(to); // OpenPhone rejects non-E.164 numbers — coerce first
     const response = await fetch('https://api.openphone.com/v1/messages', {
       method: 'POST',
       headers: {
         Authorization: process.env.OPENPHONE_API_KEY,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ to: [to], content, phoneNumberId }),
+      body: JSON.stringify({ to: [toAddr], content, phoneNumberId }),
     });
     const data = await response.json();
+    if (!response.ok) {
+      console.error('[OpenPhone] send failed', response.status, JSON.stringify(data));
+      return res.status(response.status).json({ error: data?.message || 'Send failed', details: data });
+    }
     // Also store outgoing message locally
     recentMessages.unshift({
       id: data.data?.id || `out-${Date.now()}`,
       from: process.env.OPENPHONE_PHONE_NUMBER,
-      to,
+      to: toAddr,
       body: content,
       direction: 'outgoing',
       createdAt: new Date().toISOString(),
