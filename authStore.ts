@@ -189,6 +189,14 @@ export const useAuthStore = create<AuthState>()(
     {
       name: 'techai-auth-v3',
       storage: createJSONStorage(() => localStorage),
+      // Never write plaintext passwords to localStorage. Auth is server-side (login
+      // returns a token); the client only needs who's logged in + the user list for
+      // display. Strip `password` from each user, and don't persist transient flags.
+      partialize: (state) => ({
+        currentUserId: state.currentUserId,
+        audit: state.audit,
+        users: state.users.map(({ password, ...u }) => u),
+      }),
     }
   )
 );

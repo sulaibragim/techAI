@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import crypto from 'node:crypto';
 import { processTranscriptWithAI } from '../services/gemini.js';
 import { requireAuth } from '../middleware/auth.js';
 
@@ -10,8 +11,33 @@ export const recentCalls = [];      // [{id, from, to, direction, status, durati
 export const recentMessages = [];   // [{id, from, to, body, direction, createdAt, contact}]
 const MAX_STORE = 100;
 
+// ─── Webhook auth ─────────────────────────────────────────────────────────────
+// The webhook is public (OpenPhone posts here from the internet), so without a guard
+// anyone can forge call/SMS events and inject attacker text into the AI pipeline.
+// Lock it with a shared secret: set OPENPHONE_WEBHOOK_SECRET on the server and append
+// ?key=<secret> to the webhook URL configured in the OpenPhone dashboard. Enforced
+// only when the env var is set, so live webhooks aren't dropped before it's configured.
+const WEBHOOK_SECRET = process.env.OPENPHONE_WEBHOOK_SECRET || '';
+if (!WEBHOOK_SECRET) {
+  console.warn('[OpenPhone] OPENPHONE_WEBHOOK_SECRET not set — /webhook is UNAUTHENTICATED. Set it and add ?key=<secret> to the OpenPhone webhook URL to lock it down.');
+}
+function timingSafeEqualStr(a, b) {
+  const ab = Buffer.from(String(a));
+  const bb = Buffer.from(String(b));
+  if (ab.length !== bb.length) return false;
+  return crypto.timingSafeEqual(ab, bb);
+}
+function webhookAuthorized(req) {
+  if (!WEBHOOK_SECRET) return true; // not configured yet — stays open (logged above)
+  const provided = req.query.key || req.headers['x-webhook-secret'] || '';
+  return timingSafeEqualStr(provided, WEBHOOK_SECRET);
+}
+
 // ─── Webhook — OpenPhone posts events here ────────────────────────────────────
 openphoneRouter.post('/webhook', async (req, res) => {
+  if (!webhookAuthorized(req)) {
+    return res.status(401).json({ error: 'Unauthorized webhook' });
+  }
   const event = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
   console.log('[OpenPhone webhook]', event?.type, event?.data?.object?.id);
 

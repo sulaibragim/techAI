@@ -22,6 +22,19 @@ export default defineConfig(() => {
         },
       },
       plugins: [react()],
+      build: {
+        rollupOptions: {
+          output: {
+            // Split the heaviest libs into their own cached chunks so the main bundle
+            // is smaller and a deploy doesn't re-download charts/AI/animation every time.
+            manualChunks: {
+              recharts: ['recharts'],
+              genai: ['@google/genai'],
+              motion: ['motion'],
+            },
+          },
+        },
+      },
       // NOTE: The Gemini API key is intentionally NOT injected into the client bundle.
       // It lives only on the server (Railway env GEMINI_API_KEY); the browser talks to the
       // backend AI proxy (/api/ai) and uses ephemeral tokens for voice. Never set a

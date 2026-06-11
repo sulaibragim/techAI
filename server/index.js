@@ -75,6 +75,15 @@ app.use('/api/jobs/inbound', inboundLimiter);
 
 app.get('/health', (_req, res) => res.json({ ok: true }));
 
+// The bare /openphone mount sits outside the /api flood guard above, so give it its own.
+const openphoneLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 120,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use('/openphone', openphoneLimiter);
+
 app.use('/openphone', openphoneRouter);
 app.use('/api/openphone', openphoneRouter);
 app.use('/api/auth', authRouter);

@@ -41,6 +41,12 @@ const monthKey = (year: number, month: number) => `${year}-${String(month + 1).p
 const REVENUE_STATUSES = new Set<Job['status']>(['completed', 'sold']);
 export const isRevenueJob = (j: Job) => REVENUE_STATUSES.has(j.status);
 
+// The date revenue is recognized on: when the work was actually finished, not when
+// it was first scheduled. A job booked June 30 but completed July 2 belongs to July
+// (matters for monthly revenue, targets, and technician commission/payroll). `sold`
+// jobs carry no completedAt, so fall back to the scheduled date.
+const revenueDateStr = (j: Job): string => (j.completedAt ? j.completedAt.slice(0, 10) : j.scheduledDate);
+
 // A "sale" is any revenue job that actually produced billable money (service call,
 // labor, parts — anything > $0), not just labor/part line items.
 const isSale = (j: Job) => j.totalAmount > 0;
@@ -48,7 +54,7 @@ const isSale = (j: Job) => j.totalAmount > 0;
 // Revenue jobs in a given month. (Named "completed" for backwards compatibility.)
 export function completedJobsInMonth(jobs: Job[], year: number, month: number): Job[] {
   const key = monthKey(year, month);
-  return jobs.filter(j => isRevenueJob(j) && j.scheduledDate.startsWith(key));
+  return jobs.filter(j => isRevenueJob(j) && revenueDateStr(j).startsWith(key));
 }
 
 /** Period-aware metrics engine. Works for any chosen month/year, past or present. */
@@ -67,7 +73,11 @@ export function calculatePeriodMetrics(
   // Coffee = an explicit no-sale visit this month (its own status), not "completed minus sale".
   const coffeeCount = jobs.filter(j => j.status === 'coffee' && j.scheduledDate.startsWith(key)).length;
   const totalCount = completed.length;
-  const closeRate = totalCount > 0 ? (jobsSold / totalCount) * 100 : 0;
+  // Close rate = of the visits where there was a sell opportunity (a sale OR a walk-away
+  // "coffee"), how many became a sale. Same denominator the conversion pie uses, so the
+  // headline number and the chart tell one story.
+  const opportunities = jobsSold + coffeeCount;
+  const closeRate = opportunities > 0 ? (jobsSold / opportunities) * 100 : 0;
   const averageTicket = jobsSold > 0 ? totalRevenue / jobsSold : 0;
 
   const partsCost = completed.reduce(
@@ -124,7 +134,7 @@ export function buildMonthlyTrend(jobs: Job[], year: number, month: number) {
   return Array.from({ length: daysInMonth }, (_, i) => {
     const dayStr = `${key}-${String(i + 1).padStart(2, '0')}`;
     const revenue = jobs
-      .filter(j => isRevenueJob(j) && j.scheduledDate === dayStr)
+      .filter(j => isRevenueJob(j) && revenueDateStr(j) === dayStr)
       .reduce((s, j) => s + j.totalAmount, 0);
     return { day: String(i + 1), revenue };
   });
@@ -179,7 +189,7 @@ export function revenueByDayOfWeek(jobs: Job[], year: number, month: number) {
   const completed = completedJobsInMonth(jobs, year, month);
   const buckets = DOW_LABELS.map(d => ({ day: d, revenue: 0, count: 0 }));
   for (const j of completed) {
-    const idx = new Date(j.scheduledDate + 'T00:00:00').getDay();
+    const idx = new Date(revenueDateStr(j) + 'T00:00:00').getDay();
     buckets[idx].revenue += j.totalAmount;
     buckets[idx].count += 1;
   }
@@ -195,11 +205,12 @@ export function computeRecords(jobs: Job[]) {
   let biggestTicket = { amount: 0, client: '', date: '' };
 
   for (const j of completed) {
-    byDay.set(j.scheduledDate, (byDay.get(j.scheduledDate) || 0) + j.totalAmount);
-    const mk = j.scheduledDate.slice(0, 7);
+    const rd = revenueDateStr(j);
+    byDay.set(rd, (byDay.get(rd) || 0) + j.totalAmount);
+    const mk = rd.slice(0, 7);
     byMonth.set(mk, (byMonth.get(mk) || 0) + j.totalAmount);
     if (j.totalAmount > biggestTicket.amount) {
-      biggestTicket = { amount: j.totalAmount, client: `${j.client.firstName} ${j.client.lastName}`, date: j.scheduledDate };
+      biggestTicket = { amount: j.totalAmount, client: `${j.client.firstName} ${j.client.lastName}`, date: rd };
     }
   }
 
@@ -233,6 +244,8 @@ export function availableMonths(jobs: Job[]): { year: number; month: number }[] 
   set.add(monthKey(now.getFullYear(), now.getMonth()));
   for (const j of jobs) {
     if (j.scheduledDate && j.scheduledDate.length >= 7) set.add(j.scheduledDate.slice(0, 7));
+    // A revenue job recognized in a later month should make that month pickable too.
+    if (isRevenueJob(j)) { const rd = revenueDateStr(j); if (rd.length >= 7) set.add(rd.slice(0, 7)); }
   }
   return [...set]
     .sort()

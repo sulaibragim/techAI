@@ -659,7 +659,7 @@ const TeamSection: React.FC = () => {
                     </>
                   ) : (
                     <>
-                      <span className="text-xs font-mono text-slate-500 select-none" title="Passwords are encrypted and cannot be viewed">••••••</span>
+                      <span className="text-xs font-mono text-slate-500 select-none" title="Passwords are hashed on the server and never shown here">••••••</span>
                       <button onClick={() => startEditPassword(u)} className="text-slate-500 hover:text-blue-400 transition-colors" title="Set new password">
                         <Pencil size={12} />
                       </button>
@@ -709,7 +709,7 @@ const TeamSection: React.FC = () => {
       </div>
 
       <p className="text-[11px] text-slate-600 mt-4 flex items-center gap-1.5">
-        <ShieldCheck size={12} /> Passwords are stored locally in this prototype. Real authentication is added with the backend.
+        <ShieldCheck size={12} /> Passwords are hashed on the server (bcrypt) and are never stored in your browser. Setting one here updates it on the server.
       </p>
     </motion.div>
   );

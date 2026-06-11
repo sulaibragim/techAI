@@ -160,6 +160,8 @@ export const PendingJobSuggestions: React.FC<{ onJobCreated?: (job: import('../t
       photos: [],
       messages: [],
       assignedTo: assignedTechId,
+      // Mirror the wizard: an assigned tech must accept/decline; unassigned stays clear.
+      acceptanceStatus: assignedTechId ? 'pending' : undefined,
       callSummary: s.callSummary || pj.openPhoneSummary || undefined,
       callQuality: s.callQuality || undefined,
       callTranscript: pj.transcript || undefined,
