@@ -20,7 +20,7 @@ import { useAuthStore, useCurrentUser, can } from '../authStore';
 import { BRANDS, LOCK_TYPES as LOCK_ICONS } from '../constants';
 import { formatTimestamp, formatDate } from '../dateUtils';
 import { sendSms } from '../smsService';
-import { normalizePhone } from '../clientUtils';
+import { normalizePhone, toE164US, formatPhone } from '../clientUtils';
 import { isRevenueJob } from '../financialUtils';
 import { translateCallSummary } from '../translateService';
 import { geocodeAddress } from '../geocoding';
@@ -810,7 +810,19 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
               <label className="text-xs font-bold text-slate-400 uppercase block mb-1">Client Notes</label>
               <textarea className="w-full bg-transparent text-white font-bold outline-none text-sm h-24 resize-none" value={localJob.client.notes || ''} onChange={e => handleClientChange({ notes: e.target.value })} />
             </div>
-            <button onClick={() => setIsEditingClient(false)} className="w-full bg-blue-600 text-white py-6 rounded-2xl font-bold text-sm uppercase tracking-widest active:scale-95 shadow-2xl">Save Changes</button>
+            <button
+              onClick={() => {
+                // Canonicalize phones on save so this client is always recognized later.
+                const patch: Partial<Client> = {};
+                const p = toE164US(localJob.client.phone);
+                if (p && p !== localJob.client.phone) patch.phone = p;
+                const sp = toE164US(localJob.client.secondaryPhone);
+                if (sp && sp !== localJob.client.secondaryPhone) patch.secondaryPhone = sp;
+                if (Object.keys(patch).length) handleClientChange(patch);
+                setIsEditingClient(false);
+              }}
+              className="w-full bg-blue-600 text-white py-6 rounded-2xl font-bold text-sm uppercase tracking-widest active:scale-95 shadow-2xl"
+            >Save Changes</button>
           </div>
         </div>
       )}
@@ -1170,7 +1182,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                   <div className="flex items-center justify-between py-2.5 border-b border-slate-700/50 group">
                     <div className="flex items-center space-x-3">
                       <Phone size={13} className="text-blue-500 shrink-0" />
-                      <span className="text-xs font-semibold text-white">{localJob.client.phone}</span>
+                      <span className="text-xs font-semibold text-white">{formatPhone(localJob.client.phone)}</span>
                     </div>
                     <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button onClick={() => window.location.href = `tel:${localJob.client.phone}`} className="p-1.5 text-slate-400 hover:text-blue-400 transition-colors"><Phone size={12} /></button>

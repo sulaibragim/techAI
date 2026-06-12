@@ -4,7 +4,7 @@ import { useAuthStore } from '../authStore';
 import { API_BASE } from '../backendUrl';
 import { authHeaders } from '../apiClient';
 import { TechStatus, Message, Job } from '../types';
-import { normalizePhone } from '../clientUtils';
+import { normalizePhone, toE164US } from '../clientUtils';
 import { Sparkles, Phone, MapPin, Lock, Clock, CheckCircle, X, ChevronDown, ChevronUp, Mic, UserCheck, Circle, Car, FileText, Star, AlertTriangle, ThumbsUp, ThumbsDown, Info, User, Link2 } from 'lucide-react';
 
 const OPEN_STATUSES = new Set(['scheduled', 'enRoute', 'onSite', 'diagnosed', 'sold', 'waitingParts', 'coffee']);
@@ -140,7 +140,8 @@ export const PendingJobSuggestions: React.FC<{ onJobCreated?: (job: import('../t
     const s = pj.suggestion; // may be null (transcript-only or AI extraction failed)
     const edited = editFields[pj.callId] || {};
     const nameVal = (edited.name ?? s?.clientName ?? '').trim();
-    const phoneVal = (edited.phone ?? s?.clientPhone ?? pj.callerPhone ?? '').trim();
+    const rawPhone = (edited.phone ?? s?.clientPhone ?? pj.callerPhone ?? '').trim();
+    const phoneVal = toE164US(rawPhone) || rawPhone;
     const addressVal = (edited.address ?? s?.address ?? '').trim();
     const { firstName, lastName } = splitName(nameVal);
     const today = new Date();

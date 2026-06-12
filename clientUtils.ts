@@ -19,6 +19,31 @@ export function normalizePhone(raw?: string): string {
   return digits.length > 10 ? digits.slice(-10) : digits;
 }
 
+// Canonical US E.164 ("+1XXXXXXXXXX"). This is the ONE shape we store, so the same
+// number is always recognized later no matter how it was typed. A bare 10-digit US
+// number gets +1 automatically — the manager never has to type the country code.
+// Mirrors the server's toE164 so client and backend agree on the canonical form.
+export function toE164US(raw?: string): string {
+  const s = (raw || '').trim();
+  if (!s) return '';
+  const hasPlus = s.startsWith('+');
+  const digits = s.replace(/\D/g, '');
+  if (!digits) return '';
+  if (hasPlus) return '+' + digits;                                // already international
+  if (digits.length === 10) return '+1' + digits;                  // bare US local → add +1
+  if (digits.length === 11 && digits.startsWith('1')) return '+' + digits; // 1 + 10 digits
+  return '+' + digits;                                             // assume it carries a country code
+}
+
+// Human-friendly US display, e.g. "(602) 555-1234". Falls back to the raw value for
+// anything that isn't a 10/11-digit US number.
+export function formatPhone(raw?: string): string {
+  const digits = (raw || '').replace(/\D/g, '');
+  const ten = digits.length === 11 && digits.startsWith('1') ? digits.slice(1) : digits;
+  if (ten.length === 10) return `(${ten.slice(0, 3)}) ${ten.slice(3, 6)}-${ten.slice(6)}`;
+  return raw || '';
+}
+
 // Build the client roster from job history. Clients are keyed by phone (falling
 // back to email or name) so every job for the same person rolls up into one record.
 export function buildClients(jobs: Job[]): ClientRecord[] {

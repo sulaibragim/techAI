@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import express from 'express';
 import { db } from '../db.js';
-import { sendSMS } from '../services/openphone.js';
+import { sendSMS, toE164 } from '../services/openphone.js';
 
 export const leadsRouter = Router();
 
@@ -59,7 +59,7 @@ leadsRouter.post('/', async (req, res) => {
       id: `client-${Date.now()}`,
       firstName: firstName || 'Website',
       lastName: lastName || (firstName ? '' : 'Lead'),
-      phone: String(phone).trim(),
+      phone: toE164(String(phone).trim()) || String(phone).trim(),
       email: String(email).trim(),
       address: addr,
       notes: String(note).trim(),

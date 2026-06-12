@@ -35,11 +35,16 @@ const App: React.FC = () => {
   const allowedTabs = currentUser ? visibleTabsFor(currentUser.role) : [];
   const effectiveTab = (allowedTabs.includes(activeTab) ? activeTab : (allowedTabs[0] || 'calendar')) as TabId;
   const [isWizardOpen, setIsWizardOpen] = useState(false);
+  const [wizardSeed, setWizardSeed] = useState<{ phone?: string; name?: string }>({});
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [clientFocusId, setClientFocusId] = useState<string | null>(null);
   const [notification, setNotification] = useState<{msg: string, type: 'info' | 'success'} | null>(null);
 
   const openClient = (clientId: string) => { setClientFocusId(clientId); setActiveTab('clients'); };
+  const openWizard = (seed?: { phone?: string; name?: string }) => { setWizardSeed(seed || {}); setIsWizardOpen(true); };
+  // Caller with no client record yet → start a job prefilled with their number, so
+  // one tap turns an unknown call into a saved client + job.
+  const newJobFromCall = (phone: string, name?: string) => openWizard({ phone, name });
 
   // When a technician marks themselves Available, grab their current GPS so dispatch
   // can rank them by distance to a client. Permission denial / no-GPS just no-ops.
@@ -82,7 +87,7 @@ const App: React.FC = () => {
       if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
 
-      if (e.key === 'n' || e.key === 'N') { e.preventDefault(); setIsWizardOpen(true); return; }
+      if (e.key === 'n' || e.key === 'N') { e.preventDefault(); openWizard(); return; }
       if (e.key === 'Escape') { setSelectedJobId(null); setIsWizardOpen(false); return; }
       if (TAB_KEYS[e.key]) {
         const target = TAB_KEYS[e.key];
@@ -186,17 +191,17 @@ const App: React.FC = () => {
         >
           {(() => {
             switch (effectiveTab) {
-              case 'calendar': return <WorkroomDashboard onJobSelect={(j) => setSelectedJobId(j.id)} onAddJob={() => setIsWizardOpen(true)} />;
-              case 'jobs': return <JobsList jobs={jobs} onAddJob={() => setIsWizardOpen(true)} onJobSelect={(job) => setSelectedJobId(job.id)} />;
+              case 'calendar': return <WorkroomDashboard onJobSelect={(j) => setSelectedJobId(j.id)} onAddJob={() => openWizard()} />;
+              case 'jobs': return <JobsList jobs={jobs} onAddJob={() => openWizard()} onJobSelect={(job) => setSelectedJobId(job.id)} />;
               case 'messages': return <MessagesList onJobSelect={(job) => setSelectedJobId(job.id)} />;
-              case 'calls': return <CallsList onClientSelect={openClient} />;
+              case 'calls': return <CallsList onClientSelect={openClient} onCreateJobFromCall={newJobFromCall} />;
               case 'clients': return <ClientsList onJobSelect={(job) => setSelectedJobId(job.id)} focusClientId={clientFocusId} onFocusConsumed={() => setClientFocusId(null)} />;
               case 'analytics': return <Dashboard />;
               case 'accounting': return <Accounting onJobSelect={(job) => setSelectedJobId(job.id)} />;
               case 'inventory': return <Inventory />;
               case 'brain': return <AIChat />;
               case 'settings': return <Settings />;
-              default: return <WorkroomDashboard onJobSelect={(j) => setSelectedJobId(j.id)} onAddJob={() => setIsWizardOpen(true)} />;
+              default: return <WorkroomDashboard onJobSelect={(j) => setSelectedJobId(j.id)} onAddJob={() => openWizard()} />;
             }
           })()}
         </motion.div>
@@ -304,8 +309,10 @@ const App: React.FC = () => {
 
       {isWizardOpen && (
         <JobWizard
-          onCancel={() => setIsWizardOpen(false)}
-          onComplete={(job) => { addJob(job); setIsWizardOpen(false); }}
+          initialPhone={wizardSeed.phone}
+          initialName={wizardSeed.name}
+          onCancel={() => { setIsWizardOpen(false); setWizardSeed({}); }}
+          onComplete={(job) => { addJob(job); setIsWizardOpen(false); setWizardSeed({}); }}
         />
       )}
       {selectedJob && <JobDetail key={selectedJob.id} job={selectedJob} onClose={() => setSelectedJobId(null)} onOpenJob={(j) => setSelectedJobId(j.id)} />}

@@ -4,7 +4,7 @@ import { User, Phone, Mail, MapPin, Briefcase, DollarSign, ChevronRight, Search,
 import { useVisibleJobs } from '../store';
 import { Job } from '../types';
 import { formatDate, formatTimestamp } from '../dateUtils';
-import { ClientRecord, buildClients, normalizePhone } from '../clientUtils';
+import { ClientRecord, buildClients, normalizePhone, formatPhone } from '../clientUtils';
 import { API_BASE } from '../backendUrl';
 import { authHeaders } from '../apiClient';
 
@@ -132,7 +132,7 @@ export const ClientsList: React.FC<{
             {selected.phone && (
               <div className="flex items-center gap-3 text-sm">
                 <Phone size={14} className="text-blue-400 shrink-0" />
-                <span className="text-white">{selected.phone}</span>
+                <span className="text-white">{formatPhone(selected.phone)}</span>
               </div>
             )}
             {selected.email && (
@@ -264,7 +264,7 @@ export const ClientsList: React.FC<{
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-bold text-white">{client.firstName} {client.lastName}</p>
-              <p className="text-xs text-slate-400 mt-0.5">{client.phone}</p>
+              <p className="text-xs text-slate-400 mt-0.5">{formatPhone(client.phone)}</p>
             </div>
             <div className="text-right shrink-0">
               <p className="text-sm font-bold text-white">${client.totalSpend.toLocaleString()}</p>

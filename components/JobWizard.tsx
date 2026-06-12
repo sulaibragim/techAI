@@ -24,13 +24,15 @@ import { Job, Client, LockDetails } from '../types';
 import { BRANDS as INITIAL_BRANDS, LOCK_TYPES } from '../constants';
 import { useAuthStore, useCurrentUser } from '../authStore';
 import { useVisibleJobs } from '../store';
-import { buildClients, findClientByPhone, ClientRecord } from '../clientUtils';
+import { buildClients, findClientByPhone, toE164US, ClientRecord } from '../clientUtils';
 import { formatDate } from '../dateUtils';
 import { TechPicker } from './TechPicker';
 
 interface JobWizardProps {
   onComplete: (job: Job) => void;
   onCancel: () => void;
+  initialPhone?: string;
+  initialName?: string;
 }
 
 const JOB_TEMPLATES = [
@@ -54,7 +56,7 @@ const PRIORITIES = [
 
 const SpeechRecognition = typeof window !== 'undefined' ? ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition) : null;
 
-export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) => {
+export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, initialPhone, initialName }) => {
   const currentUser = useCurrentUser();
   const allUsers = useAuthStore(s => s.users);
   const technicians = useMemo(() => allUsers.filter(u => u.role === 'technician' && u.active), [allUsers]);
@@ -63,8 +65,11 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) =>
 
   const [step, setStep] = useState(0);
   const [error, setError] = useState('');
+  // A name passed in from a call (when OpenPhone knew the contact) seeds first/last.
+  const initialNameParts = (initialName || '').trim().split(/\s+/);
   const [client, setClient] = useState<Partial<Client>>({
-    firstName: '', lastName: '', phone: '', email: '', address: '', zip: '', unit: '', gateCode: '', accessNotes: '',
+    firstName: initialNameParts[0] || '', lastName: initialNameParts.slice(1).join(' ') || '',
+    phone: initialPhone || '', email: '', address: '', zip: '', unit: '', gateCode: '', accessNotes: '',
   });
   const [lockDetails, setLockDetails] = useState<Partial<LockDetails>>({ type: 'Automotive', brand: '', modelOrYear: '' });
   const [complaint, setComplaint] = useState('');
@@ -168,7 +173,7 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel }) =>
       id: `c-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       firstName: client.firstName || '',
       lastName: client.lastName || '',
-      phone: client.phone || '',
+      phone: toE164US(client.phone) || client.phone || '',
       email: client.email || '',
       address: client.address || '',
       zip: client.zip || '',

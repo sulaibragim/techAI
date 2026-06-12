@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useAppStore, useVisibleJobs } from '../store';
-import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Clock, PhoneCall, RefreshCw, Radio, History, ChevronRight } from 'lucide-react';
+import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Clock, PhoneCall, RefreshCw, Radio, History, ChevronRight, UserPlus } from 'lucide-react';
 import { CallRecord } from '../types';
 import { API_BASE } from '../backendUrl';
 import { authHeaders } from '../apiClient';
-import { buildClients, findClientByPhone } from '../clientUtils';
+import { buildClients, findClientByPhone, formatPhone } from '../clientUtils';
 
 const PHONE_NUMBER_ID = 'PNkhFHiD2G';
 
@@ -35,7 +35,10 @@ function mapOpenPhoneCall(c: any): CallRecord {
   };
 }
 
-export const CallsList: React.FC<{ onClientSelect?: (clientId: string) => void }> = ({ onClientSelect }) => {
+export const CallsList: React.FC<{
+  onClientSelect?: (clientId: string) => void;
+  onCreateJobFromCall?: (phone: string, name?: string) => void;
+}> = ({ onClientSelect, onCreateJobFromCall }) => {
   const { calls: storeCalls } = useAppStore();
   const jobs = useVisibleJobs();
   const clients = useMemo(() => buildClients(jobs), [jobs]);
@@ -139,15 +142,21 @@ export const CallsList: React.FC<{ onClientSelect?: (clientId: string) => void }
         ) : (
           callHistory.map((call) => {
             const client = findClientByPhone(clients, call.phone);
-            const displayName = client ? `${client.firstName} ${client.lastName}`.trim() : call.from;
+            const displayName = client ? `${client.firstName} ${client.lastName}`.trim() : (call.from !== call.phone ? call.from : formatPhone(call.phone));
             const initials = client ? `${client.firstName[0] || ''}${client.lastName[0] || ''}`.toUpperCase() : '';
-            const openHistory = () => { if (client) onClientSelect?.(client.id); };
+            // Tap a row: known client → open their profile; unknown caller → start a job
+            // prefilled with their number so they get saved as a client.
+            const rowAction = () => {
+              if (client) onClientSelect?.(client.id);
+              else onCreateJobFromCall?.(call.phone, call.from !== call.phone ? call.from : undefined);
+            };
+            const clickable = !!(client ? onClientSelect : onCreateJobFromCall);
             return (
             <div
               key={call.id}
-              onClick={openHistory}
-              role={client ? 'button' : undefined}
-              className={`bg-slate-900/80 backdrop-blur-3xl p-4 rounded-2xl border border-white/10 ${getBorderColor(call.type)} hover:scale-[1.01] transition-all flex items-center justify-between group shadow-xl relative ${client ? 'cursor-pointer' : ''}`}
+              onClick={rowAction}
+              role={clickable ? 'button' : undefined}
+              className={`bg-slate-900/80 backdrop-blur-3xl p-4 rounded-2xl border border-white/10 ${getBorderColor(call.type)} hover:scale-[1.01] transition-all flex items-center justify-between group shadow-xl relative ${clickable ? 'cursor-pointer' : ''}`}
             >
               <div className="flex items-center space-x-5 flex-1 min-w-0">
                 <div className={`w-12 h-12 rounded-xl overflow-hidden flex items-center justify-center border shrink-0 ${client ? 'bg-blue-600/10 border-blue-500/30 text-blue-400 font-bold' : 'bg-slate-950 border-white/10 shadow-inner'}`}>
@@ -170,11 +179,15 @@ export const CallsList: React.FC<{ onClientSelect?: (clientId: string) => void }
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{call.phone}</p>
-                    {client && (
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{formatPhone(call.phone)}</p>
+                    {client ? (
                       <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded-full">
                         <History size={10} />
                         {client.jobs.length} job{client.jobs.length !== 1 ? 's' : ''}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-slate-500 bg-white/5 border border-white/10 px-2 py-0.5 rounded-full">
+                        New caller
                       </span>
                     )}
                   </div>
@@ -190,13 +203,21 @@ export const CallsList: React.FC<{ onClientSelect?: (clientId: string) => void }
                   <span className="text-xs font-bold text-blue-500 uppercase tracking-widest">{call.duration}</span>
                 )}
                 <div className="flex items-center gap-2">
-                  {client && (
+                  {client ? (
                     <button
-                      onClick={(e) => { e.stopPropagation(); openHistory(); }}
+                      onClick={(e) => { e.stopPropagation(); rowAction(); }}
                       className="inline-flex items-center gap-1 px-2.5 py-2 bg-blue-600/10 text-blue-400 hover:bg-blue-600 hover:text-white rounded-xl transition-all active:scale-90 text-[10px] font-bold uppercase tracking-wider"
-                      title="View work history"
+                      title="Open client profile"
                     >
                       History <ChevronRight size={12} />
+                    </button>
+                  ) : onCreateJobFromCall && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onCreateJobFromCall(call.phone, call.from !== call.phone ? call.from : undefined); }}
+                      className="inline-flex items-center gap-1 px-2.5 py-2 bg-violet-600/10 text-violet-400 hover:bg-violet-600 hover:text-white rounded-xl transition-all active:scale-90 text-[10px] font-bold uppercase tracking-wider"
+                      title="Save as client — create a job from this call"
+                    >
+                      <UserPlus size={12} /> New Job
                     </button>
                   )}
                   <button
