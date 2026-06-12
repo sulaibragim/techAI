@@ -428,15 +428,30 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
 
   // Rank technicians by straight-line distance to the geocoded client address.
   // Those with a known location sort first (nearest → farthest); the rest follow.
+  const SKILL_FOR_TYPE: Record<string, string[]> = {
+    Automotive: ['Automotive', 'High-end cars'], Residential: ['Residential', 'Smart locks'],
+    Commercial: ['Commercial'], 'Secure / Safe': ['Safes'], Other: [],
+  };
+  const wantSkills = SKILL_FOR_TYPE[localJob.lockDetails?.type || ''] || [];
+  const favTechId = clientRec?.favoriteTechId;
   const rankedTechs = technicians
-    .map(t => ({ tech: t, miles: (clientCoords && t.lastLocation) ? haversineMiles(clientCoords, t.lastLocation) : null }))
+    .map(t => ({
+      tech: t,
+      miles: (clientCoords && t.lastLocation) ? haversineMiles(clientCoords, t.lastLocation) : null,
+      isFavorite: !!favTechId && t.id === favTechId,
+      isSpecialist: wantSkills.length > 0 && (t.skills || []).some(s => wantSkills.includes(s)),
+    }))
     .sort((a, b) => {
+      if (a.isFavorite !== b.isFavorite) return a.isFavorite ? -1 : 1;
+      if (a.isSpecialist !== b.isSpecialist) return a.isSpecialist ? -1 : 1;
       if (a.miles == null && b.miles == null) return 0;
       if (a.miles == null) return 1;
       if (b.miles == null) return -1;
       return a.miles - b.miles;
     });
   const nearestTech = rankedTechs.find(r => r.miles != null) || null;
+  // Best match = preferred tech, else a matching specialist (only worth suggesting over plain nearest).
+  const bestMatch = rankedTechs.find(r => r.isFavorite) || rankedTechs.find(r => r.isSpecialist) || null;
 
   const handlePrintInvoice = () => {
     const esc = (s: string) => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -1326,13 +1341,25 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                         className="w-full bg-slate-800 border border-slate-600 rounded-xl px-4 py-2.5 text-sm font-semibold text-white focus:outline-none focus:border-blue-500/50"
                       >
                         <option value="">Unassigned</option>
-                        {rankedTechs.map(({ tech, miles }) => (
+                        {rankedTechs.map(({ tech, miles, isFavorite, isSpecialist }) => (
                           <option key={tech.id} value={tech.id}>
-                            {tech.name}{miles != null ? ` — ${formatMiles(miles)} mi · ~${approxEtaMinutes(miles)} min` : ''}
+                            {tech.name}{isFavorite ? ' · Preferred' : isSpecialist ? ' · Specialist' : ''}{miles != null ? ` — ${formatMiles(miles)} mi · ~${approxEtaMinutes(miles)} min` : ''}
                           </option>
                         ))}
                       </select>
-                      {nearestTech && nearestTech.tech.id !== localJob.assignedTo && (
+                      {bestMatch && bestMatch.tech.id !== localJob.assignedTo && (
+                        <button
+                          onClick={() => assignTech(bestMatch.tech.id)}
+                          className="mt-2 w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-200 hover:bg-purple-500/20 transition-all active:scale-95"
+                        >
+                          <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider">
+                            {bestMatch.isFavorite ? <Star size={13} /> : <Wrench size={13} />}
+                            {bestMatch.isFavorite ? 'Preferred' : 'Specialist'}: {bestMatch.tech.name}
+                          </span>
+                          {bestMatch.miles != null && <span className="text-xs font-bold">{formatMiles(bestMatch.miles)} mi</span>}
+                        </button>
+                      )}
+                      {nearestTech && nearestTech.tech.id !== localJob.assignedTo && (!bestMatch || bestMatch.tech.id !== nearestTech.tech.id) && (
                         <button
                           onClick={() => assignTech(nearestTech.tech.id)}
                           className="mt-2 w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20 transition-all active:scale-95"

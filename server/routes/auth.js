@@ -72,7 +72,7 @@ authRouter.get('/users/:id', requireAuth, async (req, res) => {
 // Create user — owner only.
 authRouter.post('/users', requireAuth, requireRole('owner'), async (req, res) => {
   try {
-    const { name, email, password, role, phone, commissionRate, active, techStatus } = req.body;
+    const { name, email, password, role, phone, commissionRate, active, techStatus, skills } = req.body;
     if (!name || !email) return res.status(400).json({ error: 'Name and email required' });
     if (role && !['owner', 'manager', 'technician', 'accountant'].includes(role)) {
       return res.status(400).json({ error: 'Invalid role' });
@@ -80,9 +80,9 @@ authRouter.post('/users', requireAuth, requireRole('owner'), async (req, res) =>
     const id = `u-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
     const hash = await bcrypt.hash(password || '1234', 10);
     await db.query(
-      `INSERT INTO users (id, name, email, password, role, phone, commission_rate, active, tech_status)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-      [id, name, email, hash, role || 'technician', phone || null, commissionRate || 0, active !== false, techStatus || 'available']
+      `INSERT INTO users (id, name, email, password, role, phone, commission_rate, active, tech_status, skills)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+      [id, name, email, hash, role || 'technician', phone || null, commissionRate || 0, active !== false, techStatus || 'available', Array.isArray(skills) ? JSON.stringify(skills) : null]
     );
     const { rows } = await db.query('SELECT * FROM users WHERE id = $1', [id]);
     res.json(mapUser(rows[0]));
@@ -100,7 +100,7 @@ authRouter.put('/users/:id', requireAuth, async (req, res) => {
     const isSelf = req.user.id === req.params.id;
     if (!isOwner && !isSelf) return res.status(403).json({ error: 'Insufficient permissions' });
 
-    let { name, email, password, role, phone, commissionRate, active, techStatus, photo, lastLocation } = req.body;
+    let { name, email, password, role, phone, commissionRate, active, techStatus, photo, lastLocation, skills } = req.body;
 
     // Non-owners cannot change privileged fields (no role/commission/active escalation).
     if (!isOwner) {
@@ -108,6 +108,7 @@ authRouter.put('/users/:id', requireAuth, async (req, res) => {
       commissionRate = undefined;
       active = undefined;
       email = undefined;
+      skills = undefined;
     }
     if (role && !['owner', 'manager', 'technician', 'accountant'].includes(role)) {
       return res.status(400).json({ error: 'Invalid role' });
@@ -126,9 +127,10 @@ authRouter.put('/users/:id', requireAuth, async (req, res) => {
         active = COALESCE($8, active),
         tech_status = COALESCE($9, tech_status),
         photo = COALESCE($10, photo),
-        last_location = COALESCE($11, last_location)
+        last_location = COALESCE($11, last_location),
+        skills = COALESCE($12, skills)
        WHERE id = $1`,
-      [req.params.id, name, email, hashedPassword, role, phone, commissionRate, active, techStatus, photo, lastLocation ? JSON.stringify(lastLocation) : null]
+      [req.params.id, name, email, hashedPassword, role, phone, commissionRate, active, techStatus, photo, lastLocation ? JSON.stringify(lastLocation) : null, skills !== undefined ? JSON.stringify(skills) : null]
     );
     const { rows } = await db.query('SELECT * FROM users WHERE id = $1', [req.params.id]);
     if (rows.length === 0) return res.status(404).json({ error: 'User not found' });
@@ -190,6 +192,7 @@ function mapUser(row, { lite = false } = {}) {
     active: row.active,
     techStatus: row.tech_status || undefined,
     lastLocation: row.last_location || undefined,
+    skills: row.skills || undefined,
     photo: row.photo || undefined,
     createdAt: row.created_at?.toISOString(),
   };

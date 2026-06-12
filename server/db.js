@@ -70,6 +70,8 @@ export async function initDB() {
 
       -- Live technician location for proximity-based dispatch (added later; idempotent).
       ALTER TABLE users ADD COLUMN IF NOT EXISTS last_location JSONB;
+      -- Technician specialties for smart assignment (idempotent).
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS skills JSONB;
     `);
 
     const { rows } = await client.query('SELECT COUNT(*) FROM users');

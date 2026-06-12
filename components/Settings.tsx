@@ -6,7 +6,7 @@ import { useAuthStore, useCurrentUser, can, ROLE_LABELS } from '../authStore';
 import { useAppStore } from '../store';
 import { API_BASE } from '../backendUrl';
 import { authHeaders } from '../apiClient';
-import { Role } from '../types';
+import { Role, TECH_SKILLS } from '../types';
 
 const VERSION = '0.0.0';
 
@@ -703,6 +703,29 @@ const TeamSection: React.FC = () => {
                   </button>
                 )}
               </div>
+
+              {u.role === 'technician' && (
+                <div className="border-t border-white/5 pt-3">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">Specialties — used to route the right jobs here</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {TECH_SKILLS.map(skill => {
+                      const on = (u.skills || []).includes(skill);
+                      return (
+                        <button
+                          key={skill}
+                          onClick={() => {
+                            const cur = u.skills || [];
+                            updateUser({ ...u, skills: on ? cur.filter(s => s !== skill) : [...cur, skill] });
+                          }}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${on ? 'bg-blue-600/20 text-blue-300 border-blue-500/40' : 'bg-white/5 text-slate-500 border-white/10 hover:text-white'}`}
+                        >
+                          {skill}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           );
         })}

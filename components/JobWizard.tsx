@@ -25,7 +25,7 @@ import { BRANDS as INITIAL_BRANDS, LOCK_TYPES } from '../constants';
 import { useAuthStore, useCurrentUser } from '../authStore';
 import { useVisibleJobs } from '../store';
 import { useSettingsStore } from '../settingsStore';
-import { buildClients, findClientByPhone, toE164US, ClientRecord } from '../clientUtils';
+import { buildClients, findClientByPhone, toE164US, normalizePhone, ClientRecord } from '../clientUtils';
 import { formatDate } from '../dateUtils';
 import { TechPicker } from './TechPicker';
 
@@ -374,7 +374,14 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
               {currentUser?.role !== 'technician' && technicians.length > 0 && (
                 <div className={cardCls}>
                   <label className={`${labelCls} mb-3`}>Assign Technician — who’s closest</label>
-                  <TechPicker technicians={technicians} address={[client.address, client.zip].filter(Boolean).join(', ')} value={assignedTo} onChange={id => setAssignedTo(id || '')} />
+                  <TechPicker
+                    technicians={technicians}
+                    address={[client.address, client.zip].filter(Boolean).join(', ')}
+                    value={assignedTo}
+                    onChange={id => setAssignedTo(id || '')}
+                    jobType={lockDetails.type}
+                    favoriteTechId={clientProfiles[normalizePhone(client.phone)]?.favoriteTechId}
+                  />
                 </div>
               )}
             </div>
