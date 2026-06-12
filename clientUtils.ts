@@ -149,6 +149,65 @@ export function findClientByPhone(clients: ClientRecord[], phone?: string): Clie
   return clients.find(c => normalizePhone(c.phone) === n);
 }
 
+export type ClientTier = 'Gold' | 'Silver' | 'Bronze' | 'New' | 'Watch' | 'Blocked';
+
+export interface ClientScore {
+  score: number;       // 0–100 value/loyalty score
+  tier: ClientTier;
+  reasons: string[];   // short human reasons, best first
+}
+
+// One number that captures a client's worth + standing, blended from everything we
+// track: job count, lifetime spend, rating, flags and payment behaviour.
+export function clientScore(rec: {
+  jobs: { length: number };
+  totalSpend: number;
+  outstanding: number;
+  rating?: ClientRating;
+  tags?: string[];
+  autoTags?: string[];
+}): ClientScore {
+  const tags = new Set<string>([...(rec.tags || []), ...(rec.autoTags || [])]);
+  if (tags.has('Do not service')) return { score: 0, tier: 'Blocked', reasons: ['Flagged do-not-service'] };
+
+  const jobsN = rec.jobs.length;
+  let score = 40;
+  const reasons: string[] = [];
+
+  const jobPts = Math.min(25, jobsN * 5);
+  if (jobPts > 0) { score += jobPts; if (jobsN >= 3) reasons.push(`${jobsN} jobs`); }
+
+  const spendPts = Math.min(20, Math.round(rec.totalSpend / 100));
+  if (spendPts > 0) { score += spendPts; if (rec.totalSpend >= 1000) reasons.push(`$${Math.round(rec.totalSpend).toLocaleString()} lifetime`); }
+
+  if (rec.rating === 'good') { score += 15; reasons.push('Rated good'); }
+  if (rec.rating === 'difficult') score -= 30;
+  if (tags.has('VIP')) { score += 15; reasons.push('VIP'); }
+  if (tags.has('Referrer')) { score += 10; reasons.push('Sent referrals'); }
+  if (rec.outstanding > 0.01 || tags.has('Slow payer')) { score -= 15; reasons.push('Unpaid balance'); }
+  if (tags.has('Cancel risk')) score -= 10;
+
+  score = Math.max(0, Math.min(100, Math.round(score)));
+
+  let tier: ClientTier;
+  if (rec.rating === 'difficult' || (tags.has('Difficult') && score < 55)) tier = 'Watch';
+  else if (jobsN === 0) tier = 'New';
+  else if (score >= 78) tier = 'Gold';
+  else if (score >= 58) tier = 'Silver';
+  else tier = 'Bronze';
+
+  return { score, tier, reasons: reasons.slice(0, 3) };
+}
+
+export const TIER_STYLE: Record<ClientTier, string> = {
+  Gold: 'bg-amber-500/15 text-amber-300 border-amber-500/40',
+  Silver: 'bg-slate-300/15 text-slate-200 border-slate-300/30',
+  Bronze: 'bg-orange-700/20 text-orange-300 border-orange-600/40',
+  New: 'bg-blue-500/10 text-blue-300 border-blue-500/30',
+  Watch: 'bg-red-500/15 text-red-300 border-red-500/40',
+  Blocked: 'bg-red-600/20 text-red-200 border-red-600/50',
+};
+
 export interface ClientFlags {
   allTags: string[];   // manual + auto, deduped (manual first)
   hasNegative: boolean;

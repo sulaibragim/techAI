@@ -10,7 +10,7 @@ import { useSettingsStore } from '../settingsStore';
 import { useAuthStore } from '../authStore';
 import { Job, ClientRating, CLIENT_TAGS, NEGATIVE_TAGS } from '../types';
 import { formatDate, formatTimestamp } from '../dateUtils';
-import { ClientRecord, buildClients, normalizePhone, toE164US, formatPhone, clientFlags } from '../clientUtils';
+import { ClientRecord, buildClients, normalizePhone, toE164US, formatPhone, clientFlags, clientScore, TIER_STYLE } from '../clientUtils';
 import { API_BASE } from '../backendUrl';
 import { authHeaders } from '../apiClient';
 
@@ -42,7 +42,7 @@ const RATING_META: Record<ClientRating, { label: string; icon: typeof ThumbsUp; 
   difficult: { label: 'Difficult', icon: ThumbsDown, cls: 'bg-red-500/15 text-red-300 border-red-500/40' },
 };
 
-const FILTERS = ['All', 'VIP', 'Difficult', 'Frequent', 'Slow payer'] as const;
+const FILTERS = ['All', 'Gold', 'VIP', 'Difficult', 'Frequent', 'Slow payer'] as const;
 
 export const ClientsList: React.FC<{
   onJobSelect?: (job: Job) => void;
@@ -111,6 +111,7 @@ export const ClientsList: React.FC<{
     return clients.filter(c => {
       if (q && !`${c.firstName} ${c.lastName} ${c.phone} ${c.email}`.toLowerCase().includes(q)) return false;
       if (filter === 'All') return true;
+      if (filter === 'Gold') return clientScore(c).tier === 'Gold';
       if (filter === 'Difficult') return c.rating === 'difficult' || c.tags.some(t => NEGATIVE_TAGS.has(t));
       const all = [...c.tags, ...c.autoTags];
       return all.includes(filter);
@@ -179,6 +180,31 @@ export const ClientsList: React.FC<{
             <p className="text-sm font-semibold text-red-300/90">Difficult client — brief the tech before the visit.</p>
           </div>
         )}
+
+        {(() => {
+          const sc = clientScore(selected);
+          return (
+            <div className="bg-slate-900 border border-white/5 rounded-2xl p-5 flex items-center gap-5">
+              <div className="text-center shrink-0">
+                <div className={`px-3 py-1.5 rounded-xl border text-sm font-bold uppercase tracking-wider ${TIER_STYLE[sc.tier]}`}>{sc.tier}</div>
+                <p className="text-2xl font-bold text-white tracking-tighter mt-2 tabular-nums">{sc.score}<span className="text-sm text-slate-500">/100</span></p>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">Client score</p>
+                {sc.reasons.length > 0 ? (
+                  <div className="flex flex-wrap gap-1.5">
+                    {sc.reasons.map((r, i) => <span key={i} className="text-[11px] font-semibold text-slate-300 bg-white/5 border border-white/10 px-2 py-0.5 rounded-lg">{r}</span>)}
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-500">{selected.isStandalone ? 'No jobs yet — score grows as they book.' : 'Build history to raise the score.'}</p>
+                )}
+                <div className="h-1.5 bg-white/5 rounded-full overflow-hidden mt-3">
+                  <div className={`h-full rounded-full ${sc.tier === 'Gold' ? 'bg-amber-400' : sc.tier === 'Silver' ? 'bg-slate-300' : sc.tier === 'Watch' || sc.tier === 'Blocked' ? 'bg-red-500' : 'bg-blue-500'}`} style={{ width: `${sc.score}%` }} />
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
@@ -408,6 +434,9 @@ export const ClientsList: React.FC<{
                 )}
               </div>
               <div className="text-right shrink-0">
+                {(() => { const tier = clientScore(client).tier; return (
+                  <span className={`inline-block px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider border mb-1 ${TIER_STYLE[tier]}`}>{tier}</span>
+                ); })()}
                 <p className="text-sm font-bold text-white">${client.totalSpend.toLocaleString()}</p>
                 <p className="text-xs text-slate-500 mt-0.5">{client.isStandalone ? 'No jobs yet' : `${client.jobs.length} job${client.jobs.length !== 1 ? 's' : ''}`}</p>
               </div>

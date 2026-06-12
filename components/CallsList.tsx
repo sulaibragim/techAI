@@ -4,7 +4,7 @@ import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Clock, PhoneCall, Ref
 import { CallRecord } from '../types';
 import { API_BASE } from '../backendUrl';
 import { authHeaders } from '../apiClient';
-import { buildClients, findClientByPhone, formatPhone, clientFlags } from '../clientUtils';
+import { buildClients, findClientByPhone, formatPhone, clientFlags, clientScore, TIER_STYLE } from '../clientUtils';
 import { useSettingsStore } from '../settingsStore';
 
 const PHONE_NUMBER_ID = 'PNkhFHiD2G';
@@ -205,6 +205,9 @@ export const CallsList: React.FC<{
                         <Star size={10} /> VIP
                       </span>
                     )}
+                    {client && (() => { const tier = clientScore(client).tier; return (tier === 'Gold' || tier === 'Silver') ? (
+                      <span className={`inline-flex items-center text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${TIER_STYLE[tier]}`}>{tier}</span>
+                    ) : null; })()}
                     {client ? (
                       <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded-full">
                         <History size={10} />

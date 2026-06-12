@@ -20,7 +20,7 @@ import { useAuthStore, useCurrentUser, can } from '../authStore';
 import { BRANDS, LOCK_TYPES as LOCK_ICONS } from '../constants';
 import { formatTimestamp, formatDate } from '../dateUtils';
 import { sendSms } from '../smsService';
-import { normalizePhone, toE164US, formatPhone, buildClients, clientFlags } from '../clientUtils';
+import { normalizePhone, toE164US, formatPhone, buildClients, clientFlags, clientScore, TIER_STYLE } from '../clientUtils';
 import { isRevenueJob } from '../financialUtils';
 import { translateCallSummary } from '../translateService';
 import { geocodeAddress } from '../geocoding';
@@ -1233,7 +1233,10 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                     ) : null}
 
                     {clientRec && (clientRec.tags.length > 0 || clientRec.autoTags.length > 0) && (
-                      <div className="flex flex-wrap gap-1.5">
+                      <div className="flex flex-wrap gap-1.5 items-center">
+                        {(() => { const sc = clientScore(clientRec); return (
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${TIER_STYLE[sc.tier]}`}>{sc.tier} · {sc.score}</span>
+                        ); })()}
                         {Array.from(new Set([...clientRec.tags, ...clientRec.autoTags])).map(t => (
                           <span key={t} className={`px-2 py-0.5 rounded text-[10px] font-bold border ${NEGATIVE_TAGS.has(t) ? 'bg-red-500/15 text-red-300 border-red-500/30' : (t === 'VIP' || t === 'Frequent' || t === 'Referrer' || t === 'Big ticket') ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' : 'bg-white/5 text-slate-400 border-white/10'}`}>{t}</span>
                         ))}
