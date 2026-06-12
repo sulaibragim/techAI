@@ -79,7 +79,22 @@ export interface StockMovement {
   timestamp: string;      // ISO
 }
 
-export type JobStatus = 
+// Rate card / price book — our standard service prices (seeded from trustkeyaz.com).
+// Tapping one on an invoice fills the description + price so the team bills consistently.
+export const SERVICE_CATEGORIES = ['Lockout', 'Rekey & Install', 'Smart Locks', 'Car Keys', 'Safes', 'Bundles'] as const;
+export type ServiceCategory = typeof SERVICE_CATEGORIES[number];
+
+export interface ServiceRate {
+  id: string;
+  name: string;
+  category: ServiceCategory;
+  price: number;            // daytime / base "from" price
+  nightPrice?: number;      // after-hours price when it differs
+  type: 'part' | 'labor' | 'service_call' | 'maintenance' | 'installation'; // invoice line type it maps to
+  note?: string;            // e.g. "+$49 each additional door", "all-in with Schlage"
+}
+
+export type JobStatus =
   | 'scheduled' 
   | 'enRoute' 
   | 'onSite'

@@ -2,7 +2,8 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { API_BASE } from './backendUrl';
 import { authHeaders } from './apiClient';
-import { Expense, ClientProfile, StockMovement } from './types';
+import { Expense, ClientProfile, StockMovement, ServiceRate } from './types';
+import { PRICE_BOOK_SEED } from './priceBook';
 
 export interface SettingsState {
   technicianName: string;
@@ -19,16 +20,20 @@ export interface SettingsState {
   techTargets: Record<string, number>; // per-technician personal monthly revenue goal (user id → $)
   expenses: Expense[]; // business expense ledger (keys & stock, fuel, ads, …)
   stockMovements: StockMovement[]; // inventory ledger — every receive/sale/adjust/return/loss
+  priceBook: ServiceRate[]; // standard service rates (seeded from trustkeyaz.com), tap-to-fill on invoices
   clientProfiles: Record<string, ClientProfile>; // reputation/meta keyed by normalized phone
   taxRate: number; // sales-tax percent applied to taxable revenue (0 = none)
   onboardingComplete: boolean;
   aiAvailable: boolean; // runtime flag: is GEMINI_API_KEY configured on the server?
-  updateSettings: (patch: Partial<Omit<SettingsState, 'updateSettings' | 'resetSettings' | 'setMonthlyTarget' | 'setTechTarget' | 'addExpense' | 'removeExpense' | 'addStockMovement' | 'upsertClientProfile' | 'syncSettings' | 'checkAiAvailable' | 'aiAvailable'>>) => void;
+  updateSettings: (patch: Partial<Omit<SettingsState, 'updateSettings' | 'resetSettings' | 'setMonthlyTarget' | 'setTechTarget' | 'addExpense' | 'removeExpense' | 'addStockMovement' | 'addServiceRate' | 'updateServiceRate' | 'removeServiceRate' | 'upsertClientProfile' | 'syncSettings' | 'checkAiAvailable' | 'aiAvailable'>>) => void;
   setMonthlyTarget: (monthKey: string, value: number) => void;
   setTechTarget: (userId: string, value: number) => void;
   addExpense: (expense: Omit<Expense, 'id'>) => void;
   removeExpense: (id: string) => void;
   addStockMovement: (movement: Omit<StockMovement, 'id'>) => void;
+  addServiceRate: (rate: Omit<ServiceRate, 'id'>) => void;
+  updateServiceRate: (rate: ServiceRate) => void;
+  removeServiceRate: (id: string) => void;
   upsertClientProfile: (phoneKey: string, patch: Partial<ClientProfile>) => void;
   resetSettings: () => void;
   syncSettings: () => Promise<void>;
@@ -55,6 +60,7 @@ export const SETTINGS_DEFAULTS = {
   techTargets: {} as Record<string, number>,
   expenses: [] as Expense[],
   stockMovements: [] as StockMovement[],
+  priceBook: PRICE_BOOK_SEED as ServiceRate[],
   clientProfiles: {} as Record<string, ClientProfile>,
   taxRate: 0,
   onboardingComplete: false,
@@ -145,6 +151,22 @@ export const useSettingsStore = create<SettingsState>()(
         // Newest first; cap the ledger so the synced blob can't grow without bound.
         set((state) => ({ stockMovements: [entry, ...state.stockMovements].slice(0, 2000) }));
         pushToServer({ stockMovements: get().stockMovements });
+      },
+
+      addServiceRate: (rate) => {
+        const entry: ServiceRate = { ...rate, id: `rate-${Date.now()}-${Math.random().toString(36).slice(2, 7)}` };
+        set((state) => ({ priceBook: [...state.priceBook, entry] }));
+        pushToServer({ priceBook: get().priceBook });
+      },
+
+      updateServiceRate: (rate) => {
+        set((state) => ({ priceBook: state.priceBook.map(r => r.id === rate.id ? rate : r) }));
+        pushToServer({ priceBook: get().priceBook });
+      },
+
+      removeServiceRate: (id) => {
+        set((state) => ({ priceBook: state.priceBook.filter(r => r.id !== id) }));
+        pushToServer({ priceBook: get().priceBook });
       },
 
       upsertClientProfile: (phoneKey, patch) => {

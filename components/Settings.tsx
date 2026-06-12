@@ -1,12 +1,12 @@
 import React, { useRef, useState } from 'react';
 import { motion } from 'motion/react';
-import { User, Target, Key, RotateCcw, Save, Upload, Info, Building2, AlertTriangle, Users, Plus, Trash2, ShieldCheck, History, Lock, Pencil, Check, X } from 'lucide-react';
+import { User, Target, Key, RotateCcw, Save, Upload, Info, Building2, AlertTriangle, Users, Plus, Trash2, ShieldCheck, History, Lock, Pencil, Check, X, Tag } from 'lucide-react';
 import { useSettingsStore, SETTINGS_DEFAULTS, settingsStorageIsEphemeral } from '../settingsStore';
 import { useAuthStore, useCurrentUser, can, ROLE_LABELS } from '../authStore';
 import { useAppStore } from '../store';
 import { API_BASE } from '../backendUrl';
 import { authHeaders } from '../apiClient';
-import { Role, TECH_SKILLS } from '../types';
+import { Role, TECH_SKILLS, SERVICE_CATEGORIES } from '../types';
 
 const VERSION = '0.0.0';
 
@@ -312,6 +312,8 @@ export const Settings: React.FC = () => {
           </div>
         </Section>}
 
+        {currentUser && (currentUser.role === 'owner' || currentUser.role === 'manager') && <RatesSection />}
+
         {currentUser && currentUser.role !== 'technician' && <Section icon={Key} title="AI Configuration">
           <div className="flex items-center justify-between gap-3">
             <div>
@@ -447,6 +449,42 @@ export const Settings: React.FC = () => {
         </div>
       )}
     </motion.div>
+  );
+};
+
+const RatesSection: React.FC = () => {
+  const priceBook = useSettingsStore(s => s.priceBook);
+  const updateServiceRate = useSettingsStore(s => s.updateServiceRate);
+  const addServiceRate = useSettingsStore(s => s.addServiceRate);
+  const removeServiceRate = useSettingsStore(s => s.removeServiceRate);
+  const fieldCls = 'bg-slate-950 border border-white/10 rounded-lg px-2.5 py-1.5 text-sm text-white outline-none focus:border-blue-500/50';
+
+  return (
+    <Section icon={Tag} title="Service Rates">
+      <p className="text-xs text-slate-500 -mt-2">Tap-to-fill prices on invoices. Seeded from trustkeyaz.com — edit anytime; changes apply everywhere.</p>
+      {SERVICE_CATEGORIES.map(cat => {
+        const rates = priceBook.filter(r => r.category === cat);
+        if (rates.length === 0) return null;
+        return (
+          <div key={cat}>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">{cat}</p>
+            <div className="space-y-2">
+              {rates.map(r => (
+                <div key={r.id} className="flex items-center gap-2">
+                  <input value={r.name} onChange={e => updateServiceRate({ ...r, name: e.target.value })} className={`${fieldCls} flex-1 min-w-0`} />
+                  <div className="flex items-center gap-1 shrink-0">
+                    <span className="text-slate-500 text-sm">$</span>
+                    <input type="number" value={r.price} onChange={e => updateServiceRate({ ...r, price: Number(e.target.value) || 0 })} className={`${fieldCls} w-20 text-right font-mono text-green-400`} />
+                  </div>
+                  <button onClick={() => removeServiceRate(r.id)} className="shrink-0 text-slate-500 hover:text-red-400 p-1" aria-label="Remove rate"><Trash2 size={15} /></button>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+      <button onClick={() => addServiceRate({ name: 'New service', category: 'Lockout', price: 0, type: 'labor' })} className="flex items-center gap-1.5 text-blue-400 text-sm font-bold"><Plus size={15} /> Add rate</button>
+    </Section>
   );
 };
 

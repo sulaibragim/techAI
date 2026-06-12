@@ -46,6 +46,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
   const { companyName, technicianName, companyAddress, companyCity, companyPhone, companyEmail, licenseNumber } = useSettingsStore();
   const clientProfiles = useSettingsStore(s => s.clientProfiles);
   const upsertClientProfile = useSettingsStore(s => s.upsertClientProfile);
+  const priceBook = useSettingsStore(s => s.priceBook);
   const currentUser = useCurrentUser();
   const users = useAuthStore(s => s.users);
   const logAudit = useAuthStore(s => s.logAudit);
@@ -118,6 +119,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
   const [billingPrompt, setBillingPrompt] = useState<{ open: boolean, type: LineItem['type'] | null, desc: string, price: string, extra?: string, partId?: string, qty?: string, unitCost?: number }>({
     open: false, type: null, desc: '', price: '', qty: '1'
   });
+  const [showRates, setShowRates] = useState(false);
 
   // Payment Settlement States
   const [paymentStep, setPaymentStep] = useState<'idle' | 'split' | 'method' | 'sign'>('idle');
@@ -726,16 +728,43 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
             <div className="space-y-6">
               <div className="bg-white/5 p-4 rounded-2xl border border-white/10 relative">
                 <label className="text-xs font-bold text-slate-400 uppercase block mb-1">
-                  {billingPrompt.type === 'labor' ? 'Labor Name' : billingPrompt.type === 'part' ? 'Part Name (Search Inventory)' : 'Description'}
+                  {billingPrompt.type === 'part' ? 'Part Name (Search Inventory)' : 'Service / Name (Search Rates)'}
                 </label>
-                <input 
-                  className="w-full bg-transparent text-white font-bold outline-none text-sm" 
-                  value={billingPrompt.desc} 
+                <input
+                  className="w-full bg-transparent text-white font-bold outline-none text-sm"
+                  value={billingPrompt.desc}
+                  onFocus={() => setShowRates(true)}
+                  onBlur={() => setShowRates(false)}
                   onChange={e => {
                     setBillingPrompt({ ...billingPrompt, desc: e.target.value, partId: undefined, unitCost: undefined }); // Clear part link if they type manually
                   }}
-                  placeholder="Enter name..."
+                  placeholder={billingPrompt.type === 'part' ? 'Search inventory…' : 'Type or pick a rate…'}
                 />
+                {billingPrompt.type !== 'part' && showRates && (() => {
+                  const q = (billingPrompt.desc || '').toLowerCase();
+                  const matches = priceBook.filter(r => !q || r.name.toLowerCase().includes(q) || r.category.toLowerCase().includes(q));
+                  if (matches.length === 0) return null;
+                  return (
+                    <div onMouseDown={e => e.preventDefault()} className="absolute top-full left-0 right-0 mt-2 bg-slate-800 border border-white/10 rounded-xl shadow-2xl z-50 max-h-52 overflow-y-auto">
+                      {matches.map(rate => (
+                        <button
+                          key={rate.id}
+                          onClick={() => { setBillingPrompt({ ...billingPrompt, type: rate.type, desc: rate.name, price: String(rate.price), partId: undefined, unitCost: undefined }); setShowRates(false); }}
+                          className="w-full text-left px-4 py-2 hover:bg-white/5 text-sm transition-colors border-b border-white/5 last:border-0 flex justify-between items-center gap-3"
+                        >
+                          <div className="min-w-0">
+                            <p className="font-bold text-white truncate">{rate.name}</p>
+                            <p className="text-[11px] text-slate-400 truncate">{rate.category}{rate.note ? ` · ${rate.note}` : ''}</p>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className="font-bold text-green-400">${rate.price}</p>
+                            {rate.nightPrice != null && <p className="text-[10px] text-slate-500">night ${rate.nightPrice}</p>}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  );
+                })()}
                 {billingPrompt.type === 'part' && billingPrompt.desc && !billingPrompt.partId && (
                   <div className="absolute top-full left-0 right-0 mt-2 bg-slate-800 border border-white/10 rounded-xl shadow-2xl z-50 max-h-40 overflow-y-auto">
                     {inventory.filter(p => p.name.toLowerCase().includes(billingPrompt.desc.toLowerCase()) || p.sku.toLowerCase().includes(billingPrompt.desc.toLowerCase())).map(part => (
