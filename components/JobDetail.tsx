@@ -111,7 +111,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
       callQualityRu: { strengths: t.strengths, improvements: t.improvements, missedInfo: t.missedInfo },
     };
     setLocalJob(updated);
-    updateJob(updated);
+    commitJob(updated);
   };
 
   // Billing Prompt State
@@ -148,7 +148,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
     
     const updatedJob = { ...localJob, messages: [...(localJob.messages || []), newMessage] };
     setLocalJob(updatedJob);
-    updateJob(updatedJob);
+    commitJob(updatedJob);
     setDraftMessage('');
   };
 
@@ -175,7 +175,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
       acceptedAt: localJob.acceptanceStatus === 'pending' ? new Date().toISOString() : localJob.acceptedAt,
     };
     setLocalJob(enRouteJob);
-    updateJob(enRouteJob);
+    commitJob(enRouteJob);
     setIsModified(false);
     logAudit({ action: 'job.enroute', detail: `On the way to #${enRouteJob.jobNumber} (${enRouteJob.client.firstName} ${enRouteJob.client.lastName})`, jobId: enRouteJob.id });
 
@@ -200,7 +200,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
       const smsMsg: Message = { id: Math.random().toString(36).slice(2), sender: 'technician', content: text, timestamp: new Date().toISOString(), method: 'sms' };
       const withMsg: Job = { ...enRouteJob, messages: [...(enRouteJob.messages || []), smsMsg] };
       setLocalJob(withMsg);
-      updateJob(withMsg);
+      commitJob(withMsg);
       setOtwState('sent');
     } else {
       setOtwState('error');
@@ -218,7 +218,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
       acceptedAt: isSelf ? new Date().toISOString() : undefined,
     };
     setLocalJob(updated);
-    updateJob(updated);
+    commitJob(updated);
     setIsModified(false);
     const techName = technicians.find(t => t.id === assignedTo)?.name || 'Unassigned';
     logAudit({ action: 'job.assign', detail: `Assigned #${updated.jobNumber} to ${techName}`, jobId: updated.id });
@@ -229,7 +229,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
     // separate step (the On My Way button) so it fires when the tech actually departs.
     const updated: Job = { ...localJob, acceptanceStatus: 'accepted', acceptedAt: new Date().toISOString(), status: 'enRoute' };
     setLocalJob(updated);
-    updateJob(updated);
+    commitJob(updated);
     setIsModified(false);
     logAudit({ action: 'job.accept', detail: `Accepted job #${updated.jobNumber} — moved to En Route`, jobId: updated.id });
   };
@@ -238,7 +238,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
     // Sending it back to dispatch: clear the assignee so a manager can reassign.
     const updated: Job = { ...localJob, acceptanceStatus: 'declined', assignedTo: undefined };
     setLocalJob(updated);
-    updateJob(updated);
+    commitJob(updated);
     setIsModified(false);
     logAudit({ action: 'job.decline', detail: `Declined job #${updated.jobNumber}`, jobId: updated.id });
   };
@@ -265,7 +265,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
 
   // Opening a website lead marks it handled — drops it from the "new leads" banner/column.
   useEffect(() => {
-    if (initialJob.isNewLead) updateJob({ ...initialJob, isNewLead: false });
+    if (initialJob.isNewLead) commitJob({ ...initialJob, isNewLead: false });
   }, [initialJob.id]);
 
   // When the schedule sheet opens, jump the calendar to the selected date's month.
@@ -363,6 +363,26 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
     setIsModified(true);
   };
 
+  // Persist a job AND reconcile inventory against what was previously saved: for each
+  // stocked part, apply only the net quantity change (sold → consume, removed → return).
+  // This is what makes the shelf track the *saved* invoice, never mid-edit churn.
+  const commitJob = (job: Job) => {
+    const prev = jobs.find(j => j.id === job.id);
+    const tally = (j?: Job) => {
+      const m = new Map<string, number>();
+      j?.lineItems.forEach(li => { if (li.partId) m.set(li.partId, (m.get(li.partId) || 0) + li.quantity); });
+      return m;
+    };
+    const before = tally(prev);
+    const after = tally(job);
+    new Set([...before.keys(), ...after.keys()]).forEach(partId => {
+      const delta = (after.get(partId) || 0) - (before.get(partId) || 0);
+      if (delta > 0) consumePart(partId, delta, job.id);
+      else if (delta < 0) returnPart(partId, -delta, job.id);
+    });
+    updateJob(job);
+  };
+
   const handleLockDetailsChange = (updates: Partial<LockDetails>) => {
     handleLocalChange({ lockDetails: { ...localJob.lockDetails, ...updates } });
   };
@@ -396,21 +416,14 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
       unitCost: billingPrompt.unitCost,
     };
 
-    // Selling a stocked part removes exactly `qty` from the shelf and logs a movement.
-    if (newItem.partId) {
-      consumePart(newItem.partId, qty, localJob.id);
-    }
-
+    // Stock isn't touched yet — it's reconciled against the saved invoice in commitJob,
+    // so adding then cancelling without saving never drifts the shelf count.
     handleLocalChange({ lineItems: [...localJob.lineItems, newItem] });
     setBillingPrompt({ open: false, type: null, desc: '', price: '', qty: '1', partId: undefined, unitCost: undefined });
   };
 
   const handleRemoveLineItem = (itemId: string) => {
-    const item = localJob.lineItems.find(li => li.id === itemId);
-    // Removing a part line puts the stock back and logs a return movement.
-    if (item && item.partId) {
-      returnPart(item.partId, item.quantity, localJob.id);
-    }
+    // Local-only; the shelf is reconciled on save (commitJob).
     handleLocalChange({ lineItems: localJob.lineItems.filter(li => li.id !== itemId) });
   };
 
@@ -961,7 +974,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                     paymentStatus: fullyPaid ? 'paid' : 'partial',
                   };
                   setLocalJob(settled);
-                  updateJob(settled);
+                  commitJob(settled);
                   setIsModified(false);
                   logAudit({ action: 'payment.collect', detail: `Collected $${collectingAmount.toFixed(2)} (${paymentMethod}) on #${settled.jobNumber} — ${fullyPaid ? 'paid in full' : `balance $${(subtotal - newPaid).toFixed(2)}`}`, jobId: settled.id });
                   setPaymentStep('idle');
@@ -991,7 +1004,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                   <button onClick={() => setShowDeleteConfirm(true)} aria-label="Delete job" className="p-2.5 rounded-xl bg-red-500/10 text-red-500 border border-red-500/20 active:scale-95 transition-all"><Trash2 size={16} /></button>
                 )}
                 <button
-                  onClick={() => { updateJob(localJob); setIsModified(false); logAudit({ action: 'job.update', detail: `Updated job #${localJob.jobNumber}`, jobId: localJob.id }); }}
+                  onClick={() => { commitJob(localJob); setIsModified(false); logAudit({ action: 'job.update', detail: `Updated job #${localJob.jobNumber}`, jobId: localJob.id }); }}
                   aria-label={isModified ? 'Save changes' : 'Saved'}
                   className={`p-2.5 rounded-xl transition-all active:scale-95 ${isModified ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40' : 'bg-white/5 text-emerald-400/80'}`}
                 >
@@ -1053,7 +1066,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                 <Trash2 size={16} className="mr-2 inline" /> Delete
               </button>
             )}
-            <button onClick={() => { updateJob(localJob); setIsModified(false); logAudit({ action: 'job.update', detail: `Updated job #${localJob.jobNumber}`, jobId: localJob.id }); }} className={`px-9 py-3.5 rounded-2xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 ${isModified ? 'bg-blue-600 text-white shadow-xl' : 'bg-white/5 text-slate-500'}`}>
+            <button onClick={() => { commitJob(localJob); setIsModified(false); logAudit({ action: 'job.update', detail: `Updated job #${localJob.jobNumber}`, jobId: localJob.id }); }} className={`px-9 py-3.5 rounded-2xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 ${isModified ? 'bg-blue-600 text-white shadow-xl' : 'bg-white/5 text-slate-500'}`}>
               {isModified ? <><Save size={16} className="mr-2.5 inline" /> Save Changes</> : <><CheckCircle2 size={16} className="mr-2.5 inline" /> Up to Date</>}
             </button>
           </div>

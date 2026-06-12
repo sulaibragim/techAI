@@ -11,7 +11,7 @@ import { Part, StockMovement, MOVEMENT_META } from '../types';
 
 const CATEGORIES = ['Key Blanks', 'Remotes', 'Cylinders', 'Hardware', 'Tools'] as const;
 
-const money = (n: number) => `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const money = (n: number) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 const marginPct = (price: number, cost?: number) => (cost && cost > 0 && price > 0 ? Math.round(((price - cost) / price) * 100) : null);
 const monthKey = () => new Date().toISOString().slice(0, 7); // YYYY-MM
 
@@ -49,6 +49,7 @@ export const Inventory: React.FC = () => {
     syncInventory, receiveStock, adjustStockTo,
   } = useAppStore();
   const movements = useSettingsStore(s => s.stockMovements);
+  const addExpense = useSettingsStore(s => s.addExpense);
 
   const currentUser = useCurrentUser();
   const canEdit = currentUser ? can.editInventory(currentUser.role) : false;
@@ -253,7 +254,18 @@ export const Inventory: React.FC = () => {
             initialPartId={drawerPart?.id}
             onClose={() => setReceiveOpen(false)}
             onSubmit={(rows, supplierName, logExpense) => {
-              rows.forEach(r => receiveStock(r.partId, r.qty, r.cost, { supplierName, logExpense }));
+              // Stock + per-part movements, but defer the expense to one combined entry below.
+              rows.forEach(r => receiveStock(r.partId, r.qty, r.cost, { supplierName, logExpense: false }));
+              if (logExpense) {
+                const total = rows.reduce((a, r) => a + r.qty * r.cost, 0);
+                addExpense({
+                  date: new Date().toISOString().split('T')[0],
+                  category: 'Keys & Stock',
+                  amount: Math.round(total * 100) / 100,
+                  note: `Stock purchase${supplierName ? ` · ${supplierName}` : ''} — ${rows.length} item${rows.length > 1 ? 's' : ''}`,
+                  createdBy: currentUser?.id,
+                });
+              }
               setReceiveOpen(false);
             }}
           />
