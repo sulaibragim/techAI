@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { API_BASE } from './backendUrl';
 import { authHeaders } from './apiClient';
-import { Expense } from './types';
+import { Expense, ClientProfile } from './types';
 
 export interface SettingsState {
   technicianName: string;
@@ -18,14 +18,16 @@ export interface SettingsState {
   monthlyTargets: Record<string, number>;
   techTargets: Record<string, number>; // per-technician personal monthly revenue goal (user id → $)
   expenses: Expense[]; // business expense ledger (keys & stock, fuel, ads, …)
+  clientProfiles: Record<string, ClientProfile>; // reputation/meta keyed by normalized phone
   taxRate: number; // sales-tax percent applied to taxable revenue (0 = none)
   onboardingComplete: boolean;
   aiAvailable: boolean; // runtime flag: is GEMINI_API_KEY configured on the server?
-  updateSettings: (patch: Partial<Omit<SettingsState, 'updateSettings' | 'resetSettings' | 'setMonthlyTarget' | 'setTechTarget' | 'addExpense' | 'removeExpense' | 'syncSettings' | 'checkAiAvailable' | 'aiAvailable'>>) => void;
+  updateSettings: (patch: Partial<Omit<SettingsState, 'updateSettings' | 'resetSettings' | 'setMonthlyTarget' | 'setTechTarget' | 'addExpense' | 'removeExpense' | 'upsertClientProfile' | 'syncSettings' | 'checkAiAvailable' | 'aiAvailable'>>) => void;
   setMonthlyTarget: (monthKey: string, value: number) => void;
   setTechTarget: (userId: string, value: number) => void;
   addExpense: (expense: Omit<Expense, 'id'>) => void;
   removeExpense: (id: string) => void;
+  upsertClientProfile: (phoneKey: string, patch: Partial<ClientProfile>) => void;
   resetSettings: () => void;
   syncSettings: () => Promise<void>;
   checkAiAvailable: () => Promise<void>;
@@ -50,6 +52,7 @@ export const SETTINGS_DEFAULTS = {
   monthlyTargets: {} as Record<string, number>,
   techTargets: {} as Record<string, number>,
   expenses: [] as Expense[],
+  clientProfiles: {} as Record<string, ClientProfile>,
   taxRate: 0,
   onboardingComplete: false,
 };
@@ -132,6 +135,23 @@ export const useSettingsStore = create<SettingsState>()(
       removeExpense: (id) => {
         set((state) => ({ expenses: state.expenses.filter(e => e.id !== id) }));
         pushToServer({ expenses: get().expenses });
+      },
+
+      upsertClientProfile: (phoneKey, patch) => {
+        if (!phoneKey) return;
+        set((state) => {
+          const prev = state.clientProfiles[phoneKey];
+          const next: ClientProfile = {
+            phoneKey,
+            tags: [],
+            createdAt: prev?.createdAt || new Date().toISOString(),
+            ...prev,
+            ...patch,
+            updatedAt: new Date().toISOString(),
+          };
+          return { clientProfiles: { ...state.clientProfiles, [phoneKey]: next } };
+        });
+        pushToServer({ clientProfiles: get().clientProfiles });
       },
 
       resetSettings: () => {

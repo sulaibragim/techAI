@@ -12,6 +12,7 @@ export interface User {
   phone?: string;
   photo?: string;
   commissionRate?: number; // percent of completed-job revenue, for salary calc
+  skills?: string[];        // technician specialties (TECH_SKILLS) for smart assignment
   active: boolean;
   createdAt: string;
   techStatus?: TechStatus;
@@ -69,6 +70,40 @@ export interface Client {
   preferredContact?: 'phone' | 'email' | 'sms';
   tags?: string[];
 }
+
+// ── Client reputation ───────────────────────────────────────────────────────
+export type ClientRating = 'good' | 'neutral' | 'difficult';
+
+// Manual flags a manager can stick on a client. Positive ones read green/gold,
+// negative ones read red on the caller ID so the team is ready before "hello".
+export const CLIENT_TAGS = [
+  'VIP', 'Frequent', 'Referrer', 'Big ticket',
+  'Difficult', 'Grumpy', 'Slow payer', 'Haggler', 'Cancel risk', 'Do not service',
+] as const;
+export type ClientTag = typeof CLIENT_TAGS[number];
+export const NEGATIVE_TAGS = new Set<string>(['Difficult', 'Grumpy', 'Slow payer', 'Haggler', 'Cancel risk', 'Do not service']);
+export const POSITIVE_TAGS = new Set<string>(['VIP', 'Frequent', 'Referrer', 'Big ticket']);
+
+// Per-client reputation/meta, keyed by normalized phone so it follows the person
+// across every job. Lives in the settings blob (server-synced like techTargets).
+export interface ClientProfile {
+  phoneKey: string;          // normalizePhone(phone) — the join key
+  rating?: ClientRating;
+  tags: string[];            // manual flags (CLIENT_TAGS or custom)
+  notes?: string;            // private manager note shown to the assigned tech
+  favoriteTechId?: string;   // client prefers this technician
+  contact?: {                // set when the client was added without a job yet
+    firstName: string; lastName: string; phone: string;
+    email?: string; address?: string; zip?: string;
+  };
+  createdAt: string;
+  updatedAt?: string;
+}
+
+// Technician specialties — drive smart assignment (e.g. send a high-end car job to
+// whoever is marked for it). Editable per-tech in Settings → Team.
+export const TECH_SKILLS = ['Automotive', 'High-end cars', 'Residential', 'Commercial', 'Safes', 'Smart locks'] as const;
+export type TechSkill = typeof TECH_SKILLS[number];
 
 export interface Message {
   id: string;

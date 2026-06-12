@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useAppStore, useVisibleJobs } from '../store';
-import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Clock, PhoneCall, RefreshCw, Radio, History, ChevronRight, UserPlus } from 'lucide-react';
+import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Clock, PhoneCall, RefreshCw, Radio, History, ChevronRight, UserPlus, AlertTriangle, Star, Ban } from 'lucide-react';
 import { CallRecord } from '../types';
 import { API_BASE } from '../backendUrl';
 import { authHeaders } from '../apiClient';
-import { buildClients, findClientByPhone, formatPhone } from '../clientUtils';
+import { buildClients, findClientByPhone, formatPhone, clientFlags } from '../clientUtils';
+import { useSettingsStore } from '../settingsStore';
 
 const PHONE_NUMBER_ID = 'PNkhFHiD2G';
 
@@ -41,7 +42,8 @@ export const CallsList: React.FC<{
 }> = ({ onClientSelect, onCreateJobFromCall }) => {
   const { calls: storeCalls } = useAppStore();
   const jobs = useVisibleJobs();
-  const clients = useMemo(() => buildClients(jobs), [jobs]);
+  const clientProfiles = useSettingsStore(s => s.clientProfiles);
+  const clients = useMemo(() => buildClients(jobs, clientProfiles), [jobs, clientProfiles]);
   const [liveCalls, setLiveCalls] = useState<CallRecord[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -142,6 +144,7 @@ export const CallsList: React.FC<{
         ) : (
           callHistory.map((call) => {
             const client = findClientByPhone(clients, call.phone);
+            const flags = client ? clientFlags(client) : null;
             const displayName = client ? `${client.firstName} ${client.lastName}`.trim() : (call.from !== call.phone ? call.from : formatPhone(call.phone));
             const initials = client ? `${client.firstName[0] || ''}${client.lastName[0] || ''}`.toUpperCase() : '';
             // Tap a row: known client → open their profile; unknown caller → start a job
@@ -151,15 +154,22 @@ export const CallsList: React.FC<{
               else onCreateJobFromCall?.(call.phone, call.from !== call.phone ? call.from : undefined);
             };
             const clickable = !!(client ? onClientSelect : onCreateJobFromCall);
+            // Reputation colours the whole row so the team reads the caller before "hello".
+            const toneBorder = flags?.tone === 'danger' ? 'border-red-500/50 hover:border-red-500/70'
+              : flags?.tone === 'vip' ? 'border-amber-500/50 hover:border-amber-500/70'
+              : `border-white/10 ${getBorderColor(call.type)}`;
+            const toneAvatar = flags?.tone === 'danger' ? 'bg-red-500/15 border-red-500/40 text-red-300 font-bold'
+              : flags?.tone === 'vip' ? 'bg-amber-500/15 border-amber-500/40 text-amber-300 font-bold'
+              : client ? 'bg-blue-600/10 border-blue-500/30 text-blue-400 font-bold' : 'bg-slate-950 border-white/10 shadow-inner';
             return (
             <div
               key={call.id}
               onClick={rowAction}
               role={clickable ? 'button' : undefined}
-              className={`bg-slate-900/80 backdrop-blur-3xl p-4 rounded-2xl border border-white/10 ${getBorderColor(call.type)} hover:scale-[1.01] transition-all flex items-center justify-between group shadow-xl relative ${clickable ? 'cursor-pointer' : ''}`}
+              className={`bg-slate-900/80 backdrop-blur-3xl p-4 rounded-2xl border ${toneBorder} hover:scale-[1.01] transition-all flex items-center justify-between group shadow-xl relative ${clickable ? 'cursor-pointer' : ''}`}
             >
               <div className="flex items-center space-x-5 flex-1 min-w-0">
-                <div className={`w-12 h-12 rounded-xl overflow-hidden flex items-center justify-center border shrink-0 ${client ? 'bg-blue-600/10 border-blue-500/30 text-blue-400 font-bold' : 'bg-slate-950 border-white/10 shadow-inner'}`}>
+                <div className={`w-12 h-12 rounded-xl overflow-hidden flex items-center justify-center border shrink-0 ${toneAvatar}`}>
                   {call.avatar ? (
                     <img src={call.avatar} className="w-full h-full object-cover" alt="" />
                   ) : client ? (
@@ -180,6 +190,21 @@ export const CallsList: React.FC<{
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{formatPhone(call.phone)}</p>
+                    {flags?.doNotService && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-red-300 bg-red-500/20 border border-red-500/40 px-2 py-0.5 rounded-full">
+                        <Ban size={10} /> Do not service
+                      </span>
+                    )}
+                    {flags?.tone === 'danger' && !flags.doNotService && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-red-300 bg-red-500/15 border border-red-500/30 px-2 py-0.5 rounded-full">
+                        <AlertTriangle size={10} /> Difficult
+                      </span>
+                    )}
+                    {flags?.tone === 'vip' && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded-full">
+                        <Star size={10} /> VIP
+                      </span>
+                    )}
                     {client ? (
                       <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded-full">
                         <History size={10} />

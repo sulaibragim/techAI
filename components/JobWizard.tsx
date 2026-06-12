@@ -24,6 +24,7 @@ import { Job, Client, LockDetails } from '../types';
 import { BRANDS as INITIAL_BRANDS, LOCK_TYPES } from '../constants';
 import { useAuthStore, useCurrentUser } from '../authStore';
 import { useVisibleJobs } from '../store';
+import { useSettingsStore } from '../settingsStore';
 import { buildClients, findClientByPhone, toE164US, ClientRecord } from '../clientUtils';
 import { formatDate } from '../dateUtils';
 import { TechPicker } from './TechPicker';
@@ -61,7 +62,8 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
   const allUsers = useAuthStore(s => s.users);
   const technicians = useMemo(() => allUsers.filter(u => u.role === 'technician' && u.active), [allUsers]);
   const jobs = useVisibleJobs();
-  const clients = useMemo(() => buildClients(jobs), [jobs]);
+  const clientProfiles = useSettingsStore(s => s.clientProfiles);
+  const clients = useMemo(() => buildClients(jobs, clientProfiles), [jobs, clientProfiles]);
 
   const [step, setStep] = useState(0);
   const [error, setError] = useState('');

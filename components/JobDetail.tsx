@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   X, MapPin, Phone, Mail, Wrench, Trash2,
   Save, Package, Clock, User, Stethoscope,
@@ -11,16 +11,16 @@ import {
   Edit2, DollarSign,
   Hammer, Shield,
   Calendar as CalendarIcon, Send, Percent,
-  Car, Home, ChevronDown, Lock, Printer, History
+  Car, Home, ChevronDown, Lock, Printer, History, ThumbsUp, ThumbsDown, Minus, Star, AlertTriangle, Ban
 } from 'lucide-react';
 import { useSettingsStore } from '../settingsStore';
-import { Job, LineItem, STATUS_COLORS, LockDetails, JobStatus, Client, Message } from '../types';
+import { Job, LineItem, STATUS_COLORS, LockDetails, JobStatus, Client, Message, CLIENT_TAGS, ClientRating, NEGATIVE_TAGS } from '../types';
 import { useAppStore } from '../store';
 import { useAuthStore, useCurrentUser, can } from '../authStore';
 import { BRANDS, LOCK_TYPES as LOCK_ICONS } from '../constants';
 import { formatTimestamp, formatDate } from '../dateUtils';
 import { sendSms } from '../smsService';
-import { normalizePhone, toE164US, formatPhone } from '../clientUtils';
+import { normalizePhone, toE164US, formatPhone, buildClients, clientFlags } from '../clientUtils';
 import { isRevenueJob } from '../financialUtils';
 import { translateCallSummary } from '../translateService';
 import { geocodeAddress } from '../geocoding';
@@ -44,6 +44,8 @@ const TERM_TYPES = ['1', '10', '15', '20', '30'];
 export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (job: Job) => void }> = ({ job: initialJob, onClose, onOpenJob }) => {
   const { jobs, updateJob, removeJob, inventory, updateInventoryItem } = useAppStore();
   const { companyName, technicianName, companyAddress, companyCity, companyPhone, companyEmail, licenseNumber } = useSettingsStore();
+  const clientProfiles = useSettingsStore(s => s.clientProfiles);
+  const upsertClientProfile = useSettingsStore(s => s.upsertClientProfile);
   const currentUser = useCurrentUser();
   const users = useAuthStore(s => s.users);
   const logAudit = useAuthStore(s => s.logAudit);
@@ -53,7 +55,25 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
   const lockedForTech = role === 'technician' && jobIsClosed; // tech cannot reopen a closed job
   const [localJob, setLocalJob] = useState<Job>({ ...initialJob });
   const [isModified, setIsModified] = useState(false);
-  
+
+  // Client reputation for this job's customer (rating, flags, auto-tags, note).
+  const clientPhoneKey = normalizePhone(initialJob.client.phone);
+  const clientRec = useMemo(
+    () => clientPhoneKey.length >= 7 ? buildClients(jobs, clientProfiles).find(c => normalizePhone(c.phone) === clientPhoneKey) : undefined,
+    [jobs, clientProfiles, clientPhoneKey]
+  );
+  const repFlags = clientRec ? clientFlags(clientRec) : null;
+  const profileKey = clientPhoneKey.length >= 7 ? clientPhoneKey : '';
+  const setClientRating = (rating: ClientRating) => {
+    if (!profileKey) return;
+    upsertClientProfile(profileKey, { rating: clientRec?.rating === rating ? undefined : rating });
+  };
+  const toggleClientTag = (tag: string) => {
+    if (!profileKey) return;
+    const cur = clientRec?.tags || [];
+    upsertClientProfile(profileKey, { tags: cur.includes(tag) ? cur.filter(t => t !== tag) : [...cur, tag] });
+  };
+
   // UI States
   const [showStatusPicker, setShowStatusPicker] = useState(false);
   const [showTypePicker, setShowTypePicker] = useState(false);
@@ -1176,6 +1196,63 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                     <p className="text-xs font-semibold text-slate-500 mt-0.5">{localJob.scheduledDate} @ {localJob.scheduledTime}</p>
                   </div>
                 </div>
+
+                {/* CLIENT REPUTATION */}
+                {profileKey && (
+                  <div className="py-4 border-b border-slate-700 space-y-3">
+                    {repFlags?.doNotService ? (
+                      <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/30 rounded-xl px-3 py-2">
+                        <Ban size={15} className="text-red-400 shrink-0" />
+                        <span className="text-xs font-bold text-red-300">Do not service — confirm with owner</span>
+                      </div>
+                    ) : repFlags?.tone === 'danger' ? (
+                      <div className="flex items-center gap-2 bg-red-500/5 border border-red-500/20 rounded-xl px-3 py-2">
+                        <AlertTriangle size={14} className="text-red-400 shrink-0" />
+                        <span className="text-xs font-semibold text-red-300/90">Difficult client — handle with care</span>
+                      </div>
+                    ) : repFlags?.tone === 'vip' ? (
+                      <div className="flex items-center gap-2 bg-amber-500/5 border border-amber-500/20 rounded-xl px-3 py-2">
+                        <Star size={14} className="text-amber-400 shrink-0" />
+                        <span className="text-xs font-semibold text-amber-300/90">VIP / valued client — take good care</span>
+                      </div>
+                    ) : null}
+
+                    {clientRec && (clientRec.tags.length > 0 || clientRec.autoTags.length > 0) && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {Array.from(new Set([...clientRec.tags, ...clientRec.autoTags])).map(t => (
+                          <span key={t} className={`px-2 py-0.5 rounded text-[10px] font-bold border ${NEGATIVE_TAGS.has(t) ? 'bg-red-500/15 text-red-300 border-red-500/30' : (t === 'VIP' || t === 'Frequent' || t === 'Referrer' || t === 'Big ticket') ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' : 'bg-white/5 text-slate-400 border-white/10'}`}>{t}</span>
+                        ))}
+                      </div>
+                    )}
+
+                    {clientRec?.notes && (
+                      <p className="text-[11px] text-slate-400 italic bg-white/5 rounded-lg px-3 py-2 leading-relaxed">📌 {clientRec.notes}</p>
+                    )}
+
+                    {!lockedForTech && (
+                      <div>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">
+                          {jobIsClosed ? 'How was this client?' : 'Rate client'}
+                        </p>
+                        <div className="flex gap-1.5">
+                          {([
+                            { r: 'good' as ClientRating, label: 'Good', Icon: ThumbsUp, on: 'bg-green-500/15 text-green-400 border-green-500/40' },
+                            { r: 'neutral' as ClientRating, label: 'Neutral', Icon: Minus, on: 'bg-slate-500/15 text-slate-300 border-slate-500/40' },
+                            { r: 'difficult' as ClientRating, label: 'Difficult', Icon: ThumbsDown, on: 'bg-red-500/15 text-red-300 border-red-500/40' },
+                          ]).map(({ r, label, Icon, on }) => {
+                            const active = clientRec?.rating === r;
+                            return (
+                              <button key={r} onClick={() => setClientRating(r)}
+                                className={`flex-1 flex items-center justify-center gap-1 px-2 py-2 rounded-lg border text-[11px] font-bold uppercase tracking-wider transition-all ${active ? on : 'bg-white/5 text-slate-500 border-white/10 hover:text-white'}`}>
+                                <Icon size={12} /> {label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* CONTACT ACTIONS */}
                 <div className="space-y-1">
