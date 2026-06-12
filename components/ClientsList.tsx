@@ -1,10 +1,27 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'motion/react';
-import { User, Phone, Mail, MapPin, Briefcase, DollarSign, ChevronRight, Search } from 'lucide-react';
+import { User, Phone, Mail, MapPin, Briefcase, DollarSign, ChevronRight, Search, PhoneIncoming, PhoneOutgoing, PhoneMissed, MessageSquare } from 'lucide-react';
 import { useVisibleJobs } from '../store';
 import { Job } from '../types';
-import { formatDate } from '../dateUtils';
-import { ClientRecord, buildClients } from '../clientUtils';
+import { formatDate, formatTimestamp } from '../dateUtils';
+import { ClientRecord, buildClients, normalizePhone } from '../clientUtils';
+import { API_BASE } from '../backendUrl';
+import { authHeaders } from '../apiClient';
+
+interface CommEvent {
+  id: string;
+  kind: 'call' | 'sms';
+  direction: 'incoming' | 'outgoing' | 'missed';
+  body?: string;
+  duration?: number;
+  at: string; // ISO
+}
+
+function durLabel(s?: number): string {
+  if (!s) return '';
+  const m = Math.floor(s / 60), sec = s % 60;
+  return m > 0 ? `${m}m ${sec}s` : `${sec}s`;
+}
 
 export const ClientsList: React.FC<{
   onJobSelect?: (job: Job) => void;
@@ -14,8 +31,45 @@ export const ClientsList: React.FC<{
   const jobs = useVisibleJobs();
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<ClientRecord | null>(null);
+  const [calls, setCalls] = useState<any[]>([]);
+  const [sms, setSms] = useState<any[]>([]);
 
   const clients = useMemo<ClientRecord[]>(() => buildClients(jobs), [jobs]);
+
+  // Pull OpenPhone call + SMS history once so a client profile can show every
+  // touchpoint, not just jobs. Silent — if the backend is offline we simply show none.
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const [c, m] = await Promise.all([
+          fetch(`${API_BASE}/api/openphone/calls`, { headers: { ...authHeaders() } }).then(r => r.ok ? r.json() : { data: [] }),
+          fetch(`${API_BASE}/api/openphone/messages`, { headers: { ...authHeaders() } }).then(r => r.ok ? r.json() : { data: [] }),
+        ]);
+        if (!alive) return;
+        setCalls(c.data || []);
+        setSms(m.data || []);
+      } catch { /* offline — no comms */ }
+    })();
+    return () => { alive = false; };
+  }, []);
+
+  const commsFor = (phone: string): CommEvent[] => {
+    const key = normalizePhone(phone);
+    if (key.length < 7) return [];
+    const events: CommEvent[] = [];
+    for (const c of calls) {
+      if (normalizePhone(c.from) !== key && normalizePhone(c.to) !== key) continue;
+      const inbound = c.direction === 'inbound' || c.direction === 'incoming';
+      const missed = c.status === 'missed' || c.status === 'no-answer';
+      events.push({ id: c.id, kind: 'call', direction: missed ? 'missed' : inbound ? 'incoming' : 'outgoing', duration: c.duration, at: c.createdAt });
+    }
+    for (const m of sms) {
+      if (normalizePhone(m.from) !== key && normalizePhone(m.to) !== key) continue;
+      events.push({ id: m.id, kind: 'sms', direction: m.direction === 'incoming' ? 'incoming' : 'outgoing', body: m.body, at: m.createdAt });
+    }
+    return events.sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime());
+  };
 
   // Deep-link: when another tab (e.g. a known caller in Call History) asks to open
   // a specific client, jump straight into that profile.
@@ -95,6 +149,44 @@ export const ClientsList: React.FC<{
             )}
           </div>
         </div>
+
+        {(() => {
+          const comms = commsFor(selected.phone);
+          if (comms.length === 0) return null;
+          const callCount = comms.filter(c => c.kind === 'call').length;
+          const smsCount = comms.filter(c => c.kind === 'sms').length;
+          const ICON = {
+            incoming: <PhoneIncoming size={13} className="text-green-400" />,
+            outgoing: <PhoneOutgoing size={13} className="text-blue-400" />,
+            missed: <PhoneMissed size={13} className="text-red-400" />,
+          };
+          return (
+            <div className="space-y-3">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400">
+                Communication · <span className="text-slate-500">{callCount} call{callCount !== 1 ? 's' : ''}, {smsCount} SMS</span>
+              </h3>
+              <div className="bg-slate-900 border border-white/5 rounded-2xl divide-y divide-white/5 max-h-72 overflow-y-auto">
+                {comms.map(ev => (
+                  <div key={ev.id} className="flex items-start gap-3 px-4 py-3">
+                    <div className="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center shrink-0 mt-0.5">
+                      {ev.kind === 'sms' ? <MessageSquare size={13} className={ev.direction === 'incoming' ? 'text-green-400' : 'text-blue-400'} /> : ICON[ev.direction]}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs font-bold text-slate-300 capitalize">
+                          {ev.kind === 'sms' ? `SMS ${ev.direction === 'incoming' ? 'received' : 'sent'}` : `${ev.direction} call`}
+                          {ev.kind === 'call' && ev.duration ? <span className="text-slate-500 font-semibold"> · {durLabel(ev.duration)}</span> : ''}
+                        </span>
+                        <span className="text-[10px] text-slate-500 font-semibold shrink-0">{formatTimestamp(ev.at)}</span>
+                      </div>
+                      {ev.body && <p className="text-xs text-slate-400 mt-1 leading-relaxed break-words">{ev.body}</p>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
 
         <div className="space-y-3">
           <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400">Job History</h3>

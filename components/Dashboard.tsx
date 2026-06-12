@@ -7,7 +7,7 @@ import {
   TrendingUp, TrendingDown, Wallet, Target as TargetIcon, BrainCircuit, Activity,
   CheckCircle2, Clock, Briefcase, XCircle, ChevronLeft, ChevronRight, GitCompareArrows,
   Download, Trophy, Coffee, Users, CalendarDays, Sparkles, Flame, AlertTriangle, AlertCircle,
-  Building2, HardHat
+  Building2, HardHat, PhoneCall
 } from 'lucide-react';
 import { useAppStore, useVisibleJobs } from '../store';
 import { useSettingsStore } from '../settingsStore';
@@ -16,7 +16,7 @@ import {
   calculatePeriodMetrics, buildMonthlyTrend, buildYearlyTrend, revenueByJobType,
   topClients, revenueByDayOfWeek, computeRecords, coffeeAnalysis, availableMonths,
   revenueByTechnician, periodJobsToCSV, yearPlanning, revenueByHourDow, HOUR_SLOT_LABELS,
-  MONTH_FULL, MONTH_LABELS, FinancialMetrics
+  callQualityStats, MONTH_FULL, MONTH_LABELS, FinancialMetrics
 } from '../financialUtils';
 import { TechAnalytics } from './TechAnalytics';
 
@@ -129,6 +129,7 @@ export const Dashboard: React.FC = () => {
   const techEarnings = useMemo(() => revenueByTechnician(jobs, viewYear, viewMonth, users), [jobs, viewYear, viewMonth, users]);
   const yearPlan = useMemo(() => yearPlanning(jobs, viewYear, monthlyTargets, monthlyRevenueTarget), [jobs, viewYear, monthlyTargets, monthlyRevenueTarget]);
   const hourDow = useMemo(() => revenueByHourDow(jobs, viewYear, viewMonth), [jobs, viewYear, viewMonth]);
+  const callQ = useMemo(() => callQualityStats(jobs, viewYear, viewMonth), [jobs, viewYear, viewMonth]);
 
   const prevMonth = useMemo(() => stepMonth(viewYear, viewMonth, -1), [viewYear, viewMonth]);
   const prevMetrics = useMemo(() => calculatePeriodMetrics(jobs, prevMonth.year, prevMonth.month, monthlyTargets[keyOf(prevMonth.year, prevMonth.month)] ?? monthlyRevenueTarget), [jobs, prevMonth, monthlyTargets, monthlyRevenueTarget]);
@@ -665,6 +666,60 @@ export const Dashboard: React.FC = () => {
               </>
             )}
           </Card>
+
+          {/* CALL HANDLING QUALITY */}
+          {callQ.scored > 0 && (
+            <Card title={`Call Handling Quality — ${periodLabel}`} icon={PhoneCall}>
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                <div className="lg:col-span-3 flex flex-col items-center justify-center text-center">
+                  <div className={`text-5xl font-bold tracking-tighter ${callQ.score >= 80 ? 'text-green-400' : callQ.score >= 60 ? 'text-blue-400' : callQ.score >= 40 ? 'text-amber-400' : 'text-red-400'}`}>{callQ.score}</div>
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Avg Score / 100</p>
+                  <p className="text-xs text-slate-400 font-semibold mt-2">{callQ.scored} call{callQ.scored === 1 ? '' : 's'} reviewed</p>
+                </div>
+                <div className="lg:col-span-4 space-y-2">
+                  {([
+                    { k: 'excellent', label: 'Excellent', color: 'bg-green-500', text: 'text-green-400' },
+                    { k: 'good', label: 'Good', color: 'bg-blue-500', text: 'text-blue-400' },
+                    { k: 'needs_improvement', label: 'Needs Work', color: 'bg-amber-500', text: 'text-amber-400' },
+                    { k: 'poor', label: 'Poor', color: 'bg-red-500', text: 'text-red-400' },
+                  ] as const).map(r => {
+                    const n = callQ.byRating[r.k];
+                    const pct = callQ.scored > 0 ? (n / callQ.scored) * 100 : 0;
+                    return (
+                      <div key={r.k}>
+                        <div className="flex justify-between text-xs font-bold mb-1">
+                          <span className={r.text}>{r.label}</span>
+                          <span className="text-slate-400 tabular-nums">{n}</span>
+                        </div>
+                        <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                          <div className={`h-full rounded-full ${r.color}`} style={{ width: `${pct}%` }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="bg-amber-500/5 border border-amber-500/15 rounded-xl p-3">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-amber-400 mb-2">Coach On</p>
+                    {callQ.topImprovements.length === 0
+                      ? <p className="text-xs text-slate-500">Nothing recurring 👍</p>
+                      : callQ.topImprovements.map((it, i) => (
+                        <p key={i} className="text-[11px] text-amber-400/80 leading-snug">! {it.text} {it.count > 1 && <span className="text-slate-500">×{it.count}</span>}</p>
+                      ))}
+                  </div>
+                  <div className="bg-red-500/5 border border-red-500/15 rounded-xl p-3">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-red-400 mb-2">Often Missed</p>
+                    {callQ.topMissing.length === 0
+                      ? <p className="text-xs text-slate-500">Nothing recurring 👍</p>
+                      : callQ.topMissing.map((it, i) => (
+                        <p key={i} className="text-[11px] text-red-400/70 leading-snug">? {it.text} {it.count > 1 && <span className="text-slate-500">×{it.count}</span>}</p>
+                      ))}
+                  </div>
+                </div>
+              </div>
+              <p className="text-[10px] text-slate-500 mt-3">Scored from each job's AI call review (Excellent 100 · Good 78 · Needs Work 48 · Poor 18). Only jobs created from a phone call count.</p>
+            </Card>
+          )}
 
           {/* RECORDS  |  COFFEE LOSS */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">

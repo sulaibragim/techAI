@@ -3,7 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
-import { openphoneRouter } from './routes/openphone.js';
+import { openphoneRouter, hydrateOpenPhoneStores } from './routes/openphone.js';
 import { authRouter } from './routes/auth.js';
 import { settingsRouter } from './routes/settings.js';
 import { aiRouter } from './routes/ai.js';
@@ -101,6 +101,7 @@ async function start() {
     try {
       await initDB();
       console.log('[DB] Connected to PostgreSQL');
+      await hydrateOpenPhoneStores();
     } catch (err) {
       console.error('[DB] Failed to connect:', err.message);
       console.log('[DB] Running without database — data will be in-memory only');

@@ -453,6 +453,48 @@ export function yearPlanning(jobs: Job[], year: number, targets: Record<string, 
   };
 }
 
+export type CallRating = 'excellent' | 'good' | 'needs_improvement' | 'poor';
+
+export interface CallQualityStats {
+  scored: number;
+  byRating: Record<CallRating, number>;
+  score: number; // 0–100 weighted average of how well calls were handled
+  topImprovements: { text: string; count: number }[];
+  topMissing: { text: string; count: number }[];
+}
+
+const RATING_SCORE: Record<CallRating, number> = { excellent: 100, good: 78, needs_improvement: 48, poor: 18 };
+
+/**
+ * How well intake calls were handled in a month — aggregated from each job's AI call
+ * review (callQuality). Scoped by the job's scheduled date (≈ when the call came in).
+ * Surfaces a 0–100 score plus the most common coaching themes & missed-info items.
+ */
+export function callQualityStats(jobs: Job[], year: number, month: number): CallQualityStats {
+  const key = monthKey(year, month);
+  const scored = jobs.filter(j => j.callQuality && (j.scheduledDate || '').startsWith(key));
+  const byRating: Record<CallRating, number> = { excellent: 0, good: 0, needs_improvement: 0, poor: 0 };
+  let scoreSum = 0;
+  const imp = new Map<string, number>();
+  const miss = new Map<string, number>();
+  for (const j of scored) {
+    const q = j.callQuality!;
+    byRating[q.rating] = (byRating[q.rating] || 0) + 1;
+    scoreSum += RATING_SCORE[q.rating] ?? 50;
+    for (const s of q.improvements || []) imp.set(s, (imp.get(s) || 0) + 1);
+    for (const s of q.missedInfo || []) miss.set(s, (miss.get(s) || 0) + 1);
+  }
+  const top = (m: Map<string, number>) =>
+    [...m.entries()].map(([text, count]) => ({ text, count })).sort((a, b) => b.count - a.count).slice(0, 4);
+  return {
+    scored: scored.length,
+    byRating,
+    score: scored.length ? Math.round(scoreSum / scored.length) : 0,
+    topImprovements: top(imp),
+    topMissing: top(miss),
+  };
+}
+
 export const HOUR_SLOT_LABELS = ['12a', '3a', '6a', '9a', '12p', '3p', '6p', '9p'];
 
 export interface HourDowCell { revenue: number; count: number; }

@@ -3,8 +3,11 @@ import { useAppStore } from '../store';
 import { useAuthStore } from '../authStore';
 import { API_BASE } from '../backendUrl';
 import { authHeaders } from '../apiClient';
-import { TechStatus } from '../types';
-import { Sparkles, Phone, MapPin, Lock, Clock, CheckCircle, X, ChevronDown, ChevronUp, Mic, UserCheck, Circle, Car, FileText, Star, AlertTriangle, ThumbsUp, ThumbsDown, Info, User } from 'lucide-react';
+import { TechStatus, Message, Job } from '../types';
+import { normalizePhone } from '../clientUtils';
+import { Sparkles, Phone, MapPin, Lock, Clock, CheckCircle, X, ChevronDown, ChevronUp, Mic, UserCheck, Circle, Car, FileText, Star, AlertTriangle, ThumbsUp, ThumbsDown, Info, User, Link2 } from 'lucide-react';
+
+const OPEN_STATUSES = new Set(['scheduled', 'enRoute', 'onSite', 'diagnosed', 'sold', 'waitingParts', 'coffee']);
 
 interface CallQuality {
   rating: 'excellent' | 'good' | 'needs_improvement' | 'poor';
@@ -85,7 +88,7 @@ function formatDur(s: number | null): string {
 }
 
 export const PendingJobSuggestions: React.FC<{ onJobCreated?: (job: import('../types').Job) => void }> = ({ onJobCreated }) => {
-  const { addJob } = useAppStore();
+  const { addJob, jobs, updateJob } = useAppStore();
   const { users } = useAuthStore();
   const technicians = users.filter(u => u.role === 'technician' && u.active);
   const [pending, setPending] = useState<PendingJob[]>([]);
@@ -195,6 +198,40 @@ export const PendingJobSuggestions: React.FC<{ onJobCreated?: (job: import('../t
     }
   };
 
+  // The most recent still-open job for the caller's number — lets a callback about an
+  // existing job attach its summary there instead of spawning a duplicate job.
+  const findOpenJob = (pj: PendingJob): Job | null => {
+    const key = normalizePhone(pj.suggestion?.clientPhone || pj.callerPhone);
+    if (key.length < 7) return null;
+    const matches = jobs
+      .filter(j => OPEN_STATUSES.has(j.status) && normalizePhone(j.client?.phone) === key)
+      .sort((a, b) => (b.scheduledDate || '').localeCompare(a.scheduledDate || ''));
+    return matches[0] || null;
+  };
+
+  const attachToJob = async (pj: PendingJob, job: Job) => {
+    setCreating(pj.callId);
+    const s = pj.suggestion;
+    const summary = s?.callSummary || pj.openPhoneSummary || '';
+    const note: Message = {
+      id: `msg-${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      sender: 'system',
+      method: 'voice',
+      content: `📞 Follow-up call${pj.duration ? ` (${formatDur(pj.duration)})` : ''}${summary ? `: ${summary}` : ' — see transcript'}`,
+    };
+    updateJob({
+      ...job,
+      callSummary: job.callSummary || summary || undefined,
+      callQuality: job.callQuality || s?.callQuality || undefined,
+      callTranscript: pj.transcript || job.callTranscript,
+      messages: [...(job.messages || []), note],
+    });
+    await dismiss(pj.callId);
+    setCreating(null);
+    onJobCreated?.(job);
+  };
+
   if (pending.length === 0) return null;
 
   return (
@@ -211,6 +248,7 @@ export const PendingJobSuggestions: React.FC<{ onJobCreated?: (job: import('../t
         const s = pj.suggestion;
         const isExpanded = expanded === pj.callId;
         const urgencyClass = URGENCY_COLOR[s?.urgency || 'standard'];
+        const openJob = findOpenJob(pj);
 
         return (
           <div
@@ -238,6 +276,11 @@ export const PendingJobSuggestions: React.FC<{ onJobCreated?: (job: import('../t
                     {!s && (
                       <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-lg border text-amber-400 bg-amber-500/10 border-amber-500/20">
                         transcript only
+                      </span>
+                    )}
+                    {openJob && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-lg border text-cyan-400 bg-cyan-500/10 border-cyan-500/20">
+                        <Link2 size={9} /> open job #{openJob.jobNumber}
                       </span>
                     )}
                   </div>
@@ -444,6 +487,18 @@ export const PendingJobSuggestions: React.FC<{ onJobCreated?: (job: import('../t
                   </div>
                 )}
 
+                {/* Attach to an existing open job — shown when the caller has one in flight */}
+                {openJob && (
+                  <button
+                    onClick={() => attachToJob(pj, openJob)}
+                    disabled={creating === pj.callId}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-cyan-600/20 border border-cyan-500/40 hover:bg-cyan-600/30 text-cyan-300 text-xs font-bold uppercase tracking-wider rounded-xl transition-all active:scale-[0.98] disabled:opacity-50"
+                  >
+                    <Link2 size={14} />
+                    {creating === pj.callId ? 'Attaching…' : `Attach call to job #${openJob.jobNumber} (${openJob.client.firstName})`}
+                  </button>
+                )}
+
                 {/* Create Job button — always available, even when the AI extracted nothing */}
                 <button
                   onClick={() => approve(pj)}
@@ -455,7 +510,7 @@ export const PendingJobSuggestions: React.FC<{ onJobCreated?: (job: import('../t
                     ? 'Creating…'
                     : selectedTech[pj.callId]
                       ? `Assign to ${technicians.find(t => t.id === selectedTech[pj.callId])?.name} & Create Job`
-                      : 'Create Job (Unassigned)'
+                      : openJob ? 'Create Separate Job' : 'Create Job (Unassigned)'
                   }
                 </button>
               </div>
