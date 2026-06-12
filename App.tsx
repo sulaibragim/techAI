@@ -308,7 +308,7 @@ const App: React.FC = () => {
           onComplete={(job) => { addJob(job); setIsWizardOpen(false); }}
         />
       )}
-      {selectedJob && <JobDetail job={selectedJob} onClose={() => setSelectedJobId(null)} />}
+      {selectedJob && <JobDetail key={selectedJob.id} job={selectedJob} onClose={() => setSelectedJobId(null)} onOpenJob={(j) => setSelectedJobId(j.id)} />}
     </div>
   );
 };

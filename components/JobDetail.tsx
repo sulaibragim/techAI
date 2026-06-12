@@ -11,15 +11,18 @@ import {
   Edit2, DollarSign,
   Hammer, Shield,
   Calendar as CalendarIcon, Send, Percent,
-  Car, Home, ChevronDown, Lock, Printer
+  Car, Home, ChevronDown, Lock, Printer, History
 } from 'lucide-react';
 import { useSettingsStore } from '../settingsStore';
 import { Job, LineItem, STATUS_COLORS, LockDetails, JobStatus, Client, Message } from '../types';
 import { useAppStore } from '../store';
 import { useAuthStore, useCurrentUser, can } from '../authStore';
 import { BRANDS, LOCK_TYPES as LOCK_ICONS } from '../constants';
-import { formatTimestamp } from '../dateUtils';
+import { formatTimestamp, formatDate } from '../dateUtils';
 import { sendSms } from '../smsService';
+import { normalizePhone } from '../clientUtils';
+import { isRevenueJob } from '../financialUtils';
+import { translateCallSummary } from '../translateService';
 import { geocodeAddress } from '../geocoding';
 import { haversineMiles, approxEtaMinutes, formatMiles, LatLng } from '../geoUtils';
 import { getDriveEta, getRouteInfo, getWeather, buildOnMyWayMessage } from '../dispatchMessage';
@@ -38,7 +41,7 @@ const STATUS_OPTIONS: { id: JobStatus; label: string }[] = [
 
 const TERM_TYPES = ['1', '10', '15', '20', '30'];
 
-export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: initialJob, onClose }) => {
+export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (job: Job) => void }> = ({ job: initialJob, onClose, onOpenJob }) => {
   const { jobs, updateJob, removeJob, inventory, updateInventoryItem } = useAppStore();
   const { companyName, technicianName, companyAddress, companyCity, companyPhone, companyEmail, licenseNumber } = useSettingsStore();
   const currentUser = useCurrentUser();
@@ -68,6 +71,28 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
   const [showCustomBrandInput, setShowCustomBrandInput] = useState(false);
   
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  // Call-summary language toggle. RU translation is fetched once via the AI proxy,
+  // then cached on the job itself so every later view (any device) is instant.
+  const [sumLang, setSumLang] = useState<'en' | 'ru'>('en');
+  const [translating, setTranslating] = useState(false);
+  const [translateError, setTranslateError] = useState(false);
+  const handleSummaryLang = async (lang: 'en' | 'ru') => {
+    setSumLang(lang);
+    setTranslateError(false);
+    if (lang !== 'ru' || localJob.callSummaryRu || !localJob.callSummary || translating) return;
+    setTranslating(true);
+    const t = await translateCallSummary(localJob.callSummary, localJob.callQuality);
+    setTranslating(false);
+    if (!t) { setTranslateError(true); return; }
+    const updated: Job = {
+      ...localJob,
+      callSummaryRu: t.summary,
+      callQualityRu: { strengths: t.strengths, improvements: t.improvements, missedInfo: t.missedInfo },
+    };
+    setLocalJob(updated);
+    updateJob(updated);
+  };
 
   // Billing Prompt State
   const [billingPrompt, setBillingPrompt] = useState<{ open: boolean, type: LineItem['type'] | null, desc: string, price: string, extra?: string, partId?: string }>({
@@ -1640,13 +1665,38 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
               </div>
 
               {/* CALL SUMMARY (if from phone intake) */}
-              {localJob.callSummary && (
+              {localJob.callSummary && (() => {
+                const ru = sumLang === 'ru';
+                const summaryText = ru ? (localJob.callSummaryRu || localJob.callSummary) : localJob.callSummary;
+                const lists = ru && localJob.callQualityRu ? localJob.callQualityRu : localJob.callQuality;
+                const RATING_RU: Record<string, string> = { excellent: 'Отлично', good: 'Хорошо', needs_improvement: 'Надо лучше', poor: 'Слабо' };
+                const L = ru
+                  ? { title: 'Разбор звонка', strengths: 'Сильные стороны', improve: 'Улучшить', missing: 'Не собрали' }
+                  : { title: 'Call Summary', strengths: 'Strengths', improve: 'Improve', missing: 'Missing Info' };
+                return (
                 <div className="bg-slate-900 p-8 rounded-2xl border border-slate-700 space-y-6 shadow-md">
-                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center">
-                    <Phone size={16} className="mr-3 text-violet-500" /> Call Summary
-                  </h3>
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center">
+                      <Phone size={16} className="mr-3 text-violet-500" /> {L.title}
+                    </h3>
+                    <div className="flex items-center gap-2">
+                      {translating && <span className="text-[10px] font-bold uppercase tracking-widest text-violet-400 animate-pulse">Перевожу…</span>}
+                      {translateError && <span className="text-[10px] font-bold uppercase tracking-widest text-red-400">Перевод не удался</span>}
+                      <div className="flex bg-slate-950 border border-white/10 rounded-lg p-0.5">
+                        {(['en', 'ru'] as const).map(lng => (
+                          <button
+                            key={lng}
+                            onClick={() => handleSummaryLang(lng)}
+                            className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest transition-all ${sumLang === lng ? 'bg-violet-600 text-white' : 'text-slate-500 hover:text-white'}`}
+                          >
+                            {lng === 'en' ? 'EN' : 'RU'}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                   <p className="text-sm text-slate-300 leading-relaxed bg-violet-950/20 border border-violet-500/10 rounded-xl p-4">
-                    {localJob.callSummary}
+                    {summaryText}
                   </p>
                   {localJob.callQuality && (
                     <div className="space-y-3">
@@ -1657,30 +1707,30 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                           localJob.callQuality.rating === 'needs_improvement' ? 'text-amber-400 bg-amber-500/10 border-amber-500/20' :
                           'text-red-400 bg-red-500/10 border-red-500/20'
                         }`}>
-                          {localJob.callQuality.rating === 'needs_improvement' ? 'Needs Work' : localJob.callQuality.rating}
+                          {ru ? RATING_RU[localJob.callQuality.rating] : localJob.callQuality.rating === 'needs_improvement' ? 'Needs Work' : localJob.callQuality.rating}
                         </span>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        {localJob.callQuality.strengths?.length > 0 && (
+                        {(lists?.strengths?.length ?? 0) > 0 && (
                           <div className="bg-green-500/5 border border-green-500/10 rounded-xl p-3 space-y-1">
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-green-400 mb-1">Strengths</p>
-                            {localJob.callQuality.strengths.map((s, i) => (
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-green-400 mb-1">{L.strengths}</p>
+                            {lists!.strengths.map((s, i) => (
                               <p key={i} className="text-[11px] text-green-400/80">+ {s}</p>
                             ))}
                           </div>
                         )}
-                        {localJob.callQuality.improvements?.length > 0 && (
+                        {(lists?.improvements?.length ?? 0) > 0 && (
                           <div className="bg-amber-500/5 border border-amber-500/10 rounded-xl p-3 space-y-1">
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-amber-400 mb-1">Improve</p>
-                            {localJob.callQuality.improvements.map((s, i) => (
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-amber-400 mb-1">{L.improve}</p>
+                            {lists!.improvements.map((s, i) => (
                               <p key={i} className="text-[11px] text-amber-400/80">! {s}</p>
                             ))}
                           </div>
                         )}
-                        {localJob.callQuality.missedInfo?.length > 0 && (
+                        {(lists?.missedInfo?.length ?? 0) > 0 && (
                           <div className="bg-red-500/5 border border-red-500/10 rounded-xl p-3 space-y-1">
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-red-400 mb-1">Missing Info</p>
-                            {localJob.callQuality.missedInfo.map((s, i) => (
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-red-400 mb-1">{L.missing}</p>
+                            {lists!.missedInfo.map((s, i) => (
                               <p key={i} className="text-[11px] text-red-400/60">? {s}</p>
                             ))}
                           </div>
@@ -1700,7 +1750,8 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                     </details>
                   )}
                 </div>
-              )}
+                );
+              })()}
 
               {/* OPERATIONAL LOGS */}
               <div className="flex flex-col space-y-8 shrink-0">
@@ -1710,7 +1761,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                  </div>
                  <div className="bg-slate-900 p-8 rounded-2xl border border-slate-700 flex flex-col space-y-6 shadow-md">
                     <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center"><Stethoscope size={16} className="mr-3 text-green-500" /> Diagnostic</h3>
-                    <textarea 
+                    <textarea
                       className="h-48 bg-transparent border border-slate-700 rounded-2xl p-6 text-sm font-bold text-white leading-relaxed resize-none outline-none focus:border-blue-500 transition-all placeholder:text-slate-500"
                       value={localJob.diagnosisNotes}
                       onChange={e => handleLocalChange({ diagnosisNotes: e.target.value })}
@@ -1718,6 +1769,54 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void }> = ({ job: in
                     />
                  </div>
               </div>
+
+              {/* CLIENT HISTORY — archive of jobs with this exact client */}
+              {(() => {
+                const phoneKey = normalizePhone(localJob.client.phone);
+                const history = jobs
+                  .filter(j => j.id !== localJob.id && (
+                    (localJob.client.id && j.client?.id === localJob.client.id) ||
+                    (phoneKey.length >= 7 && normalizePhone(j.client?.phone) === phoneKey)
+                  ))
+                  .sort((a, b) => (b.scheduledDate || '').localeCompare(a.scheduledDate || ''));
+                const lifetime = [...history, localJob].filter(isRevenueJob).reduce((s, j) => s + j.totalAmount, 0);
+                return (
+                  <div className="bg-slate-900 p-8 rounded-2xl border border-slate-700 space-y-5 shadow-md">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center">
+                        <History size={16} className="mr-3 text-amber-500" /> Client History — {localJob.client.firstName} {localJob.client.lastName}
+                      </h3>
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                        {history.length + 1} job{history.length === 0 ? '' : 's'} · <span className="text-green-400">${Math.round(lifetime).toLocaleString()}</span> lifetime
+                      </span>
+                    </div>
+                    {history.length === 0 ? (
+                      <p className="text-xs text-slate-500">First job with this client — no archive yet.</p>
+                    ) : (
+                      <div className="space-y-1.5 max-h-64 overflow-y-auto pr-1">
+                        {history.map(j => (
+                          <button
+                            key={j.id}
+                            onClick={() => onOpenJob?.(j)}
+                            disabled={!onOpenJob}
+                            className="w-full flex items-center gap-3 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-amber-500/30 rounded-xl px-4 py-3 text-left transition-all disabled:cursor-default group"
+                          >
+                            <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: STATUS_COLORS[j.status] }} />
+                            <span className="text-xs text-slate-400 tabular-nums w-24 shrink-0">{formatDate(j.scheduledDate)}</span>
+                            <span className="text-xs font-mono text-blue-400 shrink-0 hidden sm:inline">#{j.jobNumber}</span>
+                            <span className="text-xs font-semibold text-slate-300 flex-1 truncate">
+                              {j.lockDetails?.type || 'Other'}{j.lockDetails?.brand ? ` · ${j.lockDetails.brand}` : ''}
+                            </span>
+                            <span className="text-[10px] font-bold uppercase tracking-wide text-slate-500 shrink-0 hidden sm:inline">{j.status}</span>
+                            <span className={`text-xs font-bold tabular-nums shrink-0 ${j.totalAmount > 0 ? 'text-white' : 'text-slate-500'}`}>${Math.round(j.totalAmount).toLocaleString()}</span>
+                            {onOpenJob && <ChevronRight size={14} className="text-slate-600 group-hover:text-amber-400 transition-colors shrink-0" />}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
           </div>
         </div>

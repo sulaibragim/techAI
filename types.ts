@@ -142,6 +142,8 @@ export interface Job {
     improvements: string[];
     missedInfo: string[];
   };
+  callSummaryRu?: string; // cached Russian translation of callSummary (filled on first RU toggle)
+  callQualityRu?: { strengths: string[]; improvements: string[]; missedInfo: string[] };
   callTranscript?: string; // Raw call transcript for reference
 }
 
