@@ -5,6 +5,7 @@ import { useAppStore } from './store';
 import { useAuthStore } from './authStore';
 import { API_BASE } from './backendUrl';
 import { authHeaders } from './apiClient';
+import { buildClients, clientScore, clientFlags, normalizePhone } from './clientUtils';
 
 const CHAT_MODEL = 'gemini-2.5-flash';
 
@@ -85,11 +86,30 @@ function getBusinessContext(): string {
   const totalRevenue = completedJobs.reduce((s, j) => s + (j.totalAmount || 0), 0);
 
   const techs = users.filter(u => u.role === 'technician');
-  const techList = techs.map(t => `${t.name} (${t.techStatus || 'offDuty'}, ID: ${t.id})`).join(', ');
+  const techList = techs.map(t => `${t.name} (${t.techStatus || 'offDuty'}, ID: ${t.id}${t.skills?.length ? `, specialties: ${t.skills.join('/')}` : ''})`).join(', ');
 
-  const recentJobs = jobs.slice(-15).map(j =>
-    `[${j.id}] #${j.jobNumber} | ${j.client.firstName} ${j.client.lastName} | ${j.client.phone} | ${j.lockDetails.type}/${j.lockDetails.brand || '?'} | ${j.status} | ${j.scheduledDate} ${j.scheduledTime} | $${j.totalAmount} | assigned: ${j.assignedTo || 'none'}`
-  ).join('\n');
+  // Client reputation context — so the AI knows who's a VIP/Gold, who's difficult, and
+  // who must not be served, plus each client's preferred technician.
+  const clients = buildClients(jobs, settings.clientProfiles);
+  const repByPhone = new Map(clients.map(c => [normalizePhone(c.phone), c]));
+  const ranked = clients.map(c => ({ c, sc: clientScore(c) })).sort((a, b) => b.sc.score - a.sc.score);
+  const topClients = ranked.slice(0, 6).map(({ c, sc }) => {
+    const f = clientFlags(c);
+    const fav = c.favoriteTechId ? users.find(u => u.id === c.favoriteTechId)?.name : null;
+    const flags = f.allTags.length ? ` [${f.allTags.join(', ')}]` : '';
+    return `${c.firstName} ${c.lastName} | ${c.phone} | ${sc.tier} (${sc.score}/100) | ${c.jobs.length} jobs · $${Math.round(c.totalSpend)} | rating: ${c.rating || 'none'}${flags}${fav ? ` | prefers ${fav}` : ''}`;
+  }).join('\n');
+  const watchlist = ranked
+    .filter(({ c }) => { const f = clientFlags(c); return f.doNotService || f.hasNegative; })
+    .slice(0, 8)
+    .map(({ c }) => { const f = clientFlags(c); return `${c.firstName} ${c.lastName} (${c.phone})${f.doNotService ? ' — DO NOT SERVICE' : ' — difficult/handle with care'}`; })
+    .join('\n');
+
+  const recentJobs = jobs.slice(-15).map(j => {
+    const rec = repByPhone.get(normalizePhone(j.client.phone));
+    const tag = rec ? ` | client: ${clientScore(rec).tier}${rec.rating ? `/${rec.rating}` : ''}` : '';
+    return `[${j.id}] #${j.jobNumber} | ${j.client.firstName} ${j.client.lastName} | ${j.client.phone} | ${j.lockDetails.type}/${j.lockDetails.brand || '?'} | ${j.status} | ${j.scheduledDate} ${j.scheduledTime} | $${j.totalAmount} | assigned: ${j.assignedTo || 'none'}${tag}`;
+  }).join('\n');
 
   return `
 CURRENT BUSINESS STATE (auto-injected, refreshed every message):
@@ -104,6 +124,10 @@ TOTAL COMPLETED: ${completedJobs.length} (Revenue: $${totalRevenue})
 MONTHLY TARGET: $${settings.monthlyRevenueTarget}
 
 TECHNICIANS: ${techList || 'None configured'}
+
+TOP CLIENTS (by reputation score):
+${topClients || '(no clients yet)'}
+${watchlist ? `\nWATCHLIST (handle with care / do-not-service):\n${watchlist}` : ''}
 
 RECENT JOBS (last 15):
 ${recentJobs || '(no jobs yet)'}
@@ -150,15 +174,26 @@ WHAT YOU CAN DO:
 4. VIEW dashboard stats and revenue
 5. SEND real SMS to clients via OpenPhone
 6. CHECK inventory/parts
-7. SEE technician status and assignments
-8. NAVIGATE between app tabs
-9. ANALYZE business performance and give strategic advice
+7. SEE technician status, specialties and assignments
+8. LOOK UP a client's reputation (tier, rating, flags, preferred tech) via get_client
+9. NAVIGATE between app tabs
+10. ANALYZE business performance and give strategic advice
 
 LOCKSMITH DOMAIN KNOWLEDGE:
 - Job types: Automotive (car lockouts, key programming, ignition repair), Residential (lockouts, rekeying, smart locks), Commercial (panic bars, access control, master key systems), Safe/Vault (combination changes, drilling, manipulation)
 - Common brands: Schlage, Kwikset, Yale, Medeco (residential); Toyota, Honda, Ford, BMW, Audi (automotive); Von Duprin, Adams Rite, Corbin Russwin (commercial); Amsec, SentrySafe (safes)
 - Status flow: scheduled → enRoute → onSite → diagnosed → sold → completed
 - Urgency levels: emergency (locked out NOW), urgent (same-day), standard (can schedule)
+
+CLIENT REPUTATION (use it actively):
+- Every client carries a reputation: a tier (Gold/Silver/Bronze/New/Watch/Blocked), a 0-100 score, a rating (good/neutral/difficult), flags (VIP, Frequent, Big ticket, Referrer, Difficult, Grumpy, Slow payer, Haggler, Cancel risk, Do not service), and a preferred technician.
+- It is injected above (TOP CLIENTS + WATCHLIST + tagged on recent jobs). Use 'get_client' to look up anyone in detail before advising.
+- When a known client calls or you discuss them: lead with their standing. Flag VIP/Gold so Sultan treats them well; warn loudly if they are "Do not service" (tell Sultan BEFORE booking) or "Slow payer" (collect upfront).
+- Do NOT offer or apply discounts. Reputation guides priority and care, not price.
+
+TECHNICIAN ASSIGNMENT (smart routing):
+- Each technician has specialties (skills) shown above. Match the job's type to a specialist: Automotive/High-end cars → car jobs, Safes → safe/vault, Commercial → commercial, Residential/Smart locks → home jobs.
+- If the client has a preferred technician, suggest them first. Otherwise suggest a matching specialist. When Sultan asks "кому отдать заказ" / "who should take this", recommend by specialty + preferred tech, and mention their status (available/onJob).
 
 ${getBusinessContext()}
 `;
@@ -273,8 +308,19 @@ const AI_TOOLS = [
       },
       {
         name: 'get_technicians',
-        description: 'Gets list of all technicians with their current status (available/onJob/offDuty).',
+        description: 'Gets list of all technicians with their current status (available/onJob/offDuty) and specialties (skills) for smart job routing.',
         parameters: { type: Type.OBJECT, properties: {} }
+      },
+      {
+        name: 'get_client',
+        description: "Look up one client's full reputation: tier, 0-100 score, rating, flags, preferred technician, lifetime spend and recent jobs. Use before advising who to send or how to handle a caller.",
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            nameOrPhone: { type: Type.STRING, description: 'Client full name (English) or phone number' },
+          },
+          required: ['nameOrPhone']
+        }
       },
       {
         name: 'navigate_to',
@@ -369,23 +415,32 @@ export async function handleAITool(name: string, args: any): Promise<any> {
       if (args.status) results = results.filter(j => j.status === args.status);
       if (args.date) results = results.filter(j => j.scheduledDate === args.date);
 
+      const repClients = buildClients(store.jobs, settings.clientProfiles);
+      const repByPhone = new Map(repClients.map(c => [normalizePhone(c.phone), c]));
+
       return {
         status: 'success',
         count: results.length,
-        jobs: results.slice(0, 20).map(j => ({
-          id: j.id,
-          jobNumber: j.jobNumber,
-          client: `${j.client.firstName} ${j.client.lastName}`,
-          phone: j.client.phone,
-          address: j.client.address,
-          type: j.lockDetails.type,
-          brand: j.lockDetails.brand,
-          status: j.status,
-          scheduledDate: j.scheduledDate,
-          scheduledTime: j.scheduledTime,
-          totalAmount: j.totalAmount,
-          assignedTo: j.assignedTo,
-        }))
+        jobs: results.slice(0, 20).map(j => {
+          const rec = repByPhone.get(normalizePhone(j.client.phone));
+          return {
+            id: j.id,
+            jobNumber: j.jobNumber,
+            client: `${j.client.firstName} ${j.client.lastName}`,
+            phone: j.client.phone,
+            address: j.client.address,
+            type: j.lockDetails.type,
+            brand: j.lockDetails.brand,
+            status: j.status,
+            scheduledDate: j.scheduledDate,
+            scheduledTime: j.scheduledTime,
+            totalAmount: j.totalAmount,
+            assignedTo: j.assignedTo,
+            clientTier: rec ? clientScore(rec).tier : undefined,
+            clientRating: rec?.rating,
+            clientFlags: rec ? clientFlags(rec).allTags : undefined,
+          };
+        })
       };
     }
 
@@ -493,7 +548,39 @@ export async function handleAITool(name: string, args: any): Promise<any> {
           phone: t.phone || '',
           status: t.techStatus || 'offDuty',
           commissionRate: t.commissionRate,
+          skills: t.skills || [],
         })),
+      };
+    }
+
+    case 'get_client': {
+      const q = (args.nameOrPhone || '').trim();
+      const phoneKey = normalizePhone(q);
+      const clients = buildClients(store.jobs, settings.clientProfiles);
+      const rec = (phoneKey.length >= 7 && clients.find(c => normalizePhone(c.phone) === phoneKey))
+        || clients.find(c => `${c.firstName} ${c.lastName}`.toLowerCase().includes(q.toLowerCase()));
+      if (!rec) return { status: 'error', message: `No client found for "${q}"` };
+      const sc = clientScore(rec);
+      const f = clientFlags(rec);
+      const favTech = rec.favoriteTechId ? auth.users.find(u => u.id === rec.favoriteTechId)?.name : null;
+      return {
+        status: 'success',
+        client: {
+          name: `${rec.firstName} ${rec.lastName}`.trim(),
+          phone: rec.phone,
+          tier: sc.tier,
+          score: sc.score,
+          scoreReasons: sc.reasons,
+          rating: rec.rating || 'none',
+          flags: f.allTags,
+          doNotService: f.doNotService,
+          preferredTechnician: favTech || null,
+          note: rec.notes || null,
+          jobCount: rec.jobs.length,
+          lifetimeSpend: Math.round(rec.totalSpend),
+          outstandingBalance: Math.round(rec.outstanding),
+          recentJobs: rec.jobs.slice(-5).map(j => ({ jobNumber: j.jobNumber, type: j.lockDetails.type, status: j.status, date: j.scheduledDate, amount: j.totalAmount })),
+        },
       };
     }
 
