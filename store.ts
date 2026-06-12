@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { Job, JobStatus, MissedInteraction, Message, CallRecord, LineItem, Part, TabId } from './types';
+import { Job, JobStatus, MissedInteraction, Message, CallRecord, LineItem, Part, TabId, StockMovementType } from './types';
 import { useAuthStore } from './authStore';
+import { useSettingsStore } from './settingsStore';
 import { API_BASE } from './backendUrl';
 import { authHeaders } from './apiClient';
 
@@ -98,6 +99,10 @@ interface AppState {
   updateInventoryItem: (part: Part) => void;
   addInventoryItem: (part: Omit<Part, 'id'>) => void;
   removeInventoryItem: (id: string) => void;
+  receiveStock: (partId: string, qty: number, unitCost: number, opts?: { supplierName?: string; location?: string; note?: string; logExpense?: boolean }) => void;
+  adjustStockTo: (partId: string, newCount: number, opts?: { type?: 'adjust' | 'loss'; note?: string; location?: string }) => void;
+  consumePart: (partId: string, qty: number, jobId?: string) => void;
+  returnPart: (partId: string, qty: number, jobId?: string) => void;
   clearMissed: (id: string) => void;
   syncJobs: () => Promise<void>;
   syncInventory: () => Promise<void>;
@@ -158,6 +163,91 @@ export const useAppStore = create<AppState>()(
   removeInventoryItem: (id) => {
     set((state) => ({ inventory: state.inventory.filter(p => p.id !== id) }));
     deletePartOnServer(id);
+  },
+  // ── Stock ledger actions ─────────────────────────────────────────────────
+  // All stock changes flow through these so a StockMovement is always recorded.
+  // Current stock stays cached on the Part; the movement log is the audit trail.
+  receiveStock: (partId, qty, unitCost, opts = {}) => {
+    if (qty <= 0) return;
+    const part = get().inventory.find(p => p.id === partId);
+    if (!part) return;
+    const prevStock = part.stock || 0;
+    const prevCost = part.cost ?? 0;
+    const newStock = prevStock + qty;
+    // Weighted-average cost: blend what we already hold with the new purchase.
+    const blendedCost = prevStock > 0 && prevCost > 0
+      ? Math.round(((prevStock * prevCost + qty * unitCost) / newStock) * 100) / 100
+      : Math.round(unitCost * 100) / 100;
+    const updated: Part = { ...part, stock: newStock, cost: blendedCost };
+    set((state) => ({ inventory: state.inventory.map(p => p.id === partId ? updated : p) }));
+    upsertPartOnServer(updated);
+    const auth = useAuthStore.getState();
+    const user = auth.users.find(u => u.id === auth.currentUserId);
+    const settings = useSettingsStore.getState();
+    settings.addStockMovement({
+      partId, partName: part.name, type: 'receive', qty,
+      unitCost, location: opts.location || part.location || 'shop',
+      supplierName: opts.supplierName, note: opts.note,
+      userId: user?.id, userName: user?.name, timestamp: new Date().toISOString(),
+    });
+    // Buying stock is money out → log it as a Keys & Stock expense (the accounting tie-in).
+    if (opts.logExpense !== false) {
+      settings.addExpense({
+        date: new Date().toISOString().split('T')[0],
+        category: 'Keys & Stock',
+        amount: Math.round(qty * unitCost * 100) / 100,
+        note: `Stock: ${part.name} ×${qty}${opts.supplierName ? ` · ${opts.supplierName}` : ''}`,
+        createdBy: user?.id,
+      });
+    }
+  },
+  adjustStockTo: (partId, newCount, opts = {}) => {
+    const part = get().inventory.find(p => p.id === partId);
+    if (!part) return;
+    const target = Math.max(0, Math.round(newCount));
+    const delta = target - (part.stock || 0);
+    if (delta === 0) return;
+    const updated: Part = { ...part, stock: target };
+    set((state) => ({ inventory: state.inventory.map(p => p.id === partId ? updated : p) }));
+    upsertPartOnServer(updated);
+    const auth = useAuthStore.getState();
+    const user = auth.users.find(u => u.id === auth.currentUserId);
+    const type: StockMovementType = opts.type || 'adjust';
+    useSettingsStore.getState().addStockMovement({
+      partId, partName: part.name, type, qty: delta, unitCost: part.cost,
+      location: opts.location || part.location || 'shop', note: opts.note,
+      userId: user?.id, userName: user?.name, timestamp: new Date().toISOString(),
+    });
+  },
+  consumePart: (partId, qty, jobId) => {
+    if (qty <= 0) return;
+    const part = get().inventory.find(p => p.id === partId);
+    if (!part) return;
+    const updated: Part = { ...part, stock: Math.max(0, (part.stock || 0) - qty) };
+    set((state) => ({ inventory: state.inventory.map(p => p.id === partId ? updated : p) }));
+    upsertPartOnServer(updated);
+    const auth = useAuthStore.getState();
+    const user = auth.users.find(u => u.id === auth.currentUserId);
+    useSettingsStore.getState().addStockMovement({
+      partId, partName: part.name, type: 'sale', qty: -qty, unitCost: part.cost,
+      location: part.location || 'shop', jobId,
+      userId: user?.id, userName: user?.name, timestamp: new Date().toISOString(),
+    });
+  },
+  returnPart: (partId, qty, jobId) => {
+    if (qty <= 0) return;
+    const part = get().inventory.find(p => p.id === partId);
+    if (!part) return;
+    const updated: Part = { ...part, stock: (part.stock || 0) + qty };
+    set((state) => ({ inventory: state.inventory.map(p => p.id === partId ? updated : p) }));
+    upsertPartOnServer(updated);
+    const auth = useAuthStore.getState();
+    const user = auth.users.find(u => u.id === auth.currentUserId);
+    useSettingsStore.getState().addStockMovement({
+      partId, partName: part.name, type: 'return', qty, unitCost: part.cost,
+      location: part.location || 'shop', jobId,
+      userId: user?.id, userName: user?.name, timestamp: new Date().toISOString(),
+    });
   },
   clearMissed: (id) => set((state) => ({
     missedInteractions: state.missedInteractions.filter(m => m.id !== id)

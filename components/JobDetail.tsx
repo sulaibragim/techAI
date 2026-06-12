@@ -42,7 +42,7 @@ const STATUS_OPTIONS: { id: JobStatus; label: string }[] = [
 const TERM_TYPES = ['1', '10', '15', '20', '30'];
 
 export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (job: Job) => void }> = ({ job: initialJob, onClose, onOpenJob }) => {
-  const { jobs, updateJob, removeJob, inventory, updateInventoryItem } = useAppStore();
+  const { jobs, updateJob, removeJob, inventory, consumePart, returnPart } = useAppStore();
   const { companyName, technicianName, companyAddress, companyCity, companyPhone, companyEmail, licenseNumber } = useSettingsStore();
   const clientProfiles = useSettingsStore(s => s.clientProfiles);
   const upsertClientProfile = useSettingsStore(s => s.upsertClientProfile);
@@ -115,8 +115,8 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
   };
 
   // Billing Prompt State
-  const [billingPrompt, setBillingPrompt] = useState<{ open: boolean, type: LineItem['type'] | null, desc: string, price: string, extra?: string, partId?: string }>({
-    open: false, type: null, desc: '', price: ''
+  const [billingPrompt, setBillingPrompt] = useState<{ open: boolean, type: LineItem['type'] | null, desc: string, price: string, extra?: string, partId?: string, qty?: string, unitCost?: number }>({
+    open: false, type: null, desc: '', price: '', qty: '1'
   });
 
   // Payment Settlement States
@@ -385,34 +385,31 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
       finalDesc = `${finalDesc} (Diag: ${billingPrompt.extra})`;
     }
 
+    const qty = Math.max(1, parseInt(billingPrompt.qty || '1', 10) || 1);
     const newItem: LineItem = {
       id: Math.random().toString(36).substr(2, 9),
       type: billingPrompt.type,
       description: finalDesc,
-      quantity: 1,
+      quantity: qty,
       unitPrice: parseFloat(billingPrompt.price),
-      partId: billingPrompt.partId
+      partId: billingPrompt.partId,
+      unitCost: billingPrompt.unitCost,
     };
-    
-    // Decrement stock if part is selected
+
+    // Selling a stocked part removes exactly `qty` from the shelf and logs a movement.
     if (newItem.partId) {
-      const part = inventory.find(p => p.id === newItem.partId);
-      if (part) {
-        updateInventoryItem({ ...part, stock: Math.max(0, part.stock - newItem.quantity) });
-      }
+      consumePart(newItem.partId, qty, localJob.id);
     }
 
     handleLocalChange({ lineItems: [...localJob.lineItems, newItem] });
-    setBillingPrompt({ open: false, type: null, desc: '', price: '', partId: undefined });
+    setBillingPrompt({ open: false, type: null, desc: '', price: '', qty: '1', partId: undefined, unitCost: undefined });
   };
 
   const handleRemoveLineItem = (itemId: string) => {
     const item = localJob.lineItems.find(li => li.id === itemId);
+    // Removing a part line puts the stock back and logs a return movement.
     if (item && item.partId) {
-      const part = inventory.find(p => p.id === item.partId);
-      if (part) {
-        updateInventoryItem({ ...part, stock: part.stock + item.quantity });
-      }
+      returnPart(item.partId, item.quantity, localJob.id);
     }
     handleLocalChange({ lineItems: localJob.lineItems.filter(li => li.id !== itemId) });
   };
@@ -722,7 +719,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                   className="w-full bg-transparent text-white font-bold outline-none text-sm" 
                   value={billingPrompt.desc} 
                   onChange={e => {
-                    setBillingPrompt({ ...billingPrompt, desc: e.target.value, partId: undefined }); // Clear partId if they type manually
+                    setBillingPrompt({ ...billingPrompt, desc: e.target.value, partId: undefined, unitCost: undefined }); // Clear part link if they type manually
                   }}
                   placeholder="Enter name..."
                 />
@@ -731,7 +728,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                     {inventory.filter(p => p.name.toLowerCase().includes(billingPrompt.desc.toLowerCase()) || p.sku.toLowerCase().includes(billingPrompt.desc.toLowerCase())).map(part => (
                       <button 
                         key={part.id}
-                        onClick={() => setBillingPrompt({ ...billingPrompt, desc: part.name, price: part.price.toString(), partId: part.id })}
+                        onClick={() => setBillingPrompt({ ...billingPrompt, desc: part.name, price: part.price.toString(), partId: part.id, unitCost: part.cost })}
                         className="w-full text-left px-4 py-2 hover:bg-white/5 text-sm transition-colors border-b border-white/5 last:border-0 flex justify-between items-center"
                       >
                         <div>
@@ -760,19 +757,48 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                 </div>
               )}
 
-              <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
-                <label className="text-xs font-bold text-slate-400 uppercase block mb-1">Cost ($)</label>
-                <input 
-                  type="number"
-                  className="w-full bg-transparent text-white font-bold outline-none text-sm" 
-                  value={billingPrompt.price} 
-                  onChange={e => setBillingPrompt({ ...billingPrompt, price: e.target.value })}
-                  placeholder="0.00"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
+                  <label className="text-xs font-bold text-slate-400 uppercase block mb-2">Quantity</label>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => setBillingPrompt(bp => ({ ...bp, qty: String(Math.max(1, (parseInt(bp.qty || '1', 10) || 1) - 1)) }))} className="w-9 h-9 shrink-0 rounded-lg bg-white/5 border border-white/10 text-white flex items-center justify-center active:scale-90"><Minus size={14} /></button>
+                    <input
+                      type="number" min="1"
+                      className="w-full bg-transparent text-white font-bold outline-none text-sm text-center"
+                      value={billingPrompt.qty || '1'}
+                      onChange={e => setBillingPrompt({ ...billingPrompt, qty: e.target.value })}
+                    />
+                    <button onClick={() => setBillingPrompt(bp => ({ ...bp, qty: String((parseInt(bp.qty || '1', 10) || 1) + 1) }))} className="w-9 h-9 shrink-0 rounded-lg bg-white/5 border border-white/10 text-white flex items-center justify-center active:scale-90"><Plus size={14} /></button>
+                  </div>
+                </div>
+                <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
+                  <label className="text-xs font-bold text-slate-400 uppercase block mb-1">Unit Price ($)</label>
+                  <input
+                    type="number"
+                    className="w-full bg-transparent text-white font-bold outline-none text-sm"
+                    value={billingPrompt.price}
+                    onChange={e => setBillingPrompt({ ...billingPrompt, price: e.target.value })}
+                    placeholder="0.00"
+                  />
+                </div>
               </div>
+
+              {billingPrompt.partId && (() => {
+                const part = inventory.find(p => p.id === billingPrompt.partId);
+                if (!part) return null;
+                const qty = Math.max(1, parseInt(billingPrompt.qty || '1', 10) || 1);
+                const price = parseFloat(billingPrompt.price) || 0;
+                const margin = part.cost != null ? price - part.cost : null;
+                return (
+                  <div className="flex items-center justify-between text-xs bg-white/5 border border-white/10 rounded-xl px-4 py-2.5">
+                    <span className={part.stock < qty ? 'text-amber-400 font-bold' : 'text-slate-400'}>In stock: {part.stock}{part.stock < qty ? ' — over!' : ''}</span>
+                    {margin != null && <span className="text-slate-400">Margin: <span className={margin >= 0 ? 'text-green-400 font-bold' : 'text-red-400 font-bold'}>${margin.toFixed(2)}</span> / ea</span>}
+                  </div>
+                );
+              })()}
             </div>
 
-            <button onClick={handleAddLineItem} className="w-full bg-blue-600 text-white py-6 rounded-2xl font-bold text-sm uppercase tracking-widest active:scale-95 shadow-2xl">Add to Invoice</button>
+            <button onClick={handleAddLineItem} className="w-full bg-blue-600 text-white py-6 rounded-2xl font-bold text-sm uppercase tracking-widest active:scale-95 shadow-2xl">Add to Invoice · ${((parseFloat(billingPrompt.price) || 0) * Math.max(1, parseInt(billingPrompt.qty || '1', 10) || 1)).toFixed(2)}</button>
           </div>
         </div>
       )}
@@ -1541,7 +1567,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                     { id: 'maintenance',  label: 'Other',      icon: Wrench,   color: 'text-indigo-400' },
                   ] as { id: LineItem['type']; label: string; icon: any; color: string }[]).map(btn => (
                     <button key={btn.id}
-                      onClick={() => setBillingPrompt({ open: true, type: btn.id, desc: '', price: '' })}
+                      onClick={() => setBillingPrompt({ open: true, type: btn.id, desc: '', price: '', qty: '1' })}
                       className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-bold transition-all active:scale-95">
                       <Plus size={11} className={btn.color} />
                       <span className="text-slate-300 uppercase tracking-wide">{btn.label}</span>
