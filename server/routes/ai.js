@@ -6,8 +6,10 @@ export const aiRouter = Router();
 
 // Models the text proxy is allowed to call — guards our key against arbitrary use.
 const ALLOWED_MODELS = new Set(['gemini-2.5-flash', 'gemini-2.5-flash-lite']);
-// Native-audio model the voice (Live API) sessions run on.
-const VOICE_MODEL = 'gemini-2.5-flash-native-audio-preview-09-2025';
+// Native-audio model the voice (Live API) sessions run on. Google retires these
+// dated preview snapshots periodically (the -09-2025 one was removed 2026-03-19),
+// so keep it overridable via env — next swap is a Railway change, not a code edit.
+const VOICE_MODEL = process.env.VOICE_MODEL || 'gemini-2.5-flash-native-audio-preview-12-2025';
 
 function serverKey() {
   return process.env.GEMINI_API_KEY || process.env.VITE_API_KEY || '';
@@ -66,7 +68,7 @@ aiRouter.post('/generate', requireAuth, async (req, res) => {
     res.json({ text: resp.text ?? '', functionCalls: resp.functionCalls ?? null });
   } catch (err) {
     console.error('[AI] generate error:', err?.message);
-    res.status(502).json({ error: 'AI request failed' });
+    res.status(502).json({ error: 'AI request failed', detail: err?.message });
   }
 });
 
@@ -88,6 +90,6 @@ aiRouter.post('/live-token', requireAuth, async (_req, res) => {
     res.json({ token: token.name, model: VOICE_MODEL });
   } catch (err) {
     console.error('[AI] live-token error:', err?.message);
-    res.status(502).json({ error: 'Failed to create voice token' });
+    res.status(502).json({ error: 'Failed to create voice token', detail: err?.message });
   }
 });

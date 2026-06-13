@@ -6,19 +6,20 @@ import { useAuthStore } from './authStore';
 import { API_BASE } from './backendUrl';
 import { authHeaders } from './apiClient';
 import { buildClients, clientScore, clientFlags, normalizePhone } from './clientUtils';
+import { LineItem } from './types';
 
 const CHAT_MODEL = 'gemini-2.5-flash';
 
 // One text-chat turn via the backend proxy. The API key never reaches the browser —
 // the server injects it. Tool execution stays on the client (data lives in the Zustand store).
-async function callModel(contents: any[]): Promise<{ text: string; functionCalls: any[] | null }> {
+async function callModel(contents: any[], systemInstruction: string): Promise<{ text: string; functionCalls: any[] | null }> {
   const res = await fetch(`${API_BASE}/api/ai/generate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify({
       model: CHAT_MODEL,
       contents,
-      systemInstruction: getSystemInstruction(),
+      systemInstruction,
       tools: AI_TOOLS,
     }),
   });
@@ -134,7 +135,7 @@ ${recentJobs || '(no jobs yet)'}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
 }
 
-const getSystemInstruction = () => `
+const getSystemInstruction = (includeContext = true) => `
 IDENTITY:
 - Your name is "Дурачок" (Durachok). You are Sultan's elite business partner and AI assistant.
 - You speak with Sultan ONLY in Russian (русский язык).
@@ -151,14 +152,22 @@ COMMUNICATION STYLE:
 - When reporting data, use structured format (bullets, numbers).
 - When Sultan asks "what's up" or "как дела", give a quick business overview: today's jobs, revenue, any issues.
 - Never say "I'll help you with that" — just DO it.
-- If Sultan says "отправь" / "создай" / "отмени" — execute immediately, no confirmation needed.
+- Execute immediately for reads, job creation/updates, and navigation. The ONLY exceptions are in PROTOCOLS below (sending a client SMS, cancelling a job).
 
 TOOL USAGE (CRITICAL):
 - You MUST call tools for ANY action. Never claim you did something without calling the function.
-- DO NOT ask for permission. If Sultan says to do something, DO IT.
+- Don't ask permission for routine actions — just do them. Confirm only the irreversible/outward actions listed in PROTOCOLS.
 - If you need a job ID, call 'search_jobs' first to find it.
 - All client names in tool parameters MUST be in English/Latin script.
 - When creating jobs: scheduledDate format is YYYY-MM-DD, scheduledTime is HH:MM.
+
+PROTOCOLS (follow strictly):
+1. CONFIRM before irreversible / outward actions — sending an SMS to a client, or cancelling a job. First state exactly what you'll do (recipient + the message text, or which job), then ask "Подтверди?". Act only after Sultan confirms. Everything else (reading data, creating/updating jobs, navigation) — do immediately.
+2. ROLE AWARENESS — a technician using you can see ONLY their own jobs and clients. Never mention, list, or imply other technicians' jobs, clients, schedules, or earnings to a technician.
+3. CLIENT ESCALATION — before booking or acting for a client who is "Do not service", on the watchlist, or carrying a large unpaid balance, WARN Sultan first and wait. Use get_client when unsure.
+4. NO GUESSING — never invent prices, stock counts, job IDs, addresses, or client details. If you lack the data, say so and call the right tool (search_jobs, search_inventory, get_client) to fetch it.
+5. PRICING — quote only from real data; never invent prices and never offer discounts.
+6. HONEST ERRORS — if a tool returns an error or you could not complete something, say exactly what failed. Never reply "Готово" for an action that did not succeed.
 
 LANGUAGE RULES:
 - Talk to Sultan: RUSSIAN
@@ -178,6 +187,10 @@ WHAT YOU CAN DO:
 8. LOOK UP a client's reputation (tier, rating, flags, preferred tech) via get_client
 9. NAVIGATE between app tabs
 10. ANALYZE business performance and give strategic advice
+11. BILL a job — add labor/part/service line items via add_line_item (auto-recomputes the total)
+12. MANAGE stock — receive new stock or record parts used via adjust_inventory
+13. SET client reputation — rating, flags, private notes via set_client_reputation
+14. SEE unhandled website leads via get_leads
 
 LOCKSMITH DOMAIN KNOWLEDGE:
 - Job types: Automotive (car lockouts, key programming, ignition repair), Residential (lockouts, rekeying, smart locks), Commercial (panic bars, access control, master key systems), Safe/Vault (combination changes, drilling, manipulation)
@@ -195,7 +208,7 @@ TECHNICIAN ASSIGNMENT (smart routing):
 - Each technician has specialties (skills) shown above. Match the job's type to a specialist: Automotive/High-end cars → car jobs, Safes → safe/vault, Commercial → commercial, Residential/Smart locks → home jobs.
 - If the client has a preferred technician, suggest them first. Otherwise suggest a matching specialist. When Sultan asks "кому отдать заказ" / "who should take this", recommend by specialty + preferred tech, and mention their status (available/onJob).
 
-${getBusinessContext()}
+${includeContext ? getBusinessContext() : ''}
 `;
 
 const AI_TOOLS = [
@@ -323,6 +336,55 @@ const AI_TOOLS = [
         }
       },
       {
+        name: 'add_line_item',
+        description: 'Adds a billing line (labor/part/service) to a job and recomputes its total. Use search_jobs first to get the job ID.',
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            jobId: { type: Type.STRING, description: 'The job ID' },
+            description: { type: Type.STRING, description: 'Line description in English (e.g. "Car lockout")' },
+            unitPrice: { type: Type.NUMBER, description: 'Price per unit in USD' },
+            quantity: { type: Type.NUMBER, description: 'Quantity (default 1)' },
+            type: { type: Type.STRING, enum: ['part', 'labor', 'service_call', 'maintenance', 'installation'] },
+          },
+          required: ['jobId', 'description', 'unitPrice']
+        }
+      },
+      {
+        name: 'adjust_inventory',
+        description: 'Receive new stock (+) or record parts used on a job (−). Finds the part by SKU or name.',
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            query: { type: Type.STRING, description: 'Part SKU or name' },
+            action: { type: Type.STRING, enum: ['receive', 'use'], description: 'receive = add stock, use = consume stock' },
+            quantity: { type: Type.NUMBER, description: 'How many units' },
+            unitCost: { type: Type.NUMBER, description: 'Purchase cost per unit (for receive)' },
+            jobId: { type: Type.STRING, description: 'Job the parts were used on (for use)' },
+          },
+          required: ['query', 'action', 'quantity']
+        }
+      },
+      {
+        name: 'set_client_reputation',
+        description: "Set a client's reputation: rating, add a flag/tag, or a private note. Owner/manager only.",
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            nameOrPhone: { type: Type.STRING, description: 'Client full name (English) or phone' },
+            rating: { type: Type.STRING, enum: ['good', 'neutral', 'difficult'] },
+            addTag: { type: Type.STRING, description: 'A flag to add, e.g. VIP, Slow payer, Do not service' },
+            note: { type: Type.STRING, description: 'Private note about the client (English)' },
+          },
+          required: ['nameOrPhone']
+        }
+      },
+      {
+        name: 'get_leads',
+        description: 'Lists recent unhandled website leads (new jobs from the web form). Owner/manager only.',
+        parameters: { type: Type.OBJECT, properties: {} }
+      },
+      {
         name: 'navigate_to',
         description: 'Navigates to a specific tab in the CRM application.',
         parameters: {
@@ -341,6 +403,16 @@ export async function handleAITool(name: string, args: any): Promise<any> {
   const store = useAppStore.getState();
   const auth = useAuthStore.getState();
   const settings = useSettingsStore.getState();
+
+  // Role gate (defense in depth): technicians may only see/act on their OWN jobs and
+  // clients through the AI tools — never other techs' jobs, clients, or commissions.
+  // The injected context already filters jobs by role; this enforces the same on the
+  // executable tools so a technician can't read everything by asking the AI directly.
+  const currentUser = auth.users.find(u => u.id === auth.currentUserId) ?? null;
+  const isTech = currentUser?.role === 'technician';
+  const visibleJobs = isTech && currentUser
+    ? store.jobs.filter(j => j.assignedTo === currentUser.id)
+    : store.jobs;
 
   switch (name) {
     case 'create_job': {
@@ -374,7 +446,7 @@ export async function handleAITool(name: string, args: any): Promise<any> {
         totalAmount: 0,
         photos: [],
         messages: [],
-        assignedTo: args.assignedTo || undefined,
+        assignedTo: args.assignedTo || (isTech ? currentUser?.id : undefined),
       };
 
       store.addJob(jobData);
@@ -384,7 +456,7 @@ export async function handleAITool(name: string, args: any): Promise<any> {
     }
 
     case 'update_job': {
-      const job = store.jobs.find(j => j.id === args.jobId);
+      const job = visibleJobs.find(j => j.id === args.jobId);
       if (!job) return { status: 'error', message: `Job ${args.jobId} not found` };
 
       const updates: any = {};
@@ -403,7 +475,7 @@ export async function handleAITool(name: string, args: any): Promise<any> {
     }
 
     case 'search_jobs': {
-      let results = [...store.jobs];
+      let results = [...visibleJobs];
       if (args.query) {
         const q = args.query.toLowerCase();
         results = results.filter(j =>
@@ -415,7 +487,7 @@ export async function handleAITool(name: string, args: any): Promise<any> {
       if (args.status) results = results.filter(j => j.status === args.status);
       if (args.date) results = results.filter(j => j.scheduledDate === args.date);
 
-      const repClients = buildClients(store.jobs, settings.clientProfiles);
+      const repClients = buildClients(visibleJobs, settings.clientProfiles);
       const repByPhone = new Map(repClients.map(c => [normalizePhone(c.phone), c]));
 
       return {
@@ -447,12 +519,14 @@ export async function handleAITool(name: string, args: any): Promise<any> {
     case 'get_dashboard': {
       const today = new Date();
       const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-      const todaysJobs = store.jobs.filter(j => j.scheduledDate === todayStr);
-      const completed = store.jobs.filter(j => j.status === 'completed');
-      const active = store.jobs.filter(j => !['completed', 'cancelled'].includes(j.status));
+      const todaysJobs = visibleJobs.filter(j => j.scheduledDate === todayStr);
+      const completed = visibleJobs.filter(j => j.status === 'completed');
+      const active = visibleJobs.filter(j => !['completed', 'cancelled'].includes(j.status));
       const todayRevenue = todaysJobs.filter(j => j.status === 'completed' || j.status === 'sold').reduce((s, j) => s + (j.totalAmount || 0), 0);
       const totalRevenue = completed.reduce((s, j) => s + (j.totalAmount || 0), 0);
-      const techs = auth.users.filter(u => u.role === 'technician' && u.active);
+      const techs = isTech && currentUser
+        ? auth.users.filter(u => u.id === currentUser.id)
+        : auth.users.filter(u => u.role === 'technician' && u.active);
 
       return {
         status: 'success',
@@ -464,7 +538,7 @@ export async function handleAITool(name: string, args: any): Promise<any> {
           jobs: todaysJobs.map(j => ({ jobNumber: j.jobNumber, client: `${j.client.firstName} ${j.client.lastName}`, status: j.status, time: j.scheduledTime, amount: j.totalAmount })),
         },
         overall: {
-          totalJobs: store.jobs.length,
+          totalJobs: visibleJobs.length,
           activeJobs: active.length,
           completedJobs: completed.length,
           totalRevenue,
@@ -516,7 +590,7 @@ export async function handleAITool(name: string, args: any): Promise<any> {
 
     case 'send_sms_by_name': {
       const q = (args.clientName || '').toLowerCase();
-      const job = store.jobs.find(j =>
+      const job = visibleJobs.find(j =>
         `${j.client.firstName} ${j.client.lastName}`.toLowerCase().includes(q)
       );
       if (!job) return { status: 'error', message: `Client "${args.clientName}" not found in jobs` };
@@ -538,7 +612,9 @@ export async function handleAITool(name: string, args: any): Promise<any> {
     }
 
     case 'get_technicians': {
-      const techs = auth.users.filter(u => u.role === 'technician' && u.active);
+      const techs = isTech && currentUser
+        ? auth.users.filter(u => u.id === currentUser.id)
+        : auth.users.filter(u => u.role === 'technician' && u.active);
       return {
         status: 'success',
         technicians: techs.map(t => ({
@@ -556,7 +632,7 @@ export async function handleAITool(name: string, args: any): Promise<any> {
     case 'get_client': {
       const q = (args.nameOrPhone || '').trim();
       const phoneKey = normalizePhone(q);
-      const clients = buildClients(store.jobs, settings.clientProfiles);
+      const clients = buildClients(visibleJobs, settings.clientProfiles);
       const rec = (phoneKey.length >= 7 && clients.find(c => normalizePhone(c.phone) === phoneKey))
         || clients.find(c => `${c.firstName} ${c.lastName}`.toLowerCase().includes(q.toLowerCase()));
       if (!rec) return { status: 'error', message: `No client found for "${q}"` };
@@ -592,6 +668,81 @@ export async function handleAITool(name: string, args: any): Promise<any> {
       return { status: 'error', message: 'Missing tab parameter' };
     }
 
+    case 'add_line_item': {
+      const job = visibleJobs.find(j => j.id === args.jobId);
+      if (!job) return { status: 'error', message: `Job ${args.jobId} not found` };
+      const quantity = Math.max(1, Math.round(Number(args.quantity) || 1));
+      const unitPrice = Number(args.unitPrice) || 0;
+      const item: LineItem = {
+        id: `li-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        type: args.type || 'labor',
+        description: args.description || '',
+        quantity,
+        unitPrice,
+      };
+      const lineItems = [...(job.lineItems || []), item];
+      const totalAmount = lineItems.reduce((s, li) => s + li.quantity * li.unitPrice, 0);
+      store.updateJob({ ...job, lineItems, totalAmount });
+      return { status: 'success', message: `Added "${item.description}" ×${quantity} ($${unitPrice}) to #${job.jobNumber}`, total: totalAmount };
+    }
+
+    case 'adjust_inventory': {
+      const q = (args.query || '').toLowerCase();
+      const part = store.inventory.find(p =>
+        p.id === args.query || p.sku.toLowerCase() === q || p.name.toLowerCase().includes(q)
+      );
+      if (!part) return { status: 'error', message: `Part "${args.query}" not found` };
+      const qty = Math.max(1, Math.round(Number(args.quantity) || 0));
+      if (qty <= 0) return { status: 'error', message: 'quantity must be greater than 0' };
+      if (args.action === 'receive') {
+        store.receiveStock(part.id, qty, Number(args.unitCost) || part.cost || 0);
+        return { status: 'success', message: `Received ${qty} × ${part.name}`, newStock: (part.stock || 0) + qty };
+      }
+      store.consumePart(part.id, qty, args.jobId);
+      return { status: 'success', message: `Used ${qty} × ${part.name}`, newStock: Math.max(0, (part.stock || 0) - qty) };
+    }
+
+    case 'set_client_reputation': {
+      if (isTech) return { status: 'error', message: 'Reputation can only be set by an owner or manager' };
+      const q = (args.nameOrPhone || '').trim();
+      const phoneKey = normalizePhone(q);
+      const clients = buildClients(store.jobs, settings.clientProfiles);
+      const rec = (phoneKey.length >= 7 && clients.find(c => normalizePhone(c.phone) === phoneKey))
+        || clients.find(c => `${c.firstName} ${c.lastName}`.toLowerCase().includes(q.toLowerCase()));
+      if (!rec) return { status: 'error', message: `No client found for "${q}"` };
+      const key = normalizePhone(rec.phone);
+      const prev = settings.clientProfiles[key];
+      const patch: any = {};
+      if (args.rating) patch.rating = args.rating;
+      if (args.note) patch.notes = args.note;
+      if (args.addTag) patch.tags = Array.from(new Set([...(prev?.tags || []), args.addTag]));
+      if (Object.keys(patch).length === 0) return { status: 'error', message: 'Nothing to set — provide rating, addTag, or note' };
+      settings.upsertClientProfile(key, patch);
+      return { status: 'success', message: `Updated reputation for ${rec.firstName} ${rec.lastName}`, applied: patch };
+    }
+
+    case 'get_leads': {
+      if (isTech) return { status: 'error', message: 'Leads are visible to owner/manager only' };
+      const leads = store.jobs.filter(j => j.isNewLead || j.source === 'web');
+      return {
+        status: 'success',
+        count: leads.length,
+        leads: leads.slice(0, 20).map(j => ({
+          id: j.id,
+          jobNumber: j.jobNumber,
+          client: `${j.client.firstName} ${j.client.lastName}`,
+          phone: j.client.phone,
+          type: j.lockDetails.type,
+          complaint: j.complaint,
+          status: j.status,
+          scheduledDate: j.scheduledDate,
+          scheduledTime: j.scheduledTime,
+          assignedTo: j.assignedTo || 'none',
+          isNew: !!j.isNewLead,
+        })),
+      };
+    }
+
     default:
       return { status: 'error', message: `Unknown action: ${name}` };
   }
@@ -609,10 +760,16 @@ export async function getStrategicBrainResponse(
 
   // Loop: keep relaying turns through the backend while the model asks for tool calls.
   // Tools run locally (handleAITool) against the Zustand store; results feed the next turn.
+  // Full business context only on the first turn; a slim system instruction on the
+  // follow-up tool-result rounds (the data the model needs is already in `contents`).
+  // Cuts tokens on rounds 2..N where the heavy snapshot would otherwise be re-sent.
+  const fullSystem = getSystemInstruction(true);
+  const slimSystem = getSystemInstruction(false);
+
   const MAX_ROUNDS = 4;
   let lastText = '';
   for (let round = 0; round < MAX_ROUNDS; round++) {
-    const { text, functionCalls } = await callModel(contents);
+    const { text, functionCalls } = await callModel(contents, round === 0 ? fullSystem : slimSystem);
     lastText = text || lastText;
     if (!functionCalls || functionCalls.length === 0) return text;
 
@@ -627,7 +784,7 @@ export async function getStrategicBrainResponse(
   }
 
   // Tool budget exhausted — one final turn to summarize.
-  const final = await callModel(contents);
+  const final = await callModel(contents, slimSystem);
   return final.text || lastText;
 }
 
@@ -666,7 +823,7 @@ export class GeminiVoiceAssistant {
     const stream = this.stream;
 
     this.sessionPromise = ai.live.connect({
-      model: model || 'gemini-2.5-flash-native-audio-preview-09-2025',
+      model: model || 'gemini-2.5-flash-native-audio-preview-12-2025',
       config: {
         responseModalities: [Modality.AUDIO],
         systemInstruction: getSystemInstruction(),
