@@ -1468,7 +1468,7 @@
     "variants": [
       {
         "keyType": "Smart",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "KK12",
         "bladeIlco": null,
         "bladeSilca": null,
@@ -1477,6 +1477,19 @@
         "chipClonable": "no",
         "fccId": "TQ8-FOB-4F06",
         "partNumber": "95440-C6000",
+        "frequency": "433"
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HY18",
+        "bladeIlco": "KK12",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47 / HITAG3",
+        "chipClonable": "no",
+        "fccId": "OSLOKA-910T",
+        "partNumber": "95430-C5101",
         "frequency": "433"
       }
     ],
@@ -1488,10 +1501,11 @@
       "Lonsdor K518",
       "OBDSTAR X300 DP"
     ],
-    "notes": "2015-2020 Sorento. ID47 HITAG3. FCC TQ8-FOB-4F06, PN 95440-C6000/C6100. 433 MHz. KK12 blade.",
+    "notes": "TWO keys by trim: push-button-start trims use the SMART key (TQ8-FOB-4F06); turn-key-ignition trims use the FLIP key (OSLOKA-910T, PN 95430-C5101). Both ID47/HITAG3, 433 MHz, KK12 emergency blade. Confirm by the FCC printed on the fob.",
     "confidence": "verified",
     "sources": [
       "https://abkeys.com/products/kia-sorento-smart-key-4buttons-433mhz-tq8-fob-4f06-2015up-95440-c6000-4951",
+      "https://www.locksmithkeyless.com/products/2016-2019-kia-sorento-remote-flip-key-4b-fcc-osloka-910t-um",
       "https://www.amazon.com/Aichiyu-Remote-Replacement-Sorento-433MHz/dp/B0D8P8D1HM"
     ],
     "dataSource": "live web",
