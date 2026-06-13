@@ -1,0 +1,1137 @@
+[
+  {
+    "make": "Hyundai",
+    "model": "Elantra",
+    "yearStart": 2000,
+    "yearEnd": 2010,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Lonsdor K518, or OBDSTAR X300 DP) to port under driver-side dash below steering column. Select Hyundai > Elantra > IMMO > Key Programming. Enter vehicle PIN if prompted (pre-2006 units may not require PIN). Follow tool-guided procedure to learn new ID46 transponder key. Alternatively, ID46 PCF7936AS chip can be cloned from a working key using an ID46 cloner without OBD access.",
+    "allKeysLost": "Use OBD programmer for full IMMO learn. For pre-2006 units without PIN requirement: connect programmer and follow guided AKL procedure. For 2006+ units: obtain 6-digit PIN via PIN-by-VIN calculator (DiagCode or CWP-2, covers 2006-2016) then connect programmer, enter PIN, and register new key. Alternatively, clone the chip from EEPROM dump using ICC or Abrites with EEPROM read adapter if OBD path is blocked.",
+    "pinRequired": false,
+    "pinSource": "PIN by VIN (2006-2010 units) | dealer | null for pre-2006",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "1 hour lockout after 3 wrong PIN attempts (leave ignition on)",
+    "specialTool": "ID46 cloner (for clone path) | PIN-by-VIN calculator for 2006-2010",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/hyundai_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2006-2018-hyundai-kia-hy20-transponder-key-46-chip-k-hy20",
+      "https://www.locksmithkeyless.com/products/diagcode-pin-code-calculation-tool-software-for-2006-2016-hyundai-kia"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Elantra",
+    "yearStart": 2011,
+    "yearEnd": 2016,
+    "onboard": null,
+    "addKey": "Obtain 6-digit PIN via PIN-by-VIN calculator (DiagCode covers 2006-2016). Connect OBD programmer (Autel IM608, Lonsdor K518, Smart Pro by Ilco) to port under driver-side dash. Select Hyundai > Elantra > IMMO (or Smart Key Unit for push-start trims). Enter PIN when prompted. Follow tool-guided procedure to register new transponder or smart key. Horn beeps 0.2s to confirm each key learned.",
+    "allKeysLost": "Obtain PIN via DiagCode PIN-by-VIN (2006-2016 era). Connect OBD programmer. Select AKL/Reset procedure. Enter PIN. Follow guided procedure to register new key(s). All previously registered keys are erased and must be re-registered in one session. If PIN-by-VIN fails, PIN can be read from a working key via Abrites PROTAG adapter or extracted from EEPROM dump.",
+    "pinRequired": true,
+    "pinSource": "PIN by VIN (DiagCode/CWP-2, covers 2006-2016)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "1 hour lockout after 3 wrong PIN attempts; counter only decrements with ignition ON",
+    "specialTool": "DiagCode or CWP-2 PIN-by-VIN calculator",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/diagcode-pin-code-calculation-tool-software-for-2006-2016-hyundai-kia",
+      "https://www.uhs-hardware.com/products/diagcode-2006-2016-hyundai-kia-pin-code-calculation-tool-software",
+      "https://www.transpondery.com/transponder_catalog/hyundai_transponder_catalog.html"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Elantra",
+    "yearStart": 2016,
+    "yearEnd": 2020,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Lonsdor K518, OBDSTAR X300 DP) to port under driver-side dash. Select Hyundai > Elantra > IMMO > Smart Key System. Tool reads PIN via OBD (no external PIN calculator needed for this era). Select Add Key. Present new key fob near Start/Stop button when prompted and press it to complete learning. Test all keys.",
+    "allKeysLost": "Connect OBD programmer. Select Hyundai > Elantra > IMMO > All Keys Lost (or Reset). Tool reads PIN from ECU via OBD. Follow guided procedure to register new key(s). All previously registered keys are erased. If tool fails to read PIN via standard IMMO path, use Diagnostics > Smart Key Unit > Smart Key Code Saving workaround (Autel) or use Xhorse Key Tool Max Pro to read PIN first, then program with primary tool.",
+    "pinRequired": false,
+    "pinSource": "OBD read (tool reads from ECU directly)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "1 hour lockout after 3 wrong PIN attempts; 24-hour wait if ECU enters enhanced security mode",
+    "specialTool": "Autel IM608 or Lonsdor K518 (8A/Texas AES chip support required)",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2017-hyundai-elantra-smart-key-4b-fob-fcc-cqofd00120",
+      "https://www.key-programmer.com/2025/03/26/tips-to-program-newer-hyundai-smart-key-with-autel-im508-im608-when-getting-errors/",
+      "https://www.obdprice.com/blogs/news/hyundai-key-programming-methods-guide"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Elantra",
+    "yearStart": 2021,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Lonsdor K518, OBDSTAR X300 DP, Xhorse VVDI2) to port under driver-side dash. Select Hyundai > Elantra > IMMO > Smart Key System. Tool reads PIN via OBD (HITAG-AES 6A era). Select Add Key. Present new key fob near Start/Stop button when prompted and press it to learn. Test all keys. If Autel reports 'smart key condition not met,' switch to Diagnostics > IMMO Keys > Smart Key Unit path.",
+    "allKeysLost": "Connect capable OBD programmer (Autel IM608, Lonsdor K518, OBDSTAR X300 DP). Select All Keys Lost / Reset path. Tool reads PIN via OBD or requires online PIN server query (Autel server, 1-4 min with stable internet). Follow guided procedure. All previous keys erased; register new keys in one session. Blade key must be cut by locksmith (KK12 keyway) for emergency access before programming.",
+    "pinRequired": false,
+    "pinSource": "OBD read (tool reads from ECU) or Autel online server",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "24-hour wait if ECU enters enhanced security lockout mode",
+    "specialTool": "Autel IM608 or Lonsdor K518 (6A/HITAG-AES chip support required)",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2021-hyundai-elantra-smart-key-5b-fob-fcc-nyombec5fob2004",
+      "https://www.key-programmer.com/2025/03/26/tips-to-program-newer-hyundai-smart-key-with-autel-im508-im608-when-getting-errors/",
+      "https://abrites.com/page/abrites-diagnostics-for-hyundai-kia"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Sonata",
+    "yearStart": 2005,
+    "yearEnd": 2010,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Xhorse VVDI2) to port under driver-side dash. Select Hyundai > Sonata > IMMO > Key Programming. Follow tool-guided procedure to register new ID46 transponder. Pre-2006 units typically require no PIN. 2006-2010 units: obtain PIN via DiagCode PIN-by-VIN calculator and enter when prompted. Alternatively, clone ID46 PCF7936AS chip from working key without OBD.",
+    "allKeysLost": "Obtain PIN via DiagCode for 2006-2010 (if applicable). Connect OBD programmer. Select AKL procedure. Enter PIN. Register new key(s). All previously registered keys erased. For pre-2006 units without PIN requirement, follow guided AKL procedure directly via OBD. ID46 can also be cloned from EEPROM dump.",
+    "pinRequired": false,
+    "pinSource": "PIN by VIN for 2006-2010 (DiagCode) | null for pre-2006",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "1 hour lockout after 3 wrong PIN attempts",
+    "specialTool": "ID46 cloner (for clone path) | PIN-by-VIN calculator for 2006-2010",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/hyundai_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/diagcode-pin-code-calculation-tool-software-for-2006-2016-hyundai-kia"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Sonata",
+    "yearStart": 2011,
+    "yearEnd": 2014,
+    "onboard": null,
+    "addKey": "Obtain 6-digit PIN via DiagCode PIN-by-VIN calculator (covers 2006-2016). Connect OBD programmer (Autel IM608, Lonsdor K518) to port under driver-side dash. Select Hyundai > Sonata > IMMO > Smart Key System. Enter PIN when prompted. Present new key fob near Start/Stop button and press to learn. Horn beeps to confirm. Test all keys.",
+    "allKeysLost": "Obtain PIN via DiagCode PIN-by-VIN. Connect OBD programmer. Select AKL/Reset path. Enter PIN. Follow guided procedure to register new key(s). All previous keys erased. Must register minimum 1 key; program additional keys in same session. Cut HY22 blade for emergency mechanical entry before programming.",
+    "pinRequired": true,
+    "pinSource": "PIN by VIN (DiagCode, covers 2006-2016)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "1 hour lockout after 3 wrong PIN attempts; counter only decrements with ignition ON",
+    "specialTool": "DiagCode or CWP-2 PIN-by-VIN calculator",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/diagcode-pin-code-calculation-tool-software-for-2006-2016-hyundai-kia",
+      "https://www.transpondery.com/transponder_catalog/hyundai_transponder_catalog.html",
+      "https://abrites.com/page/abrites-diagnostics-for-hyundai-kia"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Sonata",
+    "yearStart": 2015,
+    "yearEnd": 2019,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Lonsdor K518, OBDSTAR X300 DP) to port under driver-side dash. Select Hyundai > Sonata > IMMO > Smart Key System. Tool reads PIN via OBD or Autel online server (Texas AES 8A era). Select Add Key. Present key fob near Start/Stop button and press it. Test all keys. Diagnostic path (Diagnostics > IMMO Keys > SMK) may be needed if standard IMMO path fails.",
+    "allKeysLost": "Connect OBD programmer. Select AKL/Reset path. Tool reads PIN via OBD or queries Autel server (1-4 min). Follow guided procedure to register new key(s). All previous keys erased; register all needed keys in one session. Cut HY22 blade for emergency access first.",
+    "pinRequired": false,
+    "pinSource": "OBD read (tool reads from ECU) or Autel online server",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "1 hour after 3 wrong attempts; up to 24 hours in enhanced security mode on newer units",
+    "specialTool": "Autel IM608 or Lonsdor K518 (8A/Texas AES chip support required)",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2015-2017-hyundai-sonata-smart-key-4b-fcc-cqofd00120",
+      "https://www.obdprice.com/blogs/news/hyundai-key-programming-methods-guide",
+      "https://abrites.com/page/abrites-diagnostics-for-hyundai-kia"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Sonata",
+    "yearStart": 2020,
+    "yearEnd": 2023,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Lonsdor K518, OBDSTAR X300 DP, Xhorse VVDI2) to port under driver-side dash. Select Hyundai > Sonata > IMMO > Smart Key System (HITAG3/ID47 era). Tool reads PIN via OBD. Select Add Key. Present key fob near Start/Stop button when prompted and press to learn. If Autel reports errors, use Diagnostics > IMMO Keys > Smart Key Unit path as workaround. Test all keys.",
+    "allKeysLost": "Connect OBD programmer. Select AKL/Reset path. Tool reads PIN via OBD (or online server). Follow guided procedure. All previous keys erased. Register all needed keys in one session. Cut TOY49 or KK12 blade for emergency access before programming. For 2023+ models: OBDSTAR G3 or Xhorse VVDI2 may be more reliable than Autel if communication errors occur.",
+    "pinRequired": false,
+    "pinSource": "OBD read (tool reads from ECU) or Autel online server",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "24-hour wait if ECU enters enhanced security lockout; leave battery connected and charged",
+    "specialTool": "Autel IM608, Lonsdor K518, or OBDSTAR G3 (HITAG3 ID47 support required)",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2020-2021-hyundai-sonata-smart-key-w-digital-key-function-5b-fcc-tq8-fob-4f27",
+      "https://www.obd2tool.com/blog/autel-smart-pro-failed-to-add-2025-hyundai-sonata-key-with-pin-solution-guide/",
+      "https://abrites.com/page/abrites-diagnostics-for-hyundai-kia"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Tucson",
+    "yearStart": 2004,
+    "yearEnd": 2009,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Xhorse VVDI2) to port under driver-side dash. Select Hyundai > Tucson > IMMO > Key Programming. Follow guided procedure to register new ID46 transponder. For 2006-2009 units: obtain PIN via DiagCode PIN-by-VIN and enter when prompted. Alternatively, clone ID46 PCF7936AS chip from working key without OBD.",
+    "allKeysLost": "For 2006-2009: obtain PIN via DiagCode. Connect OBD programmer, select AKL procedure, enter PIN, register new key. For pre-2006 units: follow guided OBD AKL directly. ID46 chip can also be registered via EEPROM dump if OBD path blocked.",
+    "pinRequired": false,
+    "pinSource": "PIN by VIN (DiagCode, 2006-2009 units) | null for pre-2006",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "1 hour lockout after 3 wrong PIN attempts",
+    "specialTool": "ID46 cloner (for clone path) | PIN-by-VIN calculator for 2006-2009",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/hyundai_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/diagcode-pin-code-calculation-tool-software-for-2006-2016-hyundai-kia"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Tucson",
+    "yearStart": 2010,
+    "yearEnd": 2015,
+    "onboard": null,
+    "addKey": "Obtain 6-digit PIN via DiagCode PIN-by-VIN (covers 2006-2016). Connect OBD programmer (Autel IM608, Lonsdor K518) to port under driver-side dash. Select Hyundai > Tucson > IMMO > Smart Key System. Enter PIN when prompted. Present key fob near Start/Stop button and press to learn. Test all keys.",
+    "allKeysLost": "Obtain PIN via DiagCode. Connect OBD programmer. Select AKL/Reset path. Enter PIN. Follow guided procedure to register new key(s). All previous keys erased. Cut HY22 blade for emergency access first. Register all needed keys in one session.",
+    "pinRequired": true,
+    "pinSource": "PIN by VIN (DiagCode, covers 2006-2016)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "1 hour lockout after 3 wrong PIN attempts",
+    "specialTool": "DiagCode or CWP-2 PIN-by-VIN calculator",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/hyundai_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/diagcode-pin-code-calculation-tool-software-for-2006-2016-hyundai-kia"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Tucson",
+    "yearStart": 2016,
+    "yearEnd": 2020,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Lonsdor K518, OBDSTAR X300 DP) to port under driver-side dash. Select Hyundai > Tucson > IMMO > Smart Key System (HITAG3/ID47 era). Tool reads PIN via OBD. Select Add Key. Present new key fob near Start/Stop button and press. Test all keys.",
+    "allKeysLost": "Connect OBD programmer. Select AKL/Reset path. Tool reads PIN via OBD. Follow guided procedure. All previous keys erased; register all needed keys in one session. Cut HY22 blade for emergency access before programming.",
+    "pinRequired": false,
+    "pinSource": "OBD read (tool reads from ECU directly)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "1 hour after 3 wrong attempts; up to 24 hours in enhanced security mode",
+    "specialTool": "Autel IM608 or Lonsdor K518 (HITAG3/ID47 support required)",
+    "sources": [
+      "https://abkeys.com/products/hyundai-tucson-smart-key-4buttons-433mhz-tq8-fob-4f11-95440-d3110-4817",
+      "https://abrites.com/page/abrites-diagnostics-for-hyundai-kia"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Tucson",
+    "yearStart": 2021,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Lonsdor K518, OBDSTAR X300 DP, Xhorse VVDI2) to port under driver-side dash. Select Hyundai > Tucson (NX4) > IMMO > Smart Key System (HITAG3/ID47). Autel IM608 supports Read PIN via OBD for Tucson NX4 2021. Select Add Key. Present new key fob near Start/Stop button and press. Test all keys. Firmware update on programmer may be required before use.",
+    "allKeysLost": "Connect capable OBD programmer. Select AKL/Reset path. Tool reads PIN via OBD. Follow guided procedure. All previous keys erased. Cut TOY49 blade for emergency access before programming. Register all needed keys in one session.",
+    "pinRequired": false,
+    "pinSource": "OBD read (tool reads from ECU directly)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "24-hour wait if ECU enters enhanced security lockout",
+    "specialTool": "Autel IM608, Lonsdor K518, or OBDSTAR X300 DP (HITAG3 ID47 / NX4 platform support required)",
+    "sources": [
+      "https://abkeys.com/products/hyundai-tucson-smart-key-4buttons-433mhz-hitag3-2021up-95440-n9030-5047",
+      "https://abrites.com/page/abrites-diagnostics-for-hyundai-kia",
+      "https://keyless2go.com/products/keyless2go-hyundai-4-button-smart-key-remote-tq8-fob-4f26-95440-n9052-433-mhz"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Santa Fe",
+    "yearStart": 2007,
+    "yearEnd": 2012,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Xhorse VVDI2) to port under driver-side dash. Select Hyundai > Santa Fe > IMMO > Key Programming. Follow guided procedure to register new ID46 transponder. For 2007+ units: obtain PIN via DiagCode PIN-by-VIN and enter when prompted. Alternatively, clone ID46 PCF7936AS from working key.",
+    "allKeysLost": "Obtain PIN via DiagCode. Connect OBD programmer. Select AKL procedure. Enter PIN. Register new key(s). All previous keys erased. ID46 may also be registered via EEPROM dump as alternative.",
+    "pinRequired": false,
+    "pinSource": "PIN by VIN (DiagCode, 2007-2012)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "1 hour lockout after 3 wrong PIN attempts",
+    "specialTool": "PIN-by-VIN calculator (DiagCode)",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/hyundai_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/diagcode-pin-code-calculation-tool-software-for-2006-2016-hyundai-kia"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Santa Fe",
+    "yearStart": 2013,
+    "yearEnd": 2018,
+    "onboard": null,
+    "addKey": "Obtain 6-digit PIN via DiagCode PIN-by-VIN (2006-2016 units) or Autel IM608 OBD read (2016+ HITAG3 units). Connect OBD programmer to port under driver-side dash. Select Hyundai > Santa Fe > IMMO > Smart Key System. Enter PIN when prompted. Present key fob near Start/Stop button and press to learn. Test all keys. Cut HY22 blade to fit before programming.",
+    "allKeysLost": "For 2013-2016 (PCF7952A): obtain PIN via DiagCode. For 2016-2018 (HITAG3): tool reads PIN via OBD. Connect OBD programmer. Select AKL/Reset path. Enter PIN or allow tool to read it. Follow guided procedure. All previous keys erased. Register all keys in one session.",
+    "pinRequired": true,
+    "pinSource": "PIN by VIN (DiagCode, 2013-2016) | OBD read (2016-2018 HITAG3 units)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "1 hour lockout after 3 wrong PIN attempts",
+    "specialTool": "DiagCode for 2013-2016 units; Autel IM608 or Lonsdor K518 for 2016-2018 HITAG3 units",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/hyundai_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/diagcode-pin-code-calculation-tool-software-for-2006-2016-hyundai-kia"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Santa Fe",
+    "yearStart": 2019,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Lonsdor K518, OBDSTAR X300 DP, Xhorse VVDI2) to port under driver-side dash. Select Hyundai > Santa Fe > IMMO > Smart Key System (HITAG3 ID47 era). Tool reads PIN via OBD. Select Add Key. Present new key fob near Start/Stop button and press. Test all keys.",
+    "allKeysLost": "Connect OBD programmer. Select AKL/Reset path. Tool reads PIN via OBD (confirmed by Autel IM608 for 2023 Santa Fe AKL without 3rd-party PIN service). Follow guided procedure. All previous keys erased. Cut KK12 blade for emergency access before programming.",
+    "pinRequired": false,
+    "pinSource": "OBD read (tool reads from ECU directly)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "24-hour wait if ECU enters enhanced security lockout mode",
+    "specialTool": "Autel IM608, Lonsdor K518, or OBDSTAR X300 DP (HITAG3 ID47 / 4A AES support required)",
+    "sources": [
+      "https://abrites.com/page/abrites-diagnostics-for-hyundai-kia",
+      "https://www.amazon.com/StandardAutoPart-Proximity-Compatible-TQ8-FOB-4F19-95440-S2000/dp/B0C212G82T"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Accent",
+    "yearStart": 2012,
+    "yearEnd": 2017,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Xhorse VVDI2, Smart Pro by Ilco) to port under driver-side dash. Select Hyundai > Accent > IMMO > Key Programming. Obtain PIN via DiagCode PIN-by-VIN (2012-2016 units) if prompted. Follow guided procedure to register new ID46 transponder key. Alternatively, clone ID46 PCF7936AS from working key. Note: HY18 keyway (distinct from HY22 on larger models).",
+    "allKeysLost": "Obtain PIN via DiagCode. Connect OBD programmer. Select AKL procedure. Enter PIN. Register new key. All previous keys erased. Can also clone via EEPROM dump.",
+    "pinRequired": false,
+    "pinSource": "PIN by VIN (DiagCode, 2012-2016)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "1 hour lockout after 3 wrong PIN attempts",
+    "specialTool": "PIN-by-VIN calculator (DiagCode) | ID46 cloner optional",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2012-2017-hyundai-accent-transponder-key-id46-chip-hy18",
+      "https://www.transpondery.com/transponder_catalog/hyundai_transponder_catalog.html"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Accent",
+    "yearStart": 2018,
+    "yearEnd": 2022,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Smart Pro by Ilco) to port under driver-side dash. Select Hyundai > Accent > IMMO > Remote/Flip Key Programming. For J0800 transponder variant: tool programs Texas 4D60 chip via OBD. For J0700 non-transponder variant: remote pairing only, no IMMO programming needed. Cut KK12 blade and insert to test start. Test all functions.",
+    "allKeysLost": "For J0800 transponder variant: connect OBD programmer, select AKL procedure, follow guided steps to register new flip key transponder. For J0700 variant: no transponder to program; only remote pairing required. Cut KK12 blade for mechanical entry.",
+    "pinRequired": false,
+    "pinSource": "null",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "none confirmed",
+    "specialTool": "Autel IM608 or Smart Pro by Ilco",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2018-2021-hyundai-accent-se-sel-remote-flip-key-4b-fcc-nyosyec4tx1707-hc-4bt",
+      "https://transponderisland.com/shop/tik-hyu-165-2022-hyundai-accent-remote-flip-key-4b-trunk-hc-4bt-tp-kk12-with-transponder-chip-434-mhz-95430-j0800-34805"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Kona",
+    "yearStart": 2018,
+    "yearEnd": 2020,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Lonsdor K518, OBDSTAR X300 DP) to port under driver-side dash. Select Hyundai > Kona > IMMO > Smart Key System (HITAG3/ID47). Tool reads PIN via OBD. Select Add Key. Present new key fob near Start/Stop button and press. Test all keys.",
+    "allKeysLost": "Connect OBD programmer. Select AKL/Reset path. Tool reads PIN via OBD. Follow guided procedure. All previous keys erased. Cut KK12 blade for emergency access before programming.",
+    "pinRequired": false,
+    "pinSource": "OBD read (tool reads from ECU directly)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "1 hour after 3 wrong attempts; up to 24 hours in enhanced security mode",
+    "specialTool": "Autel IM608, Lonsdor K518, or OBDSTAR X300 DP (HITAG3 ID47 support required)",
+    "sources": [
+      "https://keyshop-online.com/products/aft-hyundai-kona-2018-2020-smart-key-4b-433mhz-kk12-id47-j9000",
+      "https://abrites.com/page/abrites-diagnostics-for-hyundai-kia"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Kona",
+    "yearStart": 2021,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Lonsdor K518, OBDSTAR X300 DP) to port under driver-side dash. Select Hyundai > Kona > IMMO > Smart Key System (HITAG3 ID47 or 4D60 transponder depending on trim). Tool reads PIN via OBD. Select Add Key. Present new key fob near Start/Stop button and press. Test all keys.",
+    "allKeysLost": "Connect OBD programmer. Select AKL/Reset path. Tool reads PIN via OBD. Follow guided procedure. All previous keys erased. Cut KK12 blade for emergency access. For 4D60 transponder trim: programmer must support 4D60 80-bit.",
+    "pinRequired": false,
+    "pinSource": "OBD read (tool reads from ECU directly)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "24-hour wait if ECU enters enhanced security lockout",
+    "specialTool": "Autel IM608, Lonsdor K518, or OBDSTAR X300 DP",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2021-hyundai-kona-4-button-smart-key-pn-95440-j9450-tq8-fob-4f43-oem",
+      "https://abrites.com/page/abrites-diagnostics-for-hyundai-kia"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Palisade",
+    "yearStart": 2020,
+    "yearEnd": 2022,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Lonsdor K518, OBDSTAR X300 DP) to port under driver-side dash. Select Hyundai > Palisade > IMMO > Smart Key System (HITAG3/ID47). Tool reads PIN via OBD. Select Add Key. Present new key fob near Start/Stop button and press. Test all keys.",
+    "allKeysLost": "Connect OBD programmer. Select AKL/Reset path. Tool reads PIN via OBD. Follow guided procedure. All previous keys erased. Cut KK12 blade for emergency access. For 2024+ Palisade, Autel IM608 may fail; use OBDSTAR G3 or Xhorse VVDI2 instead.",
+    "pinRequired": false,
+    "pinSource": "OBD read (tool reads from ECU directly)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "24-hour wait if ECU enters enhanced security lockout",
+    "specialTool": "Autel IM608, Lonsdor K518, or OBDSTAR X300 DP",
+    "sources": [
+      "https://abkeys.com/products/hyundai-palisade-smart-key-95440-s8010-433mhz-tq8-fob-4f29-2088",
+      "https://abrites.com/page/abrites-diagnostics-for-hyundai-kia"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Palisade",
+    "yearStart": 2022,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Lonsdor K518, OBDSTAR X300 DP) to port under driver-side dash. Select Hyundai > Palisade > IMMO > Smart Key System (HITAG3/ID47). Tool reads PIN via OBD. Select Add Key. Present new key fob near Start/Stop button and press. Test all keys. Autel IM608 may have errors on 2024 models; use OBDSTAR G3 if needed.",
+    "allKeysLost": "Connect OBD programmer. Select AKL/Reset path. Tool reads PIN via OBD. Follow guided procedure. All previous keys erased. Cut KK12 blade for emergency access. OBDSTAR G3 or Xhorse VVDI2 reported more reliable than Autel on 2024 Palisade.",
+    "pinRequired": false,
+    "pinSource": "OBD read (tool reads from ECU directly)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "24-hour wait if ECU enters enhanced security lockout",
+    "specialTool": "Autel IM608 (or OBDSTAR G3 for 2024 models)",
+    "sources": [
+      "https://abrites.com/page/abrites-diagnostics-for-hyundai-kia",
+      "https://www.key-programmer.com/2025/03/26/tips-to-program-newer-hyundai-smart-key-with-autel-im508-im608-when-getting-errors/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Veloster",
+    "yearStart": 2012,
+    "yearEnd": 2018,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Lonsdor K518) to port under driver-side dash. Select Hyundai > Veloster > IMMO > Smart Key System (Texas DST80/ID6E). Tool reads PIN via OBD. Select Add Key. Present new key fob near Start/Stop button and press. Test all keys.",
+    "allKeysLost": "Connect OBD programmer. Select AKL/Reset path. Tool reads PIN via OBD. Follow guided procedure. All previous keys erased. Cut HY22 blade for emergency access before programming.",
+    "pinRequired": false,
+    "pinSource": "OBD read (tool reads from ECU directly)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "1 hour after 3 wrong attempts",
+    "specialTool": "Autel IM608 or Lonsdor K518 (DST80 support required)",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/hyundai_transponder_catalog.html",
+      "https://abrites.com/page/abrites-diagnostics-for-hyundai-kia"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Veloster",
+    "yearStart": 2019,
+    "yearEnd": 2022,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Smart Pro by Ilco, Lonsdor K518) to port under driver-side dash. Select Hyundai > Veloster > IMMO > Smart Key System (HITAG3/ID47). Tool reads PIN via OBD. Select Add Key. Present new key fob near Start/Stop button and press. Test all keys.",
+    "allKeysLost": "Connect OBD programmer. Select AKL/Reset path. Tool reads PIN via OBD. Follow guided procedure. All previous keys erased. Cut KK12 blade for emergency access before programming.",
+    "pinRequired": false,
+    "pinSource": "OBD read (tool reads from ECU directly)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "24-hour wait if ECU enters enhanced security lockout",
+    "specialTool": "Autel IM608 or Smart Pro by Ilco (HITAG3 ID47 support required)",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2019-2022-hyundai-veloster-n-smart-key-4b-fcc-sy5igfge04",
+      "https://abrites.com/page/abrites-diagnostics-for-hyundai-kia"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Venue",
+    "yearStart": 2020,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Lonsdor K518, OBDSTAR X300 DP) to port under driver-side dash. Select Hyundai > Venue > IMMO > Smart Key System (HITAG3 ID47 or HITAG-AES 4A depending on trim). Tool reads PIN via OBD. Select Add Key. Present new key fob near Start/Stop button and press. Test all keys.",
+    "allKeysLost": "Connect OBD programmer. Select AKL/Reset path. Tool reads PIN via OBD. Follow guided procedure. All previous keys erased. Cut KK12 blade for emergency access. Confirm chip type (ID47 vs 4A) before selecting tool procedure.",
+    "pinRequired": false,
+    "pinSource": "OBD read (tool reads from ECU directly)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "24-hour wait if ECU enters enhanced security lockout",
+    "specialTool": "Autel IM608, Lonsdor K518, or OBDSTAR X300 DP",
+    "sources": [
+      "https://transponderisland.com/shop/tik-hyu-122-2020-2024-hyundai-venue-smart-key-4b-starter-sy5igfge04-95440-k2400-4546",
+      "https://abrites.com/page/abrites-diagnostics-for-hyundai-kia"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Optima",
+    "yearStart": 2001,
+    "yearEnd": 2010,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Xhorse VVDI2) to port under driver-side dash. Select Kia > Optima > IMMO > Key Programming. Follow guided procedure to register new ID46 transponder. For 2006-2010 units: obtain PIN via DiagCode PIN-by-VIN and enter when prompted. Alternatively, clone ID46 PCF7936AS from working key.",
+    "allKeysLost": "For 2006-2010: obtain PIN via DiagCode. Connect OBD programmer. Select AKL procedure. Enter PIN. Register new key. All previous keys erased. ID46 can also be registered via EEPROM dump.",
+    "pinRequired": false,
+    "pinSource": "PIN by VIN (DiagCode, 2006-2010) | null for pre-2006",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "1 hour lockout after 3 wrong PIN attempts",
+    "specialTool": "PIN-by-VIN calculator (DiagCode) | ID46 cloner optional",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/kia_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/diagcode-pin-code-calculation-tool-software-for-2006-2016-hyundai-kia"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Optima",
+    "yearStart": 2011,
+    "yearEnd": 2015,
+    "onboard": null,
+    "addKey": "Obtain 6-digit PIN via DiagCode PIN-by-VIN (covers 2006-2016). Connect OBD programmer (Autel IM608, Lonsdor K518) to port under driver-side dash. Select Kia > Optima > IMMO > Smart Key System. Enter PIN when prompted. Present new key fob near Start/Stop button and press to learn. Test all keys. Cut KK10 or KK12 blade as applicable.",
+    "allKeysLost": "Obtain PIN via DiagCode. Connect OBD programmer. Select AKL/Reset path. Enter PIN. Follow guided procedure. All previous keys erased. Register all needed keys in one session.",
+    "pinRequired": true,
+    "pinSource": "PIN by VIN (DiagCode, covers 2006-2016)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "1 hour lockout after 3 wrong PIN attempts",
+    "specialTool": "DiagCode or CWP-2 PIN-by-VIN calculator",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/kia_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/diagcode-pin-code-calculation-tool-software-for-2006-2016-hyundai-kia"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Optima / K5",
+    "yearStart": 2016,
+    "yearEnd": 2020,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Lonsdor K518, OBDSTAR X300 DP) to port under driver-side dash. Select Kia > Optima > IMMO > Smart Key System (HITAG3/ID47). Tool reads PIN via OBD. Select Add Key. Present new key fob near Start/Stop button and press. Test all keys.",
+    "allKeysLost": "Connect OBD programmer. Select AKL/Reset path. Tool reads PIN via OBD. Follow guided procedure. All previous keys erased. Cut KK12 blade for emergency access before programming.",
+    "pinRequired": false,
+    "pinSource": "OBD read (tool reads from ECU directly)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "1 hour after 3 wrong attempts; up to 24 hours enhanced mode",
+    "specialTool": "Autel IM608, Lonsdor K518, or OBDSTAR X300 DP (HITAG3 ID47 support required)",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/kia_transponder_catalog.html",
+      "https://abrites.com/page/abrites-diagnostics-for-hyundai-kia"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "K5",
+    "yearStart": 2021,
+    "yearEnd": 2023,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Lonsdor K518, OBDSTAR X300 DP) to port under driver-side dash. Select Kia > K5 > IMMO > Smart Key System (HITAG-AES 4A). Tool reads PIN via OBD. Select Add Key. Present new key fob near Start/Stop button and press. Test all keys.",
+    "allKeysLost": "Connect OBD programmer. Select AKL/Reset path. Tool reads PIN via OBD. Follow guided procedure. All previous keys erased. Cut KK12 blade for emergency access before programming.",
+    "pinRequired": false,
+    "pinSource": "OBD read (tool reads from ECU directly)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "24-hour wait if ECU enters enhanced security lockout",
+    "specialTool": "Autel IM608 or Lonsdor K518 (HITAG-AES 4A support required)",
+    "sources": [
+      "https://abrites.com/page/abrites-diagnostics-for-hyundai-kia",
+      "https://royalkeysupply.com/products/kia-aftermarket-2019-2024-seltos-forte-k5-transponder-key"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Forte",
+    "yearStart": 2008,
+    "yearEnd": 2013,
+    "onboard": null,
+    "addKey": "Obtain 6-digit PIN via DiagCode PIN-by-VIN (covers 2006-2016). Connect OBD programmer (Autel IM608, Lonsdor K518) to port under driver-side dash. Select Kia > Forte > IMMO > Smart Key System. Enter PIN when prompted. Present new key fob near Start/Stop button and press to learn. Test all keys.",
+    "allKeysLost": "Obtain PIN via DiagCode. Connect OBD programmer. Select AKL/Reset path. Enter PIN. Follow guided procedure. All previous keys erased. Register all needed keys in one session.",
+    "pinRequired": true,
+    "pinSource": "PIN by VIN (DiagCode, covers 2006-2016)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "1 hour lockout after 3 wrong PIN attempts",
+    "specialTool": "DiagCode or CWP-2 PIN-by-VIN calculator",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/kia_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/diagcode-pin-code-calculation-tool-software-for-2006-2016-hyundai-kia"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Forte",
+    "yearStart": 2014,
+    "yearEnd": 2020,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Lonsdor K518) to port under driver-side dash. Select Kia > Forte > IMMO > Smart Key System (Texas DST80/ID6E). Tool reads PIN via OBD. Select Add Key. Present new key fob near Start/Stop button and press. Test all keys.",
+    "allKeysLost": "Connect OBD programmer. Select AKL/Reset path. Tool reads PIN via OBD. Follow guided procedure. All previous keys erased. Cut KK12 blade for emergency access before programming.",
+    "pinRequired": false,
+    "pinSource": "OBD read (tool reads from ECU directly)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "1 hour after 3 wrong attempts",
+    "specialTool": "Autel IM608 or Lonsdor K518 (DST80 support required)",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/kia_transponder_catalog.html",
+      "https://abrites.com/page/abrites-diagnostics-for-hyundai-kia"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Forte",
+    "yearStart": 2021,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Lonsdor K518, OBDSTAR X300 DP) to port under driver-side dash. Select Kia > Forte > IMMO > Smart Key System (HITAG-AES 4A smart) or Transponder Key (Texas AES 8A). Tool reads PIN via OBD. Select Add Key. For smart key: present fob near Start/Stop and press. For transponder: insert key into ignition when prompted. Test all keys.",
+    "allKeysLost": "Connect OBD programmer. Select AKL/Reset path. Tool reads PIN via OBD. Follow guided procedure. All previous keys erased. Cut KK12 blade for emergency access before programming. Confirm whether vehicle has smart key or transponder-only trim before selecting procedure.",
+    "pinRequired": false,
+    "pinSource": "OBD read (tool reads from ECU directly)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "24-hour wait if ECU enters enhanced security lockout",
+    "specialTool": "Autel IM608, Lonsdor K518, or OBDSTAR X300 DP",
+    "sources": [
+      "https://keytectools.com/product/kia-forte-transponder-key-2021-2023-kk12-8a-chip/",
+      "https://abrites.com/page/abrites-diagnostics-for-hyundai-kia"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Soul",
+    "yearStart": 2008,
+    "yearEnd": 2013,
+    "onboard": null,
+    "addKey": "Obtain 6-digit PIN via DiagCode PIN-by-VIN (covers 2006-2016). Connect OBD programmer (Autel IM608) to port under driver-side dash. Select Kia > Soul > IMMO > Smart Key System. Enter PIN when prompted. Present new key fob near Start/Stop button and press to learn. Test all keys.",
+    "allKeysLost": "Obtain PIN via DiagCode. Connect OBD programmer. Select AKL/Reset path. Enter PIN. Follow guided procedure. All previous keys erased. Register all needed keys in one session.",
+    "pinRequired": true,
+    "pinSource": "PIN by VIN (DiagCode, covers 2006-2016)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "1 hour lockout after 3 wrong PIN attempts",
+    "specialTool": "DiagCode or CWP-2 PIN-by-VIN calculator",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/kia_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/diagcode-pin-code-calculation-tool-software-for-2006-2016-hyundai-kia"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Soul",
+    "yearStart": 2014,
+    "yearEnd": 2018,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Lonsdor K518) to port under driver-side dash. Select Kia > Soul > IMMO > Smart Key System (Texas DST80/ID6E). Tool reads PIN via OBD. Select Add Key. Present new key fob near Start/Stop button and press. Test all keys.",
+    "allKeysLost": "Connect OBD programmer. Select AKL/Reset path. Tool reads PIN via OBD. Follow guided procedure. All previous keys erased. Cut KK12 blade for emergency access before programming.",
+    "pinRequired": false,
+    "pinSource": "OBD read (tool reads from ECU directly)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "1 hour after 3 wrong attempts",
+    "specialTool": "Autel IM608 or Lonsdor K518 (DST80 support required)",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/kia_transponder_catalog.html",
+      "https://abrites.com/page/abrites-diagnostics-for-hyundai-kia"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Soul",
+    "yearStart": 2019,
+    "yearEnd": 2023,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Lonsdor K518, OBDSTAR X300 DP) to port under driver-side dash. Select Kia > Soul > IMMO > Smart Key System (HITAG-AES 4A). Tool reads PIN via OBD. Select Add Key. Present new key fob near Start/Stop button and press. For transponder trim: insert key into ignition when prompted. Test all keys.",
+    "allKeysLost": "Connect OBD programmer. Select AKL/Reset path. Tool reads PIN via OBD. Follow guided procedure. All previous keys erased. Cut KK12 blade for emergency access before programming.",
+    "pinRequired": false,
+    "pinSource": "OBD read (tool reads from ECU directly)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "24-hour wait if ECU enters enhanced security lockout",
+    "specialTool": "Autel IM608, Lonsdor K518, or OBDSTAR X300 DP (HITAG-AES 4A support required)",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2019-2024-hyundai-kia-transponder-key-4a-chip-kk12",
+      "https://abrites.com/page/abrites-diagnostics-for-hyundai-kia"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Sorento",
+    "yearStart": 2010,
+    "yearEnd": 2014,
+    "onboard": null,
+    "addKey": "Obtain 6-digit PIN via DiagCode PIN-by-VIN (covers 2006-2016). Connect OBD programmer (Autel IM608, Lonsdor K518) to port under driver-side dash. Select Kia > Sorento > IMMO > Smart Key System. Enter PIN when prompted. Present new key fob near Start/Stop button and press to learn. Test all keys.",
+    "allKeysLost": "Obtain PIN via DiagCode. Connect OBD programmer. Select AKL/Reset path. Enter PIN. Follow guided procedure. All previous keys erased. Register all needed keys in one session.",
+    "pinRequired": true,
+    "pinSource": "PIN by VIN (DiagCode, covers 2006-2016)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "1 hour lockout after 3 wrong PIN attempts",
+    "specialTool": "DiagCode or CWP-2 PIN-by-VIN calculator",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/kia_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/diagcode-pin-code-calculation-tool-software-for-2006-2016-hyundai-kia"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Sorento",
+    "yearStart": 2015,
+    "yearEnd": 2020,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Lonsdor K518, OBDSTAR X300 DP) to port under driver-side dash. Select Kia > Sorento > IMMO > Smart Key System (HITAG3/ID47). Tool reads PIN via OBD. Select Add Key. Present new key fob near Start/Stop button and press. Test all keys.",
+    "allKeysLost": "Connect OBD programmer. Select AKL/Reset path. Tool reads PIN via OBD. Follow guided procedure. All previous keys erased. Cut KK12 blade for emergency access before programming.",
+    "pinRequired": false,
+    "pinSource": "OBD read (tool reads from ECU directly)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "1 hour after 3 wrong attempts; up to 24 hours enhanced mode",
+    "specialTool": "Autel IM608, Lonsdor K518, or OBDSTAR X300 DP (HITAG3 ID47 support required)",
+    "sources": [
+      "https://abkeys.com/products/kia-sorento-smart-key-4buttons-433mhz-tq8-fob-4f06-2015up-95440-c6000-4951",
+      "https://abrites.com/page/abrites-diagnostics-for-hyundai-kia"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Sorento",
+    "yearStart": 2021,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Lonsdor K518, OBDSTAR X300 DP) to port under driver-side dash. Select Kia > Sorento > IMMO > Smart Key System (HITAG-AES 4A). Tool reads PIN via OBD. Select Add Key. Present new key fob near Start/Stop button and press. For flip key trim: insert key and press lock/unlock when prompted. Test all keys.",
+    "allKeysLost": "Connect OBD programmer. Select AKL/Reset path. Tool reads PIN via OBD. Follow guided procedure. All previous keys erased. Cut KK12 blade for emergency access before programming. Register all needed keys in one session.",
+    "pinRequired": false,
+    "pinSource": "OBD read (tool reads from ECU directly)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "24-hour wait if ECU enters enhanced security lockout",
+    "specialTool": "Autel IM608, Lonsdor K518, or OBDSTAR X300 DP (HITAG-AES 4A support required)",
+    "sources": [
+      "https://abkeys.com/products/kia-sorento-smart-key-5b-95440-p2010-433mhz-sy5mq4fge05-5149",
+      "https://www.uhs-hardware.com/products/2021-2023-kia-sorento-4-button-smart-key-pn-95440-r5010-sy5mq4afge04-oem",
+      "https://abrites.com/page/abrites-diagnostics-for-hyundai-kia"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Sportage",
+    "yearStart": 2004,
+    "yearEnd": 2009,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Xhorse VVDI2) to port under driver-side dash. Select Kia > Sportage > IMMO > Key Programming. Follow guided procedure. For 2006-2009 units: obtain PIN via DiagCode PIN-by-VIN and enter when prompted. Alternatively, clone ID46 PCF7936AS from working key.",
+    "allKeysLost": "For 2006-2009: obtain PIN via DiagCode. Connect OBD programmer. Select AKL. Enter PIN. Register new key. For pre-2006: follow guided OBD AKL directly. ID46 can also be done via EEPROM dump.",
+    "pinRequired": false,
+    "pinSource": "PIN by VIN (DiagCode, 2006-2009) | null for pre-2006",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "1 hour lockout after 3 wrong PIN attempts",
+    "specialTool": "PIN-by-VIN calculator (DiagCode) | ID46 cloner optional",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/kia_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/diagcode-pin-code-calculation-tool-software-for-2006-2016-hyundai-kia"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Sportage",
+    "yearStart": 2010,
+    "yearEnd": 2016,
+    "onboard": null,
+    "addKey": "Obtain 6-digit PIN via DiagCode PIN-by-VIN (covers 2006-2016). Connect OBD programmer (Autel IM608) to port under driver-side dash. Select Kia > Sportage > IMMO > Smart Key System. Enter PIN when prompted. Present new key fob near Start/Stop button and press to learn. Test all keys. Note: some 2016 Sportage have port inside fuse box cover.",
+    "allKeysLost": "Obtain PIN via DiagCode. Connect OBD programmer. Select AKL/Reset path. Enter PIN. Follow guided procedure. All previous keys erased. Register all needed keys in one session.",
+    "pinRequired": true,
+    "pinSource": "PIN by VIN (DiagCode, covers 2006-2016)",
+    "obdPort": "Under driver-side dash; note: 2016 Sportage port may be inside fuse box cover on driver side",
+    "securityWait": "1 hour lockout after 3 wrong PIN attempts",
+    "specialTool": "DiagCode or CWP-2 PIN-by-VIN calculator",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/kia_transponder_catalog.html",
+      "https://obdadvisor.com/obd2-port-locator/kia/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Sportage",
+    "yearStart": 2017,
+    "yearEnd": 2021,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Lonsdor K518) to port under driver-side dash. Select Kia > Sportage > IMMO > Smart Key System (HITAG3/ID47). Tool reads PIN via OBD. Select Add Key. Present new key fob near Start/Stop button and press. Test all keys.",
+    "allKeysLost": "Connect OBD programmer. Select AKL/Reset path. Tool reads PIN via OBD. Follow guided procedure. All previous keys erased. Cut KK12 blade for emergency access before programming.",
+    "pinRequired": false,
+    "pinSource": "OBD read (tool reads from ECU directly)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "1 hour after 3 wrong attempts; up to 24 hours enhanced mode",
+    "specialTool": "Autel IM608 or Lonsdor K518 (HITAG3 ID47 support required)",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/kia_transponder_catalog.html",
+      "https://abrites.com/page/abrites-diagnostics-for-hyundai-kia"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Sportage",
+    "yearStart": 2022,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Lonsdor K518, OBDSTAR X300 DP) to port under driver-side dash. Select Kia > Sportage (NQ5) > IMMO > Smart Key System (HITAG-AES 4A). Tool reads PIN via OBD. Select Add Key. Present new key fob near Start/Stop button and press. For transponder trim: insert key into ignition when prompted. Test all keys.",
+    "allKeysLost": "Connect OBD programmer. Select AKL/Reset path. Tool reads PIN via OBD. Follow guided procedure. All previous keys erased. Cut KK12 blade for emergency access before programming. Confirm chip type (4A smart vs 4A transponder) before selecting procedure.",
+    "pinRequired": false,
+    "pinSource": "OBD read (tool reads from ECU directly)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "24-hour wait if ECU enters enhanced security lockout",
+    "specialTool": "Autel IM608, Lonsdor K518, or OBDSTAR X300 DP (HITAG-AES 4A support required)",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2019-2024-hyundai-kia-transponder-key-4a-chip-kk12",
+      "https://abrites.com/page/abrites-diagnostics-for-hyundai-kia"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Telluride",
+    "yearStart": 2020,
+    "yearEnd": 2022,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Lonsdor K518, OBDSTAR X300 DP) to port under driver-side dash. Select Kia > Telluride > IMMO > Smart Key System (HITAG3/ID47). Tool reads PIN via OBD. Select Add Key. Present new key fob near Start/Stop button and press. Test all keys.",
+    "allKeysLost": "Connect OBD programmer. Select AKL/Reset path. Tool reads PIN via OBD. Follow guided procedure. All previous keys erased. Cut KK12 blade for emergency access before programming.",
+    "pinRequired": false,
+    "pinSource": "OBD read (tool reads from ECU directly)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "24-hour wait if ECU enters enhanced security lockout",
+    "specialTool": "Autel IM608, Lonsdor K518, or OBDSTAR X300 DP (HITAG3 ID47 support required)",
+    "sources": [
+      "https://abkeys.com/products/kia-telluride-smart-key-4buttons-433mhz-tq8-fob-4f24-95440-s9000-4871",
+      "https://abrites.com/page/abrites-diagnostics-for-hyundai-kia"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Telluride",
+    "yearStart": 2023,
+    "yearEnd": 2025,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Lonsdor K518, OBDSTAR X300 DP) to port under driver-side dash. Select Kia > Telluride > IMMO > Smart Key System (HITAG3/ID47 — confirmed ID47 not 4A AES). Tool reads PIN via OBD. Select Add Key. Present new key fob near Start/Stop button and press. Test all keys.",
+    "allKeysLost": "Connect OBD programmer. Select AKL/Reset path. Tool reads PIN via OBD. Follow guided procedure. All previous keys erased. Cut KK12 blade for emergency access before programming.",
+    "pinRequired": false,
+    "pinSource": "OBD read (tool reads from ECU directly)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "24-hour wait if ECU enters enhanced security lockout",
+    "specialTool": "Autel IM608, Lonsdor K518, or OBDSTAR X300 DP (HITAG3 ID47 support required)",
+    "sources": [
+      "https://abkeys.com/products/kia-telluride-smart-key-5b-95440-s9510-tq8-fob-4f71-5185",
+      "https://www.locksmithkeyless.com/products/2023-kia-telluride-smart-key-5b-w-remote-start-hatch-fob-fcc-tq8-fob-4f71-w-touch-handle-95440-s9510",
+      "https://abrites.com/page/abrites-diagnostics-for-hyundai-kia"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Rio",
+    "yearStart": 2006,
+    "yearEnd": 2011,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608) to port under driver-side dash. Select Kia > Rio > IMMO > Key Programming. Follow guided procedure. For 2006-2011 units: obtain PIN via DiagCode PIN-by-VIN and enter when prompted. Alternatively, clone ID46 PCF7936AS from working key.",
+    "allKeysLost": "Obtain PIN via DiagCode. Connect OBD programmer. Select AKL procedure. Enter PIN. Register new key. All previous keys erased.",
+    "pinRequired": false,
+    "pinSource": "PIN by VIN (DiagCode, 2006-2011)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "1 hour lockout after 3 wrong PIN attempts",
+    "specialTool": "PIN-by-VIN calculator (DiagCode) | ID46 cloner optional",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/kia_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/diagcode-pin-code-calculation-tool-software-for-2006-2016-hyundai-kia"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Rio",
+    "yearStart": 2012,
+    "yearEnd": 2017,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Lonsdor K518) to port under driver-side dash. Select Kia > Rio > IMMO > Smart Key System (PCF7952/Hitag2). Obtain PIN via DiagCode PIN-by-VIN (2012-2016 covered). Enter PIN when prompted. Present new key fob near Start/Stop button and press to learn. Test all keys.",
+    "allKeysLost": "Obtain PIN via DiagCode. Connect OBD programmer. Select AKL/Reset path. Enter PIN. Follow guided procedure. All previous keys erased. Register all needed keys in one session.",
+    "pinRequired": false,
+    "pinSource": "PIN by VIN (DiagCode, 2012-2016)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "1 hour lockout after 3 wrong PIN attempts",
+    "specialTool": "DiagCode PIN-by-VIN calculator",
+    "sources": [
+      "https://www.transpondery.com/keys/kia/svi-mdfeu03_kia_smart_key.html",
+      "https://www.locksmithkeyless.com/products/diagcode-pin-code-calculation-tool-software-for-2006-2016-hyundai-kia"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Rio",
+    "yearStart": 2018,
+    "yearEnd": 2023,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Smart Pro by Ilco) to port under driver-side dash. Select Kia > Rio > IMMO > Flip Key / Remote Programming (Texas 4D70 DST80). Tool reads PIN via OBD. Select Add Key. Insert flip key into ignition and press lock/unlock when prompted. Test start and remote functions.",
+    "allKeysLost": "Connect OBD programmer. Select AKL/Reset path. Tool reads PIN via OBD. Follow guided procedure. All previous keys erased. Cut KK12 blade for emergency mechanical access. Register new flip key following guided steps.",
+    "pinRequired": false,
+    "pinSource": "OBD read (tool reads from ECU directly)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "1 hour after 3 wrong attempts",
+    "specialTool": "Autel IM608 or Smart Pro by Ilco (DST80/4D70 support required)",
+    "sources": [
+      "https://transponderisland.com/shop/tik-kia-159-2020-2023-kia-rio-remote-flip-key-4b-trunk-w-transponder-34922",
+      "https://northcoastkeyless.com/product/2018-2020-kia-rio-4-button-flip-key-fob-remote-fcc-nyosyec4tx1611-p-n-95430-h9700/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Seltos",
+    "yearStart": 2021,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Lonsdor K518, OBDSTAR X300 DP) to port under driver-side dash. Select Kia > Seltos > IMMO > Smart Key System (NXP AES 6A) or Transponder Key (Texas AES 8A depending on trim). Tool reads PIN via OBD. Select Add Key. For smart key: present fob near Start/Stop and press. For transponder: insert key into ignition when prompted. Test all keys.",
+    "allKeysLost": "Connect OBD programmer. Select AKL/Reset path. Tool reads PIN via OBD. Follow guided procedure. All previous keys erased. Cut KK12 blade for emergency access. Confirm chip type (6A smart vs 8A transponder) before selecting tool procedure.",
+    "pinRequired": false,
+    "pinSource": "OBD read (tool reads from ECU directly)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "24-hour wait if ECU enters enhanced security lockout",
+    "specialTool": "Autel IM608, Lonsdor K518, or OBDSTAR X300 DP (6A/8A AES support required)",
+    "sources": [
+      "https://keyshop-online.com/products/oem-kia-seltos-2021-smart-key-4b-433mhz-kk12-id6a-q5400",
+      "https://www.uhs-hardware.com/products/2022-2024-kia-seltos-4-button-smart-key-pn-95440-q5410-nyosyec5fob1907-oem",
+      "https://abrites.com/page/abrites-diagnostics-for-hyundai-kia"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Sedona / Carnival",
+    "yearStart": 2002,
+    "yearEnd": 2014,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608) to port under driver-side dash. Select Kia > Sedona > IMMO > Key Programming. Follow guided procedure. For 2006-2014 units: obtain PIN via DiagCode PIN-by-VIN and enter when prompted. Alternatively, clone ID46 PCF7936AS from working key.",
+    "allKeysLost": "For 2006-2014: obtain PIN via DiagCode. Connect OBD programmer. Select AKL procedure. Enter PIN. Register new key. All previous keys erased. Can also clone via EEPROM dump.",
+    "pinRequired": false,
+    "pinSource": "PIN by VIN (DiagCode, 2006-2014) | null for pre-2006",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "1 hour lockout after 3 wrong PIN attempts",
+    "specialTool": "PIN-by-VIN calculator (DiagCode) | ID46 cloner optional",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/kia_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/diagcode-pin-code-calculation-tool-software-for-2006-2016-hyundai-kia"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Sedona / Carnival",
+    "yearStart": 2015,
+    "yearEnd": 2021,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Lonsdor K518, OBDSTAR X300 DP) to port under driver-side dash. Select Kia > Sedona/Carnival > IMMO > Smart Key System (HITAG3/ID47). Tool reads PIN via OBD. Select Add Key. Present new key fob near Start/Stop button and press. Test all keys.",
+    "allKeysLost": "Connect OBD programmer. Select AKL/Reset path. Tool reads PIN via OBD. Follow guided procedure. All previous keys erased. Cut HY22 blade for emergency access before programming.",
+    "pinRequired": false,
+    "pinSource": "OBD read (tool reads from ECU directly)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "1 hour after 3 wrong attempts; up to 24 hours enhanced mode",
+    "specialTool": "Autel IM608, Lonsdor K518, or OBDSTAR X300 DP (HITAG3 ID47 support required)",
+    "sources": [
+      "https://keyshop-online.com/products/oem-refurb-kia-carnival-2015-2021-smart-key-6b-433mhz-hy22-id47-a9300",
+      "https://abrites.com/page/abrites-diagnostics-for-hyundai-kia"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Carnival",
+    "yearStart": 2022,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Lonsdor K518) to port under driver-side dash. Select Kia > Carnival > IMMO > Smart Key System (HITAG-AES 4A). Tool reads PIN via OBD. Select Add Key. Present new key fob near Start/Stop button and press. Test all keys.",
+    "allKeysLost": "Connect OBD programmer. Select AKL/Reset path. Tool reads PIN via OBD. Follow guided procedure. All previous keys erased. Cut KK12 blade for emergency access before programming.",
+    "pinRequired": false,
+    "pinSource": "OBD read (tool reads from ECU directly)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "24-hour wait if ECU enters enhanced security lockout",
+    "specialTool": "Autel IM608 or Lonsdor K518 (HITAG-AES 4A support required)",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2022-2024-kia-carnival-smart-key-7b-fob-fcc-sy5ka4fge07-95440-r0420",
+      "https://www.uhs-hardware.com/products/2022-2023-kia-carnival-6-button-smart-key-pn-95440-r0410-sy5ka4fge06-oem",
+      "https://abrites.com/page/abrites-diagnostics-for-hyundai-kia"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Genesis",
+    "model": "G80",
+    "yearStart": 2009,
+    "yearEnd": 2013,
+    "onboard": null,
+    "addKey": "Obtain 6-digit PIN via DiagCode PIN-by-VIN (covers Hyundai-badged Genesis 2006-2016). Connect OBD programmer (Autel IM608) to port under driver-side dash. Select Hyundai > Genesis Sedan > IMMO > Smart Key System. Enter PIN when prompted. Present new key fob near Start/Stop button and press to learn. Test all keys.",
+    "allKeysLost": "Obtain PIN via DiagCode. Connect OBD programmer. Select AKL/Reset path. Enter PIN. Follow guided procedure. All previous keys erased. Register all needed keys in one session.",
+    "pinRequired": true,
+    "pinSource": "PIN by VIN (DiagCode, Hyundai-branded Genesis 2009-2013)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "1 hour lockout after 3 wrong PIN attempts",
+    "specialTool": "DiagCode or CWP-2 PIN-by-VIN calculator",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/hyundai_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/diagcode-pin-code-calculation-tool-software-for-2006-2016-hyundai-kia"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Genesis",
+    "model": "G70",
+    "yearStart": 2019,
+    "yearEnd": 2021,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Lonsdor K518, OBDSTAR X300 DP) to port under driver-side dash. Select Genesis > G70 > IMMO > Smart Key System (HITAG3/ID47). Autel IM608 supports Read PIN via OBD for G70. Select Add Key. Present new key fob near Start/Stop button and press. Test all keys. IBU-Smart Key system may require tool with online SGW bypass capability.",
+    "allKeysLost": "Connect OBD programmer (Autel IM608 or equivalent with Genesis/IBU support). Select AKL/Reset path. Tool reads PIN via OBD, or obtain OEM PIN from Genesis via NASTF LSID (recommended for dealer-level access). Follow guided procedure. All previous keys erased. Cut KK12 blade for emergency access.",
+    "pinRequired": false,
+    "pinSource": "OBD read (Autel IM608) | dealer (Genesis NASTF LSID) for AKL",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "24-hour wait if ECU enters enhanced security lockout",
+    "specialTool": "Autel IM608 (with Genesis IBU support and online SGW bypass) | Gscan 3 or Zenith Z5/Z7 recommended by Genesis tech support",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2020-genesis-g70-smart-key-4b-fob-fcc-tq8-fob-4f16",
+      "https://diag.net/msg/m1g6qiqmttpmrmilfjtrla6gsa",
+      "https://www.americankeysupply.com/product/hyundai-genesis-g70-g90-2019-2020-4-btn-smart-key-tq8-fob-4f16-oem-new-11514"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Genesis",
+    "model": "G70",
+    "yearStart": 2022,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Lonsdor K518) to port under driver-side dash. Select Genesis > G70 > IMMO > Smart Key System (HITAG3/ID47). Tool reads PIN via OBD. Select Add Key. Present new key fob near Start/Stop button and press. Test all keys. Tool with online SGW bypass may be required for IBU-Smart Key system.",
+    "allKeysLost": "Connect OBD programmer with Genesis IBU support. Select AKL/Reset path. Tool reads PIN via OBD or obtain OEM PIN via NASTF LSID. Follow guided procedure. All previous keys erased. Cut KK12 blade for emergency access before programming.",
+    "pinRequired": false,
+    "pinSource": "OBD read | dealer (NASTF LSID) for AKL",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "24-hour wait if ECU enters enhanced security lockout",
+    "specialTool": "Autel IM608 or Lonsdor K518 (Genesis IBU + online SGW bypass support required)",
+    "sources": [
+      "https://yourcarkeyguys.com/products/2022-2023-genesis-g70-6b-trunk-smart-key-g9630-tq8-fob-4f36",
+      "https://diag.net/msg/m1g6qiqmttpmrmilfjtrla6gsa"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Genesis",
+    "model": "G80",
+    "yearStart": 2017,
+    "yearEnd": 2021,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Lonsdor K518) to port under driver-side dash. Select Genesis > G80 > IMMO > Smart Key System (HITAG3/ID47). Tool reads PIN via OBD. Select Add Key. Present new key fob near Start/Stop button and press. Test all keys. SGW bypass may be needed.",
+    "allKeysLost": "Connect OBD programmer with Genesis IBU/SGW bypass support. Select AKL/Reset path. Tool reads PIN via OBD or obtain OEM PIN from Genesis NASTF LSID. Follow guided procedure. All previous keys erased. Cut KK12 blade for emergency access.",
+    "pinRequired": false,
+    "pinSource": "OBD read | dealer (NASTF LSID) for AKL",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "24-hour wait if ECU enters enhanced security lockout",
+    "specialTool": "Autel IM608 or Lonsdor K518 (Genesis IBU + SGW bypass support required)",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2022-2024-genesis-g80-smart-key-6b-fob-fcc-tq8-fob-4f36-95440-t1010",
+      "https://diag.net/msg/m1g6qiqmttpmrmilfjtrla6gsa"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Genesis",
+    "model": "G80",
+    "yearStart": 2022,
+    "yearEnd": 2025,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608, Lonsdor K518) to port under driver-side dash. Select Genesis > G80 > IMMO > Smart Key System (HITAG3/ID47, 434 MHz). Tool reads PIN via OBD. Select Add Key. Present new key fob near Start/Stop button and press. Test all keys. Online SGW bypass required.",
+    "allKeysLost": "Connect OBD programmer with Genesis IBU and online SGW bypass support. Select AKL/Reset path. Tool reads PIN via OBD or obtain OEM PIN from Genesis via NASTF LSID. Follow guided procedure. All previous keys erased. Cut KK12 blade for emergency access.",
+    "pinRequired": false,
+    "pinSource": "OBD read | dealer (NASTF LSID) for AKL",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "24-hour wait if ECU enters enhanced security lockout",
+    "specialTool": "Autel IM608 or Lonsdor K518 (Genesis IBU + online SGW bypass support required)",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2022-2024-genesis-g80-smart-key-6b-fob-fcc-tq8-fob-4f36-95440-t1010",
+      "https://www.uhs-hardware.com/products/2022-2024-hyundai-genesis-6-button-smart-key-pn-95440-t1010-tq8-fob-4f36-oem",
+      "https://diag.net/msg/m1g6qiqmttpmrmilfjtrla6gsa"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Genesis",
+    "model": "GV80",
+    "yearStart": 2020,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "Connect OBD programmer (Autel IM608 with active subscription, or Gscan 3 / Zenith Z5/Z7) to port under driver-side dash. Select Genesis > GV80 > IMMO > Smart Key System (HITAG3/ID47). Tool reads PIN via OBD. Select Add Key. Present new key fob near Start/Stop button and press. Test all keys. IBU-Smart Key system requires tool with online SGW bypass; Gscan 3 or Zenith Z7 preferred by Genesis tech support.",
+    "allKeysLost": "Obtain OEM key and PIN code from Genesis via NASTF LSID (confirmed method). Connect OBD programmer with IBU support and online SGW bypass. Select AKL/Reset path. Enter PIN when prompted. Follow guided procedure. All previous keys erased. Cut KK12 blade for emergency access before programming.",
+    "pinRequired": false,
+    "pinSource": "OBD read (Autel IM608) | dealer via NASTF LSID (recommended for AKL)",
+    "obdPort": "Under driver-side dash, below steering column, facing down",
+    "securityWait": "24-hour wait if ECU enters enhanced security lockout",
+    "specialTool": "Autel IM608 (with Genesis IBU + online SGW bypass) | Gscan 3 or Zenith Z5/Z7 (preferred by Genesis tech support)",
+    "sources": [
+      "https://diag.net/msg/m1g6qiqmttpmrmilfjtrla6gsa",
+      "https://abkeys.com/products/hyundai-genesis-smart-key-8b-433mhz-tq8-fob-4f35-2021up-95440-t6011-2371",
+      "https://keyinnovations.com/hyundai-kia-genesis-8-button-proximity-key-kk12-tq8-fob-4f35-new-oem/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  }
+]

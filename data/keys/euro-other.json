@@ -1,0 +1,1308 @@
+[
+  {
+    "make": "BMW",
+    "model": "3 Series (E36/E46)",
+    "yearStart": 1995,
+    "yearEnd": 2005,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HU92",
+        "bladeIlco": "HU92T",
+        "bladeSilca": "HU92RP",
+        "bladeJma": "BM-6P",
+        "transponderChip": "PCF7930 / ID33 (E36 EWS2) / PCF7935 / ID44 (E46 EWS3.x)",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": "K-HU92",
+        "frequency": null
+      }
+    ],
+    "immobilizer": "EWS2 (E36 1995-1998) / EWS3.x / EWS4.x (E46 1999-2005)",
+    "pinRequired": false,
+    "programming": "OBD or bench; aftermarket tools (Autel, Xhorse, Smart Pro) can add keys on EWS systems. All-keys-lost may require EWS bench read.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Smart Pro"],
+    "notes": "HU92 2-track blade. E36 (1995-2001) uses EWS2 with ID33 (PCF7930/PCF7931); E46 (1999-2006) transitions to EWS3.x/EWS4.x with ID44/PCF7935. CORRECTED: immobilizer field updated to reflect EWS2 for E36 with ID33 chip per transpondery.com and computersolutions.cn BMW EWS guide. HU92 keyway confirmed by UHS Hardware and transpondery.com.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/bmw_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2000-2009-bmw-2-track-hu92-transponder-key-pcf7935-chip-k-hu92",
+      "https://www.computersolutions.cn/blog/2011/02/bmw-keys-and-transponders-e36-e38-e46-etc-ews2/"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "BMW",
+    "model": "3 Series (E90/E91/E92/E93)",
+    "yearStart": 2005,
+    "yearEnd": 2012,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HU92",
+        "bladeIlco": "HU92T",
+        "bladeSilca": "HU92RP",
+        "bladeJma": "BM-6P",
+        "transponderChip": "PCF7945 / PCF7936 / ID46 (Philips Crypto 2 / Hitag2)",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": null,
+        "frequency": null
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU92",
+        "bladeIlco": null,
+        "bladeSilca": "HU92RP",
+        "bladeJma": null,
+        "transponderChip": "PCF7945 / ID46 (Hitag2)",
+        "chipClonable": "no",
+        "fccId": "KR55WK49127",
+        "partNumber": "66126986585",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "CAS2 (2005-2006) / CAS3 (2007) / CAS3+ (2008-2012)",
+    "pinRequired": false,
+    "programming": "OBD with CAS programmer. CAS3+ requires Xhorse VVDI2, Autel IM608, Smart Pro, or Lonsdor K518.",
+    "programmerHint": ["Xhorse VVDI2", "Autel IM608", "Smart Pro", "Lonsdor K518"],
+    "notes": "HU92 blade used throughout E9x generation. CAS2 uses PCF7936AS; CAS3/CAS3+ uses PCF7945. Smart key adds remote function with same HU92 blade insert. KR55WK49127 US-market frequency confirmed 315 MHz by UHS Hardware, locksmithkeyless.com, and abkeys.com; 433/868 variants exist for European market only.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/bmw_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2004-2011-bmw-3-5-series-3-button-smart-key-kr55wk49127-kr55wk49123-cas3-315-mhz-bundle-of-5",
+      "https://www.locksmithkeyless.com/products/2006-2012-bmw-smart-key-fcc-kr55wk49127",
+      "https://abkeys.com/products/bmw-cas2-cas3-smart-key-3buttons-315mhz-kr55wk49127-6986583-922"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "BMW",
+    "model": "3 Series (F30/F31/F34/F80)",
+    "yearStart": 2012,
+    "yearEnd": 2019,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100R",
+        "bladeIlco": null,
+        "bladeSilca": "HU100R",
+        "bladeJma": null,
+        "transponderChip": "PCF7953P / ID49 (Philips Crypto 3 / Hitag Pro)",
+        "chipClonable": "token",
+        "fccId": "YGOHUF5662",
+        "partNumber": null,
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "FEM (2012-2019) / CAS4 overlap (some early F30)",
+    "pinRequired": false,
+    "programming": "OBD with supported programmer; bench read possible for all-keys-lost. FEM module must be synchronized.",
+    "programmerHint": ["Xhorse VVDI2", "Autel IM608", "Lonsdor K518", "OBDSTAR X300 DP Plus"],
+    "notes": "HU100R emergency blade insert inside smart key fob. PCF7953P (Hitag Pro/ID49) chip cannot be cloned without token (requires authorization). CORRECTED: US-market FCC is YGOHUF5662 at 315 MHz (not YGOHUF5767/433 MHz which is the European/international variant). Confirmed by locksmithkeyless.com, keyinnovations.com, americankeysupply.com, and multiple US aftermarket suppliers. YGOHUF5767 covers EU/Canada 433 MHz market.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/bmw_transponder_catalog.html",
+      "https://www.transpondery.com/vehicle-security-systems/bmw-cas_fem_bdc-list.html",
+      "https://www.locksmithkeyless.com/products/2010-2014-bmw-smart-key-fcc-ygohuf5662",
+      "https://keyinnovations.com/bmw-3-button-smart-key-ygohuf5662-9254891-03-315-mhz-refurbished-grade-a/",
+      "https://slk-hardware.com/products/cgdi-bmw-f-series-3-button-smart-key-cas4-fem-315-mhz-aftermarket"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "BMW",
+    "model": "3 Series (G20/G21)",
+    "yearStart": 2019,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100R",
+        "bladeIlco": null,
+        "bladeSilca": "HU100R",
+        "bladeJma": null,
+        "transponderChip": "PCF7953P / ID49 (Hitag Pro)",
+        "chipClonable": "token",
+        "fccId": "N5F-ID21A",
+        "partNumber": null,
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "BDC2",
+    "pinRequired": false,
+    "programming": "OBD + possible bench for all-keys-lost. BDC2 all-keys-lost requires advanced bench tools; Xhorse released BDC2 AKL support May 2026. Autel requires per-VIN subscription fee.",
+    "programmerHint": ["Xhorse VVDI2 + BDC2 adapter", "Autel IM608 Pro (per-VIN fee)", "CGDI A2", "Abrites BN020"],
+    "notes": "BDC2 (Body Domain Controller generation 2) in all G-series from ~2018-2019+. FCC ID corrected to N5F-ID21A (confirmed by UHS Hardware, abkeys.com, maplekeysupply.ca for G20/G30/G05/G01); prior entry NBG1DGNG1 is unconfirmed/inapplicable to G-chassis BDC2 cars. Significantly harder than FEM; bench read typically required for all-keys-lost. Locksmith scope mostly limited to add-key if owner has one working key.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/vehicle-security-systems/bmw-cas_fem_bdc-list.html",
+      "https://www.uhs-hardware.com/products/bmw-g-series-4-button-smart-remote-control-key-bdc2-immo-fcc-id-n5f-id21a-silver-434mhz-remote-only-oem",
+      "https://abkeys.com/products/bmw-x3-x4-smart-key-4buttons-434mhz-n5f-id21a-g-series-8808860-01-4376",
+      "https://www.key-programmer.com/2025/04/16/vapon-vp100-adds-bmw-g-series-bdc2-key-procedure/"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "BMW",
+    "model": "4 Series (F32/F33/F36/F82/F83)",
+    "yearStart": 2013,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100R",
+        "bladeIlco": null,
+        "bladeSilca": "HU100R",
+        "bladeJma": null,
+        "transponderChip": "PCF7953P / ID49 (Hitag Pro)",
+        "chipClonable": "token",
+        "fccId": "YGOHUF5662",
+        "partNumber": null,
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "FEM",
+    "pinRequired": false,
+    "programming": "OBD with FEM-compatible programmer.",
+    "programmerHint": ["Xhorse VVDI2", "Autel IM608", "Lonsdor K518", "OBDSTAR X300 DP Plus"],
+    "notes": "Same FEM/HU100R/ID49 architecture as F30 3 Series. CORRECTED: US-market FCC is YGOHUF5662 at 315 MHz (YGOHUF5767 is 433 MHz European variant). F82/F83 M4 may vary by build date.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/bmw_transponder_catalog.html",
+      "https://www.transpondery.com/vehicle-security-systems/bmw-cas_fem_bdc-list.html",
+      "https://www.locksmithkeyless.com/products/2010-2014-bmw-smart-key-fcc-ygohuf5662",
+      "https://keyinnovations.com/bmw-3-button-smart-key-ygohuf5662-9254891-03-315-mhz-refurbished-grade-a/"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "BMW",
+    "model": "5 Series (E60/E61)",
+    "yearStart": 2004,
+    "yearEnd": 2010,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HU92",
+        "bladeIlco": "HU92T",
+        "bladeSilca": "HU92RP",
+        "bladeJma": "BM-6P",
+        "transponderChip": "PCF7945 / ID46 (Hitag2)",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": null,
+        "frequency": null
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU92",
+        "bladeIlco": null,
+        "bladeSilca": "HU92RP",
+        "bladeJma": null,
+        "transponderChip": "PCF7945 / ID46",
+        "chipClonable": "no",
+        "fccId": "KR55WK49127",
+        "partNumber": null,
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "CAS2 (2004-2006) / CAS3 (2007) / CAS3+ (2008-2010)",
+    "pinRequired": false,
+    "programming": "OBD with CAS programmer.",
+    "programmerHint": ["Xhorse VVDI2", "Autel IM608", "Smart Pro"],
+    "notes": "E60 uses same HU92 blade as E90; transitions from CAS2 to CAS3 to CAS3+ across production years. Check build date for exact CAS version. KR55WK49127 US frequency confirmed 315 MHz.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/bmw_transponder_catalog.html",
+      "https://www.transpondery.com/vehicle-security-systems/bmw-cas_fem_bdc-list.html",
+      "https://www.locksmithkeyless.com/products/2005-2010-bmw-transponder-key-id-46-chip-2-track-hu92",
+      "https://www.uhs-hardware.com/products/2004-2011-bmw-3-5-series-3-button-smart-key-kr55wk49127-kr55wk49123-cas3-315-mhz-bundle-of-5"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "BMW",
+    "model": "5 Series (F07/F10/F11/F18)",
+    "yearStart": 2010,
+    "yearEnd": 2018,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100R",
+        "bladeIlco": null,
+        "bladeSilca": "HU100R",
+        "bladeJma": null,
+        "transponderChip": "PCF7953P / ID49 (Hitag Pro)",
+        "chipClonable": "token",
+        "fccId": "YGOHUF5662",
+        "partNumber": null,
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "CAS4 / CAS4+",
+    "pinRequired": false,
+    "programming": "OBD. CAS4/CAS4+ requires token-based authorization for cloning.",
+    "programmerHint": ["Xhorse VVDI2", "Autel IM608", "Lonsdor K518", "OBDSTAR X300 DP Plus"],
+    "notes": "F10 5-series transitions to CAS4/CAS4+ with HU100R blade and ID49 chip. CORRECTED: YGOHUF5662 is 315 MHz for US/North America market (not 433 MHz). Confirmed by americankeysupply.com, keyinnovations.com, bestkeysupply.com citing 315 MHz for CAS4 US keys. The 433 MHz variant (YGOHUF5767) is European-market only.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/bmw_transponder_catalog.html",
+      "https://www.transpondery.com/vehicle-security-systems/bmw-cas_fem_bdc-list.html",
+      "https://www.americankeysupply.com/product/bmw-3-5-7-series-2009-2014-3-btn-smart-key-cas4-315-mhz-ygohuf5662-brk-7139",
+      "https://www.bestkeysupply.com/products/bmw-4button-smartkey-cas4-315mhz-ygohuf5662-oem890"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "BMW",
+    "model": "5 Series (G30/G31/G38)",
+    "yearStart": 2018,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100R",
+        "bladeIlco": null,
+        "bladeSilca": "HU100R",
+        "bladeJma": null,
+        "transponderChip": "PCF7953P / ID49 (Hitag Pro)",
+        "chipClonable": "token",
+        "fccId": "N5F-ID21A",
+        "partNumber": null,
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "BDC2",
+    "pinRequired": false,
+    "programming": "BDC2 — bench read typically required for all-keys-lost. Add-key via OBD if one working key present.",
+    "programmerHint": ["Xhorse VVDI2 + BDC2 adapter", "Autel IM608 Pro", "CGDI A2", "Abrites BN020"],
+    "notes": "Same BDC2 architecture as G20 3-series. FCC ID corrected to N5F-ID21A (confirmed by UHS Hardware and multiple suppliers for G30/G31 BDC2 keys at 434 MHz).",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/vehicle-security-systems/bmw-cas_fem_bdc-list.html",
+      "https://www.uhs-hardware.com/products/bmw-g-series-4-button-smart-remote-control-key-bdc2-immo-fcc-id-n5f-id21a-silver-434mhz-remote-only-oem",
+      "https://abkeys.com/products/bmw-x3-x4-smart-key-4buttons-434mhz-n5f-id21a-g-series-8808860-01-4376"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "BMW",
+    "model": "X1 (E84)",
+    "yearStart": 2010,
+    "yearEnd": 2015,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU92",
+        "bladeIlco": null,
+        "bladeSilca": "HU92RP",
+        "bladeJma": null,
+        "transponderChip": "PCF7945 / ID46 (Hitag2)",
+        "chipClonable": "no",
+        "fccId": "KR55WK49127",
+        "partNumber": null,
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "CAS3+",
+    "pinRequired": false,
+    "programming": "OBD with CAS3+ compatible programmer.",
+    "programmerHint": ["Xhorse VVDI2", "Autel IM608", "Smart Pro"],
+    "notes": "E84 X1 uses CAS3+ same as E90 late production. HU92 blade. KR55WK49127 US-market frequency 315 MHz confirmed.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/bmw_transponder_catalog.html",
+      "https://www.transpondery.com/vehicle-security-systems/bmw-cas_fem_bdc-list.html",
+      "https://www.uhs-hardware.com/products/2004-2011-bmw-3-5-series-3-button-smart-key-kr55wk49127-kr55wk49123-cas3-315-mhz-bundle-of-5"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "BMW",
+    "model": "X1 (F48/F49)",
+    "yearStart": 2016,
+    "yearEnd": 2022,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100R",
+        "bladeIlco": null,
+        "bladeSilca": "HU100R",
+        "bladeJma": null,
+        "transponderChip": "PCF7953P / ID49 (Hitag Pro)",
+        "chipClonable": "token",
+        "fccId": "YGOHUF5662",
+        "partNumber": null,
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "FEM / BDC",
+    "pinRequired": false,
+    "programming": "OBD with FEM/BDC compatible programmer.",
+    "programmerHint": ["Xhorse VVDI2", "Autel IM608", "Lonsdor K518"],
+    "notes": "F48 X1 transitions from E84 with new FEM platform and HU100R blade. CORRECTED: US-market FCC is YGOHUF5662 at 315 MHz (not YGOHUF5767/433 MHz which is European). Confirmed per locksmithkeyless.com and americankeysupply.com for US FEM/BDC F-series keys.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/bmw_transponder_catalog.html",
+      "https://www.transpondery.com/vehicle-security-systems/bmw-cas_fem_bdc-list.html",
+      "https://www.locksmithkeyless.com/products/2010-2014-bmw-smart-key-fcc-ygohuf5662",
+      "https://keyinnovations.com/bmw-3-button-smart-key-ygohuf5662-9254891-03-315-mhz-refurbished-grade-a/"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "BMW",
+    "model": "X3 (E83)",
+    "yearStart": 2003,
+    "yearEnd": 2010,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HU92",
+        "bladeIlco": "HU92T",
+        "bladeSilca": "HU92RP",
+        "bladeJma": "BM-6P",
+        "transponderChip": "PCF7935 / PCF7944AT / ID44 (Philips Crypto)",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": "K-HU92",
+        "frequency": null
+      }
+    ],
+    "immobilizer": "EWS3.x / EWS4.x",
+    "pinRequired": false,
+    "programming": "OBD or bench for EWS systems.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Smart Pro"],
+    "notes": "E83 X3 uses same HU92 / ID44 as E46. Confirmed on UHS Hardware product listing for 2003-2009 X3.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/bmw_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2000-2009-bmw-2-track-hu92-transponder-key-pcf7935-chip-k-hu92"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "BMW",
+    "model": "X3 (F25)",
+    "yearStart": 2010,
+    "yearEnd": 2018,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100R",
+        "bladeIlco": null,
+        "bladeSilca": "HU100R",
+        "bladeJma": null,
+        "transponderChip": "PCF7953P / ID49 (Hitag Pro)",
+        "chipClonable": "token",
+        "fccId": "YGOHUF5662",
+        "partNumber": null,
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "CAS4",
+    "pinRequired": false,
+    "programming": "OBD with CAS4-compatible programmer.",
+    "programmerHint": ["Xhorse VVDI2", "Autel IM608", "Lonsdor K518"],
+    "notes": "F25 X3 uses CAS4 (not FEM). HU100R blade, ID49 chip. Same smart key fob as 5-series F10. CORRECTED: YGOHUF5662 is 315 MHz for US market (not 433 MHz). Confirmed by carandtruckremotes.com (F25 2011-2017 all cite YGOHUF5662), americankeysupply.com, and bestkeysupply.com for CAS4 315 MHz US keys.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/bmw_transponder_catalog.html",
+      "https://www.transpondery.com/vehicle-security-systems/bmw-cas_fem_bdc-list.html",
+      "https://www.carandtruckremotes.com/products/2013-bmw-x3-series-smart-remote-key-fob-aftermarket",
+      "https://www.americankeysupply.com/product/bmw-3-5-7-series-2009-2014-3-btn-smart-key-cas4-315-mhz-ygohuf5662-brk-7139"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "BMW",
+    "model": "X3 (G01/G08)",
+    "yearStart": 2018,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100R",
+        "bladeIlco": null,
+        "bladeSilca": "HU100R",
+        "bladeJma": null,
+        "transponderChip": "PCF7953P / ID49 (Hitag Pro)",
+        "chipClonable": "token",
+        "fccId": "N5F-ID21A",
+        "partNumber": null,
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "BDC2",
+    "pinRequired": false,
+    "programming": "BDC2 — bench read for all-keys-lost. Add-key via OBD if working key present.",
+    "programmerHint": ["Xhorse VVDI2 + BDC2 adapter", "Autel IM608 Pro", "CGDI A2"],
+    "notes": "G01 X3 transitions to BDC2 same as G20 3-series. FCC ID corrected to N5F-ID21A (confirmed by UHS Hardware and abkeys.com for G01/G02 X3/X4 434 MHz BDC2 keys).",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/vehicle-security-systems/bmw-cas_fem_bdc-list.html",
+      "https://www.uhs-hardware.com/products/bmw-g-series-4-button-smart-remote-control-key-bdc2-immo-fcc-id-n5f-id21a-silver-434mhz-remote-only-oem",
+      "https://abkeys.com/products/bmw-x3-x4-smart-key-4buttons-434mhz-n5f-id21a-g-series-8808860-01-4376"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "BMW",
+    "model": "X5 (E53)",
+    "yearStart": 1999,
+    "yearEnd": 2006,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HU92",
+        "bladeIlco": "HU92T",
+        "bladeSilca": "HU92RP",
+        "bladeJma": "BM-6P",
+        "transponderChip": "PCF7935AS / PCF7944AT / ID44 (Philips Crypto)",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": "K-HU92",
+        "frequency": null
+      }
+    ],
+    "immobilizer": "EWS3.x / EWS4.x",
+    "pinRequired": false,
+    "programming": "OBD or bench for EWS.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Smart Pro"],
+    "notes": "E53 X5 confirmed on UHS Hardware product listing (2000-2006 X5 with HU92 / ID44).",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/bmw_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2000-2009-bmw-2-track-hu92-transponder-key-pcf7935-chip-k-hu92"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "BMW",
+    "model": "X5 (E70)",
+    "yearStart": 2007,
+    "yearEnd": 2013,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU92",
+        "bladeIlco": null,
+        "bladeSilca": "HU92RP",
+        "bladeJma": null,
+        "transponderChip": "PCF7945 / ID46 (Hitag2)",
+        "chipClonable": "no",
+        "fccId": "KR55WK49127",
+        "partNumber": null,
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "CAS3 (2007) / CAS3+ (2008-2013)",
+    "pinRequired": false,
+    "programming": "OBD with CAS3/CAS3+ programmer.",
+    "programmerHint": ["Xhorse VVDI2", "Autel IM608", "Smart Pro"],
+    "notes": "E70 X5 uses HU92 blade in smart key shell with ID46. KR55WK49127 US-market frequency 315 MHz confirmed.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/bmw_transponder_catalog.html",
+      "https://www.transpondery.com/vehicle-security-systems/bmw-cas_fem_bdc-list.html",
+      "https://www.uhs-hardware.com/products/2004-2011-bmw-3-5-series-3-button-smart-key-kr55wk49127-kr55wk49123-cas3-315-mhz-bundle-of-5"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "BMW",
+    "model": "X5 (F15/F85)",
+    "yearStart": 2014,
+    "yearEnd": 2018,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100R",
+        "bladeIlco": null,
+        "bladeSilca": "HU100R",
+        "bladeJma": null,
+        "transponderChip": "PCF7953P / ID49 (Hitag Pro)",
+        "chipClonable": "token",
+        "fccId": "YGOHUF5662",
+        "partNumber": null,
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "FEM / BDC",
+    "pinRequired": false,
+    "programming": "OBD with FEM/BDC programmer.",
+    "programmerHint": ["Xhorse VVDI2", "Autel IM608", "Lonsdor K518"],
+    "notes": "F15 X5 uses FEM/BDC with HU100R blade and ID49. CORRECTED: US-market FCC is YGOHUF5662 at 315 MHz (not YGOHUF5767/433 MHz). Confirmed per locksmithkeyless.com and americankeysupply.com for US FEM/BDC X5 keys.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/bmw_transponder_catalog.html",
+      "https://www.transpondery.com/vehicle-security-systems/bmw-cas_fem_bdc-list.html",
+      "https://www.locksmithkeyless.com/products/2010-2014-bmw-smart-key-fcc-ygohuf5662",
+      "https://www.americankeysupply.com/product/bmw-2009-9017-3-btn-sk-315mhz-w-trunk-ygohuf5662-oem-refurb-no-logo-15429"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "BMW",
+    "model": "X5 (G05)",
+    "yearStart": 2019,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100R",
+        "bladeIlco": null,
+        "bladeSilca": "HU100R",
+        "bladeJma": null,
+        "transponderChip": "PCF7953P / ID49 (Hitag Pro)",
+        "chipClonable": "token",
+        "fccId": "N5F-ID21A",
+        "partNumber": null,
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "BDC2",
+    "pinRequired": false,
+    "programming": "BDC2 bench read for all-keys-lost.",
+    "programmerHint": ["Xhorse VVDI2 + BDC2 adapter", "Autel IM608 Pro", "CGDI A2"],
+    "notes": "G05 X5 uses same BDC2 as G20/G30. FCC ID corrected to N5F-ID21A (confirmed by UHS Hardware and abkeys.com for G05 BDC2 platform).",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/vehicle-security-systems/bmw-cas_fem_bdc-list.html",
+      "https://www.uhs-hardware.com/products/bmw-g-series-4-button-smart-remote-control-key-bdc2-immo-fcc-id-n5f-id21a-silver-434mhz-remote-only-oem",
+      "https://abkeys.com/products/bmw-x3-x4-smart-key-4buttons-434mhz-n5f-id21a-g-series-8808860-01-4376"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "MINI",
+    "model": "Cooper / Clubman (R55/R56/R57/R58/R59)",
+    "yearStart": 2007,
+    "yearEnd": 2014,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU92",
+        "bladeIlco": null,
+        "bladeSilca": "HU92RP",
+        "bladeJma": null,
+        "transponderChip": "PCF7945 / ID46 (Hitag2)",
+        "chipClonable": "no",
+        "fccId": "IYZKEYR5602",
+        "partNumber": null,
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "CAS3 / CAS3+",
+    "pinRequired": false,
+    "programming": "OBD with CAS3/CAS3+ programmer.",
+    "programmerHint": ["Xhorse VVDI2", "Autel IM608", "Smart Pro"],
+    "notes": "R56 MINI uses BMW CAS3/CAS3+ architecture with HU92 blade. Same key as BMW E90-era. FCC ID IYZKEYR5602 confirmed 315 MHz by abkeys.com, UHS Hardware, and locksmithkeyless.com for US market.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/bmw_transponder_catalog.html",
+      "https://abkeys.com/products/mini-cooper-smart-key-fob-cas3-smart-key-3buttons-315mhz-2007up-3005",
+      "https://www.uhs-hardware.com/products/2006-2014-mini-cooper-3-button-smart-key-pn-iyzkeyr5602-kr55wk49333-oem-recase"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "MINI",
+    "model": "Cooper / Countryman (F55/F56/F57/F60)",
+    "yearStart": 2014,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100R",
+        "bladeIlco": null,
+        "bladeSilca": "HU100R",
+        "bladeJma": null,
+        "transponderChip": "PCF7953P / ID49 (Hitag Pro)",
+        "chipClonable": "token",
+        "fccId": "NBGIDGNG1",
+        "partNumber": "9367409-01",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "FEM / BDC",
+    "pinRequired": false,
+    "programming": "OBD with FEM/BDC programmer. No onboard self-programming — must use professional equipment.",
+    "programmerHint": ["Xhorse VVDI2", "Autel IM608", "Lonsdor K518", "OBDSTAR X300 DP Plus"],
+    "notes": "F56/F60 MINI uses BMW FEM architecture. Emergency blade insert is HU100R (also sold as HU127 — same physical profile). FCC ID NBGIDGNG1 confirmed 434 MHz by locksmithkeyless.com, abkeys.com, and UHS Hardware.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2014-2018-mini-cooper-smart-key-3b-fcc-nbgidgng1",
+      "https://abkeys.com/products/mini-cooper-smart-key-fem-bdc-system-3buttons-434mhz-nbgidgng1-2015up-3980",
+      "https://www.uhs-hardware.com/products/2014-2018-mini-cooper-3-button-smart-key-pn-9367409-01-nbgidgng1-fem-bdc-434mhz-aftermarket",
+      "https://abkeys.com/products/mini-cooper-smart-key-blade-hu100r-mini-cooper-fem-bdc-key-blade-4078"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mercedes-Benz",
+    "model": "C-Class / E-Class / S-Class / GLA / GLC / GLE (FBS3 era)",
+    "yearStart": 1998,
+    "yearEnd": 2015,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HU64",
+        "bladeIlco": "HU64P",
+        "bladeSilca": "HU64P",
+        "bladeJma": "ME-7P",
+        "transponderChip": "PCF7935 / ID44 (Philips Crypto)",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": "K-HU64",
+        "frequency": null
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU64",
+        "bladeIlco": "HU64P",
+        "bladeSilca": "HU64P",
+        "bladeJma": "ME-7P",
+        "transponderChip": "BGA / ID46 (Hitag2) or precoded ID44",
+        "chipClonable": "no",
+        "fccId": "IYZ-3312",
+        "partNumber": null,
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "FBS3 (DAS3) — locally programmable",
+    "pinRequired": true,
+    "programming": "Requires EIS (Electronic Ignition Switch) read via specialized locksmith tool. FBS3 allows local/offline key programming by qualified locksmith. PIN/SKC often obtainable from EIS with CGDI MB, Autel, or Xhorse VVDI MB.",
+    "programmerHint": ["CGDI MB", "Autel IM608", "Xhorse VVDI MB", "Abrites AVDI + AB012"],
+    "notes": "HU64 blade used across C-Class W202/W203/W204, E-Class W210/W211/W212, S-Class W220/W221, ML-Class W163/W164/W166, GLA X156, GLC X253 (early) — roughly 1998-2015. FBS3 confirmed as dealer-doable by qualified locksmith. IYZ-3312 FCC ID is 315 MHz for US market — confirmed by UHS Hardware OEM listing (2009-2014 FBS3 fobik), bestkeysolution.com, and keylessbest.com. Note: abkeys.com also sells a 433 MHz variant of IYZ-3312 for non-US markets; the US FCC-certified version is 315 MHz only. Smart key variant applies to ~2009-2015 Keyless Go models; transponder-only for 1998-2009.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/1998-2005-mercedes-hu64-2-track-transponder-key-44-chip-k-hu64",
+      "https://www.uhs-hardware.com/products/2009-2014-mercedes-benz-fbs3-4-button-fobik-key-iyz-3312-keyless-go-315-mhz-aftermarket",
+      "https://www.bestkeysolution.com/products/1998-2014-mercedes-benz-4-button-fobik-key-iyz-3312-315-mhz-two-battery",
+      "https://www.montyslocksmith.ca/blog/fbs4-mercedes-key-programming-what-you-need-to-know-and-what-we-can-do/"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mercedes-Benz",
+    "model": "C-Class (W205) / E-Class (W213) / A-Class (W177) / GLA (X247) / GLC (X253) / GLE (W167) / S-Class (W222) (FBS4 era)",
+    "yearStart": 2015,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU64",
+        "bladeIlco": "HU64P",
+        "bladeSilca": "HU64P",
+        "bladeJma": "ME-7P",
+        "transponderChip": "BGA (proprietary NXP) — not cloneable",
+        "chipClonable": "no",
+        "fccId": "NBGDM3",
+        "partNumber": "A-205-905-00-00",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "FBS4 — dealer/server-only",
+    "pinRequired": true,
+    "programming": "DEALER ONLY. FBS4 requires online authentication via encrypted Mercedes servers in Germany. No aftermarket tool can perform FBS4 key addition without factory access. Locksmith scope = lockout only or tow to dealer.",
+    "programmerHint": ["Mercedes XENTRY (dealer only)"],
+    "notes": "FBS4 introduced ~2015 across W205 C-Class, W213 E-Class, W177 A-Class (2018+), X247 GLA (2020+), X253 GLC (2016+), W167 GLE (2019+), W222 S-Class (2015+). HU64 blade retained but chip/programming is server-encrypted. Some transition-year models (2015-2016) may be FBS3 — verify VIN. FCC ID NBGDM3 confirmed 315 MHz for US market by UHS Hardware and keyinnovations.com.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2013-2020-mercedes-fbs4-4-button-smart-key-pn-a-177-905-22-01-nbgdm3-oem",
+      "https://keyinnovations.com/mercedes-4-button-smart-key-nbgdm3-a-177-905-22-01-315-mhz-new-oem/",
+      "https://www.montyslocksmith.ca/blog/fbs4-mercedes-key-programming-what-you-need-to-know-and-what-we-can-do/",
+      "https://auto-keys.eu/original-smart-key-mercedes-w205-c-class-buttons-2-frequency-433mhz-blade-signature-hu64-immobiliser-system-fbs4-part-no-a-205-905-00-00-keyless-go"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mercedes-Benz",
+    "model": "A-Class (W176)",
+    "yearStart": 2013,
+    "yearEnd": 2018,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU64",
+        "bladeIlco": "HU64P",
+        "bladeSilca": "HU64P",
+        "bladeJma": "ME-7P",
+        "transponderChip": "BGA",
+        "chipClonable": "no",
+        "fccId": "NBGDM3",
+        "partNumber": "A-177-905-22-01",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "FBS4",
+    "pinRequired": true,
+    "programming": "DEALER ONLY — FBS4 server-based programming.",
+    "programmerHint": ["Mercedes XENTRY (dealer only)"],
+    "notes": "W176 A-Class US market uses FBS4 from introduction. Smart key FCC ID NBGDM3 confirmed 315 MHz by UHS Hardware and keyinnovations.com (part A-177-905-22-01).",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2013-2020-mercedes-fbs4-4-button-smart-key-pn-a-177-905-22-01-nbgdm3-oem",
+      "https://keyinnovations.com/mercedes-4-button-smart-key-nbgdm3-a-177-905-22-01-315-mhz-new-oem/"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Volvo",
+    "model": "XC90 (P2 / first gen)",
+    "yearStart": 2003,
+    "yearEnd": 2014,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HU56",
+        "bladeIlco": null,
+        "bladeSilca": "NE66",
+        "bladeJma": null,
+        "transponderChip": "Megamos Crypto / ID48",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": "9203132",
+        "frequency": null
+      },
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "HU56",
+        "bladeIlco": null,
+        "bladeSilca": "NE66",
+        "bladeJma": null,
+        "transponderChip": "Megamos Crypto / ID48",
+        "chipClonable": "no",
+        "fccId": "LQNP2T-APU",
+        "partNumber": "8685150",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "IMMO3 / IMMO4 (CEM-based)",
+    "pinRequired": true,
+    "programming": "Requires CEM PIN extraction; professional equipment (Autel IM608, VVDI Key Tool, Smart Pro with Volvo module). No DIY self-programming.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI Key Tool Plus", "Smart Pro", "Lonsdor K518"],
+    "notes": "HU56 is the standard blade profile designation for P2 platform (S60/S80/V70/XC70/XC90 1999-2014); Silca blank NE66 / Ilco S66NN-P. ID48 (Megamos Crypto) chip confirmed by transpondery.com, UHS Hardware, and locksmithkeyless.com. OEM part 9203132. CORRECTED: LQNP2T-APU remote is 315 MHz for US market (not 433 MHz). Confirmed by UHS Hardware, abkeys.com, keyinnovations.com, and Amazon KEYECU listing all citing 315 MHz for US FCC ID LQNP2T-APU.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/volvo_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2004-2015-volvo-5-button-flip-key-pn-8688799-lqnp2t-apu-315-mhz-aftermarket",
+      "https://www.locksmithkeyless.com/products/2004-2015-volvo-flip-key-5b-fcc-lqnp2t-apu",
+      "https://abkeys.com/products/volvo-s80-s60-v70-xc70-xc90-remote-5buttons-315mhz-lqnp2t-apu-8685150-181"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Volvo",
+    "model": "XC90 (SPA / second gen)",
+    "yearStart": 2016,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU101",
+        "bladeIlco": null,
+        "bladeSilca": "HU101",
+        "bladeJma": null,
+        "transponderChip": "DST-AES / ID8A (Texas Crypto AES 128-bit)",
+        "chipClonable": "no",
+        "fccId": "YGOHUF8423",
+        "partNumber": "31652604",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "CEM (SPA platform IMMO4+)",
+    "pinRequired": true,
+    "programming": "Requires CEM data read (Lonsdor K518, Yanhua ACDP with Volvo Module 20). All-keys-lost requires bench access to CEM. OBD add-key possible with working key on some models. No DIY.",
+    "programmerHint": ["Lonsdor K518 with Volvo license", "Yanhua ACDP + Module 20", "Autel IM608 Pro"],
+    "notes": "SPA-platform XC90 (2016+) uses HU101 blade with DST-AES ID8A chip. Emergency blade HU101 part 31391439. FCC ID YGOHUF8423 confirmed 433 MHz by UHS Hardware OEM listing (PN 32425209) and abkeys.com; locksmithkeyless.com also lists as 433 MHz (YG0HUF8423 variant). Some aftermarket sources cite 434 MHz; UHS Hardware OEM is authoritative.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2016-2021-volvo-4-button-smart-key-pn-32425209-ygohuf8423-433-mhz-chrome-buttons-oem",
+      "https://www.locksmithkeyless.com/products/2016-2022-volvo-smart-key-4b-fcc-yg0huf8423",
+      "https://abkeys.com/products/volvo-s60-s90-xc60-xc90-smart-key-32256971-ygohuf8423-4279"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Volvo",
+    "model": "XC60 (P3 / first gen)",
+    "yearStart": 2010,
+    "yearEnd": 2017,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "HU56",
+        "bladeIlco": null,
+        "bladeSilca": "NE66",
+        "bladeJma": null,
+        "transponderChip": "Megamos Crypto / ID48",
+        "chipClonable": "no",
+        "fccId": "LQNP2T-APU",
+        "partNumber": "8685150",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "IMMO3 / IMMO4 (CEM-based)",
+    "pinRequired": true,
+    "programming": "CEM PIN extraction required; professional equipment.",
+    "programmerHint": ["Autel IM608", "Lonsdor K518", "Smart Pro"],
+    "notes": "First-gen XC60 (2009-2017) uses same P3 platform as S80/V70 with HU56 blade (Silca NE66) and ID48. CORRECTED: LQNP2T-APU remote is 315 MHz for US market (not 433 MHz). Confirmed by UHS Hardware OEM listing and abkeys.com.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/volvo_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2004-2015-volvo-5-button-flip-key-pn-8688799-lqnp2t-apu-315-mhz-aftermarket",
+      "https://abkeys.com/products/volvo-s80-s60-v70-xc70-xc90-remote-5buttons-315mhz-lqnp2t-apu-8685150-181",
+      "https://keyless2go.com/blogs/program-instructions/2017-volvo-xc60-keyless-entry-remote-fob-smart-key-programming-instructions"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Volvo",
+    "model": "XC60 (SPA / second gen)",
+    "yearStart": 2018,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU101",
+        "bladeIlco": null,
+        "bladeSilca": "HU101",
+        "bladeJma": null,
+        "transponderChip": "DST-AES / ID8A",
+        "chipClonable": "no",
+        "fccId": "YGOHUF8423",
+        "partNumber": "31652604",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "CEM (SPA platform)",
+    "pinRequired": true,
+    "programming": "CEM bench read for all-keys-lost. OBD add-key if working key present.",
+    "programmerHint": ["Lonsdor K518 with Volvo license", "Yanhua ACDP + Module 20", "Autel IM608 Pro"],
+    "notes": "Second-gen XC60 (2018+) uses SPA platform identical to XC90 2nd gen. HU101 blade, ID8A, FCC YGOHUF8423, 433 MHz confirmed by UHS Hardware OEM listing and abkeys.com.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2016-2021-volvo-4-button-smart-key-pn-32425209-ygohuf8423-433-mhz-chrome-buttons-oem",
+      "https://www.locksmithkeyless.com/products/2016-2024-volvo-emergency-key-hu101",
+      "https://abkeys.com/products/volvo-s60-s90-xc60-xc90-smart-key-32256971-ygohuf8423-4279"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Volvo",
+    "model": "S60 (P3 / second gen)",
+    "yearStart": 2011,
+    "yearEnd": 2018,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "HU56",
+        "bladeIlco": null,
+        "bladeSilca": "NE66",
+        "bladeJma": null,
+        "transponderChip": "Megamos Crypto / ID48",
+        "chipClonable": "no",
+        "fccId": "LQNP2T-APU",
+        "partNumber": "8685150",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "IMMO3 / IMMO4 (CEM-based)",
+    "pinRequired": true,
+    "programming": "CEM PIN extraction; professional equipment required.",
+    "programmerHint": ["Autel IM608", "Lonsdor K518", "Smart Pro"],
+    "notes": "Second-gen S60 uses P3 platform with HU56 blade (Silca NE66), ID48 chip. Same remote hardware as XC90 first gen. CORRECTED: LQNP2T-APU is 315 MHz for US market (not 433 MHz). Confirmed by UHS Hardware, abkeys.com, locksmithkeyless.com.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/volvo_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2004-2015-volvo-5-button-flip-key-pn-8688799-lqnp2t-apu-315-mhz-aftermarket",
+      "https://abkeys.com/products/volvo-s80-s60-v70-xc70-xc90-remote-5buttons-315mhz-lqnp2t-apu-8685150-181",
+      "https://www.locksmithkeyless.com/products/2004-2015-volvo-flip-key-5b-fcc-lqnp2t-apu"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Volvo",
+    "model": "S60 (SPA / third gen)",
+    "yearStart": 2019,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU101",
+        "bladeIlco": null,
+        "bladeSilca": "HU101",
+        "bladeJma": null,
+        "transponderChip": "DST-AES / ID8A",
+        "chipClonable": "no",
+        "fccId": "YGOHUF8423",
+        "partNumber": "31652604",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "CEM (SPA platform)",
+    "pinRequired": true,
+    "programming": "CEM bench read for all-keys-lost. Professional equipment required.",
+    "programmerHint": ["Lonsdor K518 with Volvo license", "Yanhua ACDP + Module 20", "Autel IM608 Pro"],
+    "notes": "Third-gen S60 uses SPA platform. Same key as XC60/XC90 SPA gen. HU101 blade, ID8A chip, 433 MHz confirmed by UHS Hardware OEM listing.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2016-2021-volvo-4-button-smart-key-pn-32425209-ygohuf8423-433-mhz-chrome-buttons-oem",
+      "https://www.locksmithkeyless.com/products/2016-2024-volvo-emergency-key-hu101",
+      "https://www.locksmithkeyless.com/products/2016-2022-volvo-smart-key-4b-fcc-yg0huf8423"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mitsubishi",
+    "model": "Outlander",
+    "yearStart": 2007,
+    "yearEnd": 2018,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "MIT3",
+        "bladeIlco": "MIT17A-PT(A)",
+        "bladeSilca": "MIT11R",
+        "bladeJma": "TP12MIT-8D.P2",
+        "transponderChip": "PCF7941AT / PCF7936 / ID46 (Philips Crypto 2 / Hitag2)",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": "MN141124",
+        "frequency": null
+      },
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "MIT3",
+        "bladeIlco": "MIT17A-PT(A)",
+        "bladeSilca": "MIT11R",
+        "bladeJma": "TP12MIT-8D.P2",
+        "transponderChip": "PCF7941AT / ID46",
+        "chipClonable": "no",
+        "fccId": "OUCJ166N",
+        "partNumber": "6370A159",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "Mitsubishi IMMO (ID46 era)",
+    "pinRequired": false,
+    "programming": "OBD with supported programmer. Some models allow owner self-programming via door lock cycle sequence.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI Key Tool Plus", "OBDSTAR X300 DP"],
+    "notes": "2007-2018 Outlander uses MIT3/MIT11R keyway with ID46 (Philips Hitag2). Ilco MIT17A-PT(A), JMA TP12MIT-8D.P2, OEM part MN141124. Remote 315 MHz confirmed by locksmithkeyless.com and abkeys.com.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2007-2019-mitsubishi-transponder-key-id46-chip-letter-a-mit3-mit17a-pta",
+      "https://www.transpondery.com/transponder_catalog/mitsubishi_transponder_catalog.html",
+      "https://abkeys.com/products/mitsubishi-outlander-lancer-remote-key-315mhz-oucg8d-625m-a-6370a148-831"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mitsubishi",
+    "model": "Outlander Sport / RVR",
+    "yearStart": 2011,
+    "yearEnd": 2019,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "MIT3",
+        "bladeIlco": "MIT17A-PT(A)",
+        "bladeSilca": "MIT11R",
+        "bladeJma": "TP12MIT-8D.P2",
+        "transponderChip": "PCF7941AT / ID46 (Philips Crypto 2 / Hitag2)",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": "MN141124",
+        "frequency": null
+      },
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "MIT3",
+        "bladeIlco": "MIT17A-PT(A)",
+        "bladeSilca": "MIT11R",
+        "bladeJma": "TP12MIT-8D.P2",
+        "transponderChip": "PCF7941AT / ID46",
+        "chipClonable": "no",
+        "fccId": "OUCJ166N",
+        "partNumber": "8637C803",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "Mitsubishi IMMO (ID46 era)",
+    "pinRequired": false,
+    "programming": "OBD with supported programmer. Some trims allow owner self-programming.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI Key Tool Plus", "OBDSTAR X300 DP"],
+    "notes": "Outlander Sport uses same MIT3 keyway and ID46 chip as Outlander. Remote 315 MHz confirmed by locksmithkeyless.com and transpondery.com.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2007-2019-mitsubishi-transponder-key-id46-chip-letter-a-mit3-mit17a-pta",
+      "https://www.transpondery.com/transponder_catalog/mitsubishi_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mitsubishi",
+    "model": "Mirage / Mirage G4",
+    "yearStart": 2014,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "MIT3",
+        "bladeIlco": "MIT17A-PT(A)",
+        "bladeSilca": "MIT11R",
+        "bladeJma": "TP12MIT-8D.P2",
+        "transponderChip": "PCF7941AT / ID46 (Philips Crypto 2 / Hitag2)",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": "MN141124",
+        "frequency": null
+      },
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "MIT3",
+        "bladeIlco": "MIT17A-PT(A)",
+        "bladeSilca": "MIT11R",
+        "bladeJma": "TP12MIT-8D.P2",
+        "transponderChip": "PCF7941AT / ID46",
+        "chipClonable": "no",
+        "fccId": "OUCJ166N",
+        "partNumber": "6370B707",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "Mitsubishi IMMO (ID46 era)",
+    "pinRequired": false,
+    "programming": "OBD with supported programmer.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI Key Tool Plus"],
+    "notes": "Mirage uses same MIT3/ID46 as Outlander. Ilco MIT17A-PT(A), OEM remote part 6370B707. Remote 315 MHz confirmed on locksmithkeyless.com and transpondery.com.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2007-2019-mitsubishi-transponder-key-id46-chip-letter-a-mit3-mit17a-pta",
+      "https://www.transpondery.com/transponder_catalog/mitsubishi_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mitsubishi",
+    "model": "Eclipse Cross",
+    "yearStart": 2018,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "MIT3",
+        "bladeIlco": "MIT9PT",
+        "bladeSilca": "692565",
+        "bladeJma": null,
+        "transponderChip": "NCF29A1X / ID47 (Philips Crypto 3 / Hitag3)",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": "K-MIT-EC18",
+        "frequency": null
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "MIT3",
+        "bladeIlco": null,
+        "bladeSilca": "MIT3",
+        "bladeJma": null,
+        "transponderChip": "NCF29A1X / ID47 (Hitag3)",
+        "chipClonable": "no",
+        "fccId": "OUCGHR-M013",
+        "partNumber": "8637B639",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "Mitsubishi IMMO (ID47 / Hitag3 era)",
+    "pinRequired": false,
+    "programming": "OBD with ID47-capable programmer. Requires Lonsdor, OBDSTAR, Autel, or Xhorse Mobile-OBD.",
+    "programmerHint": ["Lonsdor K518", "OBDSTAR X300 DP Plus", "Autel IM608", "Xhorse VVDI Key Tool Plus"],
+    "notes": "Eclipse Cross 2018+ uses ID47 (Hitag3/NCF29A1X) — newer than the ID46 Outlander. Transponder blade: Ilco MIT9PT, Silca 692565 (confirmed by UHS Hardware). Smart key FCC OUCGHR-M013 confirmed 315 MHz for US market by abkeys.com and UHS Hardware; OEM part 8637B639. CORRECTED: Smart key emergency blade keyway is MIT3 (not MIT11R) — confirmed by UHS Hardware OEM listing (test key MIT3), locksmithkeyless.com, and yourcarkeyguys.com emergency blade listing. Note: a separate RemoteHead key variant (OUCJ166N, FCC ID, MIT3 blade, OEM 6370C135) also exists for 2018-2020 non-proximity trims.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2018-2022-mitsubishi-eclipse-cross-key-fob-3b-fcc-oucj166n",
+      "https://www.uhs-hardware.com/products/2018-2022-mitsubishi-eclipse-cross-3-button-smart-key-pn-8637b639-oucghr-m013-oem",
+      "https://abkeys.com/products/mitsubishi-eclipse-smart-key-3buttons-315mhz-oucghr-m013-8637b639-2030",
+      "https://yourcarkeyguys.com/products/insert-2008-2022-mitsubishi-smart-emergency-key-blade-mit3"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Tesla",
+    "model": "Model 3",
+    "yearStart": 2019,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": null,
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": null,
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": null,
+        "frequency": null
+      }
+    ],
+    "immobilizer": "Tesla proprietary NFC/BLE (256-bit ECC NIST P-256)",
+    "pinRequired": false,
+    "programming": "Key cards and phone keys pair via vehicle touchscreen (Settings > Locks > Add). If zero working keys present, vehicle must be transported to Tesla Service Center — no independent locksmith can program keys. Some third parties authorized for limited security Toolbox actions.",
+    "programmerHint": ["Tesla Service Center (all-keys-lost)", "Tesla app (owner add-key with working key present)"],
+    "notes": "Tesla Model 3 has NO traditional mechanical keyway, no transponder chip, no blade. Access via: (1) NFC key card (NIST P-256 ECC), (2) smartphone via BLE + NFC, (3) optional keyfob. Locksmith scope = slim jim / lockout assistance only. No aftermarket key cutting or transponder programming applicable. Key card part 113108701J confirmed OEM.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.tesla.com/ownersmanual/model3/en_us/GUID-E004FAB7-1C71-448F-9492-CACF301304D2.html",
+      "https://www.tesla.com/support/tesla-vehicle-keys",
+      "https://www.locksmithspros.org/tesla-locksmith"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Tesla",
+    "model": "Model Y",
+    "yearStart": 2020,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": null,
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": null,
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": null,
+        "frequency": null
+      }
+    ],
+    "immobilizer": "Tesla proprietary NFC/BLE (256-bit ECC NIST P-256)",
+    "pinRequired": false,
+    "programming": "Same as Model 3 — NFC key card + smartphone BLE. All-keys-lost requires Tesla Service Center. No traditional locksmith key programming possible.",
+    "programmerHint": ["Tesla Service Center (all-keys-lost)", "Tesla app (owner add-key with working key present)"],
+    "notes": "Identical key architecture to Model 3. No blade, no chip to clone, no transponder. Locksmith scope = physical lockout assistance only. Key card placed on center console behind cup holder to authenticate. OEM key card part 113108701J.",
+    "confidence": "verified",
+    "sources": [
+      "https://service.tesla.com/docs/ModelY/ServiceManual/en-us/GUID-55917424-BE25-40DF-98B2-B3BBF1ED9646.html",
+      "https://www.tesla.com/support/tesla-vehicle-keys",
+      "https://www.locksmithspros.org/tesla-locksmith"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  }
+]

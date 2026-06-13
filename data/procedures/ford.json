@@ -1,0 +1,1116 @@
+[
+  {
+    "make": "Ford",
+    "model": "F-150",
+    "yearStart": 2004,
+    "yearEnd": 2010,
+    "onboard": "Onboard 2-key transponder add: insert Key A, turn ON (3–6 sec), turn OFF and remove; within 10 sec insert Key B, turn ON (3–6 sec), turn OFF and remove; within 10 sec insert new unprogrammed key, turn ON 6+ sec — security light glows 3 sec then off = success. RKE remote only (no transponder): cycle ignition OFF→RUN 8 times in 10 sec ending in RUN; door locks cycle to confirm; within 8 sec press any button on fob; locks cycle per fob to confirm.",
+    "addKey": "With 1 working key only: connect FORScan (ELM327/OBDLink, extended license) or Autel/Snap-on via OBD under driver dash. Navigate to PCM PATS > Ignition Key Code Program. Tool either gives timed access (wait ~10 min) or coded access (incode/outcode exchange). Insert new key when prompted and follow on-screen cycle. Must program minimum 2 keys total.",
+    "allKeysLost": "Connect IDS/FDRS, Autel IM608 Pro, or Snap-on Zeus via OBD. Navigate to PATS > Erase All Keys; obtain incode from FORScan calculator / patscode.com / Ford ETIS for coded-access vehicles, or wait ~10 min timed access. After erase, program minimum 2 new keys sequentially. For FORScan: vehicle supports this on ~1997–2011 MY per FORScan documentation.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column, above pedals",
+    "securityWait": "~10 min PATS timed access (coded-access vehicles: incode/outcode instead)",
+    "specialTool": "FORScan + OBDLink EX, or Autel IM608 / Snap-on Zeus / IDS",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-ford-f150-key-fob/",
+      "https://www.ranger-forums.com/interior-exterior-electrical-123/how-programming-pats-keys-4829/",
+      "https://forum.forscan.org/viewtopic.php?t=839",
+      "https://www.therangerstation.com/tech/pats-programming-with-forscan/",
+      "https://www.snapon.com/Diagnostics/US/KB/Ford-PATS-Key-Programming.htm"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "F-150",
+    "yearStart": 2011,
+    "yearEnd": 2014,
+    "onboard": "Onboard 2-key transponder add: insert Key A, turn ON (3–6 sec), turn OFF and remove; within 10 sec insert Key B, turn ON (3–6 sec), turn OFF and remove; within 10 sec insert new unprogrammed key, turn ON 6+ sec — security light 3 sec then off = success. RKE remote only: cycle ignition OFF→RUN 8x in 10 sec ending in RUN; press fob button within 8 sec per fob.",
+    "addKey": "With 1 working key: connect FORScan or Autel/Snap-on via OBD (under driver dash). Navigate PATS > Key Code Program. Timed (~10 min) or coded (incode/outcode) access depending on vehicle. Program minimum 2 keys total.",
+    "allKeysLost": "IDS/FDRS, Autel IM608 Pro, or Snap-on Zeus via OBD. Erase all keys, obtain incode (patscode.com or built-in calculator) or wait timed access (~10 min). Program minimum 2 new 4D63 80-bit keys.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column, above pedals",
+    "securityWait": "~10 min PATS timed or incode/outcode coded access",
+    "specialTool": "FORScan + OBDLink EX, or Autel IM608 / Snap-on Zeus / IDS",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-ford-f150-key-fob/",
+      "https://forum.forscan.org/viewtopic.php?t=839",
+      "https://www.snapon.com/Diagnostics/US/KB/Ford-PATS-Key-Programming.htm"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "F-150",
+    "yearStart": 2015,
+    "yearEnd": 2017,
+    "onboard": "Intelligent Access (push-button start) backup-slot method requires 2 already-programmed working fobs. Place Fob 1 in center-console cup holder backup slot (under rubber mat), press START/STOP once (acc position, do not start), wait 5 sec, press START/STOP again (off), remove Fob 1 within 10 sec. Insert Fob 2, press START/STOP, wait 5 sec, press START/STOP, remove. Insert new unprogrammed fob, press START/STOP — hazard lights flash or cluster shows 'Key Programmed'. Max 4 fobs. Transponder/flip key trim: no onboard method; professional tool required.",
+    "addKey": "With 2 working fobs and new fob: use backup-slot onboard method above. With only 1 working fob: requires IDS/FDRS or Snap-on Zeus via OBD; timed access (~10 min) via NASTF-registered tool. Note: Autel IM508/IM608 lost Ford 2015+ support per Diagnostic Network report.",
+    "allKeysLost": "IDS/FDRS (NASTF credential required) or Snap-on Zeus / AutoProPAD G2 via OBD. Timed access (~10 min wait enforced by cloud authentication). After parameter reset, program minimum 2 new ID49 fobs. Autel IM608 no longer supports 2015+ Ford per industry reports.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column",
+    "securityWait": "~10 min timed access (NASTF/cloud enforced on 2015+ AKL)",
+    "specialTool": "IDS/FDRS (NASTF) or Snap-on Zeus / AutoProPAD G2",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-ford-f150-key-fob/",
+      "https://keyless2go.com/blogs/program-instructions/2015-ford-mustang-keyless-entry-remote-fob-smart-key-programming-instructions",
+      "https://diag.net/msg/m3j1rp7lhj01m9yfkjtxq91ear",
+      "https://fordmasterx.com/how-to-program-a-ford-key/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "F-150",
+    "yearStart": 2018,
+    "yearEnd": 2022,
+    "onboard": "With 2 working fobs: backup-slot method — place Fob 1 in center-console backup slot (under rubber mat), press START/STOP (acc, no start), wait 5 sec, press START/STOP (off), remove; within 10 sec insert Fob 2, press START/STOP, wait 5 sec, press START/STOP, remove; insert new fob, press START/STOP — cluster shows 'Key Programmed'. Max 4 fobs.",
+    "addKey": "With 2 working fobs: use backup-slot method above. With 1 fob only: IDS/FDRS or Snap-on Zeus via OBD, timed access (~10 min), NASTF credential. Autel IM508S can perform PCM Parameter Reset and key add on F-150 2018+ via IMMO > Ford > F-150 > Smart Key > Parameter Reset menu per Autel blog.",
+    "allKeysLost": "IDS/FDRS or Autel IM508S/IM608 Pro or Snap-on Zeus via OBD. PCM Parameter Reset first (IMMO > Ford > F-150 > Smart Key > Control Unit > Parameter Reset), then program minimum 2 new ID49 fobs. Timed access ~10 min. NASTF credential may be required for IDS/FDRS path.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column",
+    "securityWait": "~10 min timed access",
+    "specialTool": "IDS/FDRS, Autel IM508S/IM608 Pro, or Snap-on Zeus",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-ford-f150-key-fob/",
+      "http://blog.autelsale.com/2024/09/12/autel-im508s-reset-ford-f150-pcm-parameter-all-keys-lost/",
+      "https://fordmasterx.com/how-to-program-a-ford-key/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "F-150",
+    "yearStart": 2023,
+    "yearEnd": 2024,
+    "onboard": "With 2 working fobs: backup-slot method — place Fob 1 in center-console backup slot, press START/STOP (acc), wait 5 sec, press START/STOP (off), remove; within 10 sec insert Fob 2, repeat; insert new fob, press START/STOP — cluster confirms. Max 4 fobs.",
+    "addKey": "With 2 working fobs: backup-slot onboard method. With 1 fob or fewer: IDS/FDRS (NASTF required) or Snap-on Zeus / Autel IM608 Pro via OBD, timed access ~10 min.",
+    "allKeysLost": "IDS/FDRS (NASTF credential required) or Snap-on Zeus / Autel IM608 Pro via OBD. Mandatory ~10 min timed security wait enforced by cloud/FDRS. Parameter reset then program minimum 2 new ID49 fobs. Cannot be done DIY — NASTF-registered locksmith or Ford dealer required.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column",
+    "securityWait": "~10 min timed access (cloud-enforced)",
+    "specialTool": "IDS/FDRS (NASTF), Autel IM608 Pro, or Snap-on Zeus",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-ford-f150-key-fob/",
+      "https://fordmasterx.com/how-to-program-a-ford-key/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "F-250/F-350 Super Duty",
+    "yearStart": 2004,
+    "yearEnd": 2010,
+    "onboard": "Onboard 2-key transponder add: insert Key A, turn ON (3–6 sec), turn OFF and remove; within 10 sec insert Key B, turn ON, turn OFF and remove; within 10 sec insert new unprogrammed key, turn ON 6+ sec — security light 3 sec then off = success. RKE remote: cycle ignition OFF→RUN 8x in 10 sec ending in RUN; press fob button within 8 sec.",
+    "addKey": "With 1 working key: FORScan or Autel/Snap-on via OBD (under driver dash). PATS > Key Code Program; timed (~10 min) or coded (incode/outcode) access.",
+    "allKeysLost": "IDS/FDRS, Autel IM608, or Snap-on Zeus via OBD. Erase all keys, incode/outcode or ~10 min timed access. Program minimum 2 new 4D63 80-bit keys.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column",
+    "securityWait": "~10 min PATS timed or incode/outcode coded access",
+    "specialTool": "FORScan + OBDLink EX, or Autel IM608 / IDS",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-ford-f150-key-fob/",
+      "https://forum.forscan.org/viewtopic.php?t=839",
+      "https://www.ranger-forums.com/interior-exterior-electrical-123/how-programming-pats-keys-4829/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "F-250/F-350 Super Duty",
+    "yearStart": 2011,
+    "yearEnd": 2016,
+    "onboard": "Onboard 2-key transponder add: same sequence as 2004–2010 row. Insert Key A ON (3–6 sec) OFF remove; within 10 sec Key B ON OFF remove; within 10 sec new key ON 6+ sec — security light 3 sec off = success. RKE: OFF→RUN 8x ending RUN, press fob button within 8 sec.",
+    "addKey": "With 1 working key: FORScan or Autel/Snap-on via OBD. Navigate PATS > Key Code Program; timed or coded access.",
+    "allKeysLost": "IDS/FDRS, Autel IM608, or Snap-on Zeus via OBD. Erase all keys, obtain incode or wait ~10 min timed access. Program minimum 2 new 4D63 80-bit keys.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column",
+    "securityWait": "~10 min PATS timed or incode/outcode coded access",
+    "specialTool": "FORScan + OBDLink EX, or Autel IM608 / IDS",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-ford-f150-key-fob/",
+      "https://forum.forscan.org/viewtopic.php?t=839"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "F-250/F-350 Super Duty",
+    "yearStart": 2017,
+    "yearEnd": 2024,
+    "onboard": "With 2 working fobs (smart key trims): backup-slot method in center-console storage area. Place Fob 1 in backup slot, press START/STOP (acc), wait 5 sec, press START/STOP (off), remove; within 10 sec Fob 2 same sequence; insert new fob, press START/STOP — cluster confirms. Flip key trim: no onboard method.",
+    "addKey": "With 2 working fobs: backup-slot onboard. With 1 fob: IDS/FDRS or Snap-on Zeus / Autel IM608 Pro via OBD, timed access ~10 min.",
+    "allKeysLost": "IDS/FDRS (NASTF credential required) or Snap-on Zeus / Autel IM608 Pro via OBD. PCM Parameter Reset + ~10 min timed wait. Program minimum 2 new ID49 fobs. Same platform as F-150 2017+ — same AKL requirements.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column",
+    "securityWait": "~10 min timed access",
+    "specialTool": "IDS/FDRS (NASTF), Autel IM608 Pro, or Snap-on Zeus",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-ford-f150-key-fob/",
+      "https://fordmasterx.com/how-to-program-a-ford-key/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Ranger",
+    "yearStart": 2011,
+    "yearEnd": 2011,
+    "onboard": "Onboard 2-key transponder add: insert Key A, turn ON (3–6 sec), turn OFF and remove; within 10 sec insert Key B ON OFF remove; within 10 sec insert new key ON 6+ sec — security light 3 sec off = success. RKE: OFF→RUN 8x ending RUN, press fob button within 8 sec.",
+    "addKey": "With 1 working key: FORScan or Autel/Snap-on via OBD under driver dash. PATS > Key Code Program; timed (~10 min) or coded (incode/outcode) access.",
+    "allKeysLost": "IDS/FDRS, FORScan with extended license, or Autel/Snap-on via OBD. Erase keys, incode/outcode or timed access (~10 min). Program minimum 2 new 4D63 80-bit keys. FORScan covers Ford Ranger through 2011 MY.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column",
+    "securityWait": "~10 min PATS timed or incode/outcode coded access",
+    "specialTool": "FORScan + OBDLink EX, or Autel IM608 / IDS",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://forum.forscan.org/viewtopic.php?t=839",
+      "https://www.ranger-forums.com/interior-exterior-electrical-123/how-programming-pats-keys-4829/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Ranger",
+    "yearStart": 2019,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "With 2 working fobs (smart key): backup-slot method — place Fob 1 in center-console backup slot, press START/STOP (acc, no start), wait 5 sec, press START/STOP (off), remove; within 10 sec Fob 2 same sequence; insert new fob, press START/STOP. Requires 2 existing programmed fobs. Flip key trim: professional tool required.",
+    "allKeysLost": "IDS/FDRS (NASTF required) or Snap-on Zeus / Autel IM608 Pro via OBD. Timed access ~10 min. PCM Parameter Reset then program minimum 2 new ID49 fobs. Per keyless2go.com listing, 2024 Ranger requires professional programmer.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column",
+    "securityWait": "~10 min timed access",
+    "specialTool": "IDS/FDRS (NASTF), Autel IM608 Pro, or Snap-on Zeus",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://keyless2go.com/blogs/program-instructions/2024-ford-ranger-keyless-entry-remote-fob-smart-key-programming-instructions"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Maverick",
+    "yearStart": 2022,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "With 2 working fobs (smart key trims): backup-slot method in center console. Place Fob 1 in slot, press START/STOP (acc), wait 5 sec, press START/STOP (off), remove; within 10 sec Fob 2 same sequence; insert new fob, press START/STOP — cluster confirms. Transponder trim (XL/XLT keyed ignition): professional tool required.",
+    "allKeysLost": "IDS/FDRS (NASTF required) or Snap-on Zeus / Autel IM608 Pro via OBD. Timed access ~10 min. PCM Parameter Reset then program minimum 2 new ID49 fobs.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column",
+    "securityWait": "~10 min timed access",
+    "specialTool": "IDS/FDRS (NASTF), Autel IM608 Pro, or Snap-on Zeus",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://fordmasterx.com/how-to-program-ford-f150-key-fob/"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Bronco",
+    "yearStart": 2021,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "With 2 working fobs: backup-slot method in center-console storage. Place Fob 1 in backup slot, press START/STOP (acc, no start), wait 5 sec, press START/STOP (off), remove; within 10 sec Fob 2 same sequence; insert new fob, press START/STOP — cluster confirms. Flip key trim: professional tool required.",
+    "allKeysLost": "IDS/FDRS (NASTF credential required) or Snap-on Zeus / Autel IM608 Pro via OBD. PCM Parameter Reset + timed wait ~10 min. Program minimum 2 new ID49 fobs. Bronco PEPS system requires professional tool; no DIY AKL path.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column",
+    "securityWait": "~10 min timed access",
+    "specialTool": "IDS/FDRS (NASTF), Autel IM608 Pro, or Snap-on Zeus",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://fordmasterx.com/how-to-program-ford-f150-key-fob/"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Bronco Sport",
+    "yearStart": 2021,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "With 2 working fobs: backup-slot method in center console. Place Fob 1 in slot, press START/STOP (acc), wait 5 sec, press START/STOP (off), remove; within 10 sec Fob 2 same sequence; insert new fob, press START/STOP. Flip key trim: professional tool required.",
+    "allKeysLost": "IDS/FDRS (NASTF credential required) or Snap-on Zeus / Autel IM608 Pro via OBD. PCM Parameter Reset + ~10 min timed wait. Program minimum 2 new ID49 fobs.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column",
+    "securityWait": "~10 min timed access",
+    "specialTool": "IDS/FDRS (NASTF), Autel IM608 Pro, or Snap-on Zeus",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://fordmasterx.com/how-to-program-ford-f150-key-fob/"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Escape",
+    "yearStart": 2005,
+    "yearEnd": 2012,
+    "onboard": "Onboard 2-key transponder add: insert Key A, turn ON (3–6 sec), turn OFF and remove; within 10 sec insert Key B ON OFF remove; within 10 sec insert new key ON 6+ sec — security light 3 sec off = success. RKE: OFF→RUN 8x ending RUN, press fob button within 8 sec.",
+    "addKey": "With 1 working key: FORScan or Autel/Snap-on via OBD (under driver dash above pedals). PATS > Key Code Program; timed (~10 min) or coded (incode/outcode) access.",
+    "allKeysLost": "IDS/FDRS, FORScan with extended license, or Autel/Snap-on via OBD. Erase keys, incode/outcode or timed (~10 min). Program minimum 2 new 4D63 80-bit keys.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash above pedals, driver side",
+    "securityWait": "~10 min PATS timed or incode/outcode coded access",
+    "specialTool": "FORScan + OBDLink EX, or Autel IM608 / IDS",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://forum.forscan.org/viewtopic.php?t=839"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Escape",
+    "yearStart": 2013,
+    "yearEnd": 2019,
+    "onboard": "Remote head key (OUCD6000022/4D63 trims) onboard: insert Key A ON (3–6 sec) OFF remove; within 10 sec Key B ON OFF remove; within 10 sec new key ON 6+ sec — security light 3 sec off = success. Smart key/transponder ID49 trims: no onboard method, professional tool required.",
+    "addKey": "Remote head key: can use FORScan or Autel/Snap-on via OBD if only 1 key. Smart key/ID49 trims: IDS/FDRS or Snap-on Zeus via OBD, timed access ~10 min.",
+    "allKeysLost": "Remote head key (4D63): IDS/FDRS or FORScan + incode/outcode or timed access. ID49 transponder trim: IDS/FDRS (NASTF) or Snap-on Zeus via OBD, ~10 min timed access. Program minimum 2 new keys.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash above pedals, driver side (OBD port may be behind small cover)",
+    "securityWait": "~10 min PATS timed or incode/outcode coded access",
+    "specialTool": "FORScan / IDS for 4D63; IDS/FDRS or Snap-on Zeus for ID49 trims",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://forum.forscan.org/viewtopic.php?t=839",
+      "https://www.keyfobprogram.com/2016-ford-fusion-key-programming/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Escape",
+    "yearStart": 2020,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "With 2 working fobs: backup-slot method in center console. Place Fob 1 in backup slot, press START/STOP (acc, no start), wait 5 sec, press START/STOP (off), remove; within 10 sec Fob 2 same; insert new fob, press START/STOP — cluster confirms.",
+    "allKeysLost": "IDS/FDRS (NASTF required) or Snap-on Zeus / Autel IM608 Pro via OBD. PCM Parameter Reset + ~10 min timed wait. Program minimum 2 new ID49 fobs.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, driver side",
+    "securityWait": "~10 min timed access",
+    "specialTool": "IDS/FDRS (NASTF), Autel IM608 Pro, or Snap-on Zeus",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://fordmasterx.com/how-to-program-ford-f150-key-fob/"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Explorer",
+    "yearStart": 2004,
+    "yearEnd": 2010,
+    "onboard": "Onboard 2-key transponder add: insert Key A ON (3–6 sec) OFF remove; within 10 sec Key B ON OFF remove; within 10 sec new key ON 6+ sec — security light 3 sec off = success. RKE: OFF→RUN 8x ending RUN, press fob button within 8 sec.",
+    "addKey": "With 1 working key: FORScan or Autel/Snap-on via OBD (under driver dash, near steering column). PATS > Key Code Program; timed (~10 min) or coded (incode/outcode) access.",
+    "allKeysLost": "IDS/FDRS, FORScan extended license, or Autel/Snap-on via OBD. Erase keys, incode/outcode or ~10 min timed. Program minimum 2 new 4D63 80-bit keys.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash near steering column",
+    "securityWait": "~10 min PATS timed or incode/outcode coded access",
+    "specialTool": "FORScan + OBDLink EX, or Autel IM608 / IDS",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://forum.forscan.org/viewtopic.php?t=839"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Explorer",
+    "yearStart": 2011,
+    "yearEnd": 2015,
+    "onboard": "Remote head key (CWTWB1U793/4D63) trims: onboard 2-key method — Key A ON (3–6 sec) OFF remove; within 10 sec Key B ON OFF remove; within 10 sec new key ON 6+ sec — security light 3 sec off = success. Smart key (M3N5WY8609/ID46 PEPS) trims: no onboard method; professional tool required.",
+    "addKey": "Remote head key: FORScan or Autel/Snap-on via OBD if 1 key only. Smart key (ID46): IDS/FDRS or Autel IM608 / Snap-on via OBD, timed or coded access.",
+    "allKeysLost": "Remote head key: FORScan + incode/outcode or ~10 min timed, or IDS. Smart key (ID46/M3N5WY8609): IDS/FDRS or Autel IM608 / Snap-on via OBD; program minimum 2 keys. ID46 fobs require professional tool — no onboard AKL path.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash near steering column",
+    "securityWait": "~10 min PATS timed or incode/outcode coded access",
+    "specialTool": "FORScan / IDS for 4D63; IDS/FDRS or Autel IM608 for ID46 smart key",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://forum.forscan.org/viewtopic.php?t=839"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Explorer",
+    "yearStart": 2016,
+    "yearEnd": 2017,
+    "onboard": null,
+    "addKey": "With 2 working fobs: backup-slot method in center console. Place Fob 1 in slot, press START/STOP (acc), wait 5 sec, press START/STOP (off), remove; within 10 sec Fob 2 same; insert new fob, press START/STOP. With 1 fob: IDS/FDRS or Snap-on via OBD, timed access ~10 min.",
+    "allKeysLost": "IDS/FDRS (NASTF credential required) or Snap-on Zeus via OBD. Timed access ~10 min. PCM Parameter Reset, then program minimum 2 new ID49 fobs.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash near steering column",
+    "securityWait": "~10 min timed access",
+    "specialTool": "IDS/FDRS (NASTF) or Snap-on Zeus / Autel IM608 Pro",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://diag.net/msg/m3j1rp7lhj01m9yfkjtxq91ear"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Explorer",
+    "yearStart": 2018,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "With 2 working fobs: backup-slot method in center-console storage. Place Fob 1 in slot, press START/STOP (acc, no start), wait 5 sec, press START/STOP (off), remove; within 10 sec Fob 2 same sequence; insert new fob, press START/STOP — cluster confirms.",
+    "allKeysLost": "IDS/FDRS (NASTF credential required) or Snap-on Zeus / Autel IM608 Pro via OBD. PCM Parameter Reset + ~10 min timed wait. Program minimum 2 new ID49 fobs.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash near steering column",
+    "securityWait": "~10 min timed access",
+    "specialTool": "IDS/FDRS (NASTF), Autel IM608 Pro, or Snap-on Zeus",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://fordmasterx.com/how-to-program-ford-f150-key-fob/"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Edge",
+    "yearStart": 2006,
+    "yearEnd": 2010,
+    "onboard": "Onboard 2-key transponder add: insert Key A ON (3–6 sec) OFF remove; within 10 sec Key B ON OFF remove; within 10 sec new key ON 6+ sec — security light 3 sec off = success. RKE remote: OFF→RUN 8x ending RUN; press fob button within 8 sec.",
+    "addKey": "With 1 working key: FORScan or Autel/Snap-on via OBD (under driver dash). PATS > Key Code Program; timed (~10 min) or coded (incode/outcode) access.",
+    "allKeysLost": "IDS/FDRS, FORScan extended license, or Autel/Snap-on via OBD. Erase keys, incode/outcode or ~10 min timed. Program minimum 2 new 4D63 80-bit keys.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column",
+    "securityWait": "~10 min PATS timed or incode/outcode coded access",
+    "specialTool": "FORScan + OBDLink EX, or Autel IM608 / IDS",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://forum.forscan.org/viewtopic.php?t=839"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Edge",
+    "yearStart": 2011,
+    "yearEnd": 2014,
+    "onboard": "Remote head key (CWTWB1U793/4D63) trims: onboard 2-key — Key A ON (3–6 sec) OFF remove; within 10 sec Key B ON OFF remove; within 10 sec new key ON 6+ sec — security light 3 sec off = success. Smart key (M3N5WY8609/ID46 PEPS) trims: no onboard method; professional tool required.",
+    "addKey": "Remote head key trims: FORScan or Autel/Snap-on via OBD with 1 key. Smart key (ID46): IDS/FDRS or Autel IM608 via OBD, timed or coded access.",
+    "allKeysLost": "Remote head key: FORScan + incode/outcode or timed access. Smart key (ID46): IDS/FDRS or Autel IM608 / Snap-on via OBD; program minimum 2 keys.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column",
+    "securityWait": "~10 min PATS timed or incode/outcode coded access",
+    "specialTool": "FORScan / IDS for 4D63; IDS/FDRS or Autel IM608 for ID46 smart key",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://forum.forscan.org/viewtopic.php?t=839"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Edge",
+    "yearStart": 2015,
+    "yearEnd": 2016,
+    "onboard": null,
+    "addKey": "With 2 working fobs: backup-slot method in center console. Place Fob 1 in slot, press START/STOP (acc, no start), wait 5 sec, press START/STOP (off), remove; within 10 sec Fob 2 same; insert new fob, press START/STOP — cluster confirms. With 1 fob: IDS/FDRS or Snap-on via OBD, timed ~10 min.",
+    "allKeysLost": "IDS/FDRS (NASTF credential required) or Snap-on Zeus / Autel IM608 Pro via OBD. Timed access ~10 min. PCM Parameter Reset, program minimum 2 new ID49 fobs.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column",
+    "securityWait": "~10 min timed access",
+    "specialTool": "IDS/FDRS (NASTF) or Snap-on Zeus / Autel IM608 Pro",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://diag.net/msg/m3j1rp7lhj01m9yfkjtxq91ear"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Edge",
+    "yearStart": 2017,
+    "yearEnd": 2022,
+    "onboard": null,
+    "addKey": "With 2 working fobs: backup-slot method — place Fob 1 in center-console backup slot, press START/STOP (acc), wait 5 sec, press START/STOP (off), remove; within 10 sec Fob 2 same; insert new fob, press START/STOP — cluster confirms.",
+    "allKeysLost": "IDS/FDRS (NASTF credential required) or Snap-on Zeus / Autel IM608 Pro via OBD. PCM Parameter Reset + ~10 min timed wait. Program minimum 2 new ID49 fobs.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column",
+    "securityWait": "~10 min timed access",
+    "specialTool": "IDS/FDRS (NASTF), Autel IM608 Pro, or Snap-on Zeus",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://fordmasterx.com/how-to-program-ford-f150-key-fob/"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Expedition",
+    "yearStart": 2006,
+    "yearEnd": 2010,
+    "onboard": "Onboard 2-key transponder add: insert Key A ON (3–6 sec) OFF remove; within 10 sec Key B ON OFF remove; within 10 sec new key ON 6+ sec — security light 3 sec off = success. RKE remote: OFF→RUN 8x ending RUN; press fob button within 8 sec.",
+    "addKey": "With 1 working key: FORScan or Autel/Snap-on via OBD (under driver dash). PATS > Key Code Program; timed (~10 min) or coded (incode/outcode) access.",
+    "allKeysLost": "IDS/FDRS, FORScan extended license, or Autel/Snap-on via OBD. Erase keys, incode/outcode or ~10 min timed. Program minimum 2 new 4D63 80-bit keys.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column",
+    "securityWait": "~10 min PATS timed or incode/outcode coded access",
+    "specialTool": "FORScan + OBDLink EX, or Autel IM608 / IDS",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://forum.forscan.org/viewtopic.php?t=839"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Expedition",
+    "yearStart": 2011,
+    "yearEnd": 2017,
+    "onboard": "Remote head key (CWTWB1U793/4D63) trims: onboard 2-key — Key A ON (3–6 sec) OFF remove; within 10 sec Key B ON OFF remove; within 10 sec new key ON 6+ sec — security light 3 sec off = success. Smart key (M3N5WY8609/ID46) PEPS trims: no onboard method; professional tool required.",
+    "addKey": "Remote head key: FORScan or Autel/Snap-on via OBD with 1 working key. Smart key (ID46): IDS/FDRS or Autel IM608 via OBD, timed or coded access.",
+    "allKeysLost": "Remote head key: FORScan + incode/outcode or timed access. Smart key (ID46): IDS/FDRS or Autel IM608 / Snap-on via OBD; minimum 2 keys programmed.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column",
+    "securityWait": "~10 min PATS timed or incode/outcode coded access",
+    "specialTool": "FORScan / IDS for 4D63; IDS/FDRS or Autel IM608 for ID46 smart key",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://forum.forscan.org/viewtopic.php?t=839"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Expedition",
+    "yearStart": 2018,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "With 2 working fobs: backup-slot method in center console. Place Fob 1 in backup slot, press START/STOP (acc, no start), wait 5 sec, press START/STOP (off), remove; within 10 sec Fob 2 same; insert new fob, press START/STOP — cluster confirms.",
+    "allKeysLost": "IDS/FDRS (NASTF credential required) or Snap-on Zeus / Autel IM608 Pro via OBD. PCM Parameter Reset + ~10 min timed wait. Program minimum 2 new ID49 fobs.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column",
+    "securityWait": "~10 min timed access",
+    "specialTool": "IDS/FDRS (NASTF), Autel IM608 Pro, or Snap-on Zeus",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://fordmasterx.com/how-to-program-ford-f150-key-fob/"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "EcoSport",
+    "yearStart": 2018,
+    "yearEnd": 2022,
+    "onboard": null,
+    "addKey": "With 2 working fobs (smart key): backup-slot method per Ford standard procedure — place Fob 1 in center-console backup slot, press START/STOP (acc), wait 5 sec, press START/STOP (off), remove; within 10 sec Fob 2 same; insert new fob, press START/STOP. Flip key trim: professional tool required.",
+    "allKeysLost": "IDS/FDRS or Snap-on Zeus / Autel IM608 Pro via OBD. PCM Parameter Reset + timed access ~10 min. Program minimum 2 new ID49 fobs.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, driver side",
+    "securityWait": "~10 min timed access",
+    "specialTool": "IDS/FDRS, Autel IM608 Pro, or Snap-on Zeus",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://fordmasterx.com/how-to-program-ford-f150-key-fob/"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Focus",
+    "yearStart": 2011,
+    "yearEnd": 2014,
+    "onboard": "Onboard 2-key add (4D63 remote head key trims): insert Key A ON (3–6 sec) OFF remove; within 10 sec Key B ON OFF remove; within 10 sec new key ON 6+ sec — security light 3 sec off = success. RKE: OFF→RUN 8x ending RUN; press fob button within 8 sec.",
+    "addKey": "With 1 working key: FORScan or Autel/Snap-on via OBD (under driver dash). PATS > Key Code Program; timed (~10 min) or coded (incode/outcode) access.",
+    "allKeysLost": "IDS/FDRS, FORScan extended license, or Autel/Snap-on via OBD. Erase keys, incode/outcode or ~10 min timed. Program minimum 2 new 4D63 80-bit remote head keys.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column",
+    "securityWait": "~10 min PATS timed or incode/outcode coded access",
+    "specialTool": "FORScan + OBDLink EX, or Autel IM608 / IDS",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://forum.forscan.org/viewtopic.php?t=839"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Focus",
+    "yearStart": 2015,
+    "yearEnd": 2018,
+    "onboard": "Remote head key (OUCD6000022/4D63) trims: onboard 2-key — Key A ON (3–6 sec) OFF remove; within 10 sec Key B ON OFF remove; within 10 sec new key ON 6+ sec — security light 3 sec off = success. Smart key (M3N5WY8609/ID46) Titanium trims: no onboard method; professional tool required.",
+    "addKey": "Remote head key: FORScan or Autel/Snap-on via OBD with 1 key. Smart key (ID46): IDS/FDRS or Autel IM608 / Snap-on via OBD, timed or coded access.",
+    "allKeysLost": "Remote head key: FORScan + incode/outcode or timed access. Smart key (ID46): IDS/FDRS or Autel IM608 / Snap-on via OBD; minimum 2 keys programmed.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column",
+    "securityWait": "~10 min PATS timed or incode/outcode coded access",
+    "specialTool": "FORScan / IDS for 4D63; IDS/FDRS or Autel IM608 for ID46 smart key",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://forum.forscan.org/viewtopic.php?t=839"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Fusion",
+    "yearStart": 2006,
+    "yearEnd": 2010,
+    "onboard": "Onboard 2-key transponder add: insert Key A ON (3–6 sec) OFF remove; within 10 sec Key B ON OFF remove; within 10 sec new key ON 6+ sec — security light 3 sec off = success. RKE: OFF→RUN 8x ending RUN; press fob button within 8 sec.",
+    "addKey": "With 1 working key: FORScan or Autel/Snap-on via OBD (under driver dash). PATS > Key Code Program; timed (~10 min) or coded (incode/outcode) access.",
+    "allKeysLost": "IDS/FDRS, FORScan extended license, or Autel/Snap-on via OBD. Erase keys, incode/outcode or ~10 min timed. Program minimum 2 new 4D63 80-bit keys.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column",
+    "securityWait": "~10 min PATS timed or incode/outcode coded access",
+    "specialTool": "FORScan + OBDLink EX, or Autel IM608 / IDS",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://forum.forscan.org/viewtopic.php?t=839"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Fusion",
+    "yearStart": 2011,
+    "yearEnd": 2012,
+    "onboard": "Onboard 2-key transponder add: insert Key A ON (3–6 sec) OFF remove; within 10 sec Key B ON OFF remove; within 10 sec new key ON 6+ sec — security light 3 sec off = success. RKE: OFF→RUN 8x ending RUN; press fob button within 8 sec.",
+    "addKey": "With 1 working key: FORScan or Autel/Snap-on via OBD. PATS > Key Code Program; timed (~10 min) or coded (incode/outcode) access.",
+    "allKeysLost": "IDS/FDRS, FORScan extended license, or Autel/Snap-on via OBD. Erase keys, incode/outcode or ~10 min timed. Program minimum 2 new 4D63 80-bit keys.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column",
+    "securityWait": "~10 min PATS timed or incode/outcode coded access",
+    "specialTool": "FORScan + OBDLink EX, or Autel IM608 / IDS",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://forum.forscan.org/viewtopic.php?t=839"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Fusion",
+    "yearStart": 2013,
+    "yearEnd": 2016,
+    "onboard": "Remote head key (OUCD6000022/4D63 SE/SE Luxury trim) with 2 working keys: Key A ON (3–6 sec) OFF remove; within 10 sec Key B ON OFF remove; within 10 sec new key ON 6+ sec — security light 3 sec off = success. Smart key (M3N-A2C31243300/ID49 Titanium/Energi): backup-slot method with 2 working fobs — Fob 1 in center-console slot, press START/STOP (acc), wait 5 sec, press START/STOP (off), remove; within 10 sec Fob 2 same; insert new fob, press START/STOP.",
+    "addKey": "Remote head key with 1 key: FORScan or Autel/Snap-on via OBD, timed or coded access. Smart key (ID49) with 1 fob: IDS/FDRS or Snap-on Zeus via OBD, timed ~10 min.",
+    "allKeysLost": "Remote head key: FORScan + incode/outcode or timed access via OBD. Smart key (ID49): IDS/FDRS (NASTF recommended) or Snap-on Zeus via OBD, ~10 min timed, PCM Parameter Reset. Program minimum 2 keys. Autel IM508/IM608 may not support 2015+ ID49 AKL per industry reports.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column",
+    "securityWait": "~10 min timed (ID49 path) or incode/outcode coded (4D63 path)",
+    "specialTool": "FORScan / IDS for 4D63 trim; IDS/FDRS or Snap-on Zeus for ID49 smart key",
+    "sources": [
+      "https://www.keyfobprogram.com/2016-ford-fusion-key-programming/",
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://diag.net/msg/m3j1rp7lhj01m9yfkjtxq91ear"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Fusion",
+    "yearStart": 2017,
+    "yearEnd": 2020,
+    "onboard": null,
+    "addKey": "With 2 working fobs: backup-slot method in center-console armrest storage slot. Place Fob 1 in slot, press START/STOP (acc, no start), wait 5 sec, press START/STOP (off), remove; within 10 sec Fob 2 same sequence; insert new fob, press START/STOP — cluster confirms.",
+    "allKeysLost": "IDS/FDRS (NASTF credential recommended) or Snap-on Zeus / Autel IM608 Pro via OBD. PCM Parameter Reset + ~10 min timed wait. Program minimum 2 new ID49 fobs.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column",
+    "securityWait": "~10 min timed access",
+    "specialTool": "IDS/FDRS (NASTF), Snap-on Zeus, or Autel IM608 Pro",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://fordmasterx.com/how-to-program-ford-f150-key-fob/"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Mustang",
+    "yearStart": 2005,
+    "yearEnd": 2010,
+    "onboard": "Onboard 2-key transponder add: insert Key A ON (3–6 sec) OFF remove; within 10 sec Key B ON OFF remove; within 10 sec new key ON 6+ sec — security light 3 sec off = success. RKE remote: OFF→RUN 8x ending RUN; press fob button within 8 sec.",
+    "addKey": "With 1 working key: FORScan or Autel/Snap-on via OBD. PATS > Key Code Program; timed (~10 min) or coded (incode/outcode) access.",
+    "allKeysLost": "IDS/FDRS, FORScan extended license, or Autel/Snap-on via OBD. Erase keys, incode/outcode or ~10 min timed. Program minimum 2 new 4D63 80-bit keys.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column",
+    "securityWait": "~10 min PATS timed or incode/outcode coded access",
+    "specialTool": "FORScan + OBDLink EX, or Autel IM608 / IDS",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://forum.forscan.org/viewtopic.php?t=839"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Mustang",
+    "yearStart": 2011,
+    "yearEnd": 2014,
+    "onboard": "Onboard 2-key transponder add: insert Key A ON (3–6 sec) OFF remove; within 10 sec Key B ON OFF remove; within 10 sec new key ON 6+ sec — security light 3 sec off = success. RKE: OFF→RUN 8x ending RUN; press fob button within 8 sec.",
+    "addKey": "With 1 working key: FORScan or Autel/Snap-on via OBD. PATS > Key Code Program; timed (~10 min) or coded (incode/outcode) access.",
+    "allKeysLost": "IDS/FDRS, FORScan extended license, or Autel/Snap-on via OBD. Erase keys, incode/outcode or ~10 min timed. Program minimum 2 new 4D63 80-bit keys.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column",
+    "securityWait": "~10 min PATS timed or incode/outcode coded access",
+    "specialTool": "FORScan + OBDLink EX, or Autel IM608 / IDS",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://forum.forscan.org/viewtopic.php?t=839"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Mustang",
+    "yearStart": 2015,
+    "yearEnd": 2017,
+    "onboard": "Smart key (Titanium/push-button): backup-slot method requires 2 working fobs — place Fob 1 in center-console cup-holder backup slot (key ring at top, buttons toward rear), press START/STOP (acc, no start), wait 5 sec, press START/STOP (off), remove; within 10 sec Fob 2 same; insert new fob, press START/STOP; must complete within 30 sec. Transponder keyed-ignition trim: professional tool required.",
+    "addKey": "Smart key with 1 fob only: IDS/FDRS or Snap-on Zeus via OBD, timed access ~10 min. Transponder trim with 1 key: IDS/FDRS or Snap-on / Autel via OBD.",
+    "allKeysLost": "IDS/FDRS (NASTF recommended) or Snap-on Zeus via OBD. PCM Parameter Reset + ~10 min timed wait. Program minimum 2 new ID49 fobs/transponders. Autel IM508/IM608 may not support 2015+ AKL.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column",
+    "securityWait": "~10 min timed access",
+    "specialTool": "IDS/FDRS (NASTF) or Snap-on Zeus / Autel IM608 Pro",
+    "sources": [
+      "https://keyless2go.com/blogs/program-instructions/2015-ford-mustang-keyless-entry-remote-fob-smart-key-programming-instructions",
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://diag.net/msg/m3j1rp7lhj01m9yfkjtxq91ear"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Mustang",
+    "yearStart": 2018,
+    "yearEnd": 2021,
+    "onboard": "With 2 working fobs: backup-slot method — place Fob 1 in center-console cup-holder backup slot (key ring top, buttons toward rear), press START/STOP (acc, no start), wait 5 sec, press START/STOP (off), remove; within 10 sec Fob 2 same; insert new fob, press START/STOP. Complete within 30 sec. Max 4 fobs.",
+    "addKey": "With 2 working fobs: backup-slot onboard method. With 1 fob: IDS/FDRS or Snap-on Zeus via OBD, timed access ~10 min.",
+    "allKeysLost": "IDS/FDRS (NASTF credential recommended) or Snap-on Zeus / Autel IM608 Pro via OBD. PCM Parameter Reset + ~10 min timed wait. Program minimum 2 new ID49 fobs.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column",
+    "securityWait": "~10 min timed access",
+    "specialTool": "IDS/FDRS (NASTF), Snap-on Zeus, or Autel IM608 Pro",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://fordmasterx.com/how-to-program-ford-f150-key-fob/"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Mustang",
+    "yearStart": 2022,
+    "yearEnd": 2024,
+    "onboard": "With 2 working fobs: backup-slot method in cup-holder slot — Fob 1 in slot (key ring top, buttons rear), press START/STOP (acc), wait 5 sec, press START/STOP (off), remove; within 10 sec Fob 2 same; insert new fob, press START/STOP.",
+    "addKey": "With 2 working fobs: backup-slot onboard. With 1 fob: IDS/FDRS (NASTF) or Snap-on Zeus via OBD, timed ~10 min.",
+    "allKeysLost": "IDS/FDRS (NASTF credential required) or Snap-on Zeus / Autel IM608 Pro via OBD. PCM Parameter Reset + ~10 min timed wait. Program minimum 2 new ID49 fobs (S650 uses FCC M3N-A3C054339).",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column",
+    "securityWait": "~10 min timed access",
+    "specialTool": "IDS/FDRS (NASTF), Snap-on Zeus, or Autel IM608 Pro",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://fordmasterx.com/how-to-program-ford-f150-key-fob/"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Transit",
+    "yearStart": 2015,
+    "yearEnd": 2019,
+    "onboard": "Some configurations onboard-capable (remote head key, 4D63/DST80 trims): insert Key A ON (3–6 sec) OFF remove; within 10 sec Key B ON OFF remove; within 10 sec new key ON 6+ sec — security light 3 sec off = success. Verify vehicle has PATS ring around ignition cylinder before attempting. Non-PATS Transit (some commercial spec) has no transponder requirement.",
+    "addKey": "With 1 working key: IDS/FDRS or FORScan via OBD (under driver dash). PATS > Key Code Program; timed or coded access. WSM references Section 419-01B for PATS Transits.",
+    "allKeysLost": "IDS/FDRS or Autel IM608 / Snap-on Zeus via OBD. Erase keys, incode/outcode or ~10 min timed access. Program minimum 2 new 4D63 80-bit remote head keys. Confirm vehicle has PATS via OASIS 'IMMOBILIZER' search.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, driver side (location typical for Ford vans)",
+    "securityWait": "~10 min PATS timed or incode/outcode coded access",
+    "specialTool": "IDS/FDRS recommended; FORScan + OBDLink EX as alternative",
+    "sources": [
+      "https://ford.oemdtc.com/1110/adding-and-programming-pats-and-non-pats-keys-2015-2018-ford-transit/",
+      "https://fordmasterx.com/how-to-program-a-ford-key/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Transit",
+    "yearStart": 2019,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "Professional tool required. Connect IDS/FDRS or Autel IM608 via OBD (under driver dash). Navigate PATS/IMMO > Add Key. Timed access ~10 min. Flip key (N5F-A08TAA) and transponder (H128-PT) both require tool programming — no onboard DIY path for ID49.",
+    "allKeysLost": "IDS/FDRS or Autel IM608 Pro / Snap-on Zeus via OBD. PCM Parameter Reset + ~10 min timed wait. Program minimum 2 new ID49 fobs/keys. Commercial Transit may have dealer-only restriction; confirm NASTF credential.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, driver side",
+    "securityWait": "~10 min timed access",
+    "specialTool": "IDS/FDRS, Autel IM608 Pro, or Snap-on Zeus",
+    "sources": [
+      "https://ford.oemdtc.com/1110/adding-and-programming-pats-and-non-pats-keys-2015-2018-ford-transit/",
+      "https://fordmasterx.com/how-to-program-a-ford-key/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Transit Connect",
+    "yearStart": 2010,
+    "yearEnd": 2013,
+    "onboard": null,
+    "addKey": "Requires IDS/FDRS or FORScan with extended license via OBD (under driver dash). Tibbe blade (FO21T) must be cut on Tibbe-capable cutter. Navigate PATS > Key Code Program; timed (~10 min) or coded (incode/outcode) access. Some Transit Connects of this era are non-PATS (no transponder ring around ignition); verify first.",
+    "allKeysLost": "IDS/FDRS or FORScan + OBDLink extended license via OBD. Erase keys, incode/outcode or ~10 min timed access. Program minimum 2 new 4D63 80-bit keys. Tibbe blade requires specialized cutting machine.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, driver side",
+    "securityWait": "~10 min PATS timed or incode/outcode coded access",
+    "specialTool": "IDS/FDRS or FORScan + OBDLink EX; Tibbe key cutter required",
+    "sources": [
+      "https://diag.net/msg/m1bp0txn9xof2miavfs7wuqj7r",
+      "https://forum.forscan.org/viewtopic.php?t=839",
+      "https://fordtransitconnectforum.com/topic/496-determining-the-ford-tibbe-key-code/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Transit Connect",
+    "yearStart": 2014,
+    "yearEnd": 2019,
+    "onboard": "Some trims onboard-capable with 2 working keys (4D63 remote head key, OUCD6000022): Key A ON (3–6 sec) OFF remove; within 10 sec Key B ON OFF remove; within 10 sec new key ON 6+ sec — security light 3 sec off = success.",
+    "addKey": "With 1 working key: IDS/FDRS or FORScan via OBD. PATS > Key Code Program; timed (~10 min) or coded (incode/outcode) access.",
+    "allKeysLost": "IDS/FDRS or FORScan + extended license via OBD. Erase keys, incode/outcode or ~10 min timed. Program minimum 2 new 4D63 80-bit remote head keys (HU101 blade).",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, driver side",
+    "securityWait": "~10 min PATS timed or incode/outcode coded access",
+    "specialTool": "FORScan + OBDLink EX, or IDS/FDRS",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://forum.forscan.org/viewtopic.php?t=839"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Transit Connect",
+    "yearStart": 2019,
+    "yearEnd": 2023,
+    "onboard": null,
+    "addKey": "Professional tool required. IDS/FDRS or Autel IM608 via OBD. PATS/IMMO > Add Key; timed access ~10 min. Flip key (N5F-A08TAA, ID49) requires tool programming — no onboard DIY path.",
+    "allKeysLost": "IDS/FDRS or Autel IM608 Pro / Snap-on Zeus via OBD. PCM Parameter Reset + ~10 min timed wait. Program minimum 2 new ID49 flip keys.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, driver side",
+    "securityWait": "~10 min timed access",
+    "specialTool": "IDS/FDRS, Autel IM608 Pro, or Snap-on Zeus",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://fordmasterx.com/how-to-program-ford-f150-key-fob/"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Lincoln",
+    "model": "Navigator",
+    "yearStart": 2003,
+    "yearEnd": 2009,
+    "onboard": "Onboard 2-key transponder add: insert Key A ON (3–6 sec) OFF remove; within 10 sec Key B ON OFF remove; within 10 sec new key ON 6+ sec — security light 3 sec off = success. RKE remote: OFF→RUN 8x ending RUN; press fob button within 8 sec.",
+    "addKey": "With 1 working key: FORScan or Autel/Snap-on via OBD (under driver dash, left of column). PATS > Key Code Program; timed (~10 min) or coded (incode/outcode) access.",
+    "allKeysLost": "IDS/FDRS, FORScan extended license, or Autel/Snap-on via OBD. Erase keys, incode/outcode or ~10 min timed. Program minimum 2 new 4D63 80-bit keys.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column",
+    "securityWait": "~10 min PATS timed or incode/outcode coded access",
+    "specialTool": "FORScan + OBDLink EX, or Autel IM608 / IDS",
+    "sources": [
+      "https://www.keyfobprogram.com/2003-lincoln-navigator-key-programming/",
+      "https://forum.forscan.org/viewtopic.php?t=839",
+      "https://fordmasterx.com/how-to-program-a-ford-key/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Lincoln",
+    "model": "Navigator",
+    "yearStart": 2010,
+    "yearEnd": 2012,
+    "onboard": "Onboard 2-key transponder add: insert Key A ON (3–6 sec) OFF remove; within 10 sec Key B ON OFF remove; within 10 sec new key ON 6+ sec — security light 3 sec off = success.",
+    "addKey": "With 1 working key: FORScan or Autel/Snap-on via OBD. PATS > Key Code Program; timed (~10 min) or coded (incode/outcode) access.",
+    "allKeysLost": "IDS/FDRS, FORScan extended license, or Autel/Snap-on via OBD. Erase keys, incode/outcode or ~10 min timed. Program minimum 2 new 4D63 80-bit keys.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column",
+    "securityWait": "~10 min PATS timed or incode/outcode coded access",
+    "specialTool": "FORScan + OBDLink EX, or Autel IM608 / IDS",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://forum.forscan.org/viewtopic.php?t=839"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Lincoln",
+    "model": "Navigator",
+    "yearStart": 2013,
+    "yearEnd": 2017,
+    "onboard": null,
+    "addKey": "With 2 working fobs (ID46/M3N5WY8609): backup-slot method — place Fob 1 in center-console backup slot, press START/STOP (acc, no start), wait 5 sec, press START/STOP (off), remove; within 10 sec Fob 2 same; insert new fob, press START/STOP. With 1 fob: IDS/FDRS or Autel IM608 / Snap-on via OBD, timed or coded access.",
+    "allKeysLost": "IDS/FDRS or Autel IM608 / Snap-on Zeus via OBD. PCM Parameter Reset + timed access ~10 min (or coded incode/outcode). Program minimum 2 new ID46 fobs (M3N5WY8609).",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column",
+    "securityWait": "~10 min timed or incode/outcode coded access",
+    "specialTool": "IDS/FDRS or Autel IM608 / Snap-on Zeus",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://forum.forscan.org/viewtopic.php?t=839"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Lincoln",
+    "model": "Navigator",
+    "yearStart": 2018,
+    "yearEnd": 2021,
+    "onboard": null,
+    "addKey": "With 2 working fobs: backup-slot method in center-console storage. Place Fob 1 in slot, press START/STOP (acc, no start), wait 5 sec, press START/STOP (off), remove; within 10 sec Fob 2 same; insert new fob, press START/STOP — cluster confirms. With 1 fob: IDS/FDRS or Snap-on Zeus via OBD, timed ~10 min.",
+    "allKeysLost": "IDS/FDRS (NASTF credential recommended) or Snap-on Zeus / Autel IM608 Pro via OBD. PCM Parameter Reset + ~10 min timed wait. Program minimum 2 new ID49 fobs (M3N-A2C940780, PN 164-R8226).",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column",
+    "securityWait": "~10 min timed access",
+    "specialTool": "IDS/FDRS (NASTF), Snap-on Zeus, or Autel IM608 Pro",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://fordmasterx.com/how-to-program-ford-f150-key-fob/"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Lincoln",
+    "model": "Navigator",
+    "yearStart": 2022,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "With 2 working fobs: backup-slot method in center console. Place Fob 1 in slot, press START/STOP (acc), wait 5 sec, press START/STOP (off), remove; within 10 sec Fob 2 same; insert new fob, press START/STOP — cluster confirms.",
+    "allKeysLost": "IDS/FDRS (NASTF credential required) or Snap-on Zeus / Autel IM608 Pro via OBD. PCM Parameter Reset + ~10 min timed wait. Program minimum 2 new ID49 fobs (M3N-A2C931426, PN 164-R8278).",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column",
+    "securityWait": "~10 min timed access (cloud-enforced)",
+    "specialTool": "IDS/FDRS (NASTF), Snap-on Zeus, or Autel IM608 Pro",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://fordmasterx.com/how-to-program-ford-f150-key-fob/"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Lincoln",
+    "model": "MKZ",
+    "yearStart": 2007,
+    "yearEnd": 2009,
+    "onboard": "Onboard 2-key transponder add: insert Key A ON (3–6 sec) OFF remove; within 10 sec Key B ON OFF remove; within 10 sec new key ON 6+ sec — security light 3 sec off = success. RKE remote: OFF→RUN 8x ending RUN; press fob button within 8 sec.",
+    "addKey": "With 1 working key: FORScan or Autel/Snap-on via OBD (under driver dash). PATS > Key Code Program; timed (~10 min) or coded (incode/outcode) access.",
+    "allKeysLost": "IDS/FDRS, FORScan extended license, or Autel/Snap-on via OBD. Erase keys, incode/outcode or ~10 min timed. Program minimum 2 new 4D63 80-bit keys.",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column",
+    "securityWait": "~10 min PATS timed or incode/outcode coded access",
+    "specialTool": "FORScan + OBDLink EX, or Autel IM608 / IDS",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://forum.forscan.org/viewtopic.php?t=839"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Lincoln",
+    "model": "MKZ",
+    "yearStart": 2010,
+    "yearEnd": 2012,
+    "onboard": null,
+    "addKey": "With 2 working fobs (ID46/M3N5WY8609/DST80): backup-slot method — place Fob 1 in center-console backup slot, press START/STOP (acc), wait 5 sec, press START/STOP (off), remove; within 10 sec Fob 2 same; insert new fob, press START/STOP. With 1 fob: IDS/FDRS or Autel/Snap-on via OBD, timed or coded access.",
+    "allKeysLost": "IDS/FDRS or Autel IM608 / Snap-on Zeus via OBD. PCM Parameter Reset + timed access ~10 min (or coded incode/outcode). Program minimum 2 new ID46 fobs (M3N5WY8609).",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column",
+    "securityWait": "~10 min timed or incode/outcode coded access",
+    "specialTool": "IDS/FDRS or Autel IM608 / Snap-on Zeus",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://forum.forscan.org/viewtopic.php?t=839"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Lincoln",
+    "model": "MKZ",
+    "yearStart": 2013,
+    "yearEnd": 2016,
+    "onboard": null,
+    "addKey": "With 2 working fobs (ID49/M3N-A2C31243300): backup-slot method — place Fob 1 in center-console backup slot, press START/STOP (acc, no start), wait 5 sec, press START/STOP (off), remove; within 10 sec Fob 2 same; insert new fob, press START/STOP. With 1 fob: IDS/FDRS or Snap-on Zeus via OBD, timed ~10 min.",
+    "allKeysLost": "IDS/FDRS (NASTF recommended) or Snap-on Zeus / Autel IM608 Pro via OBD. PCM Parameter Reset + ~10 min timed wait. Program minimum 2 new ID49 fobs (M3N-A2C31243300, PN 164-R7991).",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column",
+    "securityWait": "~10 min timed access",
+    "specialTool": "IDS/FDRS (NASTF) or Snap-on Zeus / Autel IM608 Pro",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://diag.net/msg/m3j1rp7lhj01m9yfkjtxq91ear"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Lincoln",
+    "model": "MKZ",
+    "yearStart": 2017,
+    "yearEnd": 2020,
+    "onboard": null,
+    "addKey": "With 2 working fobs (ID49/M3N-A2C94078000): backup-slot method in center-console armrest storage slot. Place Fob 1 in slot, press START/STOP (acc), wait 5 sec, press START/STOP (off), remove; within 10 sec Fob 2 same; insert new fob, press START/STOP — cluster confirms.",
+    "allKeysLost": "IDS/FDRS (NASTF credential recommended) or Snap-on Zeus / Autel IM608 Pro via OBD. PCM Parameter Reset + ~10 min timed wait. Program minimum 2 new ID49 fobs (M3N-A2C94078000, PN 164-R8154/164-R8155).",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column",
+    "securityWait": "~10 min timed access",
+    "specialTool": "IDS/FDRS (NASTF), Snap-on Zeus, or Autel IM608 Pro",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://fordmasterx.com/how-to-program-ford-f150-key-fob/"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Lincoln",
+    "model": "Aviator",
+    "yearStart": 2020,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "With 2 working fobs (ID49/M3N-A2C931426): backup-slot method in center-console storage. Place Fob 1 in slot, press START/STOP (acc, no start), wait 5 sec, press START/STOP (off), remove; within 10 sec Fob 2 same; insert new fob, press START/STOP — cluster confirms.",
+    "allKeysLost": "IDS/FDRS (NASTF credential required) or Snap-on Zeus / Autel IM608 Pro via OBD. PCM Parameter Reset + ~10 min timed wait. Program minimum 2 new ID49 fobs (M3N-A2C931426, PN 164-R8279).",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column",
+    "securityWait": "~10 min timed access (cloud-enforced)",
+    "specialTool": "IDS/FDRS (NASTF), Snap-on Zeus, or Autel IM608 Pro",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://fordmasterx.com/how-to-program-ford-f150-key-fob/"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Lincoln",
+    "model": "Corsair",
+    "yearStart": 2020,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "With 2 working fobs (ID49/M3N-A2C931426): backup-slot method in center-console storage slot. Place Fob 1 in slot, press START/STOP (acc, no start), wait 5 sec, press START/STOP (off), remove; within 10 sec Fob 2 same; insert new fob, press START/STOP — cluster confirms.",
+    "allKeysLost": "IDS/FDRS (NASTF credential required) or Snap-on Zeus / Autel IM608 Pro via OBD. PCM Parameter Reset + ~10 min timed wait. Program minimum 2 new ID49 fobs (M3N-A2C931426, PN 164-R8278).",
+    "pinRequired": false,
+    "pinSource": "OBD read",
+    "obdPort": "Under driver dash, left of steering column",
+    "securityWait": "~10 min timed access (cloud-enforced)",
+    "specialTool": "IDS/FDRS (NASTF), Snap-on Zeus, or Autel IM608 Pro",
+    "sources": [
+      "https://fordmasterx.com/how-to-program-a-ford-key/",
+      "https://fordmasterx.com/how-to-program-ford-f150-key-fob/"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  }
+]

@@ -21,6 +21,7 @@ import { API_BASE } from './backendUrl';
 import type { Job, TechStatus } from './types';
 import { Settings } from './components/Settings';
 import { ClientsList } from './components/ClientsList';
+import { AutoKey } from './components/AutoKey';
 import { Login } from './components/Login';
 import { OnboardingWizard } from './components/OnboardingWizard';
 import { Bell, AlertCircle, CheckCircle2, X, Menu } from 'lucide-react';
@@ -198,6 +199,7 @@ const App: React.FC = () => {
               case 'clients': return <ClientsList onJobSelect={(job) => setSelectedJobId(job.id)} focusClientId={clientFocusId} onFocusConsumed={() => setClientFocusId(null)} />;
               case 'analytics': return <Dashboard />;
               case 'accounting': return <Accounting onJobSelect={(job) => setSelectedJobId(job.id)} />;
+              case 'autokey': return <AutoKey />;
               case 'inventory': return <Inventory />;
               case 'brain': return <AIChat />;
               case 'settings': return <Settings />;

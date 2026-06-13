@@ -28,6 +28,9 @@ import { useSettingsStore } from '../settingsStore';
 import { buildClients, findClientByPhone, toE164US, normalizePhone, ClientRecord } from '../clientUtils';
 import { formatDate } from '../dateUtils';
 import { TechPicker } from './TechPicker';
+import { AutoKeyPanel } from './AutoKeyPanel';
+import { decodeVin } from '../vehicleKeyLookup';
+import { VinScanner } from './VinScanner';
 
 interface JobWizardProps {
   onComplete: (job: Job) => void;
@@ -74,6 +77,9 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
     phone: initialPhone || '', email: '', address: '', zip: '', unit: '', gateCode: '', accessNotes: '',
   });
   const [lockDetails, setLockDetails] = useState<Partial<LockDetails>>({ type: 'Automotive', brand: '', modelOrYear: '' });
+  const [vinInput, setVinInput] = useState('');
+  const [vinBusy, setVinBusy] = useState(false);
+  const [showVinScan, setShowVinScan] = useState(false);
   const [complaint, setComplaint] = useState('');
   const [photos, setPhotos] = useState<string[]>([]);
   const [showCamera, setShowCamera] = useState(false);
@@ -224,12 +230,31 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
   };
   const prevStep = () => { setError(''); setStep(s => s - 1); };
 
+  // VIN → auto-fill make + model/year (free NHTSA decode) for automotive jobs.
+  const decodeVinToFields = async (override?: string) => {
+    const raw = (override ?? vinInput).trim();
+    if (raw.length < 17) return;
+    if (override) setVinInput(override);
+    setVinBusy(true);
+    const d = await decodeVin(raw);
+    setVinBusy(false);
+    if (!d) { setError('Could not decode that VIN — enter make & year manually.'); return; }
+    setError('');
+    setLockDetails(prev => ({
+      ...prev,
+      brand: d.make ? d.make.toUpperCase() : prev.brand,
+      modelOrYear: [d.year, d.model].filter(Boolean).join(' ').toUpperCase() || prev.modelOrYear,
+      vinOrKeyCode: d.vin,
+    }));
+  };
+
   const fieldCls = 'w-full bg-transparent border-none text-sm font-semibold text-white outline-none';
   const cardCls = 'bg-slate-900 p-4 rounded-2xl border border-white/10';
   const labelCls = 'text-xs font-bold text-slate-400 uppercase block mb-1.5';
 
   return (
     <div className="fixed inset-0 bg-slate-950 z-[200] flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-8">
+      {showVinScan && <VinScanner onResult={(v) => { setShowVinScan(false); decodeVinToFields(v); }} onClose={() => setShowVinScan(false)} />}
       {showCamera && (
         <div className="fixed inset-0 bg-black z-[300] flex flex-col items-center justify-center p-6">
           <div className="relative w-full max-w-lg aspect-[3/4] bg-slate-900 rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
@@ -442,6 +467,20 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
                   <input className={`${fieldCls} uppercase`} value={lockDetails.modelOrYear} onChange={e => setLockDetails({ ...lockDetails, modelOrYear: e.target.value })} placeholder="2018 CAMRY / DEADBOLT" />
                 </div>
               </div>
+
+              {lockDetails.type === 'Automotive' && (
+                <div className="space-y-4">
+                  <div className={`${cardCls} flex items-end gap-3`}>
+                    <div className="flex-1 min-w-0">
+                      <label className={labelCls}>VIN <span className="text-slate-600 normal-case font-medium">· auto-fills make & year</span></label>
+                      <input className={`${fieldCls} uppercase`} value={vinInput} onChange={e => setVinInput(e.target.value)} maxLength={17} placeholder="17-CHARACTER VIN" />
+                    </div>
+                    <button onClick={() => setShowVinScan(true)} className="px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-slate-200 shrink-0" title="Scan VIN barcode"><Camera size={16} /></button>
+                    <button onClick={() => decodeVinToFields()} disabled={vinBusy || vinInput.trim().length < 17} className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white text-xs font-bold uppercase tracking-wider shrink-0">{vinBusy ? '…' : 'Decode'}</button>
+                  </div>
+                  <AutoKeyPanel make={lockDetails.brand} modelOrYear={lockDetails.modelOrYear} />
+                </div>
+              )}
 
               <div className={cardCls}>
                 <div className="flex items-center justify-between mb-2">

@@ -1,0 +1,1805 @@
+[
+  {
+    "make": "Nissan",
+    "model": "Altima",
+    "yearStart": 2007,
+    "yearEnd": 2012,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7952 / Philips Crypto 2 / HiTag 2 / ID46",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U751",
+        "partNumber": "H0561-3AA0B",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "NATS (Nissan Anti-Theft System)",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required (Consult III+, Autel, Lonsdor, OBDSTAR). No OBP.",
+    "programmerHint": ["Autel IM608", "Lonsdor K518", "OBDSTAR X300 DP"],
+    "notes": "Remote head key with integrated fob. Blade NSN14/DA34 10-cut system. NATS PIN via BCM scan.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2003-2019-nissan-4-button-remote-head-key-pn-h0561-3aa0b-cwtwb1u751-oem",
+      "https://www.locksmithkeyless.com/products/2003-2017-nissan-remote-key-4b-fcc-cwtwb1u751",
+      "https://www.transpondery.com/transponder_catalog/nissan_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Altima",
+    "yearStart": 2007,
+    "yearEnd": 2012,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7952A / Philips Crypto 2 / HiTag 2 / ID46",
+        "chipClonable": "no",
+        "fccId": "KR55WK48903",
+        "partNumber": "285E3-JA05A",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "NATS (Nissan Anti-Theft System)",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP for smart key.",
+    "programmerHint": ["Autel IM608", "Lonsdor K518", "OBDSTAR X300 DP"],
+    "notes": "Smart proximity key on higher trims. Emergency blade DA34 included. Same FCC as Maxima 2009-2014. Confirmed 315 MHz / ID46 across multiple sources.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2007-2015-nissan-inifiniti-4-button-smart-key-kr55wk48903-9622-rk-nis-903",
+      "https://www.locksmithkeyless.com/products/2007-2014-nissan-proximity-key-4b-fcc-kr55wk48903",
+      "https://www.transpondery.com/transponder_catalog/nissan_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Altima",
+    "yearStart": 2013,
+    "yearEnd": 2018,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": true,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7952X / Philips Crypto 3 / HiTag 3 / ID47",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": null,
+        "frequency": null
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7952XTT / HiTag 3 / ID47 (2013-2015); PCF7953M / HiTag AES / ID4A (2016-2018)",
+        "chipClonable": "token",
+        "fccId": "KR5S180144014",
+        "partNumber": "285E3-9HP4B",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. 20-digit NATS PIN decode required. No OBP.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518", "Consult III+"],
+    "notes": "Coupe dropped after 2013; sedan only 2013-2018. Smart key uses FCC KR5S180144014 throughout, but chip generation changed mid-production: 2013-2015 units use HITAG3/PCF7952XTT/ID47 (confirmed abkeys.com, mk3.com); 2016-2018 units use HiTag AES/PCF7953M/ID4A (confirmed thelegendweb.com, mk3.com). chipClonable=token applies to both. Emergency blade DA34.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.abkeys.com/abk-2687-nissan-altima-smart-key-4buttons-433mhz-hitag3-pcf7952xtt-kr5s180144014-2013up-285e3-3tp0a-285e3-9hp4b",
+      "https://www.mk3.com/nissan-altima-2016-2018-smart-remote-key-4-1-buttons-43392mhz-pcf7953m-hitag-aes-4a-kr5s180144014",
+      "https://www.uhs-hardware.com/products/2016-2018-nissan-maxima-altima-5-button-prox-smart-key-pn-285e3-4ra0b-kr5s180144014-oem",
+      "https://www.transpondery.com/transponder_catalog/nissan_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Altima",
+    "yearStart": 2019,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "NCF29A1M / HiTag AES / ID4A",
+        "chipClonable": "token",
+        "fccId": "KR5TXN4",
+        "partNumber": "285E3-6CA6A",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. 20-digit NATS PIN decode. No OBP.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518"],
+    "notes": "2022-2024 uses alternate PN 285E3-6LS5A, same FCC KR5TXN4. Frequency confirmed 433.92 MHz per fccid.io filing (KR5TXN4 user manual). Emergency blade EKB-NIS-NI06 / DA34. Shared FCC with Sentra 2020+ and Versa 2020-2022.",
+    "confidence": "verified",
+    "sources": [
+      "https://fccid.io/KR5TXN4",
+      "https://www.uhs-hardware.com/products/2019-2023-nissan-altima-sentra-5-button-smart-key-pn-285e3-6ca6a-kr5txn4-aftermarket",
+      "https://www.locksmithkeyless.com/products/2022-2025-nissan-altima-smart-key-5b-w-remote-start-trunk-fob-fcc-kr5txn4-285e3-6ls5a",
+      "https://abkeys.com/products/nissan-altima-smart-key-5buttons-433mhz-hitag-aes-ncf29a1m-chip-fcc-kr5txn4-2019up-285e3-6ca6a"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Sentra",
+    "yearStart": 2007,
+    "yearEnd": 2012,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7952 / Philips Crypto 2 / HiTag 2 / ID46",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U751",
+        "partNumber": "H0561-3AA0B",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "NATS (Nissan Anti-Theft System)",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Lonsdor K518", "OBDSTAR X300 DP"],
+    "notes": "Remote head key. Blade NSN14/DA34. Shared FCC with wide range of Nissan models.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2003-2019-nissan-4-button-remote-head-key-pn-h0561-3aa0b-cwtwb1u751-oem",
+      "https://www.locksmithkeyless.com/products/2003-2019-nissan-infiniti-transponder-key-id46-chip-ni04t-1",
+      "https://www.transpondery.com/transponder_catalog/nissan_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Sentra",
+    "yearStart": 2013,
+    "yearEnd": 2019,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7952A / Philips Crypto 2 / HiTag 2 / ID46",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U815",
+        "partNumber": "285E3-3AA0A",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Lonsdor K518", "OBDSTAR X300 DP"],
+    "notes": "Smart proximity key (push-to-start equipped trims). Emergency blade DA34 included. CWTWB1U815 used on units built before 5/2013; CWTWB1U840 (PN 285E3-3SG0D) used on units built after 5/2013 — both 315 MHz ID46. Shared FCC with Versa 2013-2018 and Leaf 2016.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2013-nissan-sentra-4-button-smart-key-pn-285e3-3aa0a-cwtwb1u815-oem",
+      "https://www.locksmithkeyless.com/products/2017-nissan-sentra-smart-key-4-buttons-fob-fcc-cwtwb1u815-aftermarket",
+      "https://abkeys.com/products/nissan-sentra-smart-key-4buttons-315mhz-cwtwb1u815-285e3-3aa0a-4722"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Sentra",
+    "yearStart": 2020,
+    "yearEnd": 2022,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "NCF29A1M / HiTag AES / ID4A",
+        "chipClonable": "token",
+        "fccId": "KR5TXN4",
+        "partNumber": "285E3-6CA6A",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. 20-digit NATS PIN decode. No OBP.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518"],
+    "notes": "All-new B18 Sentra. Shared FCC/PN with Altima 2019+ and Versa 2020+. Frequency confirmed 433.92 MHz.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2019-2023-nissan-altima-sentra-5-button-smart-key-pn-285e3-6ca6a-kr5txn4-aftermarket",
+      "https://abkeys.com/products/nissan-sentra-smart-key-5buttons-433mhz-hitag-aes-ncf29a1m-kr5txn4-2020up-285e3-6la6a",
+      "https://www.locksmithkeyless.com/products/2019-nissan-altima-smart-key-5b-fcc-kr5txn4"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Sentra",
+    "yearStart": 2022,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "HiTag AES / ID4A",
+        "chipClonable": "token",
+        "fccId": "KR5TXPZ1",
+        "partNumber": "285E3-6LY1A",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518"],
+    "notes": "New FCC KR5TXPZ1 adopted ~2022MY. Shared with Versa 2022-2024. 4-button with trunk.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2023-2025-nissan-sentra-versa-smart-key-4b-w-trunk-fob-fcc-kr5txpz1-285e3-6ly1e",
+      "https://abkeys.com/products/nissan-versa-smart-key-4buttons-285e3-6ly1a-kr5txpz1-3837",
+      "https://royalkeysupply.com/products/nissan-new-oem-2022-2024-sentra-versa-smart-key-4b-trunk-fccid-kr5txpz1-pn-285e3-6ly1a"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Rogue",
+    "yearStart": 2008,
+    "yearEnd": 2013,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7952 / Philips Crypto 2 / HiTag 2 / ID46",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U751",
+        "partNumber": "H0561-3AA0B",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "NATS (Nissan Anti-Theft System)",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Lonsdor K518", "OBDSTAR X300 DP"],
+    "notes": "S35 generation. Remote head key with ID46. Blade NSN14/DA34.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2003-2019-nissan-4-button-remote-head-key-pn-h0561-3aa0b-cwtwb1u751-oem",
+      "https://www.locksmithkeyless.com/products/2003-2019-nissan-infiniti-transponder-key-id46-chip-ni04t-1",
+      "https://www.transpondery.com/transponder_catalog/nissan_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Rogue",
+    "yearStart": 2014,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7953M / HiTag AES / ID4A",
+        "chipClonable": "token",
+        "fccId": "KR5S180144106",
+        "partNumber": "285E3-4CB1A",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. 20-digit NATS PIN decode. No OBP.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518"],
+    "notes": "T32 generation. HiTag AES chip from launch. Multiple PN variants: 4CB1A (3-btn), 4CB6C (4-btn), 6FL2B (4-btn 2017-2018), 6FL7B (5-btn). Emergency blade DA34.",
+    "confidence": "verified",
+    "sources": [
+      "https://abkeys.com/products/nissan-rogue-smart-key-3b-433mhz-kr5s180144106-285e3-4cb1a-285e3-4cb1c-4665",
+      "https://abkeys.com/products/nissan-rogue-smart-key-4buttons-kr5s180144106-285e3-6fl2b-285e3-6fl2a-4065",
+      "https://www.locksmithkeyless.com/products/2017-2018-nissan-rogue-smart-key-5b-fcc-kr5s180144106"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Rogue",
+    "yearStart": 2021,
+    "yearEnd": 2022,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "HiTag AES / ID4A",
+        "chipClonable": "token",
+        "fccId": "KR5TXN3",
+        "partNumber": "285E3-6TA5B",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518"],
+    "notes": "T33 generation Rogue. FCC KR5TXN3 confirmed by multiple sources for 2021-2022MY. Primary PN 285E3-6TA5B (confirmed UHS Hardware, keyless-city, northcoastkeyless, locksmithkeyless). Previous entry 285E3-6XR5A belongs to Pathfinder 2021-2024, not Rogue. 4-button with remote start. Shared with Kicks 2018-2022. Frequency confirmed 433 MHz.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2021-2021-nissan-rogue-4-button-smart-key-pn-285e3-6ta5b-kr5txn3-oem",
+      "https://keyless-city.com/products/2021-2022-nissan-rogue-4-buttons-smart-key-auto-start-433mhz-285e3-6ta5b-oem-refurbished",
+      "https://northcoastkeyless.com/product/nissan-rogue-4-button-smart-key-fob-remote-fcc-kr5txn3-p-n-285e3-6ta5b/"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Rogue",
+    "yearStart": 2022,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "HiTag AES / ID4A",
+        "chipClonable": "token",
+        "fccId": "KR5TXPZ3",
+        "partNumber": "285E3-6RA5A",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518"],
+    "notes": "New FCC KR5TXPZ3 adopted ~2022-2023MY. Some 2022MY still used KR5TXN3. Shared with Pathfinder 2022+ and Kicks 2022+.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2023-2024-nissan-rogue-4-button-smart-key-pn-285e3-6ra5a-kr5txpz3-aftermarket",
+      "https://abkeys.com/products/nissan-kicks-rogue-pathfinder-smart-key-285e3-6ra5a-433mhz-kr5txpz3-5140",
+      "https://www.locksmithkeyless.com/products/2023-nissan-rogue-smart-key-4-buttons-fob-fcc-kr5txpz3-aftermarket"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Rogue Sport",
+    "yearStart": 2017,
+    "yearEnd": 2018,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7953M / HiTag AES / ID4A",
+        "chipClonable": "token",
+        "fccId": "KR5S180144106",
+        "partNumber": "285E3-6FL7B",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518"],
+    "notes": "Rogue Sport shares platform and key system with Rogue T32. FCC same as Rogue 2014-2020.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2017-2018-nissan-rogue-smart-key-5b-fcc-kr5s180144106",
+      "https://www.locksmithkeyless.com/products/2017-2018-nissan-rogue-smart-prox-key-w-remote-start-4b-fcc-kr5s180144106-433-mhz",
+      "https://abkeys.com/products/nissan-rogue-smart-key-4buttons-kr5s180144106-285e3-6fl2b-285e3-6fl2a-4065"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Rogue Sport",
+    "yearStart": 2019,
+    "yearEnd": 2022,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "NCF29A1M / HiTag AES / ID4A",
+        "chipClonable": "token",
+        "fccId": "KR5TXN1",
+        "partNumber": "285E3-5RA0A",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518"],
+    "notes": "FCC changed to KR5TXN1 for 2019 refresh. Shared with Kicks 2018-2022 and QX50 2019+. Chip confirmed NCF29A1M / HiTag AES per cnautokeys.com and Amazon X AUTOHAUX listing.",
+    "confidence": "verified",
+    "sources": [
+      "https://northcoastkeyless.com/product/nissan-rogue-sport-smart-key-fob-remote-fcc-kr5txn1-p-n-285e3-5ra0a/",
+      "https://www.locksmithkeyless.com/products/2018-2019-nissan-kicks-smart-prox-key-3b-fcc-kr5txn1",
+      "https://www.cnautokeys.com/products/cn027076-2018-2019-nissan-kicks-smart-proximity-key-3-button-fcc-kr5txn1-pn-285e3-5ra0a-s180144502-ncf29a1m-433mhz"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Versa",
+    "yearStart": 2007,
+    "yearEnd": 2012,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7952 / Philips Crypto 2 / HiTag 2 / ID46",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U751",
+        "partNumber": "H0561-3AA0B",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "NATS (Nissan Anti-Theft System)",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Lonsdor K518"],
+    "notes": "C11 Versa. Sedan uses CWTWB1U751; hatchback used CWTWB1U733. ID46 transponder.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2003-2019-nissan-4-button-remote-head-key-pn-h0561-3aa0b-cwtwb1u751-oem",
+      "https://abkeys.com/products/nissan-cube-juke-rogue-versa-remote-key-315mhz-cwtwb1u751-h0561-c993a-3966",
+      "https://www.transpondery.com/transponder_catalog/nissan_transponder_catalog.html"
+    ],
+    "dataSource": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Versa",
+    "yearStart": 2013,
+    "yearEnd": 2019,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7952A / Philips Crypto 2 / HiTag 2 / ID46",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U815",
+        "partNumber": "285E3-3SG0D",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Lonsdor K518"],
+    "notes": "N17 Versa. Smart key on SR/SV trims. Shared FCC with Sentra 2013-2019. Some units use CWTWB1U840 (PN 285E3-3SG0D), same 315 MHz ID46.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2017-nissan-versa-smart-key-4-buttons-fob-fcc-cwtwb1u815-aftermarket",
+      "https://abkeys.com/products/nissan-sentra-versa-smart-key-285e3-3sg0d-315mhz-cwtwbu1u840-1548-off5",
+      "https://www.transpondery.com/transponder_catalog/nissan_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Versa",
+    "yearStart": 2020,
+    "yearEnd": 2022,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "NCF29A1M / HiTag AES / ID4A",
+        "chipClonable": "token",
+        "fccId": "KR5TXN4",
+        "partNumber": "285E3-6CA6A",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518"],
+    "notes": "N18 Versa redesign. Shared FCC with Altima 2019+ and Sentra 2020+.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2019-2023-nissan-altima-sentra-5-button-smart-key-pn-285e3-6ca6a-kr5txn4-aftermarket",
+      "https://remotesandkeys.com/products/2020-nissan-versa-smart-key-remote-4002",
+      "https://www.transpondery.com/transponder_catalog/nissan_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Versa",
+    "yearStart": 2022,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "HiTag AES / ID4A",
+        "chipClonable": "token",
+        "fccId": "KR5TXPZ1",
+        "partNumber": "285E3-6LY1A",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518"],
+    "notes": "New FCC KR5TXPZ1 ~2022MY. Shared with Sentra 2022+. 4-button with trunk.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2024-nissan-versa-smart-key-4b-w-trunk-fob-fcc-kr5txpz1-285e3-6ly1e-aftermarket",
+      "https://abkeys.com/products/nissan-versa-smart-key-4buttons-285e3-6ly1a-kr5txpz1-3837",
+      "https://royalkeysupply.com/products/nissan-new-oem-2022-2024-sentra-versa-smart-key-4b-trunk-fccid-kr5txpz1-pn-285e3-6ly1a"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Maxima",
+    "yearStart": 2009,
+    "yearEnd": 2014,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7952A / Philips Crypto 2 / HiTag 2 / ID46",
+        "chipClonable": "no",
+        "fccId": "KR55WK48903",
+        "partNumber": "285E3-JA02A",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Lonsdor K518", "OBDSTAR X300 DP"],
+    "notes": "A35 generation. Smart proximity key standard. Emergency blade DA34. FCC also KR55WK49622 on some units.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2007-2014-nissan-proximity-key-4b-fcc-kr55wk48903",
+      "https://www.uhs-hardware.com/products/2007-2015-nissan-inifiniti-4-button-smart-key-kr55wk48903-9622-rk-nis-903",
+      "https://www.transpondery.com/transponder_catalog/nissan_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Maxima",
+    "yearStart": 2016,
+    "yearEnd": 2023,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7953M / HiTag AES / ID4A",
+        "chipClonable": "token",
+        "fccId": "KR5S180144014",
+        "partNumber": "285E3-4RA0B",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. 20-digit NATS PIN decode. No OBP.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518"],
+    "notes": "A36 generation. Shares FCC with Altima 2016-2018. Chip PCF7953M/AES confirmed for 2016+ (thelegendweb.com, mk3.com). Emergency blade DA34 (EKB-NIS-NI06). IC 7812D-S180204 on 2016+.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2016-2018-nissan-maxima-altima-5-button-prox-smart-key-pn-285e3-4ra0b-kr5s180144014-oem",
+      "https://www.mk3.com/nissan-altima-2016-2018-smart-remote-key-4-1-buttons-43392mhz-pcf7953m-hitag-aes-4a-kr5s180144014",
+      "https://www.transpondery.com/transponder_catalog/nissan_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Murano",
+    "yearStart": 2009,
+    "yearEnd": 2014,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7952 / Philips Crypto 2 / HiTag 2 / ID46",
+        "chipClonable": "no",
+        "fccId": "KR55WK49622",
+        "partNumber": "285E3-1AA7B",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Lonsdor K518"],
+    "notes": "Z51 generation. Smart key standard. FCC KR55WK49622 also shared with 370Z and QX60 2013-2015. Primary PN 285E3-1AA7B (latest supersedes 285E3-1AA5B and 285E3-1AA0B per northcoastkeyless).",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2009-2014-nissan-murano-prox-smart-key-4b-fcc-kr55wk49622",
+      "https://remotesandkeys.com/products/2014-nissan-murano-smart-key-remote-4132",
+      "https://www.transpondery.com/transponder_catalog/nissan_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Murano",
+    "yearStart": 2015,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7953M / HiTag AES / ID4A",
+        "chipClonable": "token",
+        "fccId": "KR5S180144014",
+        "partNumber": "285E3-5AA3D",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. 20-digit NATS PIN decode. No OBP.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518"],
+    "notes": "Z52 generation. FCC shared with Pathfinder and Titan same era. Emergency blade DA34.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2015-2020-nissan-murano-pathfinder-titan-4-button-smart-key-pn-285e3-5aa3d-kr5s180144014-aftermarket",
+      "https://transponderisland.com/shop/tik-nis-58-2015-2020-nissan-murano-sv-pathfinder-titan-smart-prox-key-4b-remote-start-kr5s180144014-4313-285e3-5aa3d-4167",
+      "https://www.transpondery.com/transponder_catalog/nissan_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Murano",
+    "yearStart": 2019,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "NCF29A1M / HiTag AES / ID4A",
+        "chipClonable": "token",
+        "fccId": "KR5TXN7",
+        "partNumber": "285E3-9UF5B",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518"],
+    "notes": "2019 refresh. FCC KR5TXN7 shared with Pathfinder 2019+, Frontier 2022+, Titan 2019+. 5-button hatch variant PN 285E3-9UF7A/7B. Frequency confirmed 433-434 MHz range.",
+    "confidence": "verified",
+    "sources": [
+      "https://abkeys.com/products/nissan-murano-pathfinder-smart-key-4b-kr5txn7-285e3-9uf5b-285e3-9uf5a-4974",
+      "https://abkeys.com/products/nissan-murano-pathfinder-smart-key-5b-kr5txn7-285e3-9uf7b-285e3-9uf7a-4976",
+      "https://keyless-city.com/products/2019-2021-nissan-murano-pathfinder-smart-key-433mhz-285e3-9uf5b-oem-refurbished"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Pathfinder",
+    "yearStart": 2005,
+    "yearEnd": 2012,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7936 / Philips Crypto 2 / ID46",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U751",
+        "partNumber": "H0561-3AA0B",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "NATS (Nissan Anti-Theft System)",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Lonsdor K518"],
+    "notes": "R51 Pathfinder. Remote head key with ID46 chip. NSN14/DA34 blade. PCF7936 chip confirmed abkeys.com and mk3.com.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2002-2019-nissan-infiniti-ni04t-transponder-key-chip-46-k-ni04",
+      "https://abkeys.com/products/nissan-transponder-key-pcf7936-chip-nsn14-2003up-711",
+      "https://www.transpondery.com/transponder_catalog/nissan_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Pathfinder",
+    "yearStart": 2013,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7953M / HiTag AES / ID4A",
+        "chipClonable": "token",
+        "fccId": "KR5S180144014",
+        "partNumber": "285E3-5AA3D",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. 20-digit NATS PIN decode. No OBP.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518"],
+    "notes": "R52 Pathfinder. FCC shared with Murano 2015-2020 and Titan 2016-2020. Emergency blade DA34. Note: 2013-2015 units carry PCF7952XTT/ID47 per autoecupart.net; 2016-2020 units confirmed PCF7953M/AES.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2015-2020-nissan-murano-pathfinder-titan-4-button-smart-key-pn-285e3-5aa3d-kr5s180144014-aftermarket",
+      "https://transponderisland.com/shop/tik-nis-58-2015-2020-nissan-murano-sv-pathfinder-titan-smart-prox-key-4b-remote-start-kr5s180144014-4313-285e3-5aa3d-4167",
+      "https://www.autoecupart.net/products/kr5s180144014-s180144005-smart-key-433mhz-id47-hitag-3-pcf7952f-chip-for-nissan-pathfinder-3-button"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Pathfinder",
+    "yearStart": 2022,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "HiTag AES / ID4A",
+        "chipClonable": "token",
+        "fccId": "KR5TXPZ3",
+        "partNumber": "285E3-7LA7A",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518"],
+    "notes": "R53 Pathfinder on new CMF platform. FCC KR5TXPZ3 shared with Rogue 2022+, Kicks 2022+. Continental S180146127.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2022-2023-nissan-pathfinder-rogue-smart-key-5-buttons-fob-fcc-kr5txpz3",
+      "https://abkeys.com/products/nissan-pathfinder-rogue-smart-key-285e3-7la7a-433mhz-kr5txpz3-5261",
+      "https://royalkeysupply.com/products/nissan-new-oem-2022-2023-pathfinder-kicks-rogue-smart-key-4b-remote-start-fccid-kr5txpz3-pn-285e3-6ra5a"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Frontier",
+    "yearStart": 2005,
+    "yearEnd": 2021,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7936 / Philips Crypto 2 / ID46",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": "7003526",
+        "frequency": null
+      },
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7936 / Philips Crypto 2 / ID46",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U751",
+        "partNumber": "H0561-C993A",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "NATS (Nissan Anti-Theft System)",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Lonsdor K518", "OBDSTAR X300 DP"],
+    "notes": "D40 generation. Uses NSN14 keyway (not NSN11 which is older pre-2002 trucks). NI04T transponder key with DA34 blade. JMA TP12DAT-15.P3.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2003-2019-nissan-infiniti-transponder-key-id46-chip-ni04t-1",
+      "https://www.uhs-hardware.com/products/2002-2019-nissan-infiniti-ni04t-transponder-key-chip-46-k-ni04",
+      "https://www.locksmithkeyless.com/products/2005-nissan-frontier-fob-key-3b-fcc-cwtwb1u751"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Frontier",
+    "yearStart": 2022,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "HiTag AES / ID4A",
+        "chipClonable": "token",
+        "fccId": "KR5TXN7",
+        "partNumber": "285E3-9BU1A",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518"],
+    "notes": "D41 all-new Frontier. FCC KR5TXN7 shared with Murano 2019+, Pathfinder 2019, Titan 2019+. 3-button and 4-button versions.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2022-nissan-frontier-smart-key-3b-fob-fcc-kr5txn7-285e3-9bu1a-aftermarket",
+      "https://www.locksmithkeyless.com/products/2022-nissan-frontier-smart-key-4b-w-remote-start-fob-fcc-kr5txn7-285e3-9bu5a-aftermarket",
+      "https://yourcarkeyguys.com/products/2019-2024-nissan-murano-pathfinder-titan-frontier-3b-smart-key-9uf1a-9uf1b-kr5txn7"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Titan",
+    "yearStart": 2004,
+    "yearEnd": 2015,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7936 / Philips Crypto 2 / ID46",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": "7003526",
+        "frequency": null
+      },
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7936 / Philips Crypto 2 / ID46",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U751",
+        "partNumber": "H0561-C993A",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "NATS (Nissan Anti-Theft System)",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Lonsdor K518"],
+    "notes": "A60 Titan. NSN14 keyway (DA34). NI04T transponder key. Remote head key 3-button CWTWB1U751.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2002-2019-nissan-infiniti-ni04t-transponder-key-chip-46-k-ni04",
+      "https://www.locksmithkeyless.com/products/remote-head-key-for-nissan-titan-2004-3b-fcc-cwtwb1u751",
+      "https://www.transpondery.com/transponder_catalog/nissan_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Titan",
+    "yearStart": 2016,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7953M / HiTag AES / ID4A",
+        "chipClonable": "token",
+        "fccId": "KR5S180144014",
+        "partNumber": "285E3-5AA3D",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518"],
+    "notes": "A61 Titan redesign. FCC shared with Murano 2015-2020 and Pathfinder 2013-2020. Emergency blade DA34.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2015-2020-nissan-murano-pathfinder-titan-4-button-smart-key-pn-285e3-5aa3d-kr5s180144014-aftermarket",
+      "https://www.locksmithkeyless.com/products/2017-nissan-titan-smart-key-3-buttons-fob-fcc-kr5s180144014-aftermarket",
+      "https://www.transpondery.com/transponder_catalog/nissan_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Titan",
+    "yearStart": 2021,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "HiTag AES / ID4A",
+        "chipClonable": "token",
+        "fccId": "KR5TXN7",
+        "partNumber": "285E3-9BU5A",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518"],
+    "notes": "FCC KR5TXN7 adopted for 2021+ Titan. Shared with Frontier 2022+, Murano 2019+.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2024-nissan-titan-smart-key-4b-w-remote-start-fob-fcc-kr5txn7-285e3-9bu5a-aftermarket",
+      "https://yourcarkeyguys.com/products/2019-2024-nissan-murano-pathfinder-titan-frontier-3b-smart-key-9uf1a-9uf1b-kr5txn7",
+      "https://www.locksmithkeyless.com/products/2022-nissan-frontier-smart-key-4b-w-remote-start-fob-fcc-kr5txn7-285e3-9bu5a-aftermarket"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Kicks",
+    "yearStart": 2018,
+    "yearEnd": 2022,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "NCF29A1M / HiTag AES / ID4A",
+        "chipClonable": "token",
+        "fccId": "KR5TXN1",
+        "partNumber": "285E3-5RA0A",
+        "frequency": "433"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "NCF29A1M / HiTag AES / ID4A",
+        "chipClonable": "token",
+        "fccId": "KR5TXN3",
+        "partNumber": "285E3-5RA6A",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518"],
+    "notes": "P15 Kicks. Two FCC variants: KR5TXN1 (3-btn base, 433 MHz) and KR5TXN3 (4-btn with remote start, 433-434 MHz). Both HiTag AES NCF29A1M. Emergency blade DA34.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2018-2019-nissan-kicks-smart-prox-key-3b-fcc-kr5txn1",
+      "https://www.locksmithkeyless.com/products/2018-2019-nissan-kicks-smart-prox-key-4b-fcc-kr5txn3",
+      "https://www.cnautokeys.com/products/cn027076-2018-2019-nissan-kicks-smart-proximity-key-3-button-fcc-kr5txn1-pn-285e3-5ra0a-s180144502-ncf29a1m-433mhz"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Kicks",
+    "yearStart": 2022,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "HiTag AES / ID4A",
+        "chipClonable": "token",
+        "fccId": "KR5TXPZ3",
+        "partNumber": "285E3-6RA5A",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518"],
+    "notes": "FCC KR5TXPZ3 adopted ~2022MY for Kicks refresh (4-btn with remote start). A 3-button variant uses KR5TXPZ1 (PN 285E3-5MR1B) — confirmed by oemcarkeymall.com and royalkeysupply.com. Both share same platform as Rogue 2022+ and Pathfinder 2022+.",
+    "confidence": "verified",
+    "sources": [
+      "https://abkeys.com/products/nissan-kicks-rogue-pathfinder-smart-key-285e3-6ra5a-433mhz-kr5txpz3-5140",
+      "https://www.locksmithkeyless.com/products/2023-nissan-kicks-smart-key-4-buttons-fob-fcc-kr5txpz3-aftermarket",
+      "https://royalkeysupply.com/products/nissan-aftermarket-2022-2023-kicks-smart-key-3b-fccid-kr5txpz1-pn-285e3-5mr1b"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Armada",
+    "yearStart": 2008,
+    "yearEnd": 2016,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7952 / Philips Crypto 2 / HiTag 2 / ID46",
+        "chipClonable": "no",
+        "fccId": "CWTWBU624",
+        "partNumber": null,
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "NATS (Nissan Anti-Theft System)",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Lonsdor K518"],
+    "notes": "TA60 Armada. Smart hatch key CWTWBU624 315MHz. Emergency blade DA34.",
+    "confidence": "single-source",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2008-2015-nissan-armada-prox-key-4b-fcc-cwtwbu624",
+      "https://www.transpondery.com/transponder_catalog/nissan_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Armada",
+    "yearStart": 2017,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7952 / Philips ID46",
+        "chipClonable": "no",
+        "fccId": "CWTWB1G744",
+        "partNumber": "285E3-1LB5A",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Lonsdor K518"],
+    "notes": "Y62 Armada (body-on-frame, shares platform with Infiniti QX80). Two parallel FCC IDs: CWTWB1G744 (5-btn, PN 285E3-1LB5A / 285E3-1LB5B, 2017-2024 higher trims) and CWTWB1U787 (4-btn, PN 285E3-1LP0C / 285E3-1LP0E / 285E3-6JU4A, 2017+). FCC CWTWB1G744 shared with Infiniti QX80 2013-2024. IC 1788D-FWB1G744. Chip confirmed ID46/PCF7952 (NOT HiTag AES) — rare Nissan exception at 433-434 MHz. Emergency blade DA34. For 2022-2024 the 4-btn variant specifically uses PN 285E3-6JU4A / CWTWB1U787.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2017-2018-nissan-armada-5-button-smart-key-cwtwb1g744-aftermarket",
+      "https://abkeys.com/products/nissan-armada-smart-key-4b-285e3-6ju4a-433mhz-cwtwb1u787-5141",
+      "https://northcoastkeyless.com/product/nissan-armada-5-button-smart-key-fob-remote-fcc-cwtwb1g744-p-n-285e3-1lb5a/"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Leaf",
+    "yearStart": 2011,
+    "yearEnd": 2012,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7952 / Philips Crypto 2 / ID46",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U808",
+        "partNumber": "285E3-1KM0D",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "NATS (Nissan Anti-Theft System)",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Lonsdor K518"],
+    "notes": "ZE0 Leaf Gen 1. FCC CWTWB1U808 confirmed by multiple sources (Amazon, northcoastkeyless.com, oemcarkeymall.com, abkeys.com). Previous entry CWTWB1U773 belongs to 2009 Nissan Cube. Smart key 3-button with emergency blade DA34.",
+    "confidence": "verified",
+    "sources": [
+      "https://northcoastkeyless.com/product/nissan-leaf-smart-key-fob-remote-fcc-cwtwb1u808-p-n-285e3-1km0d-285e3-1lk0d/",
+      "https://oemcarkeymall.com/products/2011-nissan-leaf-smart-remote-key-fob-3b-cwtwb1u808",
+      "https://abkeys.com/products/nissan-juke-leaf-cube-versa-smart-key-3b-315mhz-285e3-1km0d-cwtwb1u808-2188"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Leaf",
+    "yearStart": 2013,
+    "yearEnd": 2017,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7952A / Philips Crypto 2 / HiTag 2 / ID46",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U840",
+        "partNumber": "285E3-3NF4A",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Lonsdor K518"],
+    "notes": "AZE0 Leaf (refreshed gen 1). FCC CWTWB1U840. Smart key 4-button. Emergency blade DA34.",
+    "confidence": "verified",
+    "sources": [
+      "https://abkeys.com/products/nissan-leaf-smart-key-4buttons-315mhz-cwtwb1u840-2013up-285e3-3nf4a-1247",
+      "https://remotesandkeys.com/collections/nissan-leaf-key-fobs",
+      "https://www.transpondery.com/transponder_catalog/nissan_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Leaf",
+    "yearStart": 2018,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7953M / HiTag AES / ID4A",
+        "chipClonable": "token",
+        "fccId": "CWTWB1G0168",
+        "partNumber": "285E3-5SA1C",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518"],
+    "notes": "ZE1 Leaf gen 2. New FCC CWTWB1G0168, upgraded to HiTag AES chip. 433-434 MHz. Emergency blade DA34.",
+    "confidence": "verified",
+    "sources": [
+      "https://abkeys.com/products/nissan-leaf-smart-key-4b-285e3-5sa1c-433mhz-cwtwb1g0168-1255",
+      "https://northcoastkeyless.com/product/nissan-leaf-4-button-smart-key-fob-remote-fcc-cwtwb1g0168-p-n-285e3-5sa1a-285e3-5sa1b/",
+      "https://www.transpondery.com/transponder_catalog/nissan_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "370Z",
+    "yearStart": 2009,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7952A / Philips Crypto 2 / HiTag 2 / ID46",
+        "chipClonable": "no",
+        "fccId": "KR55WK49622",
+        "partNumber": "285E3-1ET5A",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Lonsdor K518", "Consult III+"],
+    "notes": "Z34 generation. Smart key only (push-button start). Emergency blade DA34 included. 2019-2020 uses revised PN 285E3-1ET5D. Some Euro units used 5WK50196 at 433 MHz but US confirmed 315 MHz KR55WK49622.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2009-2018-nissan-370z-prox-smart-key-3b-fcc-kr55wk49622",
+      "https://www.uhs-hardware.com/products/2019-2020-nissan-370z-3-button-smart-key-z-logo-pn-p285e3-1et5d-kr55wk49622-oem",
+      "https://abkeys.com/products/nissan-370z-smart-key-3b-315mhz-kr55wk49622-285e3-1et5c-285e3-1et5a-2219"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Infiniti",
+    "model": "Q50",
+    "yearStart": 2014,
+    "yearEnd": 2015,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "HiTag AES / ID4A",
+        "chipClonable": "token",
+        "fccId": "KR5S180144203",
+        "partNumber": "285E3-4HD0A",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518"],
+    "notes": "V37 Q50 launch. 315 MHz (not 433) in US market confirmed by abkeys.com, amazon.com (315 mhz, 4A chip). Chip is HiTag AES/ID4A despite 315 MHz — Infiniti-specific implementation. Emergency blade DA34. IC 7812D-S180203.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2014-2015-infiniti-q50-smart-key-4b-fcc-kr5s180144203",
+      "https://abkeys.com/products/infiniti-q50-smart-key-4b-315mhz-kr5s180144203-285e3-4hd0a-285e3-4hd0c-3304",
+      "https://www.amazon.com/Simple-Keyless-Replacement-Infiniti-KR5S180144203/dp/B0F5SNHL85"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Infiniti",
+    "model": "Q50",
+    "yearStart": 2016,
+    "yearEnd": 2019,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7953M / HiTag AES / ID4A",
+        "chipClonable": "token",
+        "fccId": "KR5S180144204",
+        "partNumber": "285E3-4HB0C",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518"],
+    "notes": "Frequency upgrade from 315 MHz to 433 MHz in 2016. IC 7812D-S180204. Emergency blade DA34.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2016-2020-infiniti-q50-q60-4-button-smart-key-pn-285e3-4hb0c-kr5s180144204-oem-refurb",
+      "https://abkeys.com/products/infiniti-q50-q60-smart-key-4buttons-433mhz-s180144204-285e3-4hb0c-3833",
+      "https://www.amazon.com/Keyless-KR5S180144204-Replacement-2016-2018-Insiniti/dp/B0C7KK3V9T"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Infiniti",
+    "model": "Q50",
+    "yearStart": 2020,
+    "yearEnd": 2023,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7921M / HiTag AES / ID4A",
+        "chipClonable": "token",
+        "fccId": "KR5TXN7",
+        "partNumber": "285E3-6HE1A",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518"],
+    "notes": "FCC changed to KR5TXN7 for 2020MY. Shared with Q60 2020+, QX60 2019-2021, QX50 2019-2020. Emergency blade EKB-INF-09 / DA34. Continental S180144713.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2020-2023-infiniti-q50-q60-4-button-smart-key-pn-285e3-6he1a-kr5txn7-rsk-inf-2004",
+      "https://abkeys.com/products/infiniti-q50-q60-smart-key-4b-285e3-6he1a-433mhz-kr5txn7-2256",
+      "https://www.locksmithkeyless.com/products/2020-2021-2022-infiniti-q50-q60-smart-key-4-buttons-key-fob-fcc-kr5txn7"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Infiniti",
+    "model": "Q60",
+    "yearStart": 2014,
+    "yearEnd": 2016,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7952A / Philips Crypto 2 / ID46",
+        "chipClonable": "no",
+        "fccId": "KR55WK48903",
+        "partNumber": "285E3-JK65A",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Lonsdor K518"],
+    "notes": "V36 Q60 coupe/convertible (final V36 years rebadged as Q60). Shares key with G37/Q40. Emergency blade DA34.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2007-2017-infiniti-smart-key-4b-fcc-kr55wk48903",
+      "https://abkeys.com/products/infiniti-g35-g37-q40-q60-smart-key-kr55wk48903-285e3-jk62a-285e3-jk65a-997",
+      "https://www.transpondery.com/transponder_catalog/nissan_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Infiniti",
+    "model": "Q60",
+    "yearStart": 2017,
+    "yearEnd": 2022,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7953M / HiTag AES / ID4A",
+        "chipClonable": "token",
+        "fccId": "KR5S180144204",
+        "partNumber": "285E3-4HB0C",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518"],
+    "notes": "V37 Q60 coupe all-new. Shares FCC KR5S180144204 with Q50 2016-2019. 2020+ transitioned to KR5TXN7. Emergency blade DA34.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2016-2020-infiniti-q50-q60-4-button-smart-key-pn-285e3-4hb0c-kr5s180144204-oem-refurb",
+      "https://abkeys.com/products/infiniti-q50-q60-smart-key-4buttons-433mhz-s180144204-285e3-4hb0c-3833",
+      "https://yourcarkeyguys.com/products/2016-2020-infiniti-q50-q60-4b-trunk-smart-key-kr5s180144204"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Infiniti",
+    "model": "QX60",
+    "yearStart": 2013,
+    "yearEnd": 2018,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7952XTT / HiTag 3 / ID47 (2013-2015); PCF7953M / HiTag AES / ID4A (2016-2018)",
+        "chipClonable": "token",
+        "fccId": "KR5S180144014",
+        "partNumber": "285E3-3JA3A",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518"],
+    "notes": "L50 QX60 (JX35 pre-2014). Same FCC as Nissan Altima/Maxima/Murano/Pathfinder same era. Chip changed mid-production: 2013-2015 uses PCF7952XTT/ID47/HiTag3 (confirmed abkeys.com); 2016-2018 uses PCF7953M/ID4A/HiTag AES (confirmed keyecu.com). chipClonable=token applies to both. Emergency blade DA34.",
+    "confidence": "verified",
+    "sources": [
+      "https://abkeys.com/products/infiniti-qx60-smart-key-433mhz-kr5s180144014-285e3-3ja3a-285e3-9nb3a-3307",
+      "https://www.keyecu.com/smart-car-remote-key-fsk-43392mhz-pcf7953m-4a-chip-fob-for-infiniti-qx60-2016-2017-2018-fccid-kr5s180144014-s180144320-p4041.html",
+      "https://www.locksmithkeyless.com/products/2016-2019-infiniti-qx60-smart-key-4b-fcc-kr5s180144014"
+    ],
+    "dataSource": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Infiniti",
+    "model": "QX60",
+    "yearStart": 2019,
+    "yearEnd": 2021,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7921M / HiTag AES / ID4A",
+        "chipClonable": "token",
+        "fccId": "KR5TXN7",
+        "partNumber": "285E3-9NR5A",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518"],
+    "notes": "L50 QX60 refresh. New FCC KR5TXN7 with HiTag AES. Continental S180144708. Emergency blade DA34/EKB-INF-09.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2019-2020-infiniti-qx60-smart-key-5b-fcc-kr5txn7",
+      "https://nitrouskeys.com/products/infiniti-qx60-2019-2020-5-button-smart-key-w-hatch-kr5txn7",
+      "https://www.vvdi.com/mk5294-infiniti-qx60-2019-genuine-smart-remote-key-4-buttons-433mhz-285e3-9nr4a-ncf29a1m-hitag-128-bits-aes-id4a-transponder-fcc-id-kr5txn7"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Infiniti",
+    "model": "QX60",
+    "yearStart": 2022,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "HiTag AES / ID4A",
+        "chipClonable": "token",
+        "fccId": "KR5TXN4",
+        "partNumber": "285E3-6SA7B",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518"],
+    "notes": "L52 QX60 all-new platform. FCC KR5TXN4 (5-btn with remote start) shared with Nissan Altima 2022+. Also KR5TXN1 variant on some 4-btn trims PN 285E3-6SA3A. No KR5TXPZ3 on QX60 — confirmed by multiple sources.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2022-2025-infiniti-qx60-smart-key-5b-w-hatch-remote-start-fob-fcc-kr5txn4-285e3-6sa7b",
+      "https://royalkeysupply.com/products/infiniti-new-oem-2022-qx60-smart-key-5b-remote-start-hatch-fccid-kr5txn4-pn-285e3-6sa7b",
+      "https://www.locksmithkeyless.com/products/2022-2025-infiniti-qx60-smart-key-4b-w-hatch-fob-fcc-kr5txn1-285e3-6sa3a"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Infiniti",
+    "model": "QX80",
+    "yearStart": 2013,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7952 / Philips ID46",
+        "chipClonable": "no",
+        "fccId": "CWTWB1G744",
+        "partNumber": "285E3-1LA5A",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Lonsdor K518", "Consult III+"],
+    "notes": "Z62 QX80 (Z62 also = QX56 2013). FCC CWTWB1G744 identical to Nissan Armada 2017+. Chip ID46 (note: not AES despite 433-434 MHz — rare Nissan/Infiniti exception). IC 1788D-FWB1G744. Emergency blade DA34. 5-button with hatch.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2013-2019-infiniti-smart-key-5b-fcc-cwtwb1g744",
+      "https://www.uhs-hardware.com/products/2013-2019-inifiniti-qx80-qx56-5-button-smart-key-pn-285e3-1la5a-cwtwb1g744-oem-1",
+      "https://yourcarkeyguys.com/products/2013-2024-infiniti-qx80-qx56-5b-hatch-smart-key-cwtwb1g744"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Infiniti",
+    "model": "QX50",
+    "yearStart": 2014,
+    "yearEnd": 2017,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7952A / Philips Crypto 2 / HiTag 2 / ID46",
+        "chipClonable": "no",
+        "fccId": "KR55WK49622",
+        "partNumber": "285E3-1BA7A",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Lonsdor K518"],
+    "notes": "EX35/EX37/QX50 (based on FM platform). Correct FCC is KR55WK49622 — confirmed UHS Hardware, oemcarkeymall.com, nectechkeysupply.com, walmart.com. Previous entry KR55WK48903 belongs to G35/G37/Q40/Q60 (V36 platform). PN 285E3-1BA7A (3-btn); also 285E3-1BA5A/1AA7A. Emergency blade DA34. Frequency 315 MHz confirmed by standardautopart.com.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2009-2017-infiniti-fx35-fx50-ex35-qx50-3-button-smart-key-pn-285e3-1ba7a-kr55wk49622-oem-refurb",
+      "https://oemcarkeymall.com/products/2017-infiniti-qx50-smart-proximity-key-3button-kr55wk49622",
+      "https://www.nectechkeysupply.com/products/ntks-sk-infi-09"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Infiniti",
+    "model": "QX50",
+    "yearStart": 2019,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "NCF29A1M / HiTag AES / ID4A",
+        "chipClonable": "token",
+        "fccId": "KR5TXN1",
+        "partNumber": "285E3-5NA7A",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518"],
+    "notes": "J55 QX50 all-new platform. FCC KR5TXN1 shared with Rogue Sport 2019+ and Kicks 2018-2022. Continental S180144703. Emergency blade DA34/EKB-INF-09.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2019-infiniti-qx50-smart-prox-remote-key-with-remote-start-5b-fcc-kr5txn1",
+      "https://www.locksmithkeyless.com/products/2020-2022-infiniti-qx50-qx55-smart-key-5-buttons-w-hatch-starter-key-fob-fcc-kr5txn1",
+      "https://www.cnautokeys.com/products/cn027076-2018-2019-nissan-kicks-smart-proximity-key-3-button-fcc-kr5txn1-pn-285e3-5ra0a-s180144502-ncf29a1m-433mhz"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  }
+]

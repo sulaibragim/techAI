@@ -1,0 +1,928 @@
+[
+  {
+    "make": "RAM",
+    "model": "1500",
+    "yearStart": 2002,
+    "yearEnd": 2005,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "Y159",
+        "bladeIlco": "Y160-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP21CHR-15.P",
+        "transponderChip": "Texas ID 4D64",
+        "chipClonable": "yes",
+        "fccId": null,
+        "partNumber": "05010366AA",
+        "frequency": null
+      }
+    ],
+    "immobilizer": "SKIM (Sentry Key Immobilizer Module)",
+    "pinRequired": false,
+    "programming": "Requires 2 existing valid keys for on-board programming; otherwise dealer Secure Program Method",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "T300"],
+    "notes": "Y160-PT / 4D64 Texas chip. Cloneable. SKIM immobilizer in column. Two valid keys needed for on-board add-a-key. Transpondery.com catalog confirms 4D64 (Texas Crypto) through 2005 only; 2006+ transitions to ID46/Y164-PT — see next row.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/1998-2009-chrysler-dodge-jeep-transponder-key-4d64-chip-y160-pt",
+      "https://www.uhs-hardware.com/products/k-y160-transponder-key-chrysler-dodge-jeep-y160",
+      "https://www.autokeymax.com/products/car-transponder-ignition-chip-key-for-2002-2003-2004-2005-dodge-ram-1500-2500",
+      "https://www.transpondery.com/transponder_catalog/dodge_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "RAM",
+    "model": "1500",
+    "yearStart": 2006,
+    "yearEnd": 2008,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "Y159",
+        "bladeIlco": "Y164-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP12CHR-15.PC",
+        "transponderChip": "Philips ID46 / PCF7941 (Hitag2)",
+        "chipClonable": "token",
+        "fccId": null,
+        "partNumber": "05134937AA",
+        "frequency": null
+      }
+    ],
+    "immobilizer": "SKIM (Sentry Key Immobilizer Module)",
+    "pinRequired": false,
+    "programming": "On-board with 2 existing keys or professional tool",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "T300"],
+    "notes": "Transpondery.com confirms 2006 as the start of ID46/Hitag2 (Y164-PT) on Dodge RAM. Multiple retailers (autokeymax, prokeybox) confirm Y164-PT for 2006-2008 RAM 1500. Chip requires token for cloning.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/dodge_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/2004-2019-chrysler-dodge-jeep-mitsubishi-transponder-key-id46-chip-s-y164-pt-10-pack",
+      "https://www.bestkeysolution.com/products/chrysler-dodge-jeep-y164-pt-key-blank-chip-id46"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "RAM",
+    "model": "1500",
+    "yearStart": 2009,
+    "yearEnd": 2012,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "Y159",
+        "bladeIlco": "Y164-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP12CHR-15.PC",
+        "transponderChip": "Philips ID46 / PCF7941 (Hitag2)",
+        "chipClonable": "token",
+        "fccId": null,
+        "partNumber": "05134937AA",
+        "frequency": null
+      },
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "Y159",
+        "bladeIlco": "Y164-PT",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 / PCF7941 (Hitag2)",
+        "chipClonable": "token",
+        "fccId": "M3N5WY783X",
+        "partNumber": "56046639AG",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "SKIM (Sentry Key Immobilizer Module)",
+    "pinRequired": false,
+    "programming": "Requires professional tool; FOBIK remote requires dealer or locksmith OBDII programmer",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "T300"],
+    "notes": "Transition generation: standard Y164 transponder key or FOBIK remote-head key. Both ID46/PCF7941 Hitag2. IYZ-C01C is the alternate FCC ID for the same FOBIK housing. Frequency confirmed 433 MHz by UHS Hardware OEM and abkeys OEM listings; one aftermarket source (autoecupart.net) lists 434 MHz but is a minority.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2009-2020-dodge-ram-4-button-fobik-pn-56046639ag-iyz-c01c-oem",
+      "https://abkeys.com/products/jeep-dodge-chrysler-fobik-remote-key-pcb-433mhz-pcf7941-m3n5wy783x-3614",
+      "https://www.locksmithkeyless.com/products/2004-2019-chrysler-dodge-jeep-mitsubishi-transponder-key-id46-chip-s-y164-pt-10-pack",
+      "https://www.transpondery.com/transponder_catalog/dodge_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "RAM",
+    "model": "1500",
+    "yearStart": 2013,
+    "yearEnd": 2018,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "Y157",
+        "bladeIlco": "Y157 (emergency insert)",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP PCF7953A (ID46 / Hitag2)",
+        "chipClonable": "token",
+        "fccId": "GQ4-54T",
+        "partNumber": "56046954AJ",
+        "frequency": "433"
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "Y157",
+        "bladeIlco": "Y157 (emergency insert)",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips PCF7961 (ID46 / Hitag2)",
+        "chipClonable": "token",
+        "fccId": "GQ4-53T",
+        "partNumber": "56046955AC",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "SKIM + SGW on 2018",
+    "pinRequired": false,
+    "programming": "Professional locksmith required; no onboard DIY programming. 2018 has FCA Secure Gateway — requires SGW bypass adapter for OBDII access.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518", "AlfaOBD + SGW bypass (2018)"],
+    "notes": "GQ4-54T = Smart proximity key. Chip is NXP PCF7953A (ID46/Hitag2) — NOT PCF7953M (Hitag AES); confirmed by abkeys OEM listing (PCF7945A-PCF7953A ID46) and americankeysupply (GQ4-54T HITAG2). GQ4-53T FOBIK flip key uses PCF7961 ID46 confirmed by abkeys OEM. Both chips are ID46/Hitag2 and require token cloning, not outright clonable without specialist equipment. Frequency 433 MHz confirmed by abkeys OEM. Classic body style (DS/DJ) continued through 2020 using same GQ4-53T FOBIK. FCA SGW introduced mid-2018.",
+    "confidence": "verified",
+    "sources": [
+      "https://abkeys.com/products/dodge-ram-smart-key-5buttons-433mhz-pcf7953a-gq4-54t-68159657ag-2107",
+      "https://abkeys.com/products/dodge-ram-fobik-remote-key-3buttons-433mhz-pcf7961-gq4-53t-56046638aa-2897",
+      "https://www.transpondery.com/transponder_catalog/dodge_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "RAM",
+    "model": "1500",
+    "yearStart": 2019,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "Y157",
+        "bladeIlco": "PRX-RAM-5B3 (IAX00015860)",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG AES PCF7939MA (ID4A)",
+        "chipClonable": "no",
+        "fccId": "OHT-4882056",
+        "partNumber": "68291688AD",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "FCA SGW mandatory",
+    "pinRequired": false,
+    "programming": "Professional locksmith required; FCA Secure Gateway bypass mandatory for OBDII access on all 2019+ vehicles.",
+    "programmerHint": ["Autel IM608 Pro", "Xhorse VVDI2", "Lonsdor K518 + FCA SGW adapter", "OBD Genie SGW bypass"],
+    "notes": "New DT-generation body. FCC OHT-4882056 across 3B/5B/6B configs. PCF7939MA = Hitag AES 128-bit ID4A, confirmed 433 MHz and chip by abkeys OEM listing. No onboard programming. Emergency blade CY22 (also listed as Y157). CR2450 battery. Classic (DS) continued alongside with GQ4-53T FOBIK through 2020.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.abkeys.com/abk-4522-dodge-ram-1500-smart-key-4buttons-433mhz-hitag-aes-pcf7939ma-chip-fcc-oht-4882056-2019up-68291688ad",
+      "https://www.locksmithkeyless.com/products/2019-2021-dodge-ram-1500-smart-key-fob-w-starter-5b-fcc-oht-4882056",
+      "https://www.youcanic.com/fca-security-gateway-module-explained-obd2-sgm-sgw/"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "RAM",
+    "model": "2500/3500",
+    "yearStart": 2002,
+    "yearEnd": 2005,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "Y159",
+        "bladeIlco": "Y160-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP21CHR-15.P",
+        "transponderChip": "Texas ID 4D64",
+        "chipClonable": "yes",
+        "fccId": null,
+        "partNumber": "05010366AA",
+        "frequency": null
+      }
+    ],
+    "immobilizer": "SKIM",
+    "pinRequired": false,
+    "programming": "Requires 2 existing valid keys for on-board add-a-key; otherwise dealer Secure Program Method",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2"],
+    "notes": "Heavy-duty trucks share same key system as 1500 in this era. Y160-PT / 4D64 chip. Transpondery.com confirms 4D64 through 2005 only for Dodge RAM; 2006+ use ID46 — see next row.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/1998-2009-chrysler-dodge-jeep-transponder-key-4d64-chip-y160-pt",
+      "https://www.autokeymax.com/products/car-transponder-ignition-chip-key-for-2002-2003-2004-2005-dodge-ram-1500-2500",
+      "https://www.transpondery.com/transponder_catalog/dodge_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "RAM",
+    "model": "2500/3500",
+    "yearStart": 2006,
+    "yearEnd": 2018,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "Y159",
+        "bladeIlco": "Y164-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP12CHR-15.PC",
+        "transponderChip": "Philips ID46 / PCF7941 (Hitag2)",
+        "chipClonable": "token",
+        "fccId": null,
+        "partNumber": "05134937AA",
+        "frequency": null
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "Y157",
+        "bladeIlco": "Y157 (emergency insert)",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP PCF7953A (ID46 / Hitag2) — 2013+",
+        "chipClonable": "token",
+        "fccId": "GQ4-54T",
+        "partNumber": "56046954AJ",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "SKIM + SGW on 2018",
+    "pinRequired": false,
+    "programming": "Professional locksmith required. 2018 models require FCA SGW bypass.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518", "SGW bypass (2018)"],
+    "notes": "2006-2012: Y164 transponder (ID46 Hitag2). 2013-2018: GQ4-54T smart key (NXP PCF7953A ID46/Hitag2, 433 MHz) — chip is PCF7953A NOT PCF7953M (Hitag AES). GQ4-53T FOBIK also used on some trims (PCF7961 ID46). 2018 SGW applies.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2004-2019-chrysler-dodge-jeep-mitsubishi-transponder-key-id46-chip-s-y164-pt-10-pack",
+      "https://abkeys.com/products/dodge-ram-smart-key-5buttons-433mhz-pcf7953a-gq4-54t-68159657ag-2107",
+      "https://www.transpondery.com/transponder_catalog/dodge_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "RAM",
+    "model": "2500/3500",
+    "yearStart": 2019,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "Y157",
+        "bladeIlco": "PRX-CHRY-4B11 (IAX00020520)",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG AES PCF7953M (ID4A)",
+        "chipClonable": "no",
+        "fccId": "GQ4-76T",
+        "partNumber": "68365327AA",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "FCA SGW mandatory",
+    "pinRequired": false,
+    "programming": "Professional locksmith required; FCA Secure Gateway bypass mandatory.",
+    "programmerHint": ["Autel IM608 Pro", "Xhorse VVDI2", "Lonsdor K518 + FCA SGW adapter"],
+    "notes": "Heavy duty trucks use GQ4-76T (different FCC from 1500's OHT-4882056). PCF7953M Hitag AES ID4A confirmed by abkeys OEM (433 MHz). Locksmithkeyless aftermarket listing shows 434 MHz; abkeys OEM takes precedence. Battery CR2032 (confirmed by locksmithkeyless). Emergency blade Y157/CY22 optional.",
+    "confidence": "verified",
+    "sources": [
+      "https://abkeys.com/products/dodge-ram-smart-key-5buttons-433mhz-gq4-76t-2019up-68374994ac-2294",
+      "https://www.locksmithkeyless.com/products/2019-2020-dodge-ram-2500-3500-5500-smart-key-fob-w-starter-4b-fcc-gq4-76t"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "RAM",
+    "model": "ProMaster",
+    "yearStart": 2014,
+    "yearEnd": 2021,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "SIP22",
+        "bladeIlco": null,
+        "bladeSilca": "SIP22",
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 / PCF7936",
+        "chipClonable": "token",
+        "fccId": null,
+        "partNumber": null,
+        "frequency": null
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": false,
+        "keyway": "SIP22",
+        "bladeIlco": "FLIP-PROMASTER-3B1 (AX00012530)",
+        "bladeSilca": "SIP22",
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 / PCF7941",
+        "chipClonable": "token",
+        "fccId": "RX2TRF198",
+        "partNumber": "68224014AA",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "Marelli BCM immobilizer",
+    "pinRequired": false,
+    "programming": "Professional locksmith required; Marelli BCM system; no onboard programming",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518"],
+    "notes": "Fiat-platform van. SIP22 keyway (same as Fiat 500/Doblo). FCC RX2TRF198 / 2ADFTTRF198. Marelli BCM — not same as Dodge SKIM. 2018+ has FCA SGW. Frequency confirmed 434 MHz by locksmithkeyless OEM listing; some Amazon/eBay aftermarket listings say 433 MHz but locksmithkeyless explicitly states 434 MHz for this Fiat-platform key.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/ilco-aftermarket-remote-flip-key-fob-replacement-for-ram-promaster-fcc-rx2trf198-flip-promaster-3b1",
+      "https://www.uhs-hardware.com/products/2015-2019-dodge-ram-promaster-3-button-flip-key-rx2trf198-marelli-bcm-aftermarket",
+      "https://www.locksmithkeyless.com/products/2012-2018-fiat-500-ram-promaster-transponder-key-id46-sip22"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "RAM",
+    "model": "ProMaster",
+    "yearStart": 2022,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "SIP22",
+        "bladeIlco": "PRX-CHRY-4B9 (IAX00019490)",
+        "bladeSilca": "SIP22",
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG AES PCF7953M (ID4A)",
+        "chipClonable": "no",
+        "fccId": "M3N-40821302",
+        "partNumber": "7FF24LXHAB",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "FCA SGW mandatory",
+    "pinRequired": false,
+    "programming": "Professional locksmith required; FCA Secure Gateway bypass mandatory.",
+    "programmerHint": ["Autel IM608 Pro", "Lonsdor K518 + FCA SGW adapter"],
+    "notes": "2022 refresh moved ProMaster to smart proximity key platform. FCC M3N-40821302 shared with Jeep Compass/Renegade/Grand Cherokee. SIP22 Fiat keyway retained. Confirmed 433 MHz. CR2032.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2022-2025-ram-promaster-smart-key-3b-fob-fcc-m3n-40821302-7ff23lxhab",
+      "https://www.uhs-hardware.com/products/2022-2023-dodge-ram-promaster-4-button-smart-key-pn-7ff24lxhab-m3n-40821302-oem"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "RAM",
+    "model": "ProMaster City",
+    "yearStart": 2015,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Flip",
+        "trimDependent": false,
+        "keyway": "SIP22",
+        "bladeIlco": "FLIP-PROMASTERCITY-3B1 (AX00012520)",
+        "bladeSilca": "SIP22KP",
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 / PCF7941",
+        "chipClonable": "token",
+        "fccId": "LTQF12AM433TX",
+        "partNumber": "68269686AA",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "Delphi BCM immobilizer",
+    "pinRequired": false,
+    "programming": "Professional locksmith required; Delphi BCM; no onboard programming",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2"],
+    "notes": "Smaller city van, Fiat-Doblo platform. SIP22KP blade variant. FCC LTQF12AM433TX / 2ADFTF12AM433TX. Delphi BCM (different from ProMaster's Marelli). Frequency 433 MHz confirmed by UHS Hardware OEM listing; FCC ID itself embeds '433' in the name. Aftermarket listing on locksmithkeyless says 434 MHz, but UHS OEM prevails. 2018+ SGW.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2012-2017-fiat-500-dodge-ram-promaster-city-3-button-flip-key-ltqf12am433tx-delphi-bcm-oem",
+      "https://www.locksmithkeyless.com/products/2015-2018-dodge-remote-flip-key-3b-fcc-ltqf12am433tx",
+      "https://us.amazon.com/LTQF12AM433TX-Keyless-2012-2017-ProMaster-2015-2021/dp/B0CRHXNYV5"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Jeep",
+    "model": "Wrangler (JK)",
+    "yearStart": 2007,
+    "yearEnd": 2018,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": true,
+        "keyway": "Y159",
+        "bladeIlco": "Y164-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP12CHR-15.PC",
+        "transponderChip": "Philips ID46 / PCF7941 (Hitag2)",
+        "chipClonable": "token",
+        "fccId": null,
+        "partNumber": "05134937AA",
+        "frequency": null
+      },
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": true,
+        "keyway": "Y159",
+        "bladeIlco": "RHK-CHRY-4B1 (IAX00016340)",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 CHR",
+        "chipClonable": "token",
+        "fccId": "OHT692427AA",
+        "partNumber": "5183349AC",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SKIM + SGW on 2018",
+    "pinRequired": false,
+    "programming": "On-board add-a-key with 2 existing keys (standard key); OHT692427AA remote requires professional programmer. 2018 JK has SGW.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "SGW bypass (2018)"],
+    "notes": "JK generation 2007-2018. Y164 transponder (base) or OHT692427AA 315 MHz remote-head key — frequency 315 MHz confirmed by Amazon, bestkeysolution, and northcoastkeyless. 2018 JK is LAST year of JK, first year of SGW. Not to be confused with 2018 JL which uses OHT1130261 SIP22.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2005-2019-jeep-transponder-key-id46-chr-chip-y164-pt",
+      "https://www.bestkeysolution.com/products/key2u-keyless-entry-remote-control-car-key-fob-replacement-for-oht692427aa-kobdt04a-pack-of-2-key",
+      "https://www.bestkeysolution.com/products/chrysler-dodge-jeep-y164-pt-key-blank-chip-id46"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Jeep",
+    "model": "Wrangler (JL)",
+    "yearStart": 2018,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Flip",
+        "trimDependent": false,
+        "keyway": "SIP22",
+        "bladeIlco": "FLIP-JEEP-4B1 (IAX00015890)",
+        "bladeSilca": "SIP22",
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG AES PCF7939MA (ID4A)",
+        "chipClonable": "no",
+        "fccId": "OHT1130261",
+        "partNumber": "68416784AA",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "FCA SGW mandatory",
+    "pinRequired": false,
+    "programming": "Professional locksmith required; FCA Secure Gateway bypass mandatory.",
+    "programmerHint": ["Autel IM608 Pro", "Xhorse VVDI2", "Lonsdor K518 + SGW adapter", "AlfaOBD + SGW bypass"],
+    "notes": "JL generation all-new 2018. Smart flip key with SIP22 (Fiat keyway). Hitag AES PCF7939MA ID4A chip, confirmed 433 MHz by abkeys OEM listing. Same FCC OHT1130261 shared with Gladiator JT. CR2450 battery. SGW on all JL.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.abkeys.com/abk-4521-jeep-wrangler-smart-key-4buttons-sip22-433mhz-hitag-aes-pcf7939ma-chip-fcc-oht1130261-2018up-68416784aa",
+      "https://www.uhs-hardware.com/products/2018-2024-jeep-wrangler-gladiator-4-button-smart-flip-key-pn-68416784aa-oht1130261-sip22-aftermarket"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Jeep",
+    "model": "Gladiator (JT)",
+    "yearStart": 2020,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Flip",
+        "trimDependent": false,
+        "keyway": "SIP22",
+        "bladeIlco": "FLIP-JEEP-4B1 (IAX00015890)",
+        "bladeSilca": "SIP22",
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG AES PCF7939MA (ID4A)",
+        "chipClonable": "no",
+        "fccId": "OHT1130261",
+        "partNumber": "68416784AB",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "FCA SGW mandatory",
+    "pinRequired": false,
+    "programming": "Professional locksmith required; FCA Secure Gateway bypass mandatory.",
+    "programmerHint": ["Autel IM608 Pro", "Xhorse VVDI2", "Lonsdor K518 + SGW adapter"],
+    "notes": "JT pickup (2020+). Shares OHT1130261 FCC with JL Wrangler. SIP22 keyway. Hitag AES PCF7939MA ID4A chip. 433 MHz confirmed. CR2450 battery.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.abkeys.com/abk-4521-jeep-wrangler-smart-key-4buttons-sip22-433mhz-hitag-aes-pcf7939ma-chip-fcc-oht1130261-2018up-68416784aa",
+      "https://www.locksmithkeyless.com/products/2018-2020-jeep-smart-remote-flip-key-w-remote-start-4b-fcc-oht1130261"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Jeep",
+    "model": "Grand Cherokee (WK2)",
+    "yearStart": 2011,
+    "yearEnd": 2013,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "Y171",
+        "bladeIlco": "K-Y171-IYZ",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips PCF7945 (Hitag2 / ID46)",
+        "chipClonable": "token",
+        "fccId": "IYZ-C01C",
+        "partNumber": "56046735AA",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "SKIM",
+    "pinRequired": false,
+    "programming": "Professional locksmith required; Keyless Go FOBIK with emergency Y171 blade insert",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "AlfaOBD"],
+    "notes": "WK2 first gen. IYZ-C01C FOBIK (tombstone-style smart key). PCF7945 Hitag2/ID46 chip, 433 MHz confirmed by abkeys OEM. Chip requires token cloning. Emergency blade is Y171 (K-Y171-IYZ) — NOT Y170. CR2032.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2011-2013-jeep-grand-cherokee-4-button-keyless-go-fobik-pn-56046736aa-iyz-c01c-oem",
+      "https://www.abkeys.com/abk-1598-jeep-grand-cherokee-fobik-keylessgo-smart-key-5buttons-433mhz-pcf7945-iyz-c01c-2011up-68051665ac-68051665ae",
+      "https://keyinnovations.com/products/keyless2go-insert-emergency-key-blade-y171-for-chrysler-dodge-jeep-fobik-keys-iyz-c01c"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Jeep",
+    "model": "Grand Cherokee (WK2)",
+    "yearStart": 2014,
+    "yearEnd": 2021,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "Y157",
+        "bladeIlco": "Y157 emergency insert",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP PCF7953A (ID46 / Hitag2)",
+        "chipClonable": "token",
+        "fccId": "M3N-40821302",
+        "partNumber": "68143505AB",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "SGW on 2018+",
+    "pinRequired": false,
+    "programming": "Professional locksmith required; 2018+ requires FCA SGW bypass.",
+    "programmerHint": ["Autel IM608 Pro", "Xhorse VVDI2", "AlfaOBD + SGW bypass (2018+)"],
+    "notes": "Gen4 WK2 tombstone proximity key. M3N-40821302 shared with Compass/Renegade/Durango. 433 MHz confirmed. Chip is NXP PCF7953A ID46/Hitag2 — confirmed by abkeys OEM listing (PCF7945A-PCF7953A ID46); NOT PCF7953M (Hitag AES). Emergency blade CY22 (also listed as Y157 insert). Chip requires token cloning. CR2032.",
+    "confidence": "verified",
+    "sources": [
+      "https://abkeys.com/products/jeep-grand-cherokee-smart-key-2014-2021-68143505ab-m3n-40821302-5677",
+      "https://abkeys.com/products/jeep-grand-cherokee-smart-key-4buttons-m3n-40821302-68143504ac-3027",
+      "https://www.transpondery.com/transponder_catalog/jeep_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Jeep",
+    "model": "Grand Cherokee (WL)",
+    "yearStart": 2021,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "Y157",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG AES NCF29A1M (ID4A)",
+        "chipClonable": "no",
+        "fccId": "M3NWXF0B1",
+        "partNumber": "68516738AA",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "FCA SGW mandatory",
+    "pinRequired": false,
+    "programming": "Professional locksmith required; FCA Secure Gateway bypass mandatory.",
+    "programmerHint": ["Autel IM608 Pro", "Lonsdor K518 + SGW adapter"],
+    "notes": "All-new WL platform (2021+). New FCC M3NWXF0B1 (shared with Grand Wagoneer). Hitag AES NCF29A1M — newer NXP variant, non-clonable. 433 MHz confirmed by Amazon and UHS Hardware OEM. Emergency key PN 68519237AA. OEM 6-button PN is 68516738AA (confirmed by UHS OEM listing); some aftermarket listings use 685169738AA (extra digit, variant for Grand Wagoneer 3-button). Grand Cherokee L 5-button uses 68377534AA. CR2450.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2021-2022-jeep-grand-wagoneer-6-button-smart-key-pn-68516738aa-m3nwxf0b1-oem",
+      "https://www.amazon.com/Keylessbest-Replacement-2021-2023-Cherokee-M3NWXF0B1/dp/B0CB9ZC85R",
+      "https://www.uhs-hardware.com/products/2021-2022-jeep-grand-wagoneer-3-button-smart-key-pn-685169738aa-m3nwxf0b1-aftermarket"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Jeep",
+    "model": "Grand Wagoneer",
+    "yearStart": 2021,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "Y157",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG AES NCF29A1M (ID4A)",
+        "chipClonable": "no",
+        "fccId": "M3NWXF0B1",
+        "partNumber": "68425092AA",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "FCA SGW mandatory",
+    "pinRequired": false,
+    "programming": "Professional locksmith required; FCA Secure Gateway bypass mandatory.",
+    "programmerHint": ["Autel IM608 Pro", "Lonsdor K518 + SGW adapter"],
+    "notes": "New Grand Wagoneer (2021+). Same platform/FCC as WL Grand Cherokee. M3NWXF0B1. 6-button variant PN 68425092AA confirmed by abkeys and royalkeysupply OEM listings. Hitag AES NCF29A1M. 433 MHz. CR2450.",
+    "confidence": "verified",
+    "sources": [
+      "https://abkeys.com/products/jeep-wagoneer-smart-key-2021up-6b-68425092aa-m3nwxfob1-3499",
+      "https://royalkeysupply.com/products/jeep-aftermarket-2021-2022-wagoneer-smart-key-6b-remote-start-hatch-lift-fccid-m3nwxf0b1-pn-68425092aa",
+      "https://www.amazon.com/USARemote-Keyless-Remote-6-Button-Replacement/dp/B0D6S3NBTS"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Jeep",
+    "model": "Cherokee (KL)",
+    "yearStart": 2014,
+    "yearEnd": 2023,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "Y157",
+        "bladeIlco": "PRX-JEEP-4B1 (AX00011550)",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG AES PCF7953M (ID4A)",
+        "chipClonable": "no",
+        "fccId": "GQ4-54T",
+        "partNumber": "68105078AB",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "SGW on 2018+",
+    "pinRequired": false,
+    "programming": "Professional locksmith required; 2018+ requires FCA SGW bypass. AlfaOBD supports FOBIK programming.",
+    "programmerHint": ["Autel IM608 Pro", "Xhorse VVDI2", "AlfaOBD + SGW bypass (2018+)", "Lonsdor K518"],
+    "notes": "KL Cherokee. GQ4-54T proximity smart key. Note: Jeep Cherokee (KL) uses PCF7953M (Hitag AES ID4A) confirmed by Amazon aftermarket (Keymall listing explicitly states 4A PCF7953M for Cherokee GQ4-54T). This differs from Dodge RAM 1500 which uses PCF7953A (Hitag2 ID46) with the same GQ4-54T FCC. IC 1470A-35T. Y157 emergency insert. Different vehicle from Grand Cherokee. 2018+ SGW.",
+    "confidence": "verified",
+    "sources": [
+      "https://abkeys.com/products/jeep-cherokee-smart-key-4buttons-433mhz-gq4-54t-2014up-68159222ag-2553",
+      "https://www.amazon.com/Keymall-Replacement-PCF7953M-Cherokee-2013-2019/dp/B088LWWY4Z",
+      "https://www.locksmithkeyless.com/products/2014-2019-jeep-cherokee-smart-key-4b-fcc-gq4-54t",
+      "https://www.transpondery.com/transponder_catalog/jeep_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Jeep",
+    "model": "Compass",
+    "yearStart": 2007,
+    "yearEnd": 2016,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "Y159",
+        "bladeIlco": "Y164-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP12CHR-15.PC",
+        "transponderChip": "Philips ID46 / PCF7941 (Hitag2)",
+        "chipClonable": "token",
+        "fccId": null,
+        "partNumber": "05134937AA",
+        "frequency": null
+      }
+    ],
+    "immobilizer": "SKIM",
+    "pinRequired": false,
+    "programming": "On-board with 2 existing keys or professional tool",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2"],
+    "notes": "First-gen Compass (MK). Y164-PT / ID46 Hitag2. Shares key with Patriot/Wrangler JK of same era.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2005-2019-jeep-transponder-key-id46-chr-chip-y164-pt",
+      "https://www.bestkeysolution.com/products/chrysler-dodge-jeep-y164-pt-key-blank-chip-id46"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Jeep",
+    "model": "Compass",
+    "yearStart": 2017,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "SIP22",
+        "bladeIlco": "PRX-JEEP-4B5 (AX00015080)",
+        "bladeSilca": "SIP22",
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG AES PCF7953M (ID4A)",
+        "chipClonable": "no",
+        "fccId": "M3N-40821302",
+        "partNumber": "68250341AB",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "SGW on 2018+",
+    "pinRequired": false,
+    "programming": "Professional locksmith required; 2018+ requires FCA SGW bypass.",
+    "programmerHint": ["Autel IM608 Pro", "Xhorse VVDI2", "Lonsdor K518 + SGW adapter (2018+)"],
+    "notes": "Second-gen Compass (MP) on Fiat Small Wide platform. SIP22 keyway (Fiat). M3N-40821302 shared with Renegade/Grand Cherokee WK2. Hitag AES PCF7953M. IC 7812A-40821302. 433 MHz confirmed. CR2032.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2017-2019-jeep-compass-smart-prox-key-4b-fcc-m3n-40821302",
+      "https://www.autoecupart.net/collections/remotecontrolkey-jeep/products/433mhz-ask-pcf7953m-hitag-aes-4a-m3n40821302-7812a-40821302-smart-key-remote-fob-for-jeep-compass-trailhawk"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Jeep",
+    "model": "Renegade",
+    "yearStart": 2015,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": true,
+        "keyway": "SIP22",
+        "bladeIlco": "Y148",
+        "bladeSilca": "SIP22",
+        "bladeJma": null,
+        "transponderChip": "Megamos 48 MQB (not Megamos AES/ID88)",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": null,
+        "frequency": null
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "SIP22",
+        "bladeIlco": "PRX-JEEP-4B3 (AX00014560)",
+        "bladeSilca": "SIP22",
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG AES PCF7953M (ID4A)",
+        "chipClonable": "no",
+        "fccId": "M3N-40821302",
+        "partNumber": "6BY88DX9AA",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "SGW on 2018+",
+    "pinRequired": false,
+    "programming": "Professional locksmith required; 2018+ requires FCA SGW bypass. Transponder key requires Megamos 48 MQB programmer.",
+    "programmerHint": ["Autel IM608 Pro", "Xhorse VVDI2 (MQB mode for transponder)", "Lonsdor K518 + SGW adapter (2018+)"],
+    "notes": "BU Renegade on Fiat Small Wide (FCA/VW shared platform). SIP22 Fiat keyway. Basic trims: Megamos 48 MQB transponder confirmed by UHS Hardware as 'CHIP: MEGAMOS 48 MQB' and Y148 ILCO EZ blade. Smart-key trims: M3N-40821302 Hitag AES ID4A. 2018+ SGW.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2015-2019-jeep-renegade-fiat-500x-sip22-transponder-key-48-aes-chip-k-y148",
+      "https://www.locksmithkeyless.com/products/2015-2019-jeep-renegade-prox-key-4b-fcc-m3n-40821302",
+      "https://www.intelligentkeysolutions.com/product/2015-2021-jeep-renegade-sip22-transponder-key-mqb48-aftermarket/"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Jeep",
+    "model": "Liberty (KJ)",
+    "yearStart": 2002,
+    "yearEnd": 2007,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "Y159",
+        "bladeIlco": "Y160-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP21CHR-15.P",
+        "transponderChip": "Texas ID 4D64",
+        "chipClonable": "yes",
+        "fccId": null,
+        "partNumber": "05010366AA",
+        "frequency": null
+      }
+    ],
+    "immobilizer": "SKIM",
+    "pinRequired": false,
+    "programming": "Requires 2 existing valid keys for on-board programming; otherwise dealer Secure Program Method",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2"],
+    "notes": "KJ Liberty (2002-2007). Y160-PT / 4D64 Texas chip. Cloneable. OEM Mopar 5018869AA also compatible.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/1998-2009-chrysler-dodge-jeep-transponder-key-4d64-chip-y160-pt",
+      "https://www.uhs-hardware.com/products/k-y160-transponder-key-chrysler-dodge-jeep-y160"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Jeep",
+    "model": "Liberty (KK)",
+    "yearStart": 2008,
+    "yearEnd": 2012,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "Y159",
+        "bladeIlco": "Y164-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP12CHR-15.PC",
+        "transponderChip": "Philips ID46 / PCF7941 (Hitag2)",
+        "chipClonable": "token",
+        "fccId": null,
+        "partNumber": "05134937AA",
+        "frequency": null
+      },
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": true,
+        "keyway": "Y159",
+        "bladeIlco": "RHK-CHRY-4B1 (IAX00016340)",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 CHR",
+        "chipClonable": "token",
+        "fccId": "OHT692427AA",
+        "partNumber": "5183349AC",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SKIM",
+    "pinRequired": false,
+    "programming": "Professional tool or on-board with 2 existing keys",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2"],
+    "notes": "KK Liberty (2008-2012). Y164-PT / ID46 Hitag2 for transponder. OHT692427AA remote-head key on equipped trims (315 MHz confirmed by bestkeysolution and Amazon). Same key system as Compass/Wrangler JK of era.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2005-2019-jeep-transponder-key-id46-chr-chip-y164-pt",
+      "https://www.bestkeysolution.com/products/chrysler-dodge-jeep-remote-head-key-fob-replacement-for-fcc-id-oht692427aa-oht692713aa-3-buttons-315-mhz"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  }
+]

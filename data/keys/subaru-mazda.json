@@ -1,0 +1,1516 @@
+[
+  {
+    "make": "Subaru",
+    "model": "Outback",
+    "yearStart": 2005,
+    "yearEnd": 2009,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "DAT17",
+        "bladeIlco": "DAT17",
+        "bladeSilca": "DAT17",
+        "bladeJma": "DAT-17",
+        "transponderChip": "Texas 4D62 40-bit",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": "57497-AG11A",
+        "frequency": null
+      }
+    ],
+    "immobilizer": "Subaru Immobilizer (Denso)",
+    "pinRequired": false,
+    "programming": "Requires dealer or locksmith with SLIS access and compatible programmer",
+    "programmerHint": ["Advanced Diagnostics Smart Pro ADS2330", "Autel IM508/IM608", "Lonsdor K518"],
+    "notes": "2005-2009 Outback uses DAT17 blade with Texas 4D62 40-bit. Some 2009 may have 80-bit variant; verify before cloning.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/subaru_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2008-2011-subaru-dat17t13-high-security-transponder-key-4d62-chip-k-sub3",
+      "https://www.locksmithkeyless.com/products/2005-2014-subaru-transponder-key-4d62-chip-sub4-pt-1"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "Outback",
+    "yearStart": 2010,
+    "yearEnd": 2014,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "DAT17",
+        "bladeIlco": "DAT17",
+        "bladeSilca": "DAT17",
+        "bladeJma": "DAT-17",
+        "transponderChip": "Texas 4D60 80-bit (G chip)",
+        "chipClonable": "no",
+        "fccId": "CWTWBU766",
+        "partNumber": "57497-AJ00A",
+        "frequency": "434"
+      },
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "DAT17",
+        "bladeIlco": "DAT17",
+        "bladeSilca": "DAT17",
+        "bladeJma": "DAT-17",
+        "transponderChip": "Texas 4D60 80-bit (G chip)",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U811",
+        "partNumber": "57497-AL00A",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "Subaru Immobilizer (Denso)",
+    "pinRequired": false,
+    "programming": "Requires dealer or locksmith with SLIS pin access; Lonsdor K518USA can pull pin codes",
+    "programmerHint": ["Lonsdor K518USA", "Advanced Diagnostics Smart Pro", "Autel IM608"],
+    "notes": "Two FCC variants exist for this generation. CWTWBU766 at 434MHz (US) covers 2010-2014; CWTWB1U811 at 315MHz covers 2011-2014. Verify original FCC ID before replacing. Some 2010 models may still use the 4D62 40-bit transponder-only key.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2010-2014-subaru-legacy-outback-4-button-remote-head-key-cwtwbu766-4d60-chip-dat17-rhk-sub-hs76",
+      "https://www.locksmithkeyless.com/products/2011-2019-subaru-remote-head-key-4b-fcc-cwtwb1u811",
+      "https://www.locksmithkeyless.com/products/2010-2014-subaru-remote-head-key-4b-fcc-cwtwbu766"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "Outback",
+    "yearStart": 2015,
+    "yearEnd": 2019,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "B110",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 4D60 80-bit (G chip)",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U811",
+        "partNumber": "57497-FJ230",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "Subaru Immobilizer (Denso)",
+    "pinRequired": false,
+    "programming": "Requires professional programming; no onboard programming available",
+    "programmerHint": ["Advanced Diagnostics Smart Pro ADS2255", "Autel IM608", "Lonsdor K518"],
+    "notes": "2015-2019 Outback transitions from DAT17 to B110 blade. FCC CWTWB1U811 spans a wide model range at 315MHz. Proximity/smart key option also available on higher trims.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2011-2019-subaru-remote-head-key-4b-fcc-cwtwb1u811",
+      "https://www.uhs-hardware.com/products/2012-2019-subaru-4-button-remote-head-key-cwtwb1u811-b110-g-chip-80-bit-rhk-sub-1110"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "Outback",
+    "yearStart": 2020,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "B110",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 8A (H chip) 128-bit AES",
+        "chipClonable": "token",
+        "fccId": "HYQ14AHK",
+        "partNumber": "88835-FL03A",
+        "frequency": "434"
+      },
+      {
+        "keyType": "Transponder",
+        "trimDependent": true,
+        "keyway": "B110",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 8A (H chip) 128-bit AES",
+        "chipClonable": "token",
+        "fccId": null,
+        "partNumber": "57497-FL08A",
+        "frequency": null
+      }
+    ],
+    "immobilizer": "Subaru Immobilizer (Denso)",
+    "pinRequired": false,
+    "programming": "No onboard programming; requires dealer or locksmith with advanced programmer",
+    "programmerHint": ["Autel IM608 Pro", "Lonsdor K518", "ABRITES AVDI with SB002/SB003"],
+    "notes": "2020+ Outback uses 8A/H chip DST-AES equivalent. Smart key (push-to-start) standard; bladed transponder on base trims. Emergency blade B110 included in smart key. HYQ14AHK confirmed at 434MHz.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2017-2022-subaru-smart-key-4b-fcc-hyq14ahk",
+      "https://www.uhs-hardware.com/products/2017-2023-subaru-4-button-smart-key-pn-88835-fl03a-hyq14ahk-aftermarket",
+      "https://yourcarkeyguys.com/products/2017-2024-subaru-b110-h-chip-transponder-key"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "Forester",
+    "yearStart": 2004,
+    "yearEnd": 2011,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "DAT17",
+        "bladeIlco": "DAT17",
+        "bladeSilca": "DAT17",
+        "bladeJma": "DAT-17",
+        "transponderChip": "Texas 4D62 40-bit",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": "57497-AG11A",
+        "frequency": null
+      }
+    ],
+    "immobilizer": "Subaru Immobilizer (Denso)",
+    "pinRequired": false,
+    "programming": "Requires dealer or locksmith with compatible programmer",
+    "programmerHint": ["Advanced Diagnostics Smart Pro", "Autel IM508/IM608"],
+    "notes": "2004-2008 Forester uses 4D62 40-bit. 2008-2011 transition: some units use 4D62 40-bit, some may use 80-bit G chip variant. Always verify chip before cloning.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/subaru_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2008-2011-subaru-dat17t13-high-security-transponder-key-4d62-chip-k-sub3"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "Forester",
+    "yearStart": 2012,
+    "yearEnd": 2018,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "B110",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 4D60 80-bit (G chip)",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U811",
+        "partNumber": "57497-FJ021",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "Subaru Immobilizer (Denso)",
+    "pinRequired": false,
+    "programming": "Requires professional programming with compatible tool",
+    "programmerHint": ["Advanced Diagnostics Smart Pro ADS2255", "Autel IM608"],
+    "notes": "2012-2018 Forester uses B110 blade with G/4D60 80-bit chip at 315MHz. 2014-2018 specifically confirmed on multiple sources.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2011-2019-subaru-remote-head-key-4b-fcc-cwtwb1u811",
+      "https://www.uhs-hardware.com/products/2012-2019-subaru-4-button-remote-head-key-cwtwb1u811-b110-g-chip-80-bit-rhk-sub-1110"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "Forester",
+    "yearStart": 2019,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "B110",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 8A (H chip) 128-bit AES",
+        "chipClonable": "token",
+        "fccId": "HYQ14AHK",
+        "partNumber": "88835-FL03A",
+        "frequency": "434"
+      },
+      {
+        "keyType": "Transponder",
+        "trimDependent": true,
+        "keyway": "B110",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 8A (H chip) 128-bit AES",
+        "chipClonable": "token",
+        "fccId": null,
+        "partNumber": "57497-FL08A",
+        "frequency": null
+      }
+    ],
+    "immobilizer": "Subaru Immobilizer (Denso)",
+    "pinRequired": false,
+    "programming": "No onboard programming; requires dealer or advanced locksmith programmer",
+    "programmerHint": ["Autel IM608 Pro", "Lonsdor K518", "ABRITES AVDI SB002/SB003"],
+    "notes": "2019+ Forester uses 8A H chip DST-AES. Smart key standard on most trims. B110 emergency blade included in smart key. HYQ14AHK confirmed at 434MHz.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2017-2022-subaru-smart-key-4b-fcc-hyq14ahk",
+      "https://www.uhs-hardware.com/products/2017-2023-subaru-4-button-smart-key-pn-88835-fl03a-hyq14ahk-aftermarket",
+      "https://yourcarkeyguys.com/products/2017-2024-subaru-b110-h-chip-transponder-key"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "Crosstrek",
+    "yearStart": 2013,
+    "yearEnd": 2018,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "B110",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 4D60 80-bit (G chip)",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U811",
+        "partNumber": "57497-FJ230",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "Subaru Immobilizer (Denso)",
+    "pinRequired": false,
+    "programming": "Requires professional programming; no onboard procedure",
+    "programmerHint": ["Advanced Diagnostics Smart Pro ADS2255", "Autel IM608"],
+    "notes": "XV Crosstrek (2013-2017) and Crosstrek (2018) use B110 blade with G/4D60 chip at 315MHz. Confirmed 2013-2017 range.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2011-2019-subaru-remote-head-key-4b-fcc-cwtwb1u811",
+      "https://www.uhs-hardware.com/products/2012-2019-subaru-4-button-remote-head-key-cwtwb1u811-b110-g-chip-80-bit-rhk-sub-1110"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "Crosstrek",
+    "yearStart": 2019,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "B110",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 8A (H chip) 128-bit AES",
+        "chipClonable": "token",
+        "fccId": "HYQ14AHK",
+        "partNumber": "88835-FL03A",
+        "frequency": "434"
+      },
+      {
+        "keyType": "Transponder",
+        "trimDependent": true,
+        "keyway": "B110",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 8A (H chip) 128-bit AES",
+        "chipClonable": "token",
+        "fccId": null,
+        "partNumber": "57497-FL08A",
+        "frequency": null
+      }
+    ],
+    "immobilizer": "Subaru Immobilizer (Denso)",
+    "pinRequired": false,
+    "programming": "No onboard programming; requires dealer or advanced locksmith programmer",
+    "programmerHint": ["Autel IM608 Pro", "Lonsdor K518", "ABRITES AVDI SB002/SB003"],
+    "notes": "2019+ Crosstrek uses 8A H chip. Smart key standard. Confirmed 2019-2023 with HYQ14AHK at 434MHz.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2017-2022-subaru-smart-key-4b-fcc-hyq14ahk",
+      "https://www.uhs-hardware.com/products/2018-2020-subaru-crosstrek-4-button-smart-key-pn-88835-fl040-88835-fl041-hyq14ahk-oem",
+      "https://yourcarkeyguys.com/products/2017-2024-subaru-b110-h-chip-transponder-key"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "Impreza",
+    "yearStart": 2004,
+    "yearEnd": 2011,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "DAT17",
+        "bladeIlco": "DAT17",
+        "bladeSilca": "DAT17",
+        "bladeJma": "DAT-17",
+        "transponderChip": "Texas 4D62 40-bit",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": "57497-AG11A",
+        "frequency": null
+      }
+    ],
+    "immobilizer": "Subaru Immobilizer (Denso)",
+    "pinRequired": false,
+    "programming": "Requires dealer or locksmith with compatible programmer",
+    "programmerHint": ["Advanced Diagnostics Smart Pro", "Autel IM508"],
+    "notes": "Impreza 2004-2010 uses DAT17 with 4D62 40-bit. 2011 may use 4D62-6F (80-bit G chip) variant. Verify chip.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/subaru_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2008-2011-subaru-dat17t13-high-security-transponder-key-4d62-chip-k-sub3"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "Impreza",
+    "yearStart": 2012,
+    "yearEnd": 2016,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "B110",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 4D60 80-bit (G chip)",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U811",
+        "partNumber": "57497-FJ021",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "Subaru Immobilizer (Denso)",
+    "pinRequired": false,
+    "programming": "Requires professional programming; no onboard procedure",
+    "programmerHint": ["Advanced Diagnostics Smart Pro ADS2255", "Autel IM608"],
+    "notes": "2012-2016 Impreza uses B110 blade at 315MHz. Confirmed on multiple aftermarket sources.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2011-2019-subaru-remote-head-key-4b-fcc-cwtwb1u811",
+      "https://www.uhs-hardware.com/products/2012-2019-subaru-4-button-remote-head-key-pn-57497-fj021-cwtwb1u811-g-chip-80-bit-oem"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "Impreza",
+    "yearStart": 2017,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "B110",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 8A (H chip) 128-bit AES",
+        "chipClonable": "token",
+        "fccId": "HYQ14AHK",
+        "partNumber": "88835-FL03A",
+        "frequency": "434"
+      },
+      {
+        "keyType": "Transponder",
+        "trimDependent": true,
+        "keyway": "B110",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 8A (H chip) 128-bit AES",
+        "chipClonable": "token",
+        "fccId": null,
+        "partNumber": "57497-FL08A",
+        "frequency": null
+      }
+    ],
+    "immobilizer": "Subaru Immobilizer (Denso)",
+    "pinRequired": false,
+    "programming": "No onboard programming; requires dealer or advanced locksmith programmer",
+    "programmerHint": ["Autel IM608 Pro", "Lonsdor K518", "ABRITES AVDI SB002/SB003"],
+    "notes": "2017+ Impreza 8A H chip. Smart/proximity standard; bladed transponder on base trims. HYQ14AHK confirmed at 434MHz.",
+    "confidence": "verified",
+    "sources": [
+      "https://yourcarkeyguys.com/products/2017-2024-subaru-b110-h-chip-transponder-key",
+      "https://www.locksmithkeyless.com/products/2017-2022-subaru-smart-key-4b-fcc-hyq14ahk"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "Legacy",
+    "yearStart": 2005,
+    "yearEnd": 2009,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "DAT17",
+        "bladeIlco": "DAT17",
+        "bladeSilca": "DAT17",
+        "bladeJma": "DAT-17",
+        "transponderChip": "Texas 4D62 40-bit",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": null,
+        "frequency": null
+      }
+    ],
+    "immobilizer": "Subaru Immobilizer (Denso)",
+    "pinRequired": false,
+    "programming": "Requires dealer or locksmith with compatible programmer",
+    "programmerHint": ["Advanced Diagnostics Smart Pro", "Autel IM508"],
+    "notes": "Legacy 2005-2009 DAT17 blade with 4D62 40-bit. Consistent with Outback same generation.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/subaru_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2008-2011-subaru-dat17t13-high-security-transponder-key-4d62-chip-k-sub3"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "Legacy",
+    "yearStart": 2010,
+    "yearEnd": 2014,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "DAT17",
+        "bladeIlco": "DAT17",
+        "bladeSilca": "DAT17",
+        "bladeJma": "DAT-17",
+        "transponderChip": "Texas 4D60 80-bit (G chip)",
+        "chipClonable": "no",
+        "fccId": "CWTWBU766",
+        "partNumber": "57497-AJ00A",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "Subaru Immobilizer (Denso)",
+    "pinRequired": false,
+    "programming": "Requires Lonsdor K518USA for pin; professional programming required",
+    "programmerHint": ["Lonsdor K518USA", "Autel IM608", "Advanced Diagnostics Smart Pro"],
+    "notes": "2010-2014 Legacy matches Outback generation exactly. DAT17 blade with G chip 4D60 80-bit. CWTWBU766 confirmed at 434MHz for US market.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2010-2014-subaru-legacy-outback-4-button-remote-head-key-cwtwbu766-4d60-chip-dat17-rhk-sub-hs76",
+      "https://www.locksmithkeyless.com/products/2010-2014-subaru-remote-head-key-4b-fcc-cwtwbu766",
+      "https://keyless2go.com/products/keyless2go-4-button-remote-key-combo-replacement-for-subaru-cwtwbu766-57497-aj00a-dat17-4d60"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "Legacy",
+    "yearStart": 2015,
+    "yearEnd": 2019,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "B110",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 4D60 80-bit (G chip)",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U811",
+        "partNumber": "57497-FJ230",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "Subaru Immobilizer (Denso)",
+    "pinRequired": false,
+    "programming": "Requires professional programming; no onboard procedure",
+    "programmerHint": ["Advanced Diagnostics Smart Pro ADS2255", "Autel IM608"],
+    "notes": "2015-2019 Legacy moves to B110 blade with G chip at 315MHz. Smart key available on higher trims.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2011-2019-subaru-remote-head-key-4b-fcc-cwtwb1u811",
+      "https://www.uhs-hardware.com/products/2012-2019-subaru-4-button-remote-head-key-cwtwb1u811-b110-g-chip-80-bit-rhk-sub-1110"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "Legacy",
+    "yearStart": 2020,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "B110",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 8A (H chip) 128-bit AES",
+        "chipClonable": "token",
+        "fccId": "HYQ14AHK",
+        "partNumber": "88835-AN00A",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "Subaru Immobilizer (Denso)",
+    "pinRequired": false,
+    "programming": "No onboard programming; requires dealer or advanced programmer",
+    "programmerHint": ["Autel IM608 Pro", "Lonsdor K518", "ABRITES AVDI SB002/SB003"],
+    "notes": "2020+ Legacy uses 8A H chip. Push-to-start standard. B110 emergency blade in smart key. OEM PN 88835-AN00A confirmed by UHS-Hardware.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2017-2022-subaru-smart-key-4b-fcc-hyq14ahk",
+      "https://www.uhs-hardware.com/products/2020-2022-subaru-legacy-4-button-smart-key-pn-88835-an00a-hyq14ahk-oem",
+      "https://yourcarkeyguys.com/products/2017-2024-subaru-b110-h-chip-transponder-key"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "Ascent",
+    "yearStart": 2019,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "B110",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 8A (H chip) 128-bit AES",
+        "chipClonable": "token",
+        "fccId": "HYQ14AHK",
+        "partNumber": "88835-FL03A",
+        "frequency": "434"
+      },
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": true,
+        "keyway": "B110",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 8A (H chip) 128-bit AES",
+        "chipClonable": "token",
+        "fccId": "CWTB1G077",
+        "partNumber": "57497-FL00A",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "Subaru Immobilizer (Denso)",
+    "pinRequired": false,
+    "programming": "No onboard programming; requires dealer or advanced programmer",
+    "programmerHint": ["Autel IM608 Pro", "Lonsdor K518", "ABRITES AVDI SB002/SB003"],
+    "notes": "Ascent launched 2019. Smart key HYQ14AHK primary at 434MHz; CWTB1G077 remote head key variant at 433.92MHz (listed as 434MHz by industry convention) with H chip and B110 blade. HYQ14AKB also available on some years at 434MHz.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2019-subaru-4-button-remote-head-key-pn-57497-sj050-cwtb1g077-h-chip-oem",
+      "https://www.locksmithkeyless.com/products/2017-2022-subaru-smart-key-4b-fcc-hyq14ahk",
+      "https://www.uhs-hardware.com/products/2019-2024-subaru-ascent-legacy-outback-4-button-smart-key-pn-88835xc00a-hyq14akb-oem"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "WRX",
+    "yearStart": 2008,
+    "yearEnd": 2014,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "DAT17",
+        "bladeIlco": "DAT17",
+        "bladeSilca": "DAT17",
+        "bladeJma": "DAT-17",
+        "transponderChip": "Texas 4D62 40-bit",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": null,
+        "frequency": null
+      }
+    ],
+    "immobilizer": "Subaru Immobilizer (Denso)",
+    "pinRequired": false,
+    "programming": "Requires dealer or locksmith with compatible programmer",
+    "programmerHint": ["Advanced Diagnostics Smart Pro", "Autel IM508"],
+    "notes": "WRX/STI 2008-2014 shares Impreza platform; DAT17 with 4D62 chip.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/subaru_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2008-2011-subaru-dat17t13-high-security-transponder-key-4d62-chip-k-sub3"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "WRX",
+    "yearStart": 2015,
+    "yearEnd": 2021,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "B110",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 4D60 80-bit (G chip)",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U811",
+        "partNumber": "57497-FJ230",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "Subaru Immobilizer (Denso)",
+    "pinRequired": false,
+    "programming": "Requires professional programming",
+    "programmerHint": ["Advanced Diagnostics Smart Pro ADS2255", "Autel IM608"],
+    "notes": "2015-2021 WRX/STI uses B110 blade with G chip at 315MHz. Remote head key standard on WRX.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2011-2019-subaru-remote-head-key-4b-fcc-cwtwb1u811",
+      "https://www.uhs-hardware.com/products/2012-2019-subaru-4-button-remote-head-key-cwtwb1u811-b110-g-chip-80-bit-rhk-sub-1110"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "WRX",
+    "yearStart": 2022,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "B110",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 8A (H chip) 128-bit AES",
+        "chipClonable": "token",
+        "fccId": "CWTB1G077",
+        "partNumber": "57497-SJ050",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "Subaru Immobilizer (Denso)",
+    "pinRequired": false,
+    "programming": "No onboard programming; requires dealer or advanced programmer",
+    "programmerHint": ["Autel IM608 Pro", "Lonsdor K518", "ABRITES AVDI SB002/SB003"],
+    "notes": "2022+ WRX new generation uses H chip 8A with CWTB1G077 FCC on remote head key at 433.92MHz (listed as 434MHz by industry convention). B110 blade.",
+    "confidence": "verified",
+    "sources": [
+      "https://remotesandkeys.com/products/2023-subaru-wrx-remote-head-key-fcc-id-cwtb1g077-pn-57497-sj050-57497-xc01b",
+      "https://www.uhs-hardware.com/products/2019-subaru-4-button-remote-head-key-pn-57497-sj050-cwtb1g077-h-chip-oem",
+      "https://yourcarkeyguys.com/products/2017-2024-subaru-b110-h-chip-transponder-key"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "BRZ",
+    "yearStart": 2013,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "TR47",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 4D60 80-bit (G chip)",
+        "chipClonable": "no",
+        "fccId": "HYQ12BBY",
+        "partNumber": "57497-CA110",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "Subaru Immobilizer (Denso)",
+    "pinRequired": false,
+    "programming": "Requires professional programming; no onboard procedure",
+    "programmerHint": ["Advanced Diagnostics Smart Pro", "Autel IM608"],
+    "notes": "BRZ gen 1 (2013-2020) uses TR47 blade (also known as TOY43/X217; different from most Subaru B110/DAT17). G chip 4D60 80-bit at 315MHz. Shared platform with Toyota 86/Scion FR-S. All sources confirm HYQ12BBY coverage ends at 2020.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2013-2020-subaru-brz-remote-head-key-4b-fcc-hyq12bby",
+      "https://www.uhs-hardware.com/products/2013-2020-subaru-brz-scion-fr-s-4-button-remote-head-key-pn-57497-ca110-hyq12bby-g-chip-rk-toy-bf86",
+      "https://northcoastkeyless.com/product/2013-2019-subaru-brz-4-button-g-chip-remote-head-key-fob-fcc-hyq12bby-p-n-57497-ca110-57497-ca310/"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "BRZ",
+    "yearStart": 2022,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "B110",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 8A (H chip) 128-bit AES",
+        "chipClonable": "token",
+        "fccId": "HYQ14AHK",
+        "partNumber": "88835-FL032",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "Subaru Immobilizer (Denso)",
+    "pinRequired": false,
+    "programming": "No onboard programming; requires dealer or advanced programmer",
+    "programmerHint": ["Autel IM608 Pro", "Lonsdor K518"],
+    "notes": "2022+ BRZ new generation switches to B110 blade and 8A H chip at 434MHz, matching mainstream Subaru lineup. FCC ID HYQ14AHK confirmed, OEM PN 88835-FL032.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2022-2023-subaru-brz-4-button-smart-key-pn-88835-fl032-hyq14ahk-oem",
+      "https://www.locksmithkeyless.com/products/2017-2022-subaru-smart-key-4b-fcc-hyq14ahk"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mazda",
+    "model": "Mazda3",
+    "yearStart": 2004,
+    "yearEnd": 2013,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "MAZ24",
+        "bladeIlco": "X249",
+        "bladeSilca": "MAZ25R",
+        "bladeJma": "MAZ11D",
+        "transponderChip": "Texas 4D63 80-bit",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": "MAZ24R-PT",
+        "frequency": null
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "MAZ24",
+        "bladeIlco": "X249",
+        "bladeSilca": "MAZ25R",
+        "bladeJma": "MAZ11D",
+        "transponderChip": "Texas 4D63 80-bit",
+        "chipClonable": "no",
+        "fccId": "BGBX1T478SKE12501",
+        "partNumber": "BCR2-67-5RY",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "Mazda Immobilizer",
+    "pinRequired": false,
+    "programming": "Can self-program with 2 working keys (for remote); transponder requires locksmith or dealer",
+    "programmerHint": ["Autel IM508", "Advanced Diagnostics Smart Pro", "VVDI2"],
+    "notes": "2004-2013 Mazda3 uses MAZ24 blade with Texas 4D63 80-bit (DST+). Aftermarket replacement keys supplied as 80-bit; original early 2004-2006 vehicles may have 40-bit OEM chip but 80-bit is backward compatible for programming. 80-bit cannot be cloned with standard equipment.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2003-2014-mazda-mz24-mz34-transponder-key-chip-4d63-80-bit-k-mz34",
+      "https://www.locksmithkeyless.com/products/2003-2016-mazda-transponder-key-4d63-80-bits-chip-maz24r-pt",
+      "https://northcoastkeyless.com/product/2010-2013-mazda-3-3-button-flip-key-fob-remote-fcc-bgbx1t478ske12501-p-n-bcr2-67-5ry/"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mazda",
+    "model": "Mazda3",
+    "yearStart": 2014,
+    "yearEnd": 2018,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "MAZ24",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG Pro PCF7953P ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "WAZSKE13D01",
+        "partNumber": "GJY9-67-5DY",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "Mazda Immobilizer",
+    "pinRequired": false,
+    "programming": "No onboard programming; requires Mazda VCM II or equivalent advanced programmer",
+    "programmerHint": ["Autel IM608", "Lonsdor K518", "Advanced Diagnostics Smart Pro"],
+    "notes": "2014+ Mazda3 push-to-start. Hitag Pro ID49 chip (NOT ID47; ID47 is Hyundai/Kia). Emergency MAZ24 blade included in smart key. WAZSKE13D01 confirmed across multiple sources.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2014-2019-mazda-smart-prox-key-4b-fcc-wazske13d01-wazske13d02",
+      "https://www.abkeys.com/abk-4709-mazda-3-6--mx5-miata-smart-key-4buttons-315mhz-hitag-pro-pcf7953p-chip-fcc-wazske13d01-2014up-gjy9-67-5dy",
+      "https://www.honrow.com/For-Mazda-2-button-keyless-Smart-remote-key-with-315MHz-FSK-PCF7953P-HITAG-PRO-49-CHIP-FCC-ID-WAZSKE13D01-Model-SKE13D-01-p2075304.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mazda",
+    "model": "Mazda3",
+    "yearStart": 2019,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "MAZ24",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG AES PCF7953M (6A chip) 128-bit",
+        "chipClonable": "token",
+        "fccId": "WAZSKE11D01",
+        "partNumber": "BCYN-67-5DY",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "Mazda Immobilizer",
+    "pinRequired": false,
+    "programming": "Requires Mazda VCM II or advanced programmer; no DIY option",
+    "programmerHint": ["Autel IM608 Pro", "Lonsdor K518", "Advanced Diagnostics Smart Pro"],
+    "notes": "2019+ Mazda3 upgraded to HITAG AES (6A chip). FCC WAZSKE11D01 confirmed. WAZSKE11D01 = HITAG AES; WAZSKE13D01/D03 = HITAG Pro ID47/ID49.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/mazda_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/2019-2025-mazda-smart-key-3b-fob-fcc-wazske11d01-bcyn-67-5dy",
+      "https://www.uhs-hardware.com/products/2019-2023-mazda-3-4-button-smart-key-pn-bcya-67-5dy-wazske11d01-oem"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mazda",
+    "model": "Mazda6",
+    "yearStart": 2003,
+    "yearEnd": 2013,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "MAZ24",
+        "bladeIlco": "X249",
+        "bladeSilca": "MAZ25R",
+        "bladeJma": "MAZ11D",
+        "transponderChip": "Texas 4D63 80-bit",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": "MAZ24R-PT",
+        "frequency": null
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "MAZ24",
+        "bladeIlco": "X249",
+        "bladeSilca": "MAZ25R",
+        "bladeJma": "MAZ11D",
+        "transponderChip": "Texas 4D63 80-bit",
+        "chipClonable": "no",
+        "fccId": "BGBX1T478SKE12501",
+        "partNumber": "BBM4-67-5RY",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "Mazda Immobilizer",
+    "pinRequired": false,
+    "programming": "Can self-program remote with 2 keys; transponder requires locksmith or dealer",
+    "programmerHint": ["Autel IM508", "VVDI2", "Advanced Diagnostics Smart Pro"],
+    "notes": "Mazda6 2003-2013 without push-to-start uses MAZ24 blade with 4D63 80-bit. Identical to Mazda3 same era. 80-bit cannot be cloned with standard equipment.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2003-2014-mazda-mz24-mz34-transponder-key-chip-4d63-80-bit-k-mz34",
+      "https://www.locksmithkeyless.com/products/2003-2016-mazda-transponder-key-4d63-80-bits-chip-maz24r-pt"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mazda",
+    "model": "Mazda6",
+    "yearStart": 2014,
+    "yearEnd": 2018,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "MAZ24",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG Pro PCF7953P ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "WAZSKE13D01",
+        "partNumber": "GJY9-67-5DY",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "Mazda Immobilizer",
+    "pinRequired": false,
+    "programming": "No onboard programming; requires Mazda VCM II or equivalent",
+    "programmerHint": ["Autel IM608", "Lonsdor K518", "Advanced Diagnostics Smart Pro"],
+    "notes": "2014+ Mazda6 push-to-start standard. Hitag Pro ID49 (NOT ID47). Shares FCC/part with Mazda3 same era.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2014-2019-mazda-smart-prox-key-4b-fcc-wazske13d01-wazske13d02",
+      "https://www.abkeys.com/abk-4709-mazda-3-6--mx5-miata-smart-key-4buttons-315mhz-hitag-pro-pcf7953p-chip-fcc-wazske13d01-2014up-gjy9-67-5dy",
+      "https://northcoastkeyless.com/product/mazda-6-sedan-keyless-entry-remote-fcc-id-wazske13d01-pn-gjr9-67-5ry-662f-ske13d01/"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mazda",
+    "model": "Mazda6",
+    "yearStart": 2019,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "MAZ24",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG Pro ID49 PCF7953P 128-bit",
+        "chipClonable": "token",
+        "fccId": "WAZSKE13D03",
+        "partNumber": "GDYL-67-5DY",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "Mazda Immobilizer",
+    "pinRequired": false,
+    "programming": "Requires Mazda VCM II or advanced programmer",
+    "programmerHint": ["Autel IM608 Pro", "Lonsdor K518"],
+    "notes": "2019+ Mazda6 uses WAZSKE13D03 with NXP HITAG Pro ID49 chip (NOT HITAG AES). HITAG AES is only on WAZSKE11D01 models. Confirmed by locksmithkeyless.com and multiple supplier listings.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/mazda_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/2019-2022-mazda-smart-key-4b-w-trunk-fcc-wazske13d03",
+      "https://abkeys.com/products/mazda-6-smart-key-4b-gdyl-67-5dyb-315mhz-wazske13d03-3135"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mazda",
+    "model": "CX-5",
+    "yearStart": 2013,
+    "yearEnd": 2018,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "MAZ24",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG Pro PCF7953P ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "WAZSKE13D01",
+        "partNumber": "KDY3-67-5DY",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "Mazda Immobilizer",
+    "pinRequired": false,
+    "programming": "No onboard programming; requires Mazda VCM II or equivalent",
+    "programmerHint": ["Autel IM608", "Lonsdor K518", "Advanced Diagnostics Smart Pro"],
+    "notes": "First-gen CX-5 (2013-2018) is push-to-start smart key only. Hitag Pro ID49 (NOT ID47). FCC WAZSKE13D01 confirmed across transpondery.com and multiple suppliers.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/mazda_transponder_catalog.html",
+      "https://abkeys.com/products/mazda-cx5-2012-2013-smart-key-3b-kdy3-67-5dy-315mhz-2867",
+      "https://northcoastkeyless.com/product/mazda-cx-5-keyless-entry-remote-fcc-id-wazske13d01-pn-kdy3-67-5dy-662f-ske13d01/"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mazda",
+    "model": "CX-5",
+    "yearStart": 2019,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "MAZ24",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG Pro ID49 PCF7953P 128-bit",
+        "chipClonable": "token",
+        "fccId": "WAZSKE13D03",
+        "partNumber": "TAYB-67-5DY",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "Mazda Immobilizer",
+    "pinRequired": false,
+    "programming": "Requires Mazda VCM II or advanced programmer; no DIY option",
+    "programmerHint": ["Autel IM608 Pro", "Lonsdor K518"],
+    "notes": "Second-gen CX-5 (2019+) uses WAZSKE13D03 with NXP HITAG Pro ID49 chip (NOT HITAG AES/PCF7953M). HITAG AES is only on WAZSKE11D01 models. Confirmed by locksmithkeyless.com.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/mazda_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/2020-2021-mazda-prox-smart-key-4b-fcc-wazske13d03",
+      "https://www.uhs-hardware.com/products/2019-2023-mazda-cx-5-cx-9-4-button-smart-key-pn-tayb-67-5dyb-wazske13d03-oem-refurb"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mazda",
+    "model": "CX-9",
+    "yearStart": 2007,
+    "yearEnd": 2015,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "MAZ24",
+        "bladeIlco": "X249",
+        "bladeSilca": "MAZ25R",
+        "bladeJma": "MAZ11D",
+        "transponderChip": "Texas 4D63 80-bit",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": "MAZ24R-PT",
+        "frequency": null
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "MAZ24",
+        "bladeIlco": "X249",
+        "bladeSilca": "MAZ25R",
+        "bladeJma": "MAZ11D",
+        "transponderChip": "Texas 4D63 80-bit",
+        "chipClonable": "no",
+        "fccId": "BGBX1T478SKE12501",
+        "partNumber": "TDY2-67-5RYA",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "Mazda Immobilizer",
+    "pinRequired": false,
+    "programming": "Can self-program remote with 2 keys; transponder requires locksmith or dealer",
+    "programmerHint": ["Autel IM508", "VVDI2"],
+    "notes": "CX-9 2007-2015 uses MAZ24 blade with 4D63 80-bit. 80-bit cannot be cloned with standard equipment.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/mazda_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2003-2014-mazda-mz24-mz34-transponder-key-chip-4d63-80-bit-k-mz34"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mazda",
+    "model": "CX-9",
+    "yearStart": 2016,
+    "yearEnd": 2019,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "MAZ24",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG Pro PCF7953P ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "WAZSKE13D01",
+        "partNumber": "TKY2-67-5DY",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "Mazda Immobilizer",
+    "pinRequired": false,
+    "programming": "No onboard programming; requires Mazda VCM II or equivalent",
+    "programmerHint": ["Autel IM608", "Lonsdor K518"],
+    "notes": "Second-gen CX-9 (2016+) push-to-start only. Hitag Pro ID49 (NOT ID47). FCC confirmed WAZSKE13D01/WAZSKE13D02.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/mazda_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2016-2019-mazda-cx-5-cx-9-4-button-smart-key-w-hatch-pn-tky2-67-5dy-wazske13d01-oem",
+      "https://northcoastkeyless.com/product/mazda-cx-9-4-button-smart-key-fob-remote-fcc-wazske13d01-p-n-tky2-67-5dy/"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mazda",
+    "model": "CX-9",
+    "yearStart": 2020,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "MAZ24",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG Pro ID49 PCF7953P 128-bit",
+        "chipClonable": "token",
+        "fccId": "WAZSKE13D03",
+        "partNumber": "TAYB-67-5DYB",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "Mazda Immobilizer",
+    "pinRequired": false,
+    "programming": "Requires Mazda VCM II or advanced programmer",
+    "programmerHint": ["Autel IM608 Pro", "Lonsdor K518"],
+    "notes": "2020+ CX-9 uses WAZSKE13D03 with NXP HITAG Pro ID49 chip (NOT HITAG AES). Confirmed at 315MHz.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/mazda_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/2020-2021-mazda-prox-smart-key-4b-fcc-wazske13d03",
+      "https://www.uhs-hardware.com/products/2019-2023-mazda-cx-5-cx-9-4-button-smart-key-pn-tayb-67-5dyb-wazske13d03-oem-refurb"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mazda",
+    "model": "CX-30",
+    "yearStart": 2020,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "MAZ24",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG AES PCF7953M (6A chip) 128-bit",
+        "chipClonable": "token",
+        "fccId": "WAZSKE11D01",
+        "partNumber": "BCYN-67-5DY",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "Mazda Immobilizer",
+    "pinRequired": false,
+    "programming": "Requires Mazda VCM II or advanced programmer; no DIY option",
+    "programmerHint": ["Autel IM608 Pro", "Lonsdor K518"],
+    "notes": "CX-30 launched 2020 with HITAG AES (6A chip) from the start. FCC WAZSKE11D01 confirmed. Shares key with Mazda3 2019+ and CX-50.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/mazda_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/2020-2023-mazda-smart-key-4b-fob-hatch-function-fcc-wazske11d01",
+      "https://yourcarkeyguys.com/products/2020-2025-mazda-cx-30-cx-50-cx-70-cx-90-4b-hatch-smart-key-wazske11d01-oem"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mazda",
+    "model": "CX-50",
+    "yearStart": 2023,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "MAZ24",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG AES PCF7953M (6A chip) 128-bit",
+        "chipClonable": "token",
+        "fccId": "WAZSKE11D01",
+        "partNumber": "BCYN-67-5DY",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "Mazda Immobilizer",
+    "pinRequired": false,
+    "programming": "Requires Mazda VCM II or advanced programmer",
+    "programmerHint": ["Autel IM608 Pro", "Lonsdor K518"],
+    "notes": "CX-50 launched in US market for 2023MY. HITAG AES 6A chip, FCC WAZSKE11D01. Shares key with CX-30 and Mazda3 2019+.",
+    "confidence": "verified",
+    "sources": [
+      "https://yourcarkeyguys.com/products/2020-2025-mazda-cx-30-cx-50-cx-70-cx-90-4b-hatch-smart-key-wazske11d01-oem",
+      "https://www.locksmithkeyless.com/products/2025-mazda-cx-50-smart-key-3b-fob-fcc-wazske11d01-bcyn-67-5dy-aftermarket"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mazda",
+    "model": "MX-5 Miata",
+    "yearStart": 2006,
+    "yearEnd": 2015,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "MAZ24",
+        "bladeIlco": "X249",
+        "bladeSilca": "MAZ25R",
+        "bladeJma": "MAZ11D",
+        "transponderChip": "Texas 4D63 80-bit",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": "MAZ24R-PT",
+        "frequency": null
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "MAZ24",
+        "bladeIlco": "X249",
+        "bladeSilca": "MAZ25R",
+        "bladeJma": "MAZ11D",
+        "transponderChip": "Texas 4D63 80-bit",
+        "chipClonable": "no",
+        "fccId": "BGBX1T478SKE12501",
+        "partNumber": "NHY8-67-5RYA",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "Mazda Immobilizer",
+    "pinRequired": false,
+    "programming": "Can self-program remote with 2 keys; transponder requires locksmith or dealer",
+    "programmerHint": ["Autel IM508", "VVDI2", "Advanced Diagnostics Smart Pro"],
+    "notes": "MX-5 NC (2006-2015) uses MAZ24 blade with 4D63 80-bit. 80-bit cannot be cloned with standard equipment.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/mazda_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/2003-2016-mazda-transponder-key-4d63-80-bits-chip-maz24r-pt",
+      "https://yourcarkeyguys.com/products/2006-2016-mazda-mx5-miata-3-6-speed3-4b-flip-key-bgbx1t478ske125-01"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mazda",
+    "model": "MX-5 Miata",
+    "yearStart": 2016,
+    "yearEnd": 2019,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "MAZ24",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG Pro PCF7953P ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "WAZSKE13D01",
+        "partNumber": "GJY9-67-5DY",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "Mazda Immobilizer",
+    "pinRequired": false,
+    "programming": "No onboard programming; requires Mazda VCM II or equivalent",
+    "programmerHint": ["Autel IM608", "Lonsdor K518"],
+    "notes": "MX-5 ND (2016-2019) push-to-start smart key. Hitag Pro ID49 (NOT ID47). Confirmed shares FCC WAZSKE13D01 with Mazda3/6 same era.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/mazda_transponder_catalog.html",
+      "https://www.abkeys.com/abk-4709-mazda-3-6--mx5-miata-smart-key-4buttons-315mhz-hitag-pro-pcf7953p-chip-fcc-wazske13d01-2014up-gjy9-67-5dy",
+      "https://northcoastkeyless.com/product/mazda-miata-mx-5-keyless-entry-remote-fcc-id-wazske13d01-pn-gjy9-67-5dy-gjr9-67-5ry/"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mazda",
+    "model": "MX-5 Miata",
+    "yearStart": 2020,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "MAZ24",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG Pro ID49 PCF7953P 128-bit",
+        "chipClonable": "token",
+        "fccId": "WAZSKE13D03",
+        "partNumber": "GDYL-67-5DY",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "Mazda Immobilizer",
+    "pinRequired": false,
+    "programming": "Requires Mazda VCM II or advanced programmer",
+    "programmerHint": ["Autel IM608 Pro", "Lonsdor K518"],
+    "notes": "MX-5 ND facelift (2020+) uses WAZSKE13D03 with NXP HITAG Pro ID49 chip (NOT HITAG AES). Confirmed at 315MHz.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/mazda_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/2019-2022-mazda-smart-key-4b-w-trunk-fcc-wazske13d03",
+      "https://remotesandkeys.com/products/2023-mazda-mx-5-miata-smart-key-fob-pn-gdyl-67-5dyb-gdyl-67-5dy-nfyr-67-5dy"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mazda",
+    "model": "CX-3",
+    "yearStart": 2016,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "MAZ24",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG Pro PCF7953P ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "WAZSKE13D01",
+        "partNumber": "KDY3-67-5DY",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "Mazda Immobilizer",
+    "pinRequired": false,
+    "programming": "No onboard programming; requires Mazda VCM II or equivalent",
+    "programmerHint": ["Autel IM608", "Lonsdor K518"],
+    "notes": "CX-3 US market 2016-2020. Hitag Pro ID49 (NOT ID47). FCC WAZSKE13D01 confirmed across multiple sources.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/mazda_transponder_catalog.html",
+      "https://us.amazon.com/SUPALAND-2014-2018-Replacement-WAZSKE13D01-KDY3-67-5DY/dp/B0DRCK8NB9",
+      "https://www.uhs-hardware.com/products/2012-2019-mazda-3-cx-3-cx-5-3-button-smart-key-pn-kdy3-67-5dy-wazske13d01-oem"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mazda",
+    "model": "CX-3",
+    "yearStart": 2021,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "MAZ24",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG Pro ID49 PCF7953P 128-bit",
+        "chipClonable": "token",
+        "fccId": "WAZSKE13D03",
+        "partNumber": null,
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "Mazda Immobilizer",
+    "pinRequired": false,
+    "programming": "Requires Mazda VCM II or advanced programmer",
+    "programmerHint": ["Autel IM608 Pro", "Lonsdor K518"],
+    "notes": "2021 CX-3 confirmed with WAZSKE13D03 (FCC). Uses NXP HITAG Pro ID49 chip (NOT HITAG AES). Note: CX-3 was discontinued in US after 2021.",
+    "confidence": "single-source",
+    "sources": [
+      "https://store.carkeysexpress.com/keys-and-remotes/Mazda/CX-3/2021/1012113-mazda-3-button-smartkey-fcc-id-wazske13d03",
+      "https://www.locksmithkeyless.com/products/2020-2021-mazda-prox-smart-key-4b-fcc-wazske13d03"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  }
+]

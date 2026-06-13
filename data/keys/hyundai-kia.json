@@ -1,0 +1,2325 @@
+[
+  {
+    "make": "Hyundai",
+    "model": "Elantra",
+    "yearStart": 2000,
+    "yearEnd": 2010,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HY22",
+        "bladeIlco": "HY20-PT",
+        "bladeSilca": "LXP90",
+        "bladeJma": "HY20",
+        "transponderChip": "Philips ID46 / PCF7936AS",
+        "chipClonable": "yes",
+        "fccId": null,
+        "partNumber": null,
+        "frequency": null
+      }
+    ],
+    "immobilizer": "Philips ID46 Hitag2",
+    "pinRequired": false,
+    "programming": "OBD programmer required (Autel, Lonsdor, OBDSTAR). Some older units allow on-board.",
+    "programmerHint": [
+      "Autel IM608",
+      "Lonsdor K518",
+      "OBDSTAR X300 DP"
+    ],
+    "notes": "HY22 blade used on US market; HY20/LXP90 for Canadian/Touring variant. Chip is cloneable ID46.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/hyundai_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2006-2018-hyundai-kia-hy20-transponder-key-46-chip-k-hy20"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Elantra",
+    "yearStart": 2011,
+    "yearEnd": 2016,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HY22",
+        "bladeIlco": "HY20-PT",
+        "bladeSilca": "LXP90",
+        "bladeJma": "HY20",
+        "transponderChip": "Texas DST80 / ID6E-MA",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": "95440-2M350",
+        "frequency": null
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HY22",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips PCF7952A / ID46 Hitag2",
+        "chipClonable": "token",
+        "fccId": "SY5HMFNA04",
+        "partNumber": "95440-2M350",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "dual-option era (DST80 or PCF7952A depending on trim/build date)",
+    "pinRequired": true,
+    "programming": "PIN required. PIN-by-VIN calculable via DiagCode (2006–2016). OBD programmer required.",
+    "programmerHint": [
+      "DiagCode VIN-to-PIN",
+      "Autel IM608",
+      "Lonsdor K518",
+      "Smart Pro by Ilco"
+    ],
+    "notes": "2011-2015 US Elantra uses DST80 or PCF7952A depending on trim. OEM FCC SY5HMFNA04 at 315 MHz covers Elantra/Sonata/Genesis era. PIN-by-VIN available 2006-2016.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/hyundai_transponder_catalog.html",
+      "https://www.bestkeysolution.com/products/key2u-hyundai-kia-smart-key-fob-fcc-id-sy5hmfna04-315-mhz",
+      "https://www.locksmithkeyless.com/products/diagcode-pin-code-calculation-tool-software-for-2006-2016-hyundai-kia"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Elantra",
+    "yearStart": 2016,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HY22",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas AES 128-bit / 8A chip",
+        "chipClonable": "no",
+        "fccId": "CQOFD00120",
+        "partNumber": "95440-F2000",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "Texas AES 128-bit (ID8A)",
+    "pinRequired": false,
+    "programming": "OBD programmer required. No on-board procedure.",
+    "programmerHint": [
+      "Autel IM608",
+      "Lonsdor K518",
+      "OBDSTAR X300 DP"
+    ],
+    "notes": "2016-2020 Sedan uses FCC CQOFD00120 with 8A chip at 434 MHz. PN 95440-F2000 (2016-18) / 95440-F2002 (2019-20). Elantra GT Sport 2018-2020 uses FCC NYOSYEC4FOB1608. Emergency key uses HY22 blade. yearStart corrected from 2017→2016 (UHS Hardware OEM listing confirms 2016-2018 coverage for this FCC/PN).",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2016-2018-hyundai-elantra-4-button-smart-key-pn-95440-f2000-cqofd00120-oem",
+      "https://www.locksmithkeyless.com/products/2017-hyundai-elantra-smart-key-4b-fob-fcc-cqofd00120",
+      "https://www.locksmithkeyless.com/products/2019-2020-elantra-sedan-smart-key-4b-fcc-cqofd00120"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Elantra",
+    "yearStart": 2021,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "HITAG-AES / 6A chip (NCF29A1X)",
+        "chipClonable": "no",
+        "fccId": "NYOMBEC5FOB2004",
+        "partNumber": "95440-AA000",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "HITAG-AES 128-bit (ID6A/NCF29A1X)",
+    "pinRequired": false,
+    "programming": "OBD programmer required. No on-board procedure. Professional locksmith or dealer.",
+    "programmerHint": [
+      "Autel IM608",
+      "Lonsdor K518",
+      "OBDSTAR X300 DP",
+      "Xhorse VVDI2"
+    ],
+    "notes": "2021+ Elantra uses 6A HITAG-AES chip. FCC NYOMBEC5FOB2004, PN 95440-AA000 (5-btn trunk) or 95440-AA100 (4-btn). Emergency blade KK12. 433 MHz confirmed by OEM Amazon listing and multiple locksmith suppliers.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.amazon.com/Yewong-Replacement-Hyundai-FCC-ID/dp/B0F197H476",
+      "https://www.locksmithkeyless.com/products/2021-hyundai-elantra-smart-key-5b-fob-fcc-nyombec5fob2004",
+      "https://abkeys.com/products/hyundai-elantra-2021-2023-smart-key-4b-95440-aa100-433mhz-3314"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Sonata",
+    "yearStart": 2005,
+    "yearEnd": 2010,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HY22",
+        "bladeIlco": "HY20-PT",
+        "bladeSilca": "LXP90",
+        "bladeJma": "HY20",
+        "transponderChip": "Philips ID46 / PCF7936AS",
+        "chipClonable": "yes",
+        "fccId": null,
+        "partNumber": null,
+        "frequency": null
+      }
+    ],
+    "immobilizer": "Philips ID46",
+    "pinRequired": false,
+    "programming": "OBD programmer or on-board (some older). Cloneable with ID46 cloner.",
+    "programmerHint": [
+      "Autel IM608",
+      "Xhorse VVDI2"
+    ],
+    "notes": "2005-2010 Sonata uses ID46 PCF7936AS with HY22/LXP90 blade.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/hyundai_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2006-2018-hyundai-kia-hy20-transponder-key-46-chip-k-hy20"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Sonata",
+    "yearStart": 2011,
+    "yearEnd": 2014,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HY22",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips PCF7952A / ID46 Hitag2",
+        "chipClonable": "token",
+        "fccId": "SY5HMFNA04",
+        "partNumber": "95440-3Q000",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "PCF7952A / ID46 Hitag2",
+    "pinRequired": true,
+    "programming": "PIN required. PIN-by-VIN (2006-2016). OBD programmer. Smart key must be cut by locksmith.",
+    "programmerHint": [
+      "DiagCode VIN-to-PIN",
+      "Autel IM608",
+      "Lonsdor K518"
+    ],
+    "notes": "2011-2014 uses FCC SY5HMFNA04 at 315 MHz. PCF7952A chip. OEM PNs: 95440-3Q000, 95440-3M220. PIN-by-VIN era.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/hyundai_transponder_catalog.html",
+      "https://www.bestkeysolution.com/products/key2u-hyundai-kia-smart-key-fob-fcc-id-sy5hmfna04-315-mhz",
+      "https://www.locksmithkeyless.com/products/diagcode-pin-code-calculation-tool-software-for-2006-2016-hyundai-kia"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Sonata",
+    "yearStart": 2015,
+    "yearEnd": 2019,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HY22",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas AES 128-bit / 8A chip",
+        "chipClonable": "no",
+        "fccId": "CQOFD00120",
+        "partNumber": "95440-C1000",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "Texas AES 128-bit (ID8A)",
+    "pinRequired": false,
+    "programming": "OBD programmer required. No on-board procedure.",
+    "programmerHint": [
+      "Autel IM608",
+      "Lonsdor K518",
+      "OBDSTAR X300 DP"
+    ],
+    "notes": "2015-2019 Sonata uses Texas 8A AES chip (not DST80 as previously listed). FCC CQOFD00120, 434 MHz. PNs 95440-C1000/C1001 (2015-17), 95440-C1500/C2500 (2018-19). HY22 emergency blade. PIN-by-VIN no longer required for this key type.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2015-2017-hyundai-sonata-smart-key-4b-fcc-cqofd00120",
+      "https://www.uhs-hardware.com/products/2015-2017-hyundai-sonata-4-button-smart-key-pn-95440-c1001-cqofd00120-oem"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Sonata",
+    "yearStart": 2020,
+    "yearEnd": 2023,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "TOY49",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47 / HITAG3 (PCF7938)",
+        "chipClonable": "no",
+        "fccId": "TQ8-FOB-4F27",
+        "partNumber": "95440-L1010",
+        "frequency": "434"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "TOY49",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47 / HITAG3 (NCF29A1X)",
+        "chipClonable": "no",
+        "fccId": "TQ8-FOB-4F28",
+        "partNumber": "95440-L1500",
+        "frequency": "433"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47 / HITAG3",
+        "chipClonable": "no",
+        "fccId": "TQ8-FOB-4F27",
+        "partNumber": "95440-L1110",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "HITAG3 / ID47 AES 128-bit",
+    "pinRequired": false,
+    "programming": "OBD programmer required. No on-board. Programmable by Xhorse, Lonsdor, OBDSTAR, Autel.",
+    "programmerHint": [
+      "Autel IM608",
+      "Lonsdor K518",
+      "OBDSTAR X300 DP",
+      "Xhorse VVDI2"
+    ],
+    "notes": "2020-2021 uses TOY49 emergency blade (5-btn variant L1010 at 434 MHz; 7-btn variant L1500/L1600 at 433 MHz); 2022+ shifted to KK12. FCC 4F27 = 5-btn at 434 MHz, FCC 4F28 = 7-btn at 433 MHz. Multiple part numbers — verify VIN.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2020-2021-hyundai-sonata-smart-key-w-digital-key-function-5b-fcc-tq8-fob-4f27",
+      "https://keyless2go.com/products/keyless2go-hyundai-7-button-smart-key-tq8-fob-4f28-95440-l1500-433-mhz",
+      "https://keyshop-online.com/products/oem-hyundai-sonata-2022-smart-key-5b-434mhz-kk12-id47-l1110"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Tucson",
+    "yearStart": 2004,
+    "yearEnd": 2009,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HY22",
+        "bladeIlco": "HY20-PT",
+        "bladeSilca": "LXP90",
+        "bladeJma": "HY20",
+        "transponderChip": "Philips ID46 / PCF7936AS",
+        "chipClonable": "yes",
+        "fccId": null,
+        "partNumber": null,
+        "frequency": null
+      }
+    ],
+    "immobilizer": "Philips ID46",
+    "pinRequired": false,
+    "programming": "OBD programmer or cloner for ID46.",
+    "programmerHint": [
+      "Autel IM608",
+      "Xhorse VVDI2"
+    ],
+    "notes": "First-gen Tucson 2004-2009 uses standard ID46 PCF7936.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/hyundai_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2006-2018-hyundai-kia-hy20-transponder-key-46-chip-k-hy20"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Tucson",
+    "yearStart": 2010,
+    "yearEnd": 2015,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HY22",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips PCF7952A / ID46 Hitag2",
+        "chipClonable": "token",
+        "fccId": "SY5HMFNA04",
+        "partNumber": "95440-2S300",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "PCF7952A Hitag2",
+    "pinRequired": true,
+    "programming": "PIN required (2006-2016 era). PIN-by-VIN. OBD programmer.",
+    "programmerHint": [
+      "DiagCode VIN-to-PIN",
+      "Autel IM608",
+      "Lonsdor K518"
+    ],
+    "notes": "2010-2015 Tucson 2nd gen. PCF7952A/Hitag2 chip. FCC SY5HMFNA04 at 315 MHz. PN 95440-2S300.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/hyundai_transponder_catalog.html",
+      "https://www.bestkeysolution.com/products/key2u-hyundai-kia-smart-key-fob-fcc-id-sy5hmfna04-315-mhz"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Tucson",
+    "yearStart": 2016,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HY22",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47 / HITAG3",
+        "chipClonable": "no",
+        "fccId": "TQ8-FOB-4F07",
+        "partNumber": "95440-D3100",
+        "frequency": "433"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HY22",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47 / HITAG3",
+        "chipClonable": "no",
+        "fccId": "TQ8-FOB-4F11",
+        "partNumber": "95440-D3110",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "HITAG3 / ID47",
+    "pinRequired": false,
+    "programming": "OBD programmer required.",
+    "programmerHint": [
+      "Autel IM608",
+      "Lonsdor K518",
+      "OBDSTAR X300 DP"
+    ],
+    "notes": "3rd gen Tucson 2016-2020 uses ID47 HITAG3 at 433 MHz — NOT Texas DST80 as previously listed. FCC TQ8-FOB-4F07 (PN 95440-D3100, 2016-2018); FCC TQ8-FOB-4F11 (PN 95440-D3110, 2018-2020). Also has non-transponder flip remote PN 95430-D3010 / FCC TQ8-RKE-4F25 for non-push-start trims. HY22 emergency blade. Chip corrected from DST80→ID47 HITAG3 per multiple live sources.",
+    "confidence": "verified",
+    "sources": [
+      "https://abkeys.com/products/hyundai-tucson-smart-key-4buttons-433mhz-tq8-fob-4f11-95440-d3100nna-4960",
+      "https://abkeys.com/products/hyundai-tucson-smart-key-4buttons-433mhz-tq8-fob-4f11-95440-d3110-4817",
+      "https://www.amazon.com/Keymall-Keyless-Control-Replacement-Hyundai/dp/B09MT3BPHF"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Tucson",
+    "yearStart": 2021,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "TOY49",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47 / HITAG3 (NCF29A1X)",
+        "chipClonable": "no",
+        "fccId": "TQ8-FOB-4F26",
+        "partNumber": "95440-N9030",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "HITAG3 / ID47",
+    "pinRequired": false,
+    "programming": "OBD programmer required. Professional locksmith or dealer.",
+    "programmerHint": [
+      "Autel IM608",
+      "Lonsdor K518",
+      "OBDSTAR X300 DP",
+      "Xhorse VVDI2"
+    ],
+    "notes": "4th gen Tucson 2021+. FCC TQ8-FOB-4F26. TOY49 emergency blade confirmed by keyshop-online OEM listing and abkeys. OEM PNs: 95440-N9030 (2021, 4-btn), 95440-N9050/N9052 (2022-24, 4-btn), 95440-N9070/N9072 (5-btn). Frequency: abkeys genuine listing confirms 433 MHz for PN N9030; keyshop-online OEM N9030 lists 434 MHz — conflict; Keyless2Go (N9052) confirms 433 MHz. Listing as 433 MHz (2 sources vs 1). Note: some 2025+ models (ID4A/KK12) are a separate gen.",
+    "confidence": "verified",
+    "sources": [
+      "https://abkeys.com/products/hyundai-tucson-smart-key-4buttons-433mhz-hitag3-2021up-95440-n9030-5047",
+      "https://keyless2go.com/products/keyless2go-hyundai-4-button-smart-key-remote-tq8-fob-4f26-95440-n9052-433-mhz",
+      "https://keyshop-online.com/products/oem-hyundai-tucson-2021-2023-smart-key-4b-434mhz-toy49-id47-n9030"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Santa Fe",
+    "yearStart": 2007,
+    "yearEnd": 2012,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HY22",
+        "bladeIlco": "HY20-PT",
+        "bladeSilca": "LXP90",
+        "bladeJma": "HY20",
+        "transponderChip": "Philips ID46 / PCF7936AS",
+        "chipClonable": "yes",
+        "fccId": null,
+        "partNumber": null,
+        "frequency": null
+      }
+    ],
+    "immobilizer": "Philips ID46",
+    "pinRequired": false,
+    "programming": "OBD programmer or ID46 cloner.",
+    "programmerHint": [
+      "Autel IM608",
+      "Xhorse VVDI2"
+    ],
+    "notes": "Santa Fe 2007-2012 uses ID46 PCF7936. Precoded on some 2012 dealer stock.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/hyundai_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Santa Fe",
+    "yearStart": 2013,
+    "yearEnd": 2018,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HY22",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips PCF7952A / ID46 Hitag2",
+        "chipClonable": "token",
+        "fccId": "SY5HMFNA04",
+        "partNumber": "95440-3V021",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "PCF7952A / Hitag2",
+    "pinRequired": true,
+    "programming": "PIN required (2006-2016). PIN-by-VIN. OBD programmer.",
+    "programmerHint": [
+      "DiagCode VIN-to-PIN",
+      "Autel IM608",
+      "Lonsdor K518"
+    ],
+    "notes": "2013-2018 Santa Fe uses PCF7952A. FCC SY5HMFNA04 at 315 MHz. OEM PN 95440-3V021. Later 2016+ units may have HiTag3.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/hyundai_transponder_catalog.html",
+      "https://www.bestkeysolution.com/products/key2u-hyundai-kia-smart-key-fob-fcc-id-sy5hmfna04-315-mhz"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Santa Fe",
+    "yearStart": 2019,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47 / HITAG3 (NCF29A1X)",
+        "chipClonable": "no",
+        "fccId": "TQ8-FOB-4F19",
+        "partNumber": "95440-S2000",
+        "frequency": "434"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47 / HITAG3",
+        "chipClonable": "no",
+        "fccId": "TQ8-FOB-4F27",
+        "partNumber": "95440-S1670",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "HITAG3 / ID47",
+    "pinRequired": false,
+    "programming": "OBD programmer required. Professional locksmith or dealer.",
+    "programmerHint": [
+      "Autel IM608",
+      "Lonsdor K518",
+      "OBDSTAR X300 DP",
+      "Xhorse VVDI2"
+    ],
+    "notes": "2019-2020 uses FCC TQ8-FOB-4F19, PN 95440-S2000, 434 MHz. 2021-2024 uses FCC TQ8-FOB-4F27/4F28, PN 95440-S1670/S1660. KK12 emergency blade. ID47 chip across all.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.amazon.com/StandardAutoPart-Proximity-Compatible-TQ8-FOB-4F19-95440-S2000/dp/B0C212G82T",
+      "https://www.amazon.com/Yewong-Keyless-Hyundai-FCC-ID/dp/B0DZXYS88G"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Accent",
+    "yearStart": 2012,
+    "yearEnd": 2017,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HY18",
+        "bladeIlco": "HY18R-PT",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 / PCF7936AS",
+        "chipClonable": "yes",
+        "fccId": null,
+        "partNumber": null,
+        "frequency": null
+      }
+    ],
+    "immobilizer": "Philips ID46",
+    "pinRequired": false,
+    "programming": "OBD programmer or ID46 cloner.",
+    "programmerHint": [
+      "Autel IM608",
+      "Xhorse VVDI2",
+      "Smart Pro by Ilco"
+    ],
+    "notes": "2012-2017 Accent uses HY18 keyway (distinct from HY22 used on larger models). ID46 chip cloneable.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2012-2017-hyundai-accent-transponder-key-id46-chip-hy18",
+      "https://www.transpondery.com/transponder_catalog/hyundai_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Accent",
+    "yearStart": 2018,
+    "yearEnd": 2022,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": null,
+        "chipClonable": "no",
+        "fccId": "NYOSYEC4TX1707",
+        "partNumber": "95430-J0700",
+        "frequency": "434"
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 4D60 80-bit",
+        "chipClonable": "no",
+        "fccId": "NYOSYEC4TX1707",
+        "partNumber": "95430-J0800",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "Texas 4D60 80-bit (transponder variant only)",
+    "pinRequired": false,
+    "programming": "OBD programmer required for transponder variant (J0800). Base flip (J0700) has no transponder.",
+    "programmerHint": [
+      "Autel IM608",
+      "Smart Pro by Ilco"
+    ],
+    "notes": "2018-2022 Accent uses flip key FCC NYOSYEC4TX1707, KK12 blade, 434 MHz. Two PN variants: 95430-J0700 (non-transponder, no chip) and 95430-J0800 (with Texas 4D60 80-bit transponder). Chip corrected from 'Philips ID47/HITAG3' (wrong) → non-transponder / Texas 4D60 per Locksmith Keyless, UHS Hardware, Transponder Island. Part number corrected from 95440-J0700→95430-J0700.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2018-2021-hyundai-accent-se-sel-remote-flip-key-4b-fcc-nyosyec4tx1707-hc-4bt",
+      "https://www.uhs-hardware.com/products/2018-2021-hyundai-accent-4-button-flip-key-pn-95430-j0700-nyosyec4tx1707-hc-4bt-oem-1",
+      "https://transponderisland.com/shop/tik-hyu-165-2022-hyundai-accent-remote-flip-key-4b-trunk-hc-4bt-tp-kk12-with-transponder-chip-434-mhz-95430-j0800-34805"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Kona",
+    "yearStart": 2018,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47 / HITAG3",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": "95440-J9000",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "HITAG3 / ID47",
+    "pinRequired": false,
+    "programming": "OBD programmer required.",
+    "programmerHint": [
+      "Autel IM608",
+      "Lonsdor K518",
+      "OBDSTAR X300 DP"
+    ],
+    "notes": "Kona 2018-2020. ID47 HITAG3 chip. KK12 emergency blade. 433 MHz. OEM PNs J9000/J9100.",
+    "confidence": "verified",
+    "sources": [
+      "https://keyshop-online.com/products/aft-hyundai-kona-2018-2020-smart-key-4b-433mhz-kk12-id47-j9000",
+      "https://www.transpondery.com/transponder_catalog/hyundai_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Kona",
+    "yearStart": 2021,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47 / HITAG3 (NCF29A1X)",
+        "chipClonable": "no",
+        "fccId": "TQ8-FOB-4F43",
+        "partNumber": "95440-J9450",
+        "frequency": "433"
+      },
+      {
+        "keyType": "Transponder",
+        "trimDependent": true,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 4D60 80-bit",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": null,
+        "frequency": null
+      }
+    ],
+    "immobilizer": "HITAG3 / ID47 (smart) or 4D60 (transponder trim)",
+    "pinRequired": false,
+    "programming": "OBD programmer required. Programmable by Lonsdor, OBDSTAR, Autel.",
+    "programmerHint": [
+      "Autel IM608",
+      "Lonsdor K518",
+      "OBDSTAR X300 DP"
+    ],
+    "notes": "2021-2022 Kona uses ID47 NCF29A1X at 433 MHz (FCC TQ8-FOB-4F43, PN J9450/J9600). Some base trim models may use transponder-only with KK12/4D60. 2024+ Kona shifts to ID4A chip.",
+    "confidence": "verified",
+    "sources": [
+      "https://keyshop-online.com/products/oem-hyundai-kona-2021-2022-smart-key-4b-433mhz-kk12-id47-j9600",
+      "https://www.uhs-hardware.com/products/2021-hyundai-kona-4-button-smart-key-pn-95440-j9450-tq8-fob-4f43-oem",
+      "https://www.locksmithkeyless.com/products/2015-2023-hyundai-kia-transponder-key-4d60-80-bits-chip-kk12"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Palisade",
+    "yearStart": 2020,
+    "yearEnd": 2022,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "HITAG3 NCF29AxX / ID47",
+        "chipClonable": "no",
+        "fccId": "TQ8-FOB-4F29",
+        "partNumber": "95440-S8010",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "HITAG3 / ID47",
+    "pinRequired": false,
+    "programming": "OBD programmer required. Professional locksmith or dealer.",
+    "programmerHint": [
+      "Autel IM608",
+      "Lonsdor K518",
+      "OBDSTAR X300 DP"
+    ],
+    "notes": "Palisade 2020-2021 uses FCC TQ8-FOB-4F29, PN 95440-S8010, 5-btn at 433 MHz. 2022+ switches to FCC TQ8-FOB-4F28 (7-btn, PN S8590/S8600). ID47 NCF29A1X.",
+    "confidence": "verified",
+    "sources": [
+      "https://abkeys.com/products/hyundai-palisade-smart-key-95440-s8010-433mhz-tq8-fob-4f29-2088",
+      "https://keyless2go.com/products/keyless2go-hyundai-5-button-smart-key-tq8-fob-4f29-95440-s8010-433-mhz"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Palisade",
+    "yearStart": 2022,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "HITAG3 NCF29A1X / ID47",
+        "chipClonable": "no",
+        "fccId": "TQ8-FOB-4F28",
+        "partNumber": "95440-S8590",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "HITAG3 / ID47",
+    "pinRequired": false,
+    "programming": "OBD programmer required.",
+    "programmerHint": [
+      "Autel IM608",
+      "Lonsdor K518",
+      "OBDSTAR X300 DP"
+    ],
+    "notes": "2022+ Palisade uses 7-btn FCC TQ8-FOB-4F28, PN 95440-S8590 (2022) / 95440-S8600 (2023). 433 MHz, ID47 NCF29A1X.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.tlkeys.com/products/hyundai-palisade-smart-key-95440-s8590-7-buttons-433mhz",
+      "https://abkeys.com/products/hyundai-palisade-smart-key-95440-s8010-433mhz-tq8-fob-4f29-2088"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Veloster",
+    "yearStart": 2012,
+    "yearEnd": 2018,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HY22",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas DST80 / ID6E-MA",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": null,
+        "frequency": null
+      }
+    ],
+    "immobilizer": "Texas DST80",
+    "pinRequired": false,
+    "programming": "OBD programmer required.",
+    "programmerHint": [
+      "Autel IM608",
+      "Lonsdor K518"
+    ],
+    "notes": "2012-2018 Veloster uses Texas DST80/ID6E-MA. HY22 emergency blade.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/hyundai_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Veloster",
+    "yearStart": 2019,
+    "yearEnd": 2022,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47 / HITAG3",
+        "chipClonable": "no",
+        "fccId": "SY5IGFGE04",
+        "partNumber": "95440-J3000",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "HITAG3 / ID47",
+    "pinRequired": false,
+    "programming": "OBD programmer required. Smart Pro (Ilco) or Autel.",
+    "programmerHint": [
+      "Autel IM608",
+      "Smart Pro by Ilco",
+      "Lonsdor K518"
+    ],
+    "notes": "2019-2022 Veloster and Veloster N use FCC SY5IGFGE04 at 434 MHz. ID47 HITAG3. PN 95440-J3000 (Veloster) / K9000 (Veloster N). KK12 emergency blade.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2019-2022-hyundai-veloster-n-smart-key-4b-fcc-sy5igfge04",
+      "https://www.locksmithkeyless.com/products/2021-hyundai-veloster-smart-key-4b-fob-fcc-sy5igfge04"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Venue",
+    "yearStart": 2020,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47 / HITAG3",
+        "chipClonable": "no",
+        "fccId": "SY5IGFGE04",
+        "partNumber": "95440-K2400",
+        "frequency": "434"
+      },
+      {
+        "keyType": "Transponder",
+        "trimDependent": true,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "HITAG-AES 4A / PCF7961M",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": null,
+        "frequency": null
+      }
+    ],
+    "immobilizer": "HITAG3 / ID47 or HITAG-AES 4A depending on trim",
+    "pinRequired": false,
+    "programming": "OBD programmer required. Lonsdor, OBDSTAR, Autel.",
+    "programmerHint": [
+      "Autel IM608",
+      "Lonsdor K518",
+      "OBDSTAR X300 DP"
+    ],
+    "notes": "Venue 2020-2024 uses FCC SY5IGFGE04 at 434 MHz, PN 95440-K2400/K2410. Some base trims use transponder-only KK12 with 4A chip. KK12 emergency blade.",
+    "confidence": "verified",
+    "sources": [
+      "https://transponderisland.com/shop/tik-hyu-122-2020-2024-hyundai-venue-smart-key-4b-starter-sy5igfge04-95440-k2400-4546",
+      "https://www.locksmithkeyless.com/products/2019-2024-hyundai-kia-transponder-key-4a-chip-kk12"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Optima",
+    "yearStart": 2001,
+    "yearEnd": 2010,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "KK10",
+        "bladeIlco": "KK10-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP12KI",
+        "transponderChip": "Philips ID46 / PCF7936AS",
+        "chipClonable": "yes",
+        "fccId": null,
+        "partNumber": null,
+        "frequency": null
+      }
+    ],
+    "immobilizer": "Philips ID46",
+    "pinRequired": false,
+    "programming": "OBD programmer or ID46 cloner.",
+    "programmerHint": [
+      "Autel IM608",
+      "Xhorse VVDI2"
+    ],
+    "notes": "2001-2010 Optima/Magentis uses ID46. KK10 blade.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/kia_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2006-2018-hyundai-kia-hy20-transponder-key-46-chip-k-hy20"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Optima",
+    "yearStart": 2011,
+    "yearEnd": 2015,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "KK10",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips PCF7952A / ID46 Hitag2",
+        "chipClonable": "token",
+        "fccId": "SY5HMFNA04",
+        "partNumber": null,
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "PCF7952A / Hitag2",
+    "pinRequired": true,
+    "programming": "PIN required (PIN-by-VIN 2006-2016). OBD programmer.",
+    "programmerHint": [
+      "DiagCode VIN-to-PIN",
+      "Autel IM608",
+      "Lonsdor K518"
+    ],
+    "notes": "2011-2015 Optima. PCF7952A. FCC SY5HMFNA04 at 315 MHz. KK10 or KK12 blade. OEM also lists SVI-HMFNA04, SVI-XMFGE03.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/kia_transponder_catalog.html",
+      "https://www.bestkeysolution.com/products/key2u-hyundai-kia-smart-key-fob-fcc-id-sy5hmfna04-315-mhz"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Optima / K5",
+    "yearStart": 2016,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47 / HITAG3",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": "95440-D4100",
+        "frequency": null
+      }
+    ],
+    "immobilizer": "HITAG3 / ID47",
+    "pinRequired": false,
+    "programming": "OBD programmer required.",
+    "programmerHint": [
+      "Autel IM608",
+      "Lonsdor K518",
+      "OBDSTAR X300 DP"
+    ],
+    "notes": "2016-2020 Optima uses HITAG3. OEM PN 95440-D4100. KK12 blade.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/kia_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "K5",
+    "yearStart": 2021,
+    "yearEnd": 2023,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "HITAG-AES 4A chip",
+        "chipClonable": "no",
+        "fccId": "CQOFD00790",
+        "partNumber": "95440-L3020",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "HITAG-AES 128-bit (4A)",
+    "pinRequired": false,
+    "programming": "OBD programmer required. Autel IM608, Lonsdor.",
+    "programmerHint": [
+      "Autel IM608",
+      "Lonsdor K518",
+      "OBDSTAR X300 DP"
+    ],
+    "notes": "K5 (renamed from Optima) 2021-2023. 4A chip, FCC CQOFD00790, PN 95440-L3020/L3010, 433 MHz. KK12 emergency blade.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.amazon.com/Keyless-Entry-Replacement-FCC-ID/dp/B0GCD92GM3",
+      "https://royalkeysupply.com/products/kia-aftermarket-2019-2024-seltos-forte-k5-transponder-key"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Forte",
+    "yearStart": 2008,
+    "yearEnd": 2013,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "KK10",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips PCF7952A / ID46 Hitag2",
+        "chipClonable": "token",
+        "fccId": "SVI-HMFNA04",
+        "partNumber": null,
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "PCF7952A / Hitag2",
+    "pinRequired": true,
+    "programming": "PIN required (PIN-by-VIN). OBD programmer.",
+    "programmerHint": [
+      "DiagCode VIN-to-PIN",
+      "Autel IM608",
+      "Lonsdor K518"
+    ],
+    "notes": "2008-2013 Forte (Cerato) uses PCF7952A with FCC SVI-HMFNA04 at 315 MHz. KK10 blade.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/kia_transponder_catalog.html",
+      "https://www.bestkeysolution.com/products/key2u-hyundai-kia-smart-key-fob-fcc-id-sy5hmfna04-315-mhz"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Forte",
+    "yearStart": 2014,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas DST80 / ID6E-MA",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": null,
+        "frequency": null
+      }
+    ],
+    "immobilizer": "Texas DST80",
+    "pinRequired": false,
+    "programming": "OBD programmer required.",
+    "programmerHint": [
+      "Autel IM608",
+      "Lonsdor K518"
+    ],
+    "notes": "2014-2020 Forte (Cerato) uses DST80 chip. KK12 blade.",
+    "confidence": "single-source",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/kia_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Forte",
+    "yearStart": 2021,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": true,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas AES 128-bit / 8A chip",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": null,
+        "frequency": null
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "HITAG-AES 4A chip",
+        "chipClonable": "no",
+        "fccId": "CQOFD00790",
+        "partNumber": "95440-M7200",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "AES 128-bit (8A transponder or 4A smart)",
+    "pinRequired": false,
+    "programming": "OBD programmer required. Autel, Lonsdor.",
+    "programmerHint": [
+      "Autel IM608",
+      "Lonsdor K518",
+      "OBDSTAR X300 DP"
+    ],
+    "notes": "2021-2023 Forte transponder key uses 8A Texas AES with KK12 blade. Smart key variant uses 4A chip, FCC CQOFD00790. Forte shares key blank with Seltos/K5.",
+    "confidence": "verified",
+    "sources": [
+      "https://keytectools.com/product/kia-forte-transponder-key-2021-2023-kk12-8a-chip/",
+      "https://royalkeysupply.com/products/kia-aftermarket-2019-2024-seltos-forte-k5-transponder-key"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Soul",
+    "yearStart": 2008,
+    "yearEnd": 2013,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "KK10",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips PCF7952A / ID46 Hitag2",
+        "chipClonable": "token",
+        "fccId": "SVI-HMFNA04",
+        "partNumber": null,
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "PCF7952A / Hitag2",
+    "pinRequired": true,
+    "programming": "PIN required (PIN-by-VIN). OBD programmer.",
+    "programmerHint": [
+      "DiagCode VIN-to-PIN",
+      "Autel IM608"
+    ],
+    "notes": "1st gen Soul 2008-2013. PCF7952A Hitag2. FCC SVI-HMFNA04 at 315 MHz. KK10 blade.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/kia_transponder_catalog.html",
+      "https://www.bestkeysolution.com/products/key2u-hyundai-kia-smart-key-fob-fcc-id-sy5hmfna04-315-mhz"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Soul",
+    "yearStart": 2014,
+    "yearEnd": 2018,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas DST80 / ID6E-MA",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": "95430-B2100",
+        "frequency": null
+      }
+    ],
+    "immobilizer": "Texas DST80",
+    "pinRequired": false,
+    "programming": "OBD programmer required.",
+    "programmerHint": [
+      "Autel IM608",
+      "Lonsdor K518"
+    ],
+    "notes": "2nd gen Soul 2014-2018. Texas DST80/ID6E-MA. OEM PN 95430-B2100. KK12 blade.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/kia_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Soul",
+    "yearStart": 2019,
+    "yearEnd": 2023,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "HITAG-AES 4A / PCF7961M",
+        "chipClonable": "no",
+        "fccId": "SY5MQ4FGE05",
+        "partNumber": null,
+        "frequency": "433"
+      },
+      {
+        "keyType": "Transponder",
+        "trimDependent": true,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "HITAG-AES 4A / PCF7961M",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": null,
+        "frequency": null
+      }
+    ],
+    "immobilizer": "HITAG-AES 4A (PCF7961M)",
+    "pinRequired": false,
+    "programming": "OBD programmer required. Lonsdor, Autel, OBDSTAR.",
+    "programmerHint": [
+      "Autel IM608",
+      "Lonsdor K518",
+      "OBDSTAR X300 DP"
+    ],
+    "notes": "3rd gen Soul 2019-2023. 4A HITAG-AES chip. KK12 blade. Smart key and transponder variants. Soul shares key family with Sorento 2019-2024.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2019-2024-hyundai-kia-transponder-key-4a-chip-kk12",
+      "https://royalkeysupply.com/products/kia-aftermarket-2019-2024-sorento-soul-transponder-key-kk12"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Sorento",
+    "yearStart": 2010,
+    "yearEnd": 2014,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "KK10",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips PCF7952A / ID46 Hitag2",
+        "chipClonable": "token",
+        "fccId": "SVI-HMFNA04",
+        "partNumber": null,
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "PCF7952A / Hitag2",
+    "pinRequired": true,
+    "programming": "PIN required (PIN-by-VIN). OBD programmer.",
+    "programmerHint": [
+      "DiagCode VIN-to-PIN",
+      "Autel IM608",
+      "Lonsdor K518"
+    ],
+    "notes": "2010-2014 Sorento. PCF7952A. FCC SVI-HMFNA04, 315 MHz. KK10 blade.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/kia_transponder_catalog.html",
+      "https://www.bestkeysolution.com/products/key2u-hyundai-kia-smart-key-fob-fcc-id-sy5hmfna04-315-mhz"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Sorento",
+    "yearStart": 2015,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47 / HITAG3",
+        "chipClonable": "no",
+        "fccId": "TQ8-FOB-4F06",
+        "partNumber": "95440-C6000",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "HITAG3 / ID47",
+    "pinRequired": false,
+    "programming": "OBD programmer required.",
+    "programmerHint": [
+      "Autel IM608",
+      "Lonsdor K518",
+      "OBDSTAR X300 DP"
+    ],
+    "notes": "2015-2020 Sorento. ID47 HITAG3. FCC TQ8-FOB-4F06, PN 95440-C6000/C6100. 433 MHz. KK12 blade.",
+    "confidence": "verified",
+    "sources": [
+      "https://abkeys.com/products/kia-sorento-smart-key-4buttons-433mhz-tq8-fob-4f06-2015up-95440-c6000-4951",
+      "https://www.amazon.com/Aichiyu-Remote-Replacement-Sorento-433MHz/dp/B0D8P8D1HM"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Sorento",
+    "yearStart": 2021,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "HITAG-AES 4A chip (NCF29A1M)",
+        "chipClonable": "no",
+        "fccId": "SY5MQ4FGE05",
+        "partNumber": "95440-P2010",
+        "frequency": "433"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "HITAG-AES 4A chip",
+        "chipClonable": "no",
+        "fccId": "SY5MQ4AFGE04",
+        "partNumber": "95440-R5010",
+        "frequency": "434"
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG-AES 4A chip",
+        "chipClonable": "no",
+        "fccId": "SY5SKRGE03",
+        "partNumber": "95430-R5100",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "HITAG-AES 128-bit (4A)",
+    "pinRequired": false,
+    "programming": "OBD programmer required. Professional only.",
+    "programmerHint": [
+      "Autel IM608",
+      "Lonsdor K518",
+      "OBDSTAR X300 DP"
+    ],
+    "notes": "2021-2023 Sorento 4th gen. 4A HITAG-AES (NCF29A1M). FCC SY5MQ4FGE05 (5-btn, PN P2010) confirmed 433 MHz by abkeys genuine OEM listing and Amazon KEYECU listing — corrected from erroneous 434 MHz. FCC SY5MQ4AFGE04 (4-btn, PN R5010), SY5SKRGE03 (flip 3-btn, PN 95430-R5100). All use KK12 blade.",
+    "confidence": "verified",
+    "sources": [
+      "https://abkeys.com/products/kia-sorento-smart-key-5b-95440-p2010-433mhz-sy5mq4fge05-5149",
+      "https://www.amazon.com/Keyless-Replacement-Sorento-FCC-ID/dp/B0GC6J7YHB",
+      "https://www.uhs-hardware.com/products/2021-2023-kia-sorento-4-button-smart-key-pn-95440-r5010-sy5mq4afge04-oem",
+      "https://www.locksmithkeyless.com/products/2021-2023-kia-sorento-flip-key-3b-fob-fcc-sy5skrge03"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Sportage",
+    "yearStart": 2004,
+    "yearEnd": 2009,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "KK10",
+        "bladeIlco": "KK10-PT",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 / PCF7936AS",
+        "chipClonable": "yes",
+        "fccId": null,
+        "partNumber": null,
+        "frequency": null
+      }
+    ],
+    "immobilizer": "Philips ID46",
+    "pinRequired": false,
+    "programming": "OBD programmer or ID46 cloner.",
+    "programmerHint": [
+      "Autel IM608",
+      "Xhorse VVDI2"
+    ],
+    "notes": "2004-2009 Sportage. ID46 PCF7936. KK10 blade.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/kia_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Sportage",
+    "yearStart": 2010,
+    "yearEnd": 2016,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "KK10",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips PCF7952A / ID46 Hitag2",
+        "chipClonable": "token",
+        "fccId": "SVI-HMFNA04",
+        "partNumber": null,
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "PCF7952A / Hitag2",
+    "pinRequired": true,
+    "programming": "PIN required (PIN-by-VIN). OBD programmer.",
+    "programmerHint": [
+      "DiagCode VIN-to-PIN",
+      "Autel IM608"
+    ],
+    "notes": "2010-2016 Sportage. PCF7952A. FCC SVI-HMFNA04 at 315 MHz. KK10 blade. OEM PN 95440-3W350.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/kia_transponder_catalog.html",
+      "https://www.bestkeysolution.com/products/key2u-hyundai-kia-smart-key-fob-fcc-id-sy5hmfna04-315-mhz"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Sportage",
+    "yearStart": 2017,
+    "yearEnd": 2021,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47 / HITAG3",
+        "chipClonable": "no",
+        "fccId": "TQ8-FOB-4F08",
+        "partNumber": "95440-D9500",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "HITAG3 / ID47",
+    "pinRequired": false,
+    "programming": "OBD programmer required.",
+    "programmerHint": [
+      "Autel IM608",
+      "Lonsdor K518"
+    ],
+    "notes": "2017-2021 Sportage (QL gen). ID47 HITAG3. FCC TQ8-FOB-4F08. OEM PN 95440-D9500. KK12 blade.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/kia_transponder_catalog.html",
+      "https://www.go-parts.com/garage/keyless-entry-transmitter-kia-sportage-2016-2021"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Sportage",
+    "yearStart": 2022,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "HITAG-AES 4A chip",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": null,
+        "frequency": "433"
+      },
+      {
+        "keyType": "Transponder",
+        "trimDependent": true,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "HITAG-AES 4A / PCF7961M",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": null,
+        "frequency": null
+      }
+    ],
+    "immobilizer": "HITAG-AES 4A",
+    "pinRequired": false,
+    "programming": "OBD programmer required.",
+    "programmerHint": [
+      "Autel IM608",
+      "Lonsdor K518",
+      "OBDSTAR X300 DP"
+    ],
+    "notes": "2022+ Sportage NQ5 gen. 4A chip. KK12 blade. Transponder key also available for base trim. Shares key with Sorento 2021+.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2019-2024-hyundai-kia-transponder-key-4a-chip-kk12",
+      "https://www.transpondery.com/transponder_catalog/kia_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Telluride",
+    "yearStart": 2020,
+    "yearEnd": 2022,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47 / HITAG3 (PCF7938Xa)",
+        "chipClonable": "no",
+        "fccId": "TQ8-FOB-4F24",
+        "partNumber": "95440-S9000",
+        "frequency": "433"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47 / HITAG3 (PCF7938Xa)",
+        "chipClonable": "no",
+        "fccId": "TQ8-FOB-4F34",
+        "partNumber": "95440-S9200",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "HITAG3 / ID47",
+    "pinRequired": false,
+    "programming": "OBD programmer required. Professional locksmith or dealer.",
+    "programmerHint": [
+      "Autel IM608",
+      "Lonsdor K518",
+      "OBDSTAR X300 DP"
+    ],
+    "notes": "Telluride 2020-2022. FCC TQ8-FOB-4F24 (4-btn, PN S9000) and TQ8-FOB-4F34 (5-btn, PN S9200/S9330). ID47 PCF7938Xa. 433 MHz. KK12 emergency blade.",
+    "confidence": "verified",
+    "sources": [
+      "https://abkeys.com/products/kia-telluride-smart-key-4buttons-433mhz-tq8-fob-4f24-95440-s9000-4871",
+      "https://abkeys.com/products/kia-telluride-smart-key-5buttons-433mhz-tq8-fob-4f34-95440-s9200-4978"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Telluride",
+    "yearStart": 2023,
+    "yearEnd": 2025,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47 / HITAG3 (NCF29A1X)",
+        "chipClonable": "no",
+        "fccId": "TQ8-FOB-4F71",
+        "partNumber": "95440-S9510",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "HITAG3 / ID47",
+    "pinRequired": false,
+    "programming": "OBD programmer required.",
+    "programmerHint": [
+      "Autel IM608",
+      "Lonsdor K518",
+      "OBDSTAR X300 DP"
+    ],
+    "notes": "2023-2025 Telluride (facelift). FCC TQ8-FOB-4F71. 433 MHz. KK12 blade. Chip is ID47 HITAG3 (not 4A AES as previously listed — multiple live sources confirm HITAG3). PNs: S9510 (5-btn), S9540 (5-btn alt), S9550 (4-btn).",
+    "confidence": "verified",
+    "sources": [
+      "https://abkeys.com/products/kia-telluride-smart-key-5b-95440-s9510-tq8-fob-4f71-5185",
+      "https://www.locksmithkeyless.com/products/2023-kia-telluride-smart-key-5b-w-remote-start-hatch-fob-fcc-tq8-fob-4f71-w-touch-handle-95440-s9510"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Rio",
+    "yearStart": 2006,
+    "yearEnd": 2011,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "KK10",
+        "bladeIlco": "KK10-PT",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 / PCF7936AS",
+        "chipClonable": "yes",
+        "fccId": null,
+        "partNumber": null,
+        "frequency": null
+      }
+    ],
+    "immobilizer": "Philips ID46",
+    "pinRequired": false,
+    "programming": "OBD programmer or cloner.",
+    "programmerHint": [
+      "Autel IM608"
+    ],
+    "notes": "2006-2011 Rio. ID46. KK10 blade.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/kia_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Rio",
+    "yearStart": 2012,
+    "yearEnd": 2017,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "KK10",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips PCF7952 / ID46 Hitag2",
+        "chipClonable": "token",
+        "fccId": "SVI-MDFEU03",
+        "partNumber": null,
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "PCF7952 / Hitag2",
+    "pinRequired": false,
+    "programming": "OBD programmer required.",
+    "programmerHint": [
+      "Autel IM608",
+      "Lonsdor K518"
+    ],
+    "notes": "2012-2017 Rio. FCC SVI-MDFEU03 at 433 MHz uses PCF7952 MCU (Philips Hitag2) — not DST80 as previously listed. Confirmed by transpondery key description page. OEM PN 95430-H8600.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/keys/kia/svi-mdfeu03_kia_smart_key.html",
+      "https://www.transpondery.com/transponder_catalog/kia_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Rio",
+    "yearStart": 2018,
+    "yearEnd": 2023,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Flip",
+        "trimDependent": false,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 4D70 DST80",
+        "chipClonable": "no",
+        "fccId": "NYOSYEC4TX1611",
+        "partNumber": "95430-H9850",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "Texas 4D70 DST80",
+    "pinRequired": false,
+    "programming": "OBD programmer required. Smart Pro (Ilco) or Autel.",
+    "programmerHint": [
+      "Autel IM608",
+      "Smart Pro by Ilco"
+    ],
+    "notes": "2018-2023 Rio. Flip key with FCC NYOSYEC4TX1611, PN 95430-H9850. Texas 4D+70 DST80 chip. KK12 blade. 433 MHz.",
+    "confidence": "verified",
+    "sources": [
+      "https://transponderisland.com/shop/tik-kia-159-2020-2023-kia-rio-remote-flip-key-4b-trunk-w-transponder-34922",
+      "https://northcoastkeyless.com/product/2018-2020-kia-rio-4-button-flip-key-fob-remote-fcc-nyosyec4tx1611-p-n-95430-h9700/"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Seltos",
+    "yearStart": 2021,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP AES 128-bit / 6A chip",
+        "chipClonable": "no",
+        "fccId": "NYOSYEC5FOB1907",
+        "partNumber": "95440-Q5400",
+        "frequency": "433"
+      },
+      {
+        "keyType": "Transponder",
+        "trimDependent": true,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas AES 128-bit / 8A chip",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": null,
+        "frequency": null
+      }
+    ],
+    "immobilizer": "NXP AES 128-bit (6A/8A)",
+    "pinRequired": false,
+    "programming": "OBD programmer required. Lonsdor, OBDSTAR, Autel.",
+    "programmerHint": [
+      "Autel IM608",
+      "Lonsdor K518",
+      "OBDSTAR X300 DP"
+    ],
+    "notes": "Seltos 2021-2023. Smart key FCC NYOSYEC5FOB1907, PN Q5400 (2021-22) / Q5410 (2022-24). 6A NXP AES chip. Transponder-only trim uses 8A chip. KK12 blade.",
+    "confidence": "verified",
+    "sources": [
+      "https://keyshop-online.com/products/oem-kia-seltos-2021-smart-key-4b-433mhz-kk12-id6a-q5400",
+      "https://www.uhs-hardware.com/products/2019-2025-kia-seltos-transponder-key-8a-chip-aftermarket",
+      "https://www.uhs-hardware.com/products/2022-2024-kia-seltos-4-button-smart-key-pn-95440-q5410-nyosyec5fob1907-oem"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Sedona / Carnival",
+    "yearStart": 2002,
+    "yearEnd": 2014,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HY22",
+        "bladeIlco": "HY20-PT",
+        "bladeSilca": "LXP90",
+        "bladeJma": "HY20",
+        "transponderChip": "Philips ID46 / PCF7936AS",
+        "chipClonable": "yes",
+        "fccId": null,
+        "partNumber": null,
+        "frequency": null
+      }
+    ],
+    "immobilizer": "Philips ID46",
+    "pinRequired": false,
+    "programming": "OBD programmer or cloner.",
+    "programmerHint": [
+      "Autel IM608"
+    ],
+    "notes": "Sedona 2002-2014 (Carnival in other markets). ID46. HY22/LXP90 blade for some; also KK10 for some years.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/kia_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2006-2018-hyundai-kia-hy20-transponder-key-46-chip-k-hy20"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Sedona / Carnival",
+    "yearStart": 2015,
+    "yearEnd": 2021,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HY22",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47 / HITAG3",
+        "chipClonable": "no",
+        "fccId": "SVI-YPFGE05",
+        "partNumber": "95440-A9300",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "HITAG3 / ID47",
+    "pinRequired": false,
+    "programming": "OBD programmer required.",
+    "programmerHint": [
+      "Autel IM608",
+      "Lonsdor K518",
+      "OBDSTAR X300 DP"
+    ],
+    "notes": "Sedona 2015-2020 / Carnival 2021 uses FCC SVI-YPFGE05, PN 95440-A9200/A9300, 433 MHz, HITAG3 ID47. HY22 emergency blade.",
+    "confidence": "verified",
+    "sources": [
+      "https://keyshop-online.com/products/oem-refurb-kia-carnival-2015-2021-smart-key-6b-433mhz-hy22-id47-a9300"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Kia",
+    "model": "Carnival",
+    "yearStart": 2022,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "HITAG-AES 4A chip",
+        "chipClonable": "no",
+        "fccId": "SY5KA4FGE06",
+        "partNumber": "95440-R0410",
+        "frequency": "434"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "HITAG-AES 4A chip",
+        "chipClonable": "no",
+        "fccId": "SY5KA4FGE07",
+        "partNumber": "95440-R0420",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "HITAG-AES 4A",
+    "pinRequired": false,
+    "programming": "OBD programmer required.",
+    "programmerHint": [
+      "Autel IM608",
+      "Lonsdor K518"
+    ],
+    "notes": "2022-2024 Carnival (US Sedona replacement). HITAG-AES 4A chip. KK12 blade. 434 MHz. FCC SY5KA4FGE06 = 6-btn (PN R0410); SY5KA4FGE07 = 7-btn (PN R0420). Both confirmed by locksmithkeyless + UHS Hardware.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2022-2024-kia-carnival-smart-key-7b-fob-fcc-sy5ka4fge07-95440-r0420",
+      "https://www.uhs-hardware.com/products/2022-2023-kia-carnival-6-button-smart-key-pn-95440-r0410-sy5ka4fge06-oem"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Genesis",
+    "model": "G80",
+    "yearStart": 2009,
+    "yearEnd": 2013,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HY22",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips PCF7952A / ID46 Hitag2",
+        "chipClonable": "token",
+        "fccId": "SY5HMFNA04",
+        "partNumber": "95440-B1100",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "PCF7952A / Hitag2",
+    "pinRequired": true,
+    "programming": "PIN required (PIN-by-VIN). OBD programmer.",
+    "programmerHint": [
+      "DiagCode VIN-to-PIN",
+      "Autel IM608"
+    ],
+    "notes": "2009-2013 Genesis Sedan (Hyundai-badged). PCF7952A. FCC SY5HMFNA04 at 315 MHz. PIN-by-VIN era.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/hyundai_transponder_catalog.html",
+      "https://www.bestkeysolution.com/products/key2u-hyundai-kia-smart-key-fob-fcc-id-sy5hmfna04-315-mhz"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Genesis",
+    "model": "G70",
+    "yearStart": 2019,
+    "yearEnd": 2021,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47 / HITAG3",
+        "chipClonable": "no",
+        "fccId": "TQ8-FOB-4F16",
+        "partNumber": "95440-G9000",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "HITAG3 / ID47",
+    "pinRequired": false,
+    "programming": "OBD programmer required. Professional locksmith only. No on-board.",
+    "programmerHint": [
+      "Autel IM608",
+      "Lonsdor K518",
+      "OBDSTAR X300 DP"
+    ],
+    "notes": "G70 2019-2021. FCC TQ8-FOB-4F16. PN 95440-G9000. ID47 HITAG3. 433 MHz. KK12 emergency blade. Also covers G90 2019-2020 (same key).",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2020-genesis-g70-smart-key-4b-fob-fcc-tq8-fob-4f16",
+      "https://www.americankeysupply.com/product/hyundai-genesis-g70-g90-2019-2020-4-btn-smart-key-tq8-fob-4f16-oem-new-11514",
+      "https://www.bestkeysupply.com/products/new-genesis-g70-g90-2019-2021-4button-smartkey-tq8fob4f16-1240oem"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Genesis",
+    "model": "G70",
+    "yearStart": 2022,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47 / HITAG3",
+        "chipClonable": "no",
+        "fccId": "TQ8-FOB-4F36",
+        "partNumber": "95440-G9530",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "HITAG3 / ID47",
+    "pinRequired": false,
+    "programming": "OBD programmer required. Professional only.",
+    "programmerHint": [
+      "Autel IM608",
+      "Lonsdor K518"
+    ],
+    "notes": "G70 2022-2024 (refresh). FCC TQ8-FOB-4F36. PN 95440-G9530 (6-btn trunk) / G9630. 433 MHz. ID47 HITAG3. KK12 blade.",
+    "confidence": "verified",
+    "sources": [
+      "https://yourcarkeyguys.com/products/2022-2023-genesis-g70-6b-trunk-smart-key-g9630-tq8-fob-4f36",
+      "https://www.americankeysupply.com/product/hyundai-genesis-g80-2021-2022-6-button-smart-key-tq8-fob-4f36-oem-14339"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Genesis",
+    "model": "G80",
+    "yearStart": 2017,
+    "yearEnd": 2021,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47 / HITAG3",
+        "chipClonable": "no",
+        "fccId": "TQ8-FOB-4F35",
+        "partNumber": "95440-B1210",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "HITAG3 / ID47",
+    "pinRequired": false,
+    "programming": "OBD programmer required. Professional only.",
+    "programmerHint": [
+      "Autel IM608",
+      "Lonsdor K518"
+    ],
+    "notes": "G80 2017-2021 (Genesis-branded). FCC TQ8-FOB-4F35. PN 95440-B1210. ID47. 433 MHz. KK12 blade.",
+    "confidence": "verified",
+    "sources": [
+      "https://keyecu.com/p-n-95440-t1200-tq8-fob-4f35-control-remoto-inteligente-con-chip-id47-de-433-mhz-para-hyundai-genesis-g80-2020-2021-2022-p5663.html",
+      "https://gskeyae.com/product/hyundai-genesis-g70-g90-smart-key-433mhz-95440-g9000-oem/"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Genesis",
+    "model": "G80",
+    "yearStart": 2022,
+    "yearEnd": 2025,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47 / HITAG3",
+        "chipClonable": "no",
+        "fccId": "TQ8-FOB-4F36",
+        "partNumber": "95440-T1010",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "HITAG3 / ID47",
+    "pinRequired": false,
+    "programming": "OBD programmer required. Professional only.",
+    "programmerHint": [
+      "Autel IM608",
+      "Lonsdor K518"
+    ],
+    "notes": "G80 2022-2025. FCC TQ8-FOB-4F36. PN 95440-T1010. HITAG3 ID47. 434 MHz (corrected from erroneous 315 MHz; confirmed by locksmithkeyless + UHS Hardware). 6-btn. KK12 blade. Also 8-btn variant TQ8-FOB-4F53 PN T1210.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2022-2024-genesis-g80-smart-key-6b-fob-fcc-tq8-fob-4f36-95440-t1010",
+      "https://www.uhs-hardware.com/products/2022-2024-hyundai-genesis-6-button-smart-key-pn-95440-t1010-tq8-fob-4f36-oem"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Genesis",
+    "model": "GV80",
+    "yearStart": 2020,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47 / HITAG3",
+        "chipClonable": "no",
+        "fccId": "TQ8-FOB-4F35",
+        "partNumber": "95440-T6011",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "HITAG3 / ID47",
+    "pinRequired": false,
+    "programming": "OBD programmer required. Professional only.",
+    "programmerHint": [
+      "Autel IM608",
+      "Lonsdor K518"
+    ],
+    "notes": "GV80 2020-2024. FCC TQ8-FOB-4F35. Primary OEM PNs: 95440-T6011 (2021, 6-btn), 95440-T6014 (2022+, 8-btn), 95440-T6100 (later). Earlier PN 95440-T6010 may be pre-production or 2020 variant. ID47 HITAG3. 433 MHz confirmed (abkeys, keyinnovations). KK12 emergency blade. Also shares FCC with G80 2017-2021 (different PN family).",
+    "confidence": "verified",
+    "sources": [
+      "https://abkeys.com/products/hyundai-genesis-smart-key-8b-433mhz-tq8-fob-4f35-2021up-95440-t6011-2371",
+      "https://keyinnovations.com/hyundai-kia-genesis-8-button-proximity-key-kk12-tq8-fob-4f35-new-oem/",
+      "https://keyecu.com/p-n-95440-t1200-tq8-fob-4f35-control-remoto-inteligente-con-chip-id47-de-433-mhz-para-hyundai-genesis-g80-2020-2021-2022-p5663.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  }
+]

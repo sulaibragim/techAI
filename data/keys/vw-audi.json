@@ -1,0 +1,1376 @@
+[
+  {
+    "make": "Volkswagen",
+    "model": "Jetta",
+    "yearStart": 2000,
+    "yearEnd": 2005,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HU66",
+        "bladeIlco": "HU66T6",
+        "bladeSilca": "T6",
+        "bladeJma": "TP08",
+        "transponderChip": "Megamos Crypto 48 (ID48)",
+        "chipClonable": "yes",
+        "fccId": null,
+        "partNumber": null,
+        "frequency": null
+      }
+    ],
+    "immobilizer": "IMMO3 / Megamos Crypto 48",
+    "pinRequired": false,
+    "programming": "OBD programmer required (MVP, T-Code, VVDI2)",
+    "programmerHint": ["VVDI2", "MVP Pro", "T-Code Pro"],
+    "notes": "Standard ID48 T6-blade generation. Clone-capable chip (non-precoded). Confirmed HU66T6 / Megamos ID48 on multiple sources.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/volkswagen_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2000-2006-vw-audi-hu66t6-transponder-key-megamos-id-48",
+      "https://abkeys.com/products/volkswagen-transponder-key-48-megamos-id48-chip-hu66-vw-key-358"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Volkswagen",
+    "model": "Jetta",
+    "yearStart": 2006,
+    "yearEnd": 2010,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HU66",
+        "bladeIlco": "HU66T24",
+        "bladeSilca": null,
+        "bladeJma": "TP23",
+        "transponderChip": "Megamos Crypto ID48 VW-CAN (precoded)",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": null,
+        "frequency": null
+      }
+    ],
+    "immobilizer": "IMMO4 / Megamos Crypto ID48 CAN",
+    "pinRequired": false,
+    "programming": "Dealer or OBD programmer (VVDI2, SuperVAG); precoded chip must be dealer-ordered or blank 48 chip used with VVDI2",
+    "programmerHint": ["VVDI2", "SuperVAG", "Autel IM608"],
+    "notes": "VW-CAN precoded variant. HU66T24 blade (JMA TP23). Chip is precoded, cannot clone from original. Confirmed on locksmithkeyless.com and transpondery.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/volkswagen_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2005-2013-audi-volkswagen-hu66t24-transponder-key-48-can-chip-k-vw-48can",
+      "https://www.locksmithkeyless.com/products/2006-2016-volkswagen-transponder-key-id48-can-chip-hu66t24"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Volkswagen",
+    "model": "Jetta",
+    "yearStart": 2011,
+    "yearEnd": 2016,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Flip",
+        "trimDependent": false,
+        "keyway": "HU66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Megamos Crypto ID48 CAN (precoded)",
+        "chipClonable": "no",
+        "fccId": "NBG010180T",
+        "partNumber": "5K0837202AE / 5K0837202R",
+        "frequency": "315"
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HU66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Megamos Crypto ID48 CAN (precoded)",
+        "chipClonable": "no",
+        "fccId": "NBG010206T",
+        "partNumber": "5K0837202AK",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "IMMO4 / Megamos Crypto ID48 CAN",
+    "pinRequired": false,
+    "programming": "Professional locksmith required; no onboard procedure. VVDI2 or AVDI for add-key. Blank ID48 chip recommended with VVDI2.",
+    "programmerHint": ["VVDI2", "Abrites AVDI VN009", "SuperVAG", "Autel IM508"],
+    "notes": "NBG010180T = standard flip (no PEPS/proximity), 315 MHz confirmed on Amazon / UHS Hardware / locksmithkeyless. NBG010206T = proximity/push-to-start variant, 315 MHz, confirmed UHS Hardware and bestkeysolution. Both HU66 blade. Battery CR2032.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2011-2016-volkswagen-4-button-remote-flip-key-5k0837202ae-nbg010180t-315-mhz-aftermarket",
+      "https://www.bestkeysolution.com/products/proximity-flip-key-for-volkswagen-with-fcc-id-nbg010206t-p-n-5k0837202ak-and-315-mhz-chip-48",
+      "https://www.locksmithkeyless.com/products/remote-flip-key-fob-compatible-with-volkswagen-2007-2016-4b-fcc-nbg010180t-5k0837202r",
+      "https://www.uhs-hardware.com/products/2011-2016-volkswagen-4-button-flip-key-pn-5k0837202ak-nbg010206t-hu66-kessy-315-mhz-aftermarket"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Volkswagen",
+    "model": "Jetta",
+    "yearStart": 2017,
+    "yearEnd": 2018,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Flip",
+        "trimDependent": false,
+        "keyway": "HU66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Megamos Crypto AES (MQB ID88)",
+        "chipClonable": "token",
+        "fccId": "NBGFS93N",
+        "partNumber": "5K0837202BJ",
+        "frequency": "314"
+      }
+    ],
+    "immobilizer": "IMMO5 / MQB Megamos AES",
+    "pinRequired": false,
+    "programming": "Professional locksmith required; add-key only with VVDI2, Abrites AVDI, or mini ACDP. All-keys-lost requires dealer or advanced tools.",
+    "programmerHint": ["VVDI2", "Abrites AVDI VN009", "mini ACDP", "Autel IM608"],
+    "notes": "NBGFS93N MQB flip key confirmed at 314 MHz per multiple UHS Hardware OEM listings (commonly listed as 315 in aftermarket catalogs; OEM is 314). Megamos AES chip confirmed on honrow.com and locksmithkeyless listings.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2012-2018-volkswagen-4-button-smart-flip-key-pn-5ko837202bj-nbgfs93n-hu66-mqb-314-mhz-aftermarket",
+      "https://www.locksmithkeyless.com/products/2017-2018-volkswagen-remote-flip-key-4b-fcc-nbgfs93n",
+      "https://www.honrow.com/For-VW-MQB-3-1-button-Jetta-Passat-Prox-Flip-Key-with-315MHz-Megamos-AES-FCC-ID-NBGFS93N-P-N-5K0837202BJ-5K0837202BP-p2076095.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Volkswagen",
+    "model": "Jetta",
+    "yearStart": 2019,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU66",
+        "bladeIlco": null,
+        "bladeSilca": "ID88",
+        "bladeJma": null,
+        "transponderChip": "Megamos Crypto AES (MQB ID88)",
+        "chipClonable": "token",
+        "fccId": "KR5FS14T",
+        "partNumber": "5G6959752CT / 3G0959752T",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "IMMO5 / MQB Megamos AES",
+    "pinRequired": false,
+    "programming": "Professional locksmith required; diagnostic OBD tool required",
+    "programmerHint": ["Autel IM608 Pro", "VVDI2", "Abrites AVDI VN009", "Smart Pro"],
+    "notes": "A7 Jetta (MQB). KR5FS14T at 315 MHz confirmed on locksmithkeyless. Part 5G6959752CT confirmed as 2021 Jetta OEM part on parts.vw.com. 3G0959752T confirmed on carandtruckremotes for 2019 Jetta. Previous entry listed 5G6959752BL which is unconfirmed; replaced with verified part numbers.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2018-2023-volkswagen-smart-key-5b-fcc-kr5fs14-t-3g0-959-752-bq",
+      "https://www.carandtruckremotes.com/products/2019-volkswagen-jetta-smart-remote-key-fob",
+      "https://parts.vw.com/p/Volkswagen_2021_Jetta/Keyless-Entry-Transmitter/95897774/5G6959752CTAIF.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Volkswagen",
+    "model": "Passat",
+    "yearStart": 2006,
+    "yearEnd": 2014,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HU66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Megamos Crypto ID48 (precoded)",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": "3C0959752AJ / 3C0959752AK / 3C0959752BE / 3C0959752BG",
+        "frequency": null
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HU66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Megamos Crypto ID48 CAN",
+        "chipClonable": "no",
+        "fccId": "NBG010180T",
+        "partNumber": "5K0837202R",
+        "frequency": "315"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HU66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Megamos Crypto ID48 (precoded)",
+        "chipClonable": "no",
+        "fccId": "NBG009066T",
+        "partNumber": "HLO3C0959752N",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "IMMO4 / Megamos Crypto ID48 CAN",
+    "pinRequired": false,
+    "programming": "OBD programmer; precoded chip must be dealer-sourced or blank 48 used with VVDI2",
+    "programmerHint": ["VVDI2", "SuperVAG", "Autel IM508"],
+    "notes": "B6 (2006-2010) and B7 (2010-2014). US Passat did not get B8 until 2015. NBG009066T smart key confirmed 315 MHz / ID48 on locksmithkeyless and bestkeysolution; applies to Passat/CC with KESSY 2006-2015.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/volkswagen_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2006-2015-volkswagen-cc-passat-4-button-smart-key-pn-hlo-3c0-959-752-n-nbg009066t-315-mhz-aftermarket",
+      "https://www.locksmithkeyless.com/products/2006-2015-volkswagen-smart-key-4b-fcc-nbg009066t",
+      "https://www.bestkeysolution.com/products/volkswagen-passat-smart-key-fob-2006-2015-volkswagen-passat-volkswagen-cc-smart-remote-key-fob"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Volkswagen",
+    "model": "Passat",
+    "yearStart": 2015,
+    "yearEnd": 2022,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Flip",
+        "trimDependent": false,
+        "keyway": "HU66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Megamos Crypto AES (MQB ID88)",
+        "chipClonable": "token",
+        "fccId": "NBGFS93N",
+        "partNumber": "5K0837202BJ",
+        "frequency": "314"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HU162T",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Megamos Crypto AES (MQB ID88)",
+        "chipClonable": "token",
+        "fccId": "KR5FS14-US",
+        "partNumber": "3G0959752S",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "IMMO5 / MQB Megamos AES",
+    "pinRequired": false,
+    "programming": "Professional locksmith required; OBD diagnostic tool",
+    "programmerHint": ["Autel IM608 Pro", "VVDI2", "Abrites AVDI VN009"],
+    "notes": "B8 NMS Passat (US-market 2015-2022). Flip key NBGFS93N confirmed at 314 MHz (UHS Hardware OEM). Smart key KR5FS14-US with HU162T at 315 MHz confirmed on UHS Hardware OEM listing (3G0959752S). Note: NBG009066T smart key (315 MHz, HU66) was used on 2006-2015 Passat/CC and may overlap with earliest B8 NMS — verify with VIN.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2018-2020-volkswagen-atlas-passat-4-button-smart-key-pn-3g0-959-752s-kr5fs14-us-hu162t-kessy-315-mhz-oem",
+      "https://www.locksmithkeyless.com/products/2017-2022-volkswagen-passat-flip-key-fob-5b-w-remote-start-fcc-nbgfs93n",
+      "https://www.uhs-hardware.com/products/2012-2018-volkswagen-4-button-smart-flip-key-pn-5ko837202bj-nbgfs93n-hu66-mqb-314-mhz-aftermarket"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Volkswagen",
+    "model": "Tiguan",
+    "yearStart": 2009,
+    "yearEnd": 2017,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HU66",
+        "bladeIlco": "HU66T24",
+        "bladeSilca": null,
+        "bladeJma": "TP23",
+        "transponderChip": "Megamos Crypto ID48 (precoded)",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": null,
+        "frequency": null
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HU66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Megamos Crypto ID48 CAN",
+        "chipClonable": "no",
+        "fccId": "NBG010206T",
+        "partNumber": "5K0837202AK",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "IMMO4 / Megamos Crypto ID48",
+    "pinRequired": false,
+    "programming": "OBD programmer; VVDI2 or SuperVAG",
+    "programmerHint": ["VVDI2", "SuperVAG", "Autel IM508"],
+    "notes": "First gen Tiguan (5N). HU66 keyway throughout. Prox/KESSY models use flip with NBG010206T (315 MHz, confirmed UHS Hardware). NBG010206T confirmed for 2010-2014 Tiguan in search results.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/volkswagen_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2011-2016-volkswagen-4-button-flip-key-pn-5k0837202ak-nbg010206t-hu66-kessy-315-mhz-aftermarket"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Volkswagen",
+    "model": "Tiguan",
+    "yearStart": 2018,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HU66",
+        "bladeIlco": "HU66T88",
+        "bladeSilca": "ID88",
+        "bladeJma": null,
+        "transponderChip": "Megamos Crypto AES (MQB ID88)",
+        "chipClonable": "token",
+        "fccId": null,
+        "partNumber": "5G6959752BQ / 5G6959752AP",
+        "frequency": null
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HU66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Megamos Crypto AES (MQB ID88)",
+        "chipClonable": "token",
+        "fccId": "KR5FS14T",
+        "partNumber": "3G0959752BQ",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "IMMO5 / MQB Megamos AES",
+    "pinRequired": false,
+    "programming": "Professional locksmith required; OBD diagnostic tool",
+    "programmerHint": ["Autel IM608 Pro", "VVDI2", "Abrites AVDI VN009"],
+    "notes": "Second gen Tiguan (AD1, MQB). Smart key KR5FS14T at 315 MHz confirmed on locksmithkeyless (2018-2023). HU66 blade confirmed for 2018+ Tiguan smart key. 2018-2019 models may vary — verify original before ordering.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2015-2020-volkswagen-transponder-key-megamos-aes-chip-hu66t88-10-pack",
+      "https://www.locksmithkeyless.com/products/2018-2023-volkswagen-smart-key-5b-fcc-kr5fs14-t-3g0-959-752-bq"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Volkswagen",
+    "model": "Atlas",
+    "yearStart": 2018,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU162T",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Megamos Crypto AES (MQB ID88)",
+        "chipClonable": "token",
+        "fccId": "KR5FS14-US",
+        "partNumber": "3G0959752S / 3G0959752T",
+        "frequency": "315"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HU162T",
+        "bladeIlco": null,
+        "bladeSilca": "ID88",
+        "bladeJma": null,
+        "transponderChip": "Megamos Crypto AES (MQB ID88)",
+        "chipClonable": "token",
+        "fccId": "KR5FS14T",
+        "partNumber": "3G0959752BQ / 3G0959752BBR",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "IMMO5 / MQB Megamos AES",
+    "pinRequired": false,
+    "programming": "Professional locksmith required; OBD diagnostic tool",
+    "programmerHint": ["Autel IM608 Pro", "VVDI2", "Abrites AVDI VN009"],
+    "notes": "Atlas uses MQB platform throughout. 2018-2020: KR5FS14-US (HU162T, 315 MHz) confirmed UHS Hardware OEM. 2021-2023: KR5FS14T (HU162T, 315 MHz) confirmed eBay OEM listing 3G0959752BBR. CORRECTED: previous entry listed variant 2 with HU66 keyway and mixed part numbers (5G6959752BF / 3G0959752S); multiple sources confirm HU162T for all Atlas. 5G6959752BF is a Jetta/Golf part number, removed.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2018-2020-volkswagen-atlas-passat-4-button-smart-key-pn-3g0-959-752s-kr5fs14-us-hu162t-kessy-315-mhz-oem",
+      "https://www.locksmithkeyless.com/products/2018-2023-volkswagen-smart-key-5b-fcc-kr5fs14-t-3g0-959-752-bq",
+      "https://www.transpondery.com/transponder_catalog/volkswagen_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Volkswagen",
+    "model": "Golf / GTI",
+    "yearStart": 2010,
+    "yearEnd": 2014,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HU66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Megamos Crypto ID48 (precoded)",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": null,
+        "frequency": null
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HU66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Megamos Crypto ID48 CAN",
+        "chipClonable": "no",
+        "fccId": "NBG010180T",
+        "partNumber": "5K0837202AE",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "IMMO4 / Megamos Crypto ID48",
+    "pinRequired": false,
+    "programming": "OBD programmer; VVDI2 or SuperVAG",
+    "programmerHint": ["VVDI2", "SuperVAG", "Autel IM508"],
+    "notes": "Golf MK6 (5K). HU66 keyway. Flip key NBG010180T at 315 MHz covers Golf/GTI/Jetta/Passat/Tiguan 2011-2016. Confirmed on UHS Hardware and locksmithkeyless.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/volkswagen_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2011-2016-volkswagen-4-button-remote-flip-key-5k0837202ae-nbg010180t-315-mhz-aftermarket"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Volkswagen",
+    "model": "Golf / GTI",
+    "yearStart": 2015,
+    "yearEnd": 2021,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HU66",
+        "bladeIlco": "HU66T88",
+        "bladeSilca": "ID88",
+        "bladeJma": null,
+        "transponderChip": "Megamos Crypto AES (MQB ID88)",
+        "chipClonable": "token",
+        "fccId": null,
+        "partNumber": null,
+        "frequency": null
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HU66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Megamos Crypto AES (MQB ID88)",
+        "chipClonable": "token",
+        "fccId": "NBGFS12P01",
+        "partNumber": "5G0959752BE",
+        "frequency": "315"
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HU162T",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Megamos Crypto AES (MQB ID88)",
+        "chipClonable": "token",
+        "fccId": "NBGFS125C1",
+        "partNumber": "5G6959752BM",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "IMMO5 / MQB Megamos AES",
+    "pinRequired": false,
+    "programming": "Professional locksmith required; add-key with VVDI2/AVDI; all-keys-lost needs advanced tools",
+    "programmerHint": ["VVDI2", "Abrites AVDI VN009", "mini ACDP", "Autel IM608"],
+    "notes": "Golf MK7 / GTI (5G, MQB). NBGFS12P01 = HU66 blade with proximity/KESSY, 315 MHz, confirmed UHS Hardware. NBGFS125C1 = HU162T blade, 315 MHz, confirmed UHS Hardware OEM listing 5G6959752BM (2018-2020). Wrong blade type may disable proximity.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2015-2019-volkswagen-golf-gti-4-button-flip-key-pn-5g0-959-752-be-nbgfs12p01-hu66-kessy-315-mhz-aftermarket",
+      "https://www.uhs-hardware.com/products/2018-2020-volkswagen-4-button-flip-key-pn-5g6-959-752-bm-nbgfs125c1-hu162t-kessy-315-mhz-aftermarket"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Volkswagen",
+    "model": "Taos",
+    "yearStart": 2022,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU66",
+        "bladeIlco": null,
+        "bladeSilca": "ID88",
+        "bladeJma": null,
+        "transponderChip": "Megamos Crypto AES (MQB ID88)",
+        "chipClonable": "token",
+        "fccId": "KR5FS14T",
+        "partNumber": "3G0959752BQ",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "IMMO5 / MQB Megamos AES",
+    "pinRequired": false,
+    "programming": "Professional locksmith required; OBD diagnostic tool",
+    "programmerHint": ["Autel IM608 Pro", "VVDI2", "Abrites AVDI VN009"],
+    "notes": "Taos launched 2022 MY in US on MQB platform. KR5FS14T at 315 MHz confirmed on locksmithkeyless (2021-2023 Taos). Part 3G0959752BQ confirmed.",
+    "confidence": "verified",
+    "sources": [
+      "https://keyless2go.com/blogs/program-instructions/2022-volkswagen-taos-keyless-entry-remote-fob-smart-key-programming-instructions",
+      "https://www.locksmithkeyless.com/products/2018-2023-volkswagen-smart-key-5b-fcc-kr5fs14-t-3g0-959-752-bq"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Volkswagen",
+    "model": "Beetle",
+    "yearStart": 2012,
+    "yearEnd": 2019,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Flip",
+        "trimDependent": false,
+        "keyway": "HU66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Megamos Crypto ID48 CAN (precoded)",
+        "chipClonable": "no",
+        "fccId": "NBG010180T",
+        "partNumber": "5K0837202AE",
+        "frequency": "315"
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HU66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Megamos Crypto ID48 CAN (precoded)",
+        "chipClonable": "no",
+        "fccId": "NBG010206T",
+        "partNumber": "5K0837202AK",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "IMMO4 / Megamos Crypto ID48 CAN",
+    "pinRequired": false,
+    "programming": "Professional locksmith required; VVDI2 with blank ID48 chip recommended",
+    "programmerHint": ["VVDI2", "SuperVAG", "Autel IM508"],
+    "notes": "A5 Beetle (5C). NBG010180T = standard remote (no push-to-start), 315 MHz confirmed. NBG010206T = proximity/push-to-start, 315 MHz confirmed. Earlier Beetle 2008-2011 uses similar ID48 precoded transponder.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2011-2016-volkswagen-4-button-remote-flip-key-5k0837202ae-nbg010180t-315-mhz-aftermarket",
+      "https://www.bestkeysolution.com/products/proximity-flip-key-for-volkswagen-with-fcc-id-nbg010206t-p-n-5k0837202ak-and-315-mhz-chip-48"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Volkswagen",
+    "model": "Touareg",
+    "yearStart": 2011,
+    "yearEnd": 2017,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Hitag Ext VAG PCF7945AC (precoded)",
+        "chipClonable": "no",
+        "fccId": "IYZVWTOUA",
+        "partNumber": "7P6959754 / 7P6959754AM",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "IMMO4 / Hitag Ext VAG PCF7945AC",
+    "pinRequired": false,
+    "programming": "Professional locksmith required; no onboard procedure. Requires OBD programmer (Autel IM608, VVDI2).",
+    "programmerHint": ["Autel IM608 Pro", "VVDI2", "Abrites AVDI"],
+    "notes": "Second gen Touareg (7P). Smart key with proximity/KESSY. PCF7945AC (Hitag Ext VAG) precoded chip at 315 MHz. IYZVWTOUA confirmed on abkeys, Amazon, autokeymax. Part 7P6959754AM confirmed on abkeys.com.",
+    "confidence": "verified",
+    "sources": [
+      "https://abkeys.com/products/volkswagen-touareg-smart-key-fob-4buttons-315mhz-pcf7945ac-2011up-2476",
+      "https://www.locksmithkeyless.com/products/2011-2017-volkswagen-touareg-smart-key-4b-fcc-iyzvwtoua",
+      "https://www.uhs-hardware.com/products/2011-2017-volkswagen-touareg-4-button-smart-key-pn-7p6-959-754-iyzvwtoua-rsk-vw-oua"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Volkswagen",
+    "model": "Touareg",
+    "yearStart": 2018,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU162T",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "MLB 5M chip (ID5M)",
+        "chipClonable": "token",
+        "fccId": "3F0959754D",
+        "partNumber": "3F0959754D",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "MLB / MLB 5M platform",
+    "pinRequired": false,
+    "programming": "Professional only; KYDZ MLB Tool, Lonsdor K518, OBDSTAR",
+    "programmerHint": ["KYDZ MLB Tool", "Lonsdor K518 Pro", "OBDSTAR X300 DP Plus"],
+    "notes": "Third gen Touareg (CR7, MLB platform). NOT SOLD IN US — VW discontinued Touareg for North America from 2017 onward (replaced by Atlas). Row kept for service reference on import vehicles only. Frequency 433/434 MHz per European sources. HU162T blade, ID5M chip. FCC ID 3F0959754D is a European OEM part number used as identifier (no US FCC registration).",
+    "confidence": "single-source",
+    "sources": [
+      "https://keyshop-online.com/products/oem-volkswagen-touareg-2018-smart-key-3b-433mhz-hu162t-id5m-3f0-959-754-d",
+      "https://www.honrow.com/For-Original-VW-MLB-Touareg-2018-3-Buttons-Keyless-go-With-434mhz-Part-No-3F0-959-754D-FCCID-3F0959754D-p2244319.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Audi",
+    "model": "A3",
+    "yearStart": 2006,
+    "yearEnd": 2012,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HU66",
+        "bladeIlco": null,
+        "bladeSilca": "A2",
+        "bladeJma": "TP25",
+        "transponderChip": "Megamos Crypto ID48 (precoded / dealer key)",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": null,
+        "frequency": null
+      }
+    ],
+    "immobilizer": "IMMO4 / Megamos Crypto ID48",
+    "pinRequired": false,
+    "programming": "Dealer or OBD programmer (VVDI2, SuperVAG)",
+    "programmerHint": ["VVDI2", "SuperVAG", "Autel IM508"],
+    "notes": "8P A3 (2nd gen). Precoded dealer key with Silca A2 / JMA TP25 blade.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/audi_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Audi",
+    "model": "A3",
+    "yearStart": 2013,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Flip",
+        "trimDependent": false,
+        "keyway": "HU66",
+        "bladeIlco": null,
+        "bladeSilca": "ID88",
+        "bladeJma": null,
+        "transponderChip": "Megamos Crypto AES (MQB ID88)",
+        "chipClonable": "token",
+        "fccId": "NBGFS12P71",
+        "partNumber": "8V0837220E",
+        "frequency": "315"
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HU66",
+        "bladeIlco": null,
+        "bladeSilca": "ID88",
+        "bladeJma": null,
+        "transponderChip": "Megamos Crypto AES (MQB ID88)",
+        "chipClonable": "token",
+        "fccId": "NBGFS12A71",
+        "partNumber": "8V0837220D / 8V0837220F",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "IMMO5 / MQB Megamos AES",
+    "pinRequired": false,
+    "programming": "Add-key only with VVDI2, Abrites AVDI, or mini ACDP. All-keys-lost requires dealer or advanced tools.",
+    "programmerHint": ["VVDI2", "Abrites AVDI", "mini ACDP", "Autel IM608"],
+    "notes": "8V A3 (3rd gen, MQB). NBGFS12P71 (2013-2017) at 315 MHz confirmed UHS Hardware. NBGFS12A71 (2015-2018) at 315 MHz confirmed UHS Hardware OEM. Both HU66 flip blade. Transpondery shows ID49/Silca ID88 = Megamos AES.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2013-2017-audi-a3-4-button-flip-key-pn-8v0-837-220-e-nbgfs12p71-mqb-315-mhz-oem",
+      "https://www.uhs-hardware.com/products/2015-2018-audi-a3-q3-4-button-flip-key-pn-bvd-837-220a-nbgfs12a71-315-mhz-oem"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Audi",
+    "model": "A4",
+    "yearStart": 2002,
+    "yearEnd": 2008,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HU66",
+        "bladeIlco": "HU66T6",
+        "bladeSilca": "T6",
+        "bladeJma": "TP08",
+        "transponderChip": "Megamos Crypto 48 (ID48)",
+        "chipClonable": "yes",
+        "fccId": null,
+        "partNumber": null,
+        "frequency": null
+      }
+    ],
+    "immobilizer": "IMMO3 / Megamos Crypto 48",
+    "pinRequired": false,
+    "programming": "OBD programmer (VVDI2, MVP, T-Code); clone-capable",
+    "programmerHint": ["VVDI2", "MVP Pro", "T-Code Pro"],
+    "notes": "B6/early B7 A4. Standard (non-precoded) Megamos ID48. HU66T6 blade same as VW Golf/Jetta of same era.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2000-2006-vw-audi-hu66t6-transponder-key-megamos-id-48",
+      "https://www.transpondery.com/transponder_catalog/audi_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Audi",
+    "model": "A4",
+    "yearStart": 2009,
+    "yearEnd": 2016,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HU66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Hitag Ext VAG PCF7945AC (precoded)",
+        "chipClonable": "no",
+        "fccId": "IYZFBSB802",
+        "partNumber": "8K0959754D / 8T0959754G",
+        "frequency": "315"
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HU66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Sokymat Crypto 8E (ID8E)",
+        "chipClonable": "no",
+        "fccId": "IYZ3314",
+        "partNumber": "4F0837220",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "IMMO4 / Hitag Ext VAG PCF7945AC",
+    "pinRequired": false,
+    "programming": "Professional locksmith required; no onboard procedure",
+    "programmerHint": ["Autel IM608 Pro", "VVDI2", "Abrites AVDI", "Smart Pro"],
+    "notes": "B8 A4. Smart key (IYZFBSB802) uses PCF7945AC (Hitag Ext VAG / BCM2), 315 MHz, confirmed on abkeys, bestkeysolution, locksmithkeyless, xremotes. Flip key (IYZ3314) uses Sokymat 8E (ID8E) at 315 MHz, confirmed on multiple sources (3-button, part 4F0837220). IYZ3314 is a flip key only — NOT a smart key.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.bestkeysolution.com/products/audi-4-button-smart-key-with-comfort-access-fcc-id-iyzfbsb802-p-n-8t0959754g-315-mhz",
+      "https://www.uhs-hardware.com/products/2006-2015-audi-3-button-flip-key-pn-4f0837220-iyz-3314-315-mhz-aftermarket",
+      "https://www.locksmithkeyless.com/products/2006-2015-audi-flip-key-4b-fcc-iyz-3314",
+      "https://www.transpondery.com/transponder_catalog/audi_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Audi",
+    "model": "A4",
+    "yearStart": 2017,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Megamos Crypto AES (MLB)",
+        "chipClonable": "token",
+        "fccId": "IYZAK01",
+        "partNumber": "8S0959754BA",
+        "frequency": "315"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HU66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Megamos Crypto AES (MLB)",
+        "chipClonable": "token",
+        "fccId": "IYZ-AK2",
+        "partNumber": "4N0959754AM",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "IMMO5 / MLB Megamos AES (component protection on MLB-Evo 2019+)",
+    "pinRequired": false,
+    "programming": "Professional only; MLB platform tools required. 2019+ may require online token for component protection.",
+    "programmerHint": ["KYDZ MLB Tool", "Lonsdor K518 Pro", "Autel IM608 Pro", "Abrites AVDI"],
+    "notes": "B9 A4 (MLB platform). IYZAK01 (315 MHz) for 2017-2018 confirmed on UHS Hardware OEM (8S0959754BA). IYZ-AK2 (434 MHz) for 2019+ confirmed on locksmithkeyless and yourcarkeyguys (MLB 434 MHz). MLB-Evo 2019+ has component protection requiring online authorization token.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2017-2018-audi-4-button-smart-key-pn-8s0-959-754-ba-iyzak01-oem",
+      "https://www.locksmithkeyless.com/products/2019-2022-audi-smart-key-4b-fcc-iyz-ak2"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Audi",
+    "model": "A5",
+    "yearStart": 2008,
+    "yearEnd": 2016,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HU66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Hitag Ext VAG PCF7945AC (precoded)",
+        "chipClonable": "no",
+        "fccId": "IYZFBSB802",
+        "partNumber": "8T0959754A / 8T0959754G / 8T0959754S",
+        "frequency": "315"
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HU66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Sokymat Crypto 8E (ID8E)",
+        "chipClonable": "no",
+        "fccId": "IYZ3314",
+        "partNumber": "4F0837220",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "IMMO4 / Hitag Ext VAG PCF7945AC",
+    "pinRequired": false,
+    "programming": "Professional locksmith required; no onboard procedure",
+    "programmerHint": ["Autel IM608 Pro", "VVDI2", "Abrites AVDI", "Smart Pro"],
+    "notes": "8T A5 (B8 platform). Smart key same FCC as A4/Q5/A6 era (IYZFBSB802); chip is PCF7945AC (Hitag Ext VAG / BCM2), not Megamos 8E. Flip key IYZ3314 = 2006-2015 Audi-wide (8E chip). IYZ3314 is a flip key only.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.bestkeysolution.com/products/audi-4-button-smart-key-with-comfort-access-fcc-id-iyzfbsb802-p-n-8t0959754g-315-mhz",
+      "https://www.transpondery.com/transponder_catalog/audi_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2006-2015-audi-3-button-flip-key-pn-4f0837220-iyz-3314-315-mhz-aftermarket"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Audi",
+    "model": "A5",
+    "yearStart": 2017,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Megamos Crypto AES (MLB)",
+        "chipClonable": "token",
+        "fccId": "IYZAK01",
+        "partNumber": "8S0959754BA",
+        "frequency": "315"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HU66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Megamos Crypto AES (MLB)",
+        "chipClonable": "token",
+        "fccId": "IYZ-AK2",
+        "partNumber": "4N0959754AM",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "IMMO5 / MLB Megamos AES",
+    "pinRequired": false,
+    "programming": "Professional only; MLB platform tools required",
+    "programmerHint": ["KYDZ MLB Tool", "Lonsdor K518 Pro", "Autel IM608 Pro", "Abrites AVDI"],
+    "notes": "F5 A5 (MLB platform, shares MLB with B9 A4). IYZAK01 for 2017-2018 at 315 MHz confirmed. IYZ-AK2 for 2019+ at 434 MHz confirmed.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2017-2018-audi-4-button-smart-key-pn-8s0-959-754-ba-iyzak01-oem",
+      "https://www.transpondery.com/transponder_catalog/audi_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Audi",
+    "model": "A6",
+    "yearStart": 2005,
+    "yearEnd": 2011,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Flip",
+        "trimDependent": false,
+        "keyway": "HU66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Sokymat Crypto 8E (ID8E)",
+        "chipClonable": "no",
+        "fccId": "IYZ3314",
+        "partNumber": "4F0837220AK / 4F0837220R",
+        "frequency": "315"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HU66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Hitag Ext VAG PCF7945AC (precoded)",
+        "chipClonable": "no",
+        "fccId": "IYZFBSB802",
+        "partNumber": "4G0959754G / 4G0959754K",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "IMMO4 / C6 EZS-KESSY (Sokymat 8E / PCF7945AC)",
+    "pinRequired": false,
+    "programming": "EZS-KESSY module; VVDI2 or Abrites AVDI (J518 reading). Caution: easy to brick — select correct J518 type.",
+    "programmerHint": ["VVDI2", "Abrites AVDI", "Autel IM608"],
+    "notes": "C6 4F A6. CORRECTED: previous data listed two IYZ3314 variants (one mislabeled as Smart). IYZ3314 is a FLIP KEY only (8E chip, 315 MHz, HU66). KESSY/Smart key variant uses IYZFBSB802 / PCF7945AC (BCM2) at 315 MHz — same FCC as B8 A4/A5/Q5. Both confirmed at 315 MHz on multiple sources.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/audi_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/2006-2015-audi-flip-key-4b-fcc-iyz-3314",
+      "https://abkeys.com/products/audi-smart-key-fob-4buttons-315mhz-iyzfbsb802-8k0959754b-keyless-go-4675",
+      "https://www.locksmithkeyless.com/products/2008-2016-audi-smart-key-with-comfort-access-4b-fcc-iyzfbsb802"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Audi",
+    "model": "A6",
+    "yearStart": 2012,
+    "yearEnd": 2018,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Hitag Ext VAG PCF7945AC (precoded)",
+        "chipClonable": "no",
+        "fccId": "IYZFBSB802",
+        "partNumber": "4G0959754K / 4G0959754G",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "IMMO4 / Hitag Ext VAG PCF7945AC",
+    "pinRequired": false,
+    "programming": "Professional locksmith required; no onboard procedure",
+    "programmerHint": ["Autel IM608 Pro", "VVDI2", "Abrites AVDI", "Smart Pro"],
+    "notes": "C7 4G A6. Smart key same FCC IYZFBSB802 as A4/A5/Q5 2009-2016. PCF7945AC (BCM2) precoded at 315 MHz. Confirmed on abkeys (A6/A8 BCM2 IYZFBSB802), locksmithkeyless, transpondery BCM2 key page.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.bestkeysolution.com/products/audi-4-button-smart-key-with-comfort-access-fcc-id-iyzfbsb802-p-n-8t0959754g-315-mhz",
+      "https://www.locksmithkeyless.com/products/2013-2018-audi-s6-smart-key-fob-comfort-access-4b-fcc-iyzfbsb802",
+      "https://www.transpondery.com/keys/audi/bcm2-smartkey.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Audi",
+    "model": "A6",
+    "yearStart": 2019,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "MLB 5M chip (AES)",
+        "chipClonable": "token",
+        "fccId": "IYZ-AK2",
+        "partNumber": "4N0959754EG / 4N0959754AM",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "IMMO5 / MLB-Evo (component protection / online token required)",
+    "pinRequired": false,
+    "programming": "Professional only; MLB-Evo platform. Component protection requires online authorization.",
+    "programmerHint": ["KYDZ MLB Tool", "Lonsdor K518 Pro", "Autel IM608 Pro", "Abrites AVDI"],
+    "notes": "C8 4K A6 (MLB-Evo). IYZ-AK2 at 434 MHz confirmed on locksmithkeyless and yourcarkeyguys (MLB 434 MHz). Part 4N0959754EG confirmed on multiple sources. Component protection active.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2019-2022-audi-smart-key-4b-fcc-iyz-ak2",
+      "https://www.honrow.com/product-8754.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Audi",
+    "model": "Q3",
+    "yearStart": 2012,
+    "yearEnd": 2018,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Flip",
+        "trimDependent": false,
+        "keyway": "HU66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Megamos Crypto ID48 CAN (precoded dealer key)",
+        "chipClonable": "no",
+        "fccId": "NBGFS12A71",
+        "partNumber": "8X0837220R / 8X0837220C",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "IMMO4 / Megamos Crypto ID48",
+    "pinRequired": false,
+    "programming": "Add-key with VVDI2 or Abrites AVDI; all-keys-lost requires advanced tools",
+    "programmerHint": ["VVDI2", "Abrites AVDI", "Autel IM508"],
+    "notes": "8U Q3 (1st gen). CORRECTED: Previous entry incorrectly listed bladeSilca A2 / bladeJma TP25 (those are transponder key blades, not remote flip key blades). NBGFS12A71 is a remote flip key with HU66 blade and ID48 MQB-CAN chip at 315 MHz, confirmed UHS Hardware OEM. bladeSilca/bladeJma nulled for flip key variant.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/audi_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2015-2018-audi-a3-q3-4-button-flip-key-pn-bvd-837-220a-nbgfs12a71-315-mhz-oem"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Audi",
+    "model": "Q3",
+    "yearStart": 2019,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU66",
+        "bladeIlco": null,
+        "bladeSilca": "ID88",
+        "bladeJma": null,
+        "transponderChip": "Megamos Crypto AES (MQB ID88)",
+        "chipClonable": "token",
+        "fccId": "NBGFS1271M",
+        "partNumber": "81A837220 / 81A837220E / 81A837220J",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "IMMO5 / MQB Megamos AES",
+    "pinRequired": false,
+    "programming": "Professional locksmith required; OBD diagnostic tool",
+    "programmerHint": ["VVDI2", "Abrites AVDI", "Autel IM608"],
+    "notes": "F3 Q3 (2nd gen, MQB-A platform). CAUTION: NBGFS1271M FCC was used on 2013-2017 A3/Q2L/Q3 (8U gen1) at 315 MHz; the same or compatible key carries into F3 per yourcarkeyguys.com (2013-2020 compatibility). Confirmed 315 MHz on UHS Hardware. Part 81A837220J confirmed on UHS and eBay. Part 81A837220EAIF confirmed on parts.audiusa.com for Q3. European F3 variants use 434 MHz but US is 315 MHz. Confidence downgraded: F3-specific FCC not independently confirmed beyond the NBGFS1271M overlap.",
+    "confidence": "single-source",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2013-2017-audi-a3-q2l-q3-4-button-flip-key-pn-81a-837-220-j-nbgfs1271m-434-mhz-oem-refurb",
+      "https://parts.audiusa.com/p/Audi__Q3/Key-Cut-to-VINCode/78755485/81A837220EAIF.html",
+      "https://yourcarkeyguys.com/products/2013-2020-audi-a3-q3-mqb-4b-flip-key-nbgfs12p71"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Audi",
+    "model": "Q5",
+    "yearStart": 2009,
+    "yearEnd": 2017,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Hitag Ext VAG PCF7945AC (precoded)",
+        "chipClonable": "no",
+        "fccId": "IYZFBSB802",
+        "partNumber": "8K0959754BR / 8K0959754BP / 8T0959754G",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "IMMO4 / Hitag Ext VAG PCF7945AC",
+    "pinRequired": false,
+    "programming": "Professional locksmith required; no onboard procedure",
+    "programmerHint": ["Autel IM608 Pro", "VVDI2", "Abrites AVDI", "Smart Pro"],
+    "notes": "8R Q5 (1st gen). Smart key shares FCC IYZFBSB802 with A4/A5/A6/A7/A8 era. PCF7945AC (BCM2) precoded at 315 MHz. Confirmed on bestkeysolution, abkeys, transpondery.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.bestkeysolution.com/products/audi-4-button-smart-key-with-comfort-access-fcc-id-iyzfbsb802-p-n-8t0959754g-315-mhz",
+      "https://www.transpondery.com/transponder_catalog/audi_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Audi",
+    "model": "Q5",
+    "yearStart": 2018,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Megamos Crypto AES (MLB)",
+        "chipClonable": "token",
+        "fccId": "IYZ-AK2",
+        "partNumber": "8W0959754 / 8W0959754A / 4M0959754AJ",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "IMMO5 / MLB Megamos AES (component protection 2019+)",
+    "pinRequired": false,
+    "programming": "Professional only; MLB platform tools required. 2019+ component protection requires online token.",
+    "programmerHint": ["KYDZ MLB Tool", "Lonsdor K518 Pro", "Autel IM608 Pro", "Abrites AVDI"],
+    "notes": "FY Q5 (2nd gen, MLB). IYZ-AK2 at 434 MHz confirmed on locksmithkeyless and yourcarkeyguys (MLB 434 MHz). Part 8W0959754 confirmed as genuine Audi Q5 part on parts.audiusa.com. Component protection on later MY.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2019-2022-audi-smart-key-4b-fcc-iyz-ak2",
+      "https://parts.audiusa.com/p/Audi__Q5/RemoteKey-FobTransmitter/67831016/8W0959754ANTKE.html",
+      "https://www.transpondery.com/transponder_catalog/audi_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Audi",
+    "model": "Q7",
+    "yearStart": 2007,
+    "yearEnd": 2015,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Flip",
+        "trimDependent": false,
+        "keyway": "HU66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Sokymat Crypto 8E (ID8E)",
+        "chipClonable": "no",
+        "fccId": "IYZ3314",
+        "partNumber": "4F0837220AG / 4F0837220Q",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "IMMO4 / EZS-KESSY Sokymat 8E",
+    "pinRequired": false,
+    "programming": "EZS-KESSY; VVDI2 (select correct J518 128/256-bit type to avoid brick). Abrites AVDI.",
+    "programmerHint": ["VVDI2", "Abrites AVDI", "Autel IM608"],
+    "notes": "4L Q7 (1st gen). Shares 8E chip and IYZ3314 flip key with C6 A6 platform. IYZ3314 is a flip key only (315 MHz, 8E chip). Confirmed on transpondery and UHS Hardware.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/audi_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2006-2015-audi-3-button-flip-key-pn-4f0837220-iyz-3314-315-mhz-aftermarket"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Audi",
+    "model": "Q7",
+    "yearStart": 2016,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Megamos Crypto AES (MLB)",
+        "chipClonable": "token",
+        "fccId": "IYZAK01",
+        "partNumber": "4M0959754AJ",
+        "frequency": "315"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HU66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Megamos Crypto AES / MLB 5M",
+        "chipClonable": "token",
+        "fccId": "IYZ-AK2",
+        "partNumber": "4N0959754EG / 4N0959754AM",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "IMMO5 / MLB Megamos AES (component protection on MLB-Evo 2019+)",
+    "pinRequired": false,
+    "programming": "Professional only; MLB tools. 2019+ requires online token for component protection.",
+    "programmerHint": ["KYDZ MLB Tool", "Lonsdor K518 Pro", "Autel IM608 Pro", "Abrites AVDI"],
+    "notes": "4M Q7 (2nd gen, MLB). 2016-2018 uses IYZAK01 (315 MHz) confirmed on UHS Hardware. 2019+ uses IYZ-AK2 (434 MHz) confirmed on locksmithkeyless. MLB-Evo has component protection.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2017-2018-audi-4-button-smart-key-pn-8s0-959-754-ba-iyzak01-oem",
+      "https://www.locksmithkeyless.com/products/2019-2022-audi-smart-key-4b-fcc-iyz-ak2"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Audi",
+    "model": "Q8",
+    "yearStart": 2019,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "MLB 5M chip (AES)",
+        "chipClonable": "token",
+        "fccId": "IYZ-AK2",
+        "partNumber": "4N0959754EG / 4N0959754AM",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "IMMO5 / MLB-Evo (component protection / online token required)",
+    "pinRequired": false,
+    "programming": "Professional only; MLB-Evo tools required. Component protection requires online authorization.",
+    "programmerHint": ["KYDZ MLB Tool", "Lonsdor K518 Pro", "Autel IM608 Pro", "Abrites AVDI"],
+    "notes": "4M Q8 (MLB-Evo). Shares platform/key with A6 C8 and A8 D5. IYZ-AK2 at 434 MHz confirmed on locksmithkeyless. Professional programming required.",
+    "confidence": "verified",
+    "sources": [
+      "https://keyless2go.com/blogs/program-instructions/2024-audi-q8-key-fob-remote-smart-key-programming-instructions",
+      "https://www.locksmithkeyless.com/products/2019-2022-audi-smart-key-4b-fcc-iyz-ak2"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  }
+]

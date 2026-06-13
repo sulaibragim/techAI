@@ -1,0 +1,1030 @@
+[
+  {
+    "make": "Dodge",
+    "model": "Charger",
+    "yearStart": 2006,
+    "yearEnd": 2007,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "Y159",
+        "bladeIlco": "Y159-PT",
+        "bladeSilca": "CY24",
+        "bladeJma": null,
+        "transponderChip": "PCF7941 (ID46)",
+        "chipClonable": "yes",
+        "fccId": "KOBDT04A",
+        "partNumber": "68004413AA",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SKIM (Sentry Key Immobilizer Module)",
+    "pinRequired": true,
+    "programming": "Requires professional locksmith with OBD2 programmer (Autel, AutoProPad, Lonsdor). PIN required from dealer or PIN-puller tool.",
+    "programmerHint": ["Autel IM608", "AutoProPad", "Lonsdor K518", "AlfaOBD + OBDLink"],
+    "notes": "2006-2007 Charger uses Y159 blade (KOBDT04A remote head key) with PCF7941 (ID46) at 315 MHz. The separate Y164-PT transponder key (same keyway profile, different blank) is for vehicles without integrated remote head key. FCC KOBDT04A shell is Y159; confirmed by UHS Hardware and Locksmith Keyless. Also cross-listed as OHT692427AA on some units.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2006-dodge-charger-key-fob-4b-fcc-kobdt04a-aftermarket",
+      "https://www.uhs-hardware.com/products/2005-2010-chrysler-dodge-jeep-4-button-remote-head-key-kobdt04a-rhk-chy-kob-4",
+      "https://www.uhs-hardware.com/products/2004-2011-chrysler-dodge-jeep-3-button-remote-head-key-shell-y159-kobdt04a-aftermarket",
+      "https://northcoastkeyless.com/product/2006-2007-dodge-charger-4-button-keyless-entry-remote-head-key-fcc-id-oht692427aa-kobdt04a/"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Dodge",
+    "model": "Charger",
+    "yearStart": 2008,
+    "yearEnd": 2010,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "Y171",
+        "bladeIlco": "Y171-IYZ",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7941 / PCF7341 (ID46)",
+        "chipClonable": "yes",
+        "fccId": "IYZ-C01C",
+        "partNumber": "05026886AJ",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "SKIM",
+    "pinRequired": true,
+    "programming": "Professional programmer required via OBD2. IYZ-C01C fobik key with Y171 emergency insert blade. On-board DIY programming possible if two working keys exist.",
+    "programmerHint": ["Autel IM608", "AutoProPad", "Lonsdor K518"],
+    "notes": "2008-2010 Charger shifted from Y159/KOBDT04A to IYZ-C01C fobik. Emergency insert blade is Y171 (not Y170) — confirmed by UHS Hardware K-Y171-IYZ listing, keyinnovations, southeasternkeys, americankeysupply. Same ID46 chip family. IYZ-C01C operates at 433.92 MHz (listed as 433 MHz).",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2008-2010-dodge-charger-challenger-magnum-4-button-fobik-key-pn-05026886aj-iyz-c01c-keyless-go-fobik-oem",
+      "https://keyinnovations.com/products/keyless2go-insert-emergency-key-blade-y171-for-chrysler-dodge-jeep-fobik-keys-iyz-c01c",
+      "https://southeasternkeys.com/products/insert-emergency-key-blade-y171-for-chrysler-dodge-jeep-fobik-keys-iyz-c01c",
+      "https://www.locksmithkeyless.com/products/2008-dodge-charger-fobik-key-4b-fcc-iyz-c01c-aftermarket-1"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Dodge",
+    "model": "Charger",
+    "yearStart": 2011,
+    "yearEnd": 2018,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": null,
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7945A / PCF7953A (Hitag2 / ID46)",
+        "chipClonable": "token",
+        "fccId": "M3N-40821302",
+        "partNumber": "68051387",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "WIN (Wireless Ignition Node) / SKIM",
+    "pinRequired": true,
+    "programming": "Requires OBD2 programmer + PIN. No onboard self-programming. SGW bypass needed on 2018 models.",
+    "programmerHint": ["Autel IM608 Pro", "AutoProPad G2", "Lonsdor K518ISE", "Smart Pro"],
+    "notes": "2011-2018 Charger uses Hitag2/ID46 smart proximity key (PCF7945A/PCF7953A), NOT Hitag AES. FCC M3N-40821302 confirmed by abkeys genuine listing (PCF7945A, 433MHz). The Hitag AES (PCF7953M) appears only from 2019+ with FCC M3M-40821302. 2018 models have FCA Security Gateway Module (SGW) requiring 12+8 bypass adapter for OBD2 programming.",
+    "confidence": "verified",
+    "sources": [
+      "https://abkeys.com/products/dodge-charger-challenger-dart-smart-key-4buttons-433mhz-m3n-40821302-4805",
+      "https://www.americankeysupply.com/product/dodge-2011-2018-5-btn-smart-key-m3n-40821302-hitag-oem-refurb-mint-20137",
+      "https://www.locksmithkeyless.com/products/2013-dodge-charger-smart-key-4b-fob-fcc-m3n-40821302-aftermarket",
+      "https://northcoastkeyless.com/product/dodge-charger-4-button-smart-key-fob-remote-fcc-m3n-40821302-pn-68051387/"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Dodge",
+    "model": "Charger",
+    "yearStart": 2019,
+    "yearEnd": 2023,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": null,
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7953M (Hitag AES / ID-4A)",
+        "chipClonable": "token",
+        "fccId": "M3M-40821302",
+        "partNumber": "68394196AA",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "WIN / SGW (Security Gateway Module)",
+    "pinRequired": true,
+    "programming": "Requires SGW 12+8 bypass adapter + OBD2 programmer + PIN. Professional only. FCC changed from M3N to M3M in 2019.",
+    "programmerHint": ["Autel IM608 Pro", "AutoProPad G2", "Lonsdor K518ISE", "Z-Automotive SGW Bypass"],
+    "notes": "FCC M3M-40821302 (not M3N). 2019+ requires SGW bypass for all programming. 433 MHz. Hellcat/SRT trims have red key + black key (power restriction). SRT 5-button variant: 68394195AA.",
+    "confidence": "verified",
+    "sources": [
+      "https://abkeys.com/products/dodge-charger-challenger-smart-key-4b-433mhz-m3m-40821302-68394196aa-4479",
+      "https://www.abkeys.com/abk-4474-dodge-charges-challenger-smart-key-5buttons-433mhz-hitag-aes-pcf7953m-m3m-40821302-2019up-68394195aa",
+      "https://www.zautomotive.com/products/z_sgw"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Dodge",
+    "model": "Challenger",
+    "yearStart": 2008,
+    "yearEnd": 2014,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "Y171",
+        "bladeIlco": "Y171-IYZ",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7941 / PCF7341 (ID46)",
+        "chipClonable": "yes",
+        "fccId": "IYZ-C01C",
+        "partNumber": "05026886AK",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "SKIM",
+    "pinRequired": true,
+    "programming": "IYZ-C01C fobik/remote head key. On-board DIY programming possible with existing working key. Professional OBD2 for all-keys-lost.",
+    "programmerHint": ["Autel IM508", "AutoProPad", "Lonsdor K518", "AlfaOBD DIY"],
+    "notes": "2008-2014 Challenger uses same IYZ-C01C system as Charger. Emergency insert blade is Y171 (not Y170). PCF7941 (ID46) chip. 433.92 MHz. 2009 is first model year; 2008 was not produced.",
+    "confidence": "verified",
+    "sources": [
+      "https://keyinnovations.com/products/keyless2go-insert-emergency-key-blade-y171-for-chrysler-dodge-jeep-fobik-keys-iyz-c01c",
+      "https://www.uhs-hardware.com/products/2008-2014-dodge-challenger-charger-4-button-keyless-go-fobik-pn-56046695-ae-iyz-c01c-oem",
+      "https://www.locksmithkeyless.com/products/2010-2014-dodge-challenger-smart-fobik-key-5b-fcc-iyz-c01c-15-pack",
+      "https://www.uhs-hardware.com/products/2008-2021-chrysler-dodge-jeep-insert-emergency-key-blade-y171-y159-68029829aa-k-y171-iyz"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Dodge",
+    "model": "Challenger",
+    "yearStart": 2015,
+    "yearEnd": 2018,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": null,
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7945A / PCF7953A (Hitag2 / ID46)",
+        "chipClonable": "token",
+        "fccId": "M3N-40821302",
+        "partNumber": "68234958",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "WIN / SKIM",
+    "pinRequired": true,
+    "programming": "Professional OBD2 programmer + PIN required. 2018 requires SGW bypass.",
+    "programmerHint": ["Autel IM608 Pro", "AutoProPad G2", "Lonsdor K518ISE"],
+    "notes": "Hellcat trims 2015-2018 use red key (full power) and black key (restricted power). Both same FCC M3N-40821302. Chip is Hitag2/ID46 (PCF7945A/PCF7953A), not Hitag AES.",
+    "confidence": "verified",
+    "sources": [
+      "https://abkeys.com/products/dodge-charger-challenger-dart-smart-key-4buttons-433mhz-m3n-40821302-4805",
+      "https://www.americankeysupply.com/product/dodge-2011-2018-5-btn-smart-key-m3n-40821302-hitag-oem-refurb-mint-20137",
+      "https://www.transpondery.com/transponder_catalog/dodge_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Dodge",
+    "model": "Challenger",
+    "yearStart": 2019,
+    "yearEnd": 2023,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": null,
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7953M (Hitag AES / ID-4A)",
+        "chipClonable": "token",
+        "fccId": "M3M-40821302",
+        "partNumber": "68394196AA",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "WIN / SGW",
+    "pinRequired": true,
+    "programming": "SGW 12+8 bypass required for all OBD2 programming. Professional only.",
+    "programmerHint": ["Autel IM608 Pro", "AutoProPad G2", "Lonsdor K518ISE", "Z-Automotive SGW Bypass"],
+    "notes": "FCC changed to M3M-40821302 in 2019. SRT/Hellcat/1320 models: 5-button variant (68394195AA). Red key still present on Hellcat 2019+.",
+    "confidence": "verified",
+    "sources": [
+      "https://abkeys.com/products/dodge-charger-challenger-smart-key-4b-433mhz-m3m-40821302-68394196aa-4479",
+      "https://www.abkeys.com/abk-4474-dodge-charges-challenger-smart-key-5buttons-433mhz-hitag-aes-pcf7953m-m3m-40821302-2019up-68394195aa"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Dodge",
+    "model": "Durango",
+    "yearStart": 2004,
+    "yearEnd": 2010,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "Y164",
+        "bladeIlco": "Y164-PT",
+        "bladeSilca": "CY24",
+        "bladeJma": null,
+        "transponderChip": "PCF7941 / PCF7936 (ID46)",
+        "chipClonable": "yes",
+        "fccId": "OHT692713AA",
+        "partNumber": "OHT692713AA",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SKIM",
+    "pinRequired": true,
+    "programming": "Transponder key + separate remote. Professional OBD2 for transponder pairing.",
+    "programmerHint": ["Autel IM508", "AutoProPad", "Lonsdor K518"],
+    "notes": "2004-2010 Durango uses Y164 blade (Silca CY24) with ID46. Separate remote fob OHT692713AA / OHT692427AA at 315 MHz. Also compatible with KOBDT04A fob on 2004-2009 models.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/dodge_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2004-2019-chrysler-dodge-jeep-transponder-key-y164-chip-46-k-y164",
+      "https://www.locksmithkeyless.com/products/2006-dodge-durango-key-fob-4b-fcc-kobdt04a-aftermarket"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Dodge",
+    "model": "Durango",
+    "yearStart": 2011,
+    "yearEnd": 2013,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "Y171",
+        "bladeIlco": "Y171-IYZ",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7941 / PCF7341 (ID46)",
+        "chipClonable": "yes",
+        "fccId": "IYZ-C01C",
+        "partNumber": "05026537AB",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "SKIM",
+    "pinRequired": true,
+    "programming": "Fobik remote head key. Professional OBD2 for all-keys-lost.",
+    "programmerHint": ["Autel IM508", "AutoProPad", "Lonsdor K518"],
+    "notes": "2011-2013 Durango uses IYZ-C01C fobik system at 433.92 MHz. Emergency insert blade is Y171 (not Y170).",
+    "confidence": "verified",
+    "sources": [
+      "https://keyinnovations.com/products/keyless2go-insert-emergency-key-blade-y171-for-chrysler-dodge-jeep-fobik-keys-iyz-c01c",
+      "https://www.uhs-hardware.com/products/2012-2013-dodge-durango-4-button-keyless-go-fobik-pn-56046730ad-iyz-c01c-oem",
+      "https://www.locksmithkeyless.com/products/2008-2019-dodge-fobik-key-4b-w-remote-start-fcc-iyz-c01c"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Dodge",
+    "model": "Durango",
+    "yearStart": 2014,
+    "yearEnd": 2023,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": null,
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7945A / PCF7953A (Hitag2 / ID46)",
+        "chipClonable": "token",
+        "fccId": "M3N-40821302",
+        "partNumber": "68150061",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "WIN / SGW (2018+)",
+    "pinRequired": true,
+    "programming": "Professional OBD2 + PIN. 2018+ requires SGW 12+8 bypass adapter.",
+    "programmerHint": ["Autel IM608 Pro", "AutoProPad G2", "Lonsdor K518ISE", "Z-Automotive SGW Bypass"],
+    "notes": "2014-2023 Durango uses M3N-40821302 smart key with Hitag2/ID46 chip (PCF7945A/PCF7953A). P/N 68150061 (Durango-specific). 2018+ SGW bypass required.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/dodge_transponder_catalog.html",
+      "https://www.amazon.com/M3N-40821302-68150061-68150061AC-68150061AB-68143505/dp/B0DH7PGVDY",
+      "https://www.uhs-hardware.com/products/2011-2020-dodge-journey-durango-4-button-smart-key-pn-68066350ad-m3n-40821302-oem"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Dodge",
+    "model": "Journey",
+    "yearStart": 2009,
+    "yearEnd": 2010,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "Y171",
+        "bladeIlco": "Y171-IYZ",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7941 / PCF7341 (ID46)",
+        "chipClonable": "yes",
+        "fccId": "IYZ-C01C",
+        "partNumber": "56046639AG",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "SKIM",
+    "pinRequired": true,
+    "programming": "Fobik remote head. Professional OBD2 for all-keys-lost.",
+    "programmerHint": ["Autel IM508", "AutoProPad", "Lonsdor K518"],
+    "notes": "2009-2010 Journey uses IYZ-C01C fobik with Y171 emergency insert blade (not Y170). 433.92 MHz.",
+    "confidence": "verified",
+    "sources": [
+      "https://keyinnovations.com/products/keyless2go-insert-emergency-key-blade-y171-for-chrysler-dodge-jeep-fobik-keys-iyz-c01c",
+      "https://www.locksmithkeyless.com/products/2008-2019-dodge-fobik-key-4b-w-remote-start-fcc-iyz-c01c",
+      "https://www.transpondery.com/transponder_catalog/dodge_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Dodge",
+    "model": "Journey",
+    "yearStart": 2011,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": null,
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7945A / PCF7953A (Hitag2 / ID46)",
+        "chipClonable": "token",
+        "fccId": "M3N-40821302",
+        "partNumber": "68066349",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "WIN",
+    "pinRequired": true,
+    "programming": "Professional OBD2 + PIN. 2018+ SGW bypass required.",
+    "programmerHint": ["Autel IM608 Pro", "AutoProPad G2", "Lonsdor K518ISE"],
+    "notes": "2011-2020 Journey uses M3N-40821302 smart proximity key with Hitag2/ID46 chip. P/N 68066349 (Journey-specific). Model discontinued after 2020.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/dodge_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2011-2020-dodge-journey-durango-4-button-smart-key-pn-68066350ad-m3n-40821302-oem"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Dodge",
+    "model": "Grand Caravan",
+    "yearStart": 2004,
+    "yearEnd": 2007,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "Y159",
+        "bladeIlco": "Y159-PT",
+        "bladeSilca": "CY24",
+        "bladeJma": null,
+        "transponderChip": "PCF7941 / PCF7936 (ID46)",
+        "chipClonable": "yes",
+        "fccId": "M3N5WY72XX",
+        "partNumber": "05183681",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SKIM",
+    "pinRequired": true,
+    "programming": "Remote head key. Professional OBD2.",
+    "programmerHint": ["Autel IM508", "AutoProPad"],
+    "notes": "2004-2007 Grand Caravan uses M3N5WY72XX remote HEAD key (integrated blade + remote) with Y159 blade at 315 MHz, confirmed by Locksmith Keyless and UHS Hardware. This is NOT a separate transponder + fob — it is an integrated remote head key. Alt FCC: M3N65981772. Silca CY24.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2004-2007-chrysler-town-and-country-remote-key-5b-fcc-m3n5wy72xx-2-pack",
+      "https://www.uhs-hardware.com/products/2004-2019-chrysler-dodge-jeep-transponder-key-y164-chip-46-k-y164",
+      "https://northcoastkeyless.com/product/2004-2007-dodge-grand-caravan-6-button-keyless-entry-remote-head-key-fcc-id-m3n5wy72xx/",
+      "https://www.bestkeysolution.com/products/chrysler-pacifica-jeep-liberty-2004-2009-remote-head-key-fcc-id-m3n5wy72xx-4button-315-mhz"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Dodge",
+    "model": "Grand Caravan",
+    "yearStart": 2008,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "Y171",
+        "bladeIlco": "Y171-IYZ",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7941 / PCF7341 (ID46)",
+        "chipClonable": "yes",
+        "fccId": "IYZ-C01C",
+        "partNumber": "56046639AG",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "SKIM",
+    "pinRequired": true,
+    "programming": "Fobik remote head key. On-board DIY programming possible with 2 existing keys. Professional OBD2 for all-keys-lost.",
+    "programmerHint": ["Autel IM508", "AutoProPad", "Lonsdor K518", "DIY onboard (2 keys needed)"],
+    "notes": "2008-2020 Grand Caravan: IYZ-C01C fobik with Y171 emergency insert blade (not Y170). Discontinued after 2020. Part numbers: 68044908AA, 68043592AA, 05026196AC/AD.",
+    "confidence": "verified",
+    "sources": [
+      "https://keyinnovations.com/products/keyless2go-insert-emergency-key-blade-y171-for-chrysler-dodge-jeep-fobik-keys-iyz-c01c",
+      "https://www.locksmithkeyless.com/products/2008-2019-dodge-fobik-key-4b-w-remote-start-fcc-iyz-c01c",
+      "https://www.uhs-hardware.com/products/2008-2021-chrysler-dodge-jeep-insert-emergency-key-blade-y171-y159-68029829aa-k-y171-iyz",
+      "https://fccid.io/IYZ-C01C"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Dodge",
+    "model": "Dart",
+    "yearStart": 2013,
+    "yearEnd": 2016,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Fobik",
+        "trimDependent": true,
+        "keyway": "Y171",
+        "bladeIlco": "Y171-IYZ",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7941 / PCF7341 (ID46)",
+        "chipClonable": "yes",
+        "fccId": "M3N32297100",
+        "partNumber": "56046771AA",
+        "frequency": "433"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": null,
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7945A / PCF7953A (Hitag2 / ID46)",
+        "chipClonable": "token",
+        "fccId": "M3N-40821302",
+        "partNumber": "68051387",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "SKIM / WIN",
+    "pinRequired": true,
+    "programming": "No onboard self-programming available. Requires diagnostic tool + PIN. AlfaOBD + OBDLink viable for locksmiths.",
+    "programmerHint": ["Autel IM608", "AutoProPad", "AlfaOBD + OBDLink MX"],
+    "notes": "Dart has two variants: base/SXT uses M3N32297100 fobik (Y171 emergency insert blade, not Y170; confirmed by UHS Hardware K-Y171-IYZ listing, ID46, 433 MHz); Rallye/GT/Limited uses M3N-40821302 smart proximity key (Hitag2/ID46). Trim-dependent split.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2012-2016-dodge-dart-4-button-fobik-key-pn-56046771aa-m3n32297100-oem-1",
+      "https://www.locksmithkeyless.com/products/2012-2016-dodge-dart-fobik-key-4b-fcc-m3n32297100-433-mhz",
+      "https://northcoastkeyless.com/product/2013-2016-dodge-dart-4-button-key-fob-remote-trunk-release-fcc-m3n32297100/",
+      "https://www.locksmithkeyless.com/products/2016-dodge-dart-smart-key-4b-fob-fcc-m3n-40821302-aftermarket"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chrysler",
+    "model": "300",
+    "yearStart": 2005,
+    "yearEnd": 2007,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "Y159",
+        "bladeIlco": "Y159-PT",
+        "bladeSilca": "CY24",
+        "bladeJma": null,
+        "transponderChip": "PCF7941 / PCF7936 (ID46)",
+        "chipClonable": "yes",
+        "fccId": "KOBDT04A",
+        "partNumber": "68004413AA",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SKIM",
+    "pinRequired": true,
+    "programming": "Remote head key. Professional OBD2.",
+    "programmerHint": ["Autel IM508", "AutoProPad"],
+    "notes": "2005-2007 Chrysler 300 uses KOBDT04A remote head key with Y159 blade (not Y164 as sometimes listed — the KOBDT04A shell is Y159/CY24). Part numbers: 05179514AA, 56038757AE/AH. Alternate FCC OHT692427AA also compatible. 315 MHz.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2005-2009-chrysler-300-4-button-remote-head-key-pn-5179514ab-kobdt04a-oem",
+      "https://www.uhs-hardware.com/products/2004-2011-chrysler-dodge-jeep-3-button-remote-head-key-shell-y159-kobdt04a-aftermarket",
+      "https://remotesandkeys.com/products/2007-chrysler-300-remote-head-key-5056",
+      "https://www.transpondery.com/transponder_catalog/chrysler_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chrysler",
+    "model": "300",
+    "yearStart": 2008,
+    "yearEnd": 2010,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "Y171",
+        "bladeIlco": "Y171-IYZ",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7941 / PCF7341 (ID46)",
+        "chipClonable": "yes",
+        "fccId": "IYZ-C01C",
+        "partNumber": "68044060AC",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "SKIM",
+    "pinRequired": true,
+    "programming": "Fobik remote head key. Professional OBD2 for all-keys-lost.",
+    "programmerHint": ["Autel IM508", "AutoProPad", "Lonsdor K518"],
+    "notes": "2008-2010 Chrysler 300 shifted to IYZ-C01C fobik at 433.92 MHz. Emergency insert blade is Y171 (not Y170). Also cross-referenced as 68058346AA.",
+    "confidence": "verified",
+    "sources": [
+      "https://keyinnovations.com/products/keyless2go-insert-emergency-key-blade-y171-for-chrysler-dodge-jeep-fobik-keys-iyz-c01c",
+      "https://fccid.io/IYZ-C01C",
+      "https://www.uhs-hardware.com/products/2008-2021-chrysler-dodge-jeep-insert-emergency-key-blade-y171-y159-68029829aa-k-y171-iyz",
+      "https://www.locksmithkeyless.com/products/2008-2010-chrysler-300-fobik-key-4b-fcc-iyz-c01c"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chrysler",
+    "model": "300",
+    "yearStart": 2011,
+    "yearEnd": 2018,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": null,
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7945A / PCF7953A (Hitag2 / ID46)",
+        "chipClonable": "token",
+        "fccId": "M3N-40821302",
+        "partNumber": "56046759AA",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "WIN / SGW (2018+)",
+    "pinRequired": true,
+    "programming": "Professional OBD2 + PIN. 2018+ SGW 12+8 bypass required. AlfaOBD viable for locksmiths.",
+    "programmerHint": ["Autel IM608 Pro", "AutoProPad G2", "Lonsdor K518ISE", "AlfaOBD + OBDLink"],
+    "notes": "2011-2018 Chrysler 300 uses M3N-40821302 with Hitag2/ID46 chip (PCF7945A/PCF7953A). NOT Hitag AES. 2019+ switches to M3M-40821302 with Hitag AES (PCF7953M). Part 56046759AA (5-btn). 2018 needs SGW bypass.",
+    "confidence": "verified",
+    "sources": [
+      "https://abkeys.com/products/chrysler-300-smart-key-5b-433mhz-m3n-40821302-56046759aa-56046759af-2172",
+      "https://www.americankeysupply.com/product/chrysler-300-2011-2018-4-btn-sk-m3n-40821302-hitag2-oem-4476",
+      "https://www.locksmithkeyless.com/products/2011-2018-chrysler-300-smart-key-4b-fcc-m3n-40821302",
+      "https://www.transpondery.com/transponder_catalog/chrysler_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chrysler",
+    "model": "300",
+    "yearStart": 2019,
+    "yearEnd": 2023,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": null,
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7953M (Hitag AES / ID-4A)",
+        "chipClonable": "token",
+        "fccId": "M3M-40821302",
+        "partNumber": "68394191AA",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "WIN / SGW",
+    "pinRequired": true,
+    "programming": "Professional OBD2 + PIN + SGW bypass required. AlfaOBD viable for locksmiths.",
+    "programmerHint": ["Autel IM608 Pro", "AutoProPad G2", "Lonsdor K518ISE", "AlfaOBD + OBDLink"],
+    "notes": "2019-2023 Chrysler 300 uses M3M-40821302 (note: M3M not M3N) with Hitag AES / PCF7953M chip. SGW bypass required for all OBD2 programming.",
+    "confidence": "verified",
+    "sources": [
+      "https://abkeys.com/products/chrysler-300c-smart-key-5buttons-433mhz-m3m-40821302-68394191aa-4475",
+      "https://northcoastkeyless.com/chrysler-300-keyless-entry-remote-fob-programming-instructions/"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chrysler",
+    "model": "Pacifica",
+    "yearStart": 2004,
+    "yearEnd": 2008,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "Y159",
+        "bladeIlco": "Y159-PT",
+        "bladeSilca": "CY24",
+        "bladeJma": null,
+        "transponderChip": "PCF7941 / PCF7936 (ID46)",
+        "chipClonable": "yes",
+        "fccId": "M3N65981772",
+        "partNumber": "04589053AC",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SKIM",
+    "pinRequired": true,
+    "programming": "Remote head key. Professional OBD2.",
+    "programmerHint": ["Autel IM508", "AutoProPad"],
+    "notes": "2004-2008 first-gen Pacifica (crossover, not minivan). M3N65981772 remote head key with Y159 blade (CY24 Silca). Also cross-listed M3N5WY72XX. The Y164-PT (same keyway profile, transponder-specific blank) also fits the ignition. ID46 chip, 315 MHz.",
+    "confidence": "verified",
+    "sources": [
+      "https://northcoastkeyless.com/product/2004-2008-chrysler-pacifica-4-button-keyless-entry-remote-head-key-fcc-id-m3n5wy72xx/",
+      "https://www.transpondery.com/transponder_catalog/chrysler_transponder_catalog.html",
+      "https://remotesandkeys.com/products/2006-chrysler-pacifica-transponder-key"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chrysler",
+    "model": "Pacifica",
+    "yearStart": 2017,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": null,
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP AES 128-bit (PCF7953M / ID-4A)",
+        "chipClonable": "token",
+        "fccId": "M3N-97395900",
+        "partNumber": "68217832AC",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "WIN / SGW (2018+) / SKIM",
+    "pinRequired": true,
+    "programming": "No onboard DIY. Requires professional OBD2 programmer + PIN. 2018+ SGW bypass needed. Some units allow cycle-key DIY (8x OFF-ON sequence) for remote sync only.",
+    "programmerHint": ["Autel IM608 Pro", "Smart Pro", "AutoProPad G2", "Lonsdor K518ISE", "SGW 12+8 bypass adapter"],
+    "notes": "2017-2024 Pacifica minivan (second gen). 7-button fob. P/N variants: 68217832AA/AB/AC/AD. Also fits Chrysler Voyager 2020-2024. 2018+ requires SGW bypass for all OBD2 key programming.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2017-2018-chrysler-pacifica-smart-key-7b-fcc-m3n-97395900",
+      "https://www.amazon.com/Replacement-Chrysler-2020-2024-Proximity-M3N-97395900/dp/B0DZTMT9GF",
+      "https://keyless2go.com/blogs/program-instructions/2020-chrysler-pacifica-keyless-entry-remote-fob-smart-key-programming-instructions"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chrysler",
+    "model": "Town & Country",
+    "yearStart": 2004,
+    "yearEnd": 2007,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "Y159",
+        "bladeIlco": "Y159-PT",
+        "bladeSilca": "CY24",
+        "bladeJma": null,
+        "transponderChip": "PCF7941 / PCF7936 (ID46)",
+        "chipClonable": "yes",
+        "fccId": "M3N5WY72XX",
+        "partNumber": "05183681",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SKIM",
+    "pinRequired": true,
+    "programming": "Remote head key. Professional OBD2.",
+    "programmerHint": ["Autel IM508", "AutoProPad"],
+    "notes": "2004-2007 Town & Country: M3N5WY72XX remote head key with Y159 blade (CY24 Silca) at 315 MHz. Confirmed by Locksmith Keyless product page. Shared platform with Grand Caravan. This is an integrated remote head key, not a separate transponder + fob.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2004-2007-chrysler-town-and-country-remote-key-5b-fcc-m3n5wy72xx-2-pack",
+      "https://www.transpondery.com/transponder_catalog/chrysler_transponder_catalog.html",
+      "https://yourcarkeyguys.com/products/2004-2007-dodge-caravan-chrysler-town-country-3b-rhk-m3n5wy72xx"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chrysler",
+    "model": "Town & Country",
+    "yearStart": 2008,
+    "yearEnd": 2016,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "Y171",
+        "bladeIlco": "Y171-IYZ",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7941 / PCF7341 (ID46)",
+        "chipClonable": "yes",
+        "fccId": "IYZ-C01C",
+        "partNumber": "68043583AA",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "SKIM",
+    "pinRequired": true,
+    "programming": "Fobik remote head key. On-board DIY possible with 2 existing keys. Professional OBD2 for all-keys-lost.",
+    "programmerHint": ["Autel IM508", "AutoProPad", "DIY onboard (2 keys needed)"],
+    "notes": "2008-2016 Town & Country: Y171 emergency insert blade (not Y170) with IYZ-C01C fobik at 433.92 MHz. Replaced by Pacifica in 2017. Also cross-refs: 05026098AD.",
+    "confidence": "verified",
+    "sources": [
+      "https://keyinnovations.com/products/keyless2go-insert-emergency-key-blade-y171-for-chrysler-dodge-jeep-fobik-keys-iyz-c01c",
+      "https://www.uhs-hardware.com/products/2011-2016-chrysler-town-country-6-button-keyless-go-fobik-pn-68070394aj-iyz-c01c-oem",
+      "https://fccid.io/IYZ-C01C",
+      "https://www.locksmithkeyless.com/products/2008-2016-chrysler-town-country-fobik-key-3b-fcc-iyz-c01c-25-pack"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chrysler",
+    "model": "200",
+    "yearStart": 2011,
+    "yearEnd": 2014,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "Y159",
+        "bladeIlco": "Y159-PT",
+        "bladeSilca": "CY24",
+        "bladeJma": null,
+        "transponderChip": "PCF7941 / PCF7936 (ID46)",
+        "chipClonable": "yes",
+        "fccId": "OHT692427AA",
+        "partNumber": "68001710AB",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SKIM",
+    "pinRequired": true,
+    "programming": "Remote head key. Professional OBD2.",
+    "programmerHint": ["Autel IM508", "AutoProPad"],
+    "notes": "2011-2014 Chrysler 200 (first gen, rebadged Sebring). OHT692427AA remote head key at 315 MHz, ID46, Y159 blade (CY24 Silca) — confirmed Y159 by UHS Hardware and Locksmith Keyless product pages. Also P/N 68273344AA.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2007-2014-chrysler-200-sebring-convertible-5-button-remote-head-key-oht692427aa-rk-chy-oht-7",
+      "https://abkeys.com/products/chrysler-200-pt-cruiser-remote-key-4b-315mhz-oht692427aa-05175815aa-328",
+      "https://www.transpondery.com/transponder_catalog/chrysler_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chrysler",
+    "model": "200",
+    "yearStart": 2015,
+    "yearEnd": 2017,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": null,
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7953M (Hitag AES / ID-4A)",
+        "chipClonable": "token",
+        "fccId": "M3M-40821302",
+        "partNumber": "68155687AB",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "WIN",
+    "pinRequired": true,
+    "programming": "Professional OBD2 + PIN. No self-programming.",
+    "programmerHint": ["Autel IM608 Pro", "AutoProPad G2", "Lonsdor K518ISE"],
+    "notes": "2015-2017 Chrysler 200 (second gen). Smart key M3M-40821302 (Hitag AES). 4-btn P/N 68155686AB, 5-btn P/N 68155687AB. Model discontinued after 2017.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/chrysler_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/2015-2017-chrysler-200-smart-key-4b-fcc-m3m-40821302",
+      "https://abkeys.com/products/chrysler-200-smart-key-4buttons-433mhz-m3m-40821302-68155686ab-4428"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chrysler",
+    "model": "Voyager",
+    "yearStart": 2020,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": null,
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP AES 128-bit (PCF7953M / ID-4A)",
+        "chipClonable": "token",
+        "fccId": "M3N-97395900",
+        "partNumber": "68217827AC",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "WIN / SGW",
+    "pinRequired": true,
+    "programming": "Same platform as Pacifica. Professional OBD2 + PIN + SGW bypass required.",
+    "programmerHint": ["Autel IM608 Pro", "Smart Pro", "AutoProPad G2", "Lonsdor K518ISE"],
+    "notes": "Voyager is budget trim variant of Pacifica. Shares M3N-97395900 key platform. P/N 68217827AC (Voyager-specific). SGW bypass required for OBD2 programming.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/chrysler_transponder_catalog.html",
+      "https://www.amazon.com/Replacement-Chrysler-2020-2024-Proximity-M3N-97395900/dp/B0DZTMT9GF"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Fiat",
+    "model": "500",
+    "yearStart": 2012,
+    "yearEnd": 2019,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": true,
+        "keyway": "SIP22",
+        "bladeIlco": "SIP22-PT",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7936 / PCF7946 (ID46)",
+        "chipClonable": "yes",
+        "fccId": null,
+        "partNumber": "68224014AA",
+        "frequency": null
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "SIP22",
+        "bladeIlco": "FLIP-FIAT-3B1",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7946 (ID46)",
+        "chipClonable": "yes",
+        "fccId": "LTQF12AM433TX",
+        "partNumber": "68334510AA",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "Delphi BSI (Body Control Module)",
+    "pinRequired": true,
+    "programming": "2-step process: (1) program remote buttons, (2) program transponder. Requires TM PRO pre-coding or AVDI/Abrites. Professional only.",
+    "programmerHint": ["TM PRO", "Abrites AVDI", "AutoProPad", "Autel IM608", "SmartBox", "Zed-Full"],
+    "notes": "US-spec Fiat 500 (2012-2019) uses SIP22 blade. Two variants: plain transponder key (base) and flip remote key (Lounge/Sport) at 434 MHz. Delphi BCM — not same as FCA SKIM. FCC for flip: LTQF12AM433TX / 2ADFTF12AM433TX. Chip can be locked; clone may fail on some units.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/fiat_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2012-2018-fiat-500-ram-promaster-sip22-transponder-key-46-chip-k-sip22",
+      "https://abkeys.com/products/fiat-transponder-key-sip22-pcf7936-71776117-71749671-blue-1303",
+      "https://northcoastkeyless.com/product/2012-2017-fiat-500-3-button-flip-key-fob-remote-fcc-ltqf12am433tx-2adftf12am433tx-p-n-68334510-68269686/"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Fiat",
+    "model": "500X",
+    "yearStart": 2016,
+    "yearEnd": 2021,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": null,
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7945A / PCF7953A (Hitag2 / ID46)",
+        "chipClonable": "token",
+        "fccId": "M3N-40821302",
+        "partNumber": "735637066",
+        "frequency": "433"
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "SIP22",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Megamos AES (ID88)",
+        "chipClonable": "token",
+        "fccId": "2ADFTFI5AM433TX",
+        "partNumber": "68296748AA",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "FCA SKIM / WIN",
+    "pinRequired": true,
+    "programming": "Professional OBD2 + PIN required for both variants. No self-programming.",
+    "programmerHint": ["Autel IM608 Pro", "AutoProPad G2", "Lonsdor K518ISE", "Abrites AVDI"],
+    "notes": "500X sold in US 2016-2021. Two key variants by trim: Pop/Easy/Sport use flip (FCC 2ADFTFI5AM433TX, Megamos AES/ID88, SIP22 blade, 434 MHz) confirmed by Locksmith Keyless product page; Trekking/Urbana use smart proximity (M3N-40821302, Hitag2/ID46, 433 MHz). The 'ID-4A' designation previously listed for the flip is corrected to Megamos AES (ID88) per live source verification.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2015-2018-jeep-fiat-flip-key-fob-3b-fcc-2adftfi5am433tx",
+      "https://www.locksmithkeyless.com/products/2016-fiat-500x-prox-key-4b-for-fcc-m3n-40821302",
+      "https://www.transpondery.com/transponder_catalog/fiat_transponder_catalog.html",
+      "https://www.amazon.com/Replacement-Compatible-2ADFTFI5AM433TX-FI5-AM433TX-FI5AM433TX/dp/B0DJ2W9C82"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  }
+]

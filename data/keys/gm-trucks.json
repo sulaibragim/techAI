@@ -1,0 +1,1641 @@
+[
+  {
+    "make": "Chevrolet",
+    "model": "Silverado 1500",
+    "yearStart": 2007,
+    "yearEnd": 2013,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "Z (B106-P)",
+        "bladeIlco": "B111-PT (IAX00000532P)",
+        "bladeSilca": "B106",
+        "bladeJma": "TP12GM-37.P",
+        "transponderChip": "Philips ID46 Circle+",
+        "chipClonable": "yes",
+        "fccId": null,
+        "partNumber": "5903089",
+        "frequency": null
+      }
+    ],
+    "immobilizer": "Pass-Key III+",
+    "pinRequired": false,
+    "programming": "On-board: requires 2 working programmed keys; cycle ignition off-on within 10 s to program new key. All-keys-lost requires scan tool.",
+    "programmerHint": ["AUTEL IM508", "AUTEL IM608", "Ilco RW4", "Lonsdor K518"],
+    "notes": "B111-PT uses Z/B106 keyway. Circle+ chip (non-rewritable ID46). 2007-2013 range confirmed across multiple sources. Immobilizer is Pass-Key III+ (transponder-based), not PassLock (which is resistor-based with no transponder).",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/b111-transponder-key-gm",
+      "https://www.locksmithkeyless.com/products/2005-2017-gm-transponder-key-id46-chip-circle-z-keyway-b111-pt-1",
+      "https://www.bestkeysolution.com/products/gm-b111-pt-transponder-key-blank-chip-id-philips-46-circle-plus",
+      "https://carlocksandkeys.com/2007-2014-chevrolet-silverado-pk3-or-circle-plus-transponder-key-blank/"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Silverado 1500",
+    "yearStart": 2014,
+    "yearEnd": 2018,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": "B119-PT",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips 46E PCF7937E / NCF2951E",
+        "chipClonable": "yes",
+        "fccId": null,
+        "partNumber": "7013237 / 5927933 / 22984996",
+        "frequency": null
+      },
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": "B119-PT",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips 46E PCF7937E",
+        "chipClonable": "yes",
+        "fccId": "M3N-32337100",
+        "partNumber": "22881480",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "BCM immobilizer (ID46 HU100 generation)",
+    "pinRequired": false,
+    "programming": "Remote: no on-board self-program; requires scan tool or dealer. Transponder standalone: on-board possible with 2 existing programmed keys.",
+    "programmerHint": ["AUTEL IM508", "AUTEL IM608", "Lonsdor K518"],
+    "notes": "315 MHz remote FCC M3N-32337100 covers Silverado/Sierra 2014-2018 and Colorado/Canyon 2015-2021. HU100 keyway replaces older Z/B106 on new-body trucks.",
+    "confidence": "verified",
+    "sources": [
+      "https://abkeys.com/products/gmc-yukon-sierra-tahoe-transponder-key-hu100-pcf7937e-7013237-3415",
+      "https://www.bestkeysolution.com/products/gm-b119-pt-transponder-key-blank-chip-id-philips-47e",
+      "https://www.amazon.com/M3N-32337100-Chevrolet-Silverado-2014-2018-2015-2021/dp/B0FS7GB9SF",
+      "https://www.autokeymax.com/products/for-2014-2017-chevy-silverado-1500-gmc-sierra-remote-fob-m3n-32337100-sku-kr-c4rg"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Silverado 1500",
+    "yearStart": 2019,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": "B119-PT",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips 46E PCF7937E",
+        "chipClonable": "yes",
+        "fccId": null,
+        "partNumber": "23209427 / 22984996",
+        "frequency": null
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HU100 (emergency blade)",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM EXT",
+        "chipClonable": "token",
+        "fccId": "HYQ1EA",
+        "partNumber": "13529632 / 13508398 / 5947333",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "BCM2 immobilizer",
+    "pinRequired": false,
+    "programming": "Smart key: no on-board programming; scan tool required. Transponder: on-board with 2 existing keys or scan tool.",
+    "programmerHint": ["AUTEL IM508", "AUTEL IM608", "Lonsdor K518"],
+    "notes": "2019-2020 uses HYQ1EA at 433.92 MHz (FCC-confirmed; some aftermarket sources incorrectly list 434 MHz). Push-start trims receive Smart key; standard-ignition trims may still use B119 transponder.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2019-2020-chevrolet-silverado-5-button-smart-key-w-tailgate-pn-13508398-hyq1ea-434-mhz-oem-1",
+      "https://www.carandtruckremotes.com/products/2019-chevrolet-silverado-transponder-key-blank-aftermarket",
+      "https://fccid.io/HYQ1EA"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Silverado 1500",
+    "yearStart": 2021,
+    "yearEnd": 2021,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100 (emergency blade)",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM EXT",
+        "chipClonable": "token",
+        "fccId": "HYQ1ES",
+        "partNumber": "13522854",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "BCM2 immobilizer",
+    "pinRequired": false,
+    "programming": "Scan tool required; no on-board self-program. Professional locksmith or dealer only.",
+    "programmerHint": ["AUTEL IM508", "AUTEL IM608", "Lonsdor K518"],
+    "notes": "HYQ1ES at 433.92 MHz (FCC-confirmed; some aftermarket listings erroneously state 434 MHz). 5-button with tailgate function. Upgrade from HYQ1EA generation. yearEnd corrected to 2021 — 2022+ mid-year shifted to YG0G21TB2/ID49.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2021-2022-chevrolet-silverado-smart-key-5-buttons-w-remote-start-tailgate-fcc-hyq1es",
+      "https://www.bestkeysolution.com/products/chevrolet-silverado-gmc-sierra-2019-2020-smart-key-5b-tailgate-starter-fcc-id-hyq1ea-433-mhz-key2u-copy",
+      "https://fccid.io/HYQ1ES"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Silverado 1500",
+    "yearStart": 2022,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100 (emergency blade)",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG PRO ID49 128-bit",
+        "chipClonable": "no",
+        "fccId": "YG0G21TB2",
+        "partNumber": "13548437 / 13548440 / 13548442",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "BCM2 / VIP architecture (2022+ mid-year changeover)",
+    "pinRequired": false,
+    "programming": "Scan tool required; VIP vehicles have no low-speed CAN circuit — AUTEL IM608 Pro or equivalent needed.",
+    "programmerHint": ["AUTEL IM608 Pro", "Lonsdor K518 Pro"],
+    "notes": "2022 changed mid-year to VIP architecture with ID49 HITAG PRO chip. Same FCC ID YG0G21TB2 shared with Tahoe/Suburban/Yukon 2021-2024 and Sierra 2022+. Frequency 433 MHz confirmed by multiple OEM listings and aftermarket sources.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2021-2024-chevrolet-suburban-tahoe-4-button-smart-key-pn-13541561-yg0g21tb2-oem",
+      "https://royalkeysupply.com/products/chevrolet-new-oem-2022-2023-silverado-tahoe-smart-key-4b-remote-start-fccid-yg0g21tb2-pn-13548442",
+      "https://www.amazon.com/Dasbecan-Replacement-Compatible-2022-2024-Silverado/dp/B0GFDPCJFD"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Silverado 2500/3500 HD",
+    "yearStart": 2014,
+    "yearEnd": 2018,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": "B119-PT",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips 46E PCF7937E",
+        "chipClonable": "yes",
+        "fccId": null,
+        "partNumber": "7013237 / 22984996",
+        "frequency": null
+      },
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": "B119-PT",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips 46E PCF7937E",
+        "chipClonable": "yes",
+        "fccId": "M3N-32337100",
+        "partNumber": "22881480",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "BCM immobilizer (ID46 HU100 generation)",
+    "pinRequired": false,
+    "programming": "No on-board for remote; scan tool required. Transponder on-board with 2 existing keys.",
+    "programmerHint": ["AUTEL IM508", "AUTEL IM608"],
+    "notes": "HD trucks share same key system as 1500 in this generation.",
+    "confidence": "verified",
+    "sources": [
+      "https://keyless2go.com/blogs/program-instructions/2010-chevrolet-silverado-2500-hd-keyless-entry-remote-fob-smart-key-programming-instructions",
+      "https://abkeys.com/products/gmc-yukon-sierra-tahoe-transponder-key-hu100-pcf7937e-7013237-3415"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Silverado 2500/3500 HD",
+    "yearStart": 2019,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HU100 (emergency blade)",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM EXT (2019-2021) / NXP HITAG PRO ID49 (2022+)",
+        "chipClonable": "token",
+        "fccId": "HYQ1EA (2019-2020) / HYQ1ES (2021) / YG0G21TB2 (2022+)",
+        "partNumber": null,
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "BCM2 immobilizer",
+    "pinRequired": false,
+    "programming": "Scan tool required; professional locksmith or dealer only.",
+    "programmerHint": ["AUTEL IM508", "AUTEL IM608 Pro"],
+    "notes": "HD follows same FCC ID progression as 1500. All HYQ1EA/HYQ1ES/YG0G21TB2 operate at 433 MHz (FCC-confirmed). Confirm FCC ID from door sticker before ordering.",
+    "confidence": "single-source",
+    "sources": [
+      "https://keyless2go.com/blogs/program-instructions/2024-gmc-sierra-hd-keyless-entry-remote-fob-smart-key-programming-instructions"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Colorado",
+    "yearStart": 2015,
+    "yearEnd": 2022,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": "B119-PT",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips 46E PCF7937E",
+        "chipClonable": "yes",
+        "fccId": null,
+        "partNumber": "22984996 / 23209427",
+        "frequency": null
+      },
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": "B119-PT",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips 46E PCF7937E",
+        "chipClonable": "yes",
+        "fccId": "M3N-32337100",
+        "partNumber": "22881480",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "BCM immobilizer (ID46 HU100 generation)",
+    "pinRequired": false,
+    "programming": "Remote: scan tool required. Transponder: on-board with 2 existing keys.",
+    "programmerHint": ["AUTEL IM508", "AUTEL IM608"],
+    "notes": "2015-2022 Colorado shares FCC M3N-32337100 at 315 MHz with Silverado 2014-2018 and Canyon 2015-2021.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.amazon.com/M3N-32337100-Chevrolet-Silverado-2014-2018-2015-2021/dp/B0FS7GB9SF",
+      "https://www.amazon.com/Remote-Replacement-Chevrolet-2015-2021-Silverado-2014-2018/dp/B0DQKJGDK3"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Colorado",
+    "yearStart": 2023,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100 (emergency blade)",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG PRO ID49 128-bit",
+        "chipClonable": "no",
+        "fccId": "YG0G21TB2",
+        "partNumber": "13548436",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "BCM2 / VIP architecture",
+    "pinRequired": false,
+    "programming": "Scan tool required; no on-board programming.",
+    "programmerHint": ["AUTEL IM608 Pro", "Lonsdor K518 Pro"],
+    "notes": "New-gen Colorado (2023+) moved to ID49/YG0G21TB2 platform at 433 MHz, consistent with 2023+ Canyon. Part number 13548436 confirmed by multiple OEM sources.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2023-chevrolet-colorado-smart-key-3b-fob-fcc-yg0g21tb2",
+      "https://www.carandtruckremotes.com/products/2024-chevrolet-colorado-smart-remote-13548436",
+      "https://oemcarkeymall.com/products/2024-chevrolet-colorado-smart-remote-key-fob-3b-fcc-ygog21tb2-pn-13548436"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Tahoe",
+    "yearStart": 2007,
+    "yearEnd": 2014,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "Z (B106-P)",
+        "bladeIlco": "B111-PT (IAX00000532P)",
+        "bladeSilca": "B106",
+        "bladeJma": "TP12GM-37.P",
+        "transponderChip": "Philips ID46 Circle+",
+        "chipClonable": "yes",
+        "fccId": null,
+        "partNumber": "5903089",
+        "frequency": null
+      }
+    ],
+    "immobilizer": "Pass-Key III+",
+    "pinRequired": false,
+    "programming": "On-board with 2 working keys; all-keys-lost needs scan tool.",
+    "programmerHint": ["AUTEL IM508", "Ilco RW4"],
+    "notes": "B111-PT Z-keyway covers Tahoe through 2014. Immobilizer is Pass-Key III+ (transponder-based), not PassLock.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/b111-transponder-key-gm",
+      "https://www.locksmithkeyless.com/products/2005-2017-gm-transponder-key-id46-chip-circle-z-keyway-b111-pt-1",
+      "https://remotesandkeys.com/products/2014-chevrolet-tahoe-transponder-key-ckb111pt"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Tahoe",
+    "yearStart": 2015,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100 (emergency blade)",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM EXT PCF7937E / NCF2951E",
+        "chipClonable": "token",
+        "fccId": "HYQ1AA",
+        "partNumber": "13580802 / 13508278 / 13529633",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "BCM immobilizer (ID46 HU100 generation)",
+    "pinRequired": false,
+    "programming": "Scan tool required; some models allow on-board with 2 existing keys via DIC menu.",
+    "programmerHint": ["AUTEL IM508", "AUTEL IM608"],
+    "notes": "315 MHz HYQ1AA generation (FCC confirms 314.9 MHz, rounded to 315). Shares key with GMC Yukon 2015-2020. HU100 emergency blade included.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.bestkeysolution.com/products/chevrolet-gmc-2015-2020-smart-key-fob-6-btns-with-tailgate-rear-glass-starter-fcc-id-hyq1aa-and-315-mhz-new-key2u",
+      "https://abkeys.com/products/chevrolet-suberban-tahoe-smart-key-6buttons-315mhz-hyq1aa-13580802-3401",
+      "https://fccid.io/HYQ1AA"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Tahoe",
+    "yearStart": 2021,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100 (emergency blade)",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG PRO ID49 128-bit",
+        "chipClonable": "no",
+        "fccId": "YG0G21TB2",
+        "partNumber": "13541561 / 13537960 / 13545334 / 13548432",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "BCM2 immobilizer",
+    "pinRequired": false,
+    "programming": "Scan tool required; no on-board programming.",
+    "programmerHint": ["AUTEL IM608 Pro", "Lonsdor K518 Pro"],
+    "notes": "Upgraded to ID49/433 MHz with 2021 full redesign. Shares YG0G21TB2 with Suburban 2021-2024.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2021-2024-chevrolet-suburban-tahoe-4-button-smart-key-pn-13541561-yg0g21tb2-oem",
+      "https://keyless2go.com/products/keyless2go-chevrolet-4-button-smart-key-ygog21tb2-13537961-433-mhz"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Suburban",
+    "yearStart": 2015,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100 (emergency blade)",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM EXT PCF7937E / NCF2951E",
+        "chipClonable": "token",
+        "fccId": "HYQ1AA",
+        "partNumber": "13580802 / 13508278",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "BCM immobilizer (ID46 HU100 generation)",
+    "pinRequired": false,
+    "programming": "Scan tool required; on-board possible with 2 existing keys via DIC menu.",
+    "programmerHint": ["AUTEL IM508", "AUTEL IM608"],
+    "notes": "Identical key system to Tahoe 2015-2020. HYQ1AA at 315 MHz.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.bestkeysolution.com/products/chevrolet-gmc-2015-2020-smart-key-fob-6-btns-with-tailgate-rear-glass-starter-fcc-id-hyq1aa-and-315-mhz-new-key2u",
+      "https://abkeys.com/products/chevrolet-suberban-tahoe-smart-key-6buttons-315mhz-hyq1aa-13580802-3401"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Suburban",
+    "yearStart": 2021,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100 (emergency blade)",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG PRO ID49 128-bit",
+        "chipClonable": "no",
+        "fccId": "YG0G21TB2",
+        "partNumber": "13541561 / 13537960 / 13545334",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "BCM2 immobilizer",
+    "pinRequired": false,
+    "programming": "Scan tool required; no on-board programming.",
+    "programmerHint": ["AUTEL IM608 Pro", "Lonsdor K518 Pro"],
+    "notes": "Same generation shift as Tahoe 2021+. YG0G21TB2 at 433 MHz.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2021-2024-chevrolet-suburban-tahoe-4-button-smart-key-pn-13541561-yg0g21tb2-oem",
+      "https://keyless2go.com/products/keyless2go-chevrolet-4-button-smart-key-ygog21tb2-13537961-433-mhz"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Traverse",
+    "yearStart": 2009,
+    "yearEnd": 2017,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "Z (B106-P)",
+        "bladeIlco": "B111-PT (IAX00000532P)",
+        "bladeSilca": "B106",
+        "bladeJma": "TP12GM-37.P",
+        "transponderChip": "Philips ID46 Circle+",
+        "chipClonable": "yes",
+        "fccId": null,
+        "partNumber": "23372322",
+        "frequency": null
+      }
+    ],
+    "immobilizer": "Pass-Key III+",
+    "pinRequired": false,
+    "programming": "On-board with 2 working keys; all-keys-lost needs scan tool.",
+    "programmerHint": ["AUTEL IM508", "Ilco RW4"],
+    "notes": "B111-PT Z-keyway. Compatible through 2017 Traverse. Immobilizer is Pass-Key III+ (transponder-based).",
+    "confidence": "verified",
+    "sources": [
+      "https://www.walmart.com/ip/Eye4Techs-Replacement-Transponder-B111-Ignition-Car-Key-for-Chevrolet-Traverse-2017-Part-number-23372322-Chip-ID-46-Circle/10469208855",
+      "https://www.locksmithkeyless.com/products/2005-2017-gm-transponder-key-id46-chip-circle-z-keyway-b111-pt-1"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Traverse",
+    "yearStart": 2018,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100 (emergency blade)",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM EXT (HITAG 2)",
+        "chipClonable": "token",
+        "fccId": "HYQ4EA",
+        "partNumber": "13529636 / 13519188",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "BCM2 immobilizer",
+    "pinRequired": false,
+    "programming": "Scan tool required; no on-board programming.",
+    "programmerHint": ["AUTEL IM508", "AUTEL IM608"],
+    "notes": "New-gen Traverse (2018+) uses HYQ4EA at 433.92 MHz (FCC-confirmed). Shared with Blazer 2019-2020.",
+    "confidence": "verified",
+    "sources": [
+      "https://transponderisland.com/shop/tik-chv-95-2018-2020-chevrolet-traverse-blazer-smart-key-5b-hatch-remote-start-hyq4ea-13529636-4341",
+      "https://abkeys.com/products/chevrolet-cruze-traverse-smart-key-3buttons-433mhz-hyq4ea-13591384-4385",
+      "https://fccid.io/HYQ4EA"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Traverse",
+    "yearStart": 2020,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100 (emergency blade)",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM EXT / Hitag 3 ID47",
+        "chipClonable": "token",
+        "fccId": "HYQ4ES",
+        "partNumber": "13530713 / 13522885 / 13522890",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "BCM2 immobilizer",
+    "pinRequired": false,
+    "programming": "DIY on-board possible with 2 existing keys; all-keys-lost requires scan tool.",
+    "programmerHint": ["AUTEL IM508", "AUTEL IM608"],
+    "notes": "HYQ4ES at 433.92 MHz (FCC-confirmed). Shared platform with Blazer and Trailblazer 2021+.",
+    "confidence": "verified",
+    "sources": [
+      "https://keylessbest.com/chevrolet-key-fob-fcc-id-hyq4es-compatibility-and-programming/",
+      "https://www.amazon.com/Replacement-Traverse-Trailblazer-Keyless-Control/dp/B0CS2XJWY9",
+      "https://fccid.io/HYQ4ES"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Blazer",
+    "yearStart": 2019,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100 (emergency blade)",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM EXT (HITAG 2)",
+        "chipClonable": "token",
+        "fccId": "HYQ4EA",
+        "partNumber": "13529636 / 13519188",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "BCM2 immobilizer",
+    "pinRequired": false,
+    "programming": "Scan tool required; no on-board programming.",
+    "programmerHint": ["AUTEL IM508", "AUTEL IM608"],
+    "notes": "First-gen Blazer shares HYQ4EA at 433 MHz with Traverse 2018-2020.",
+    "confidence": "verified",
+    "sources": [
+      "https://transponderisland.com/shop/tik-chv-95-2018-2020-chevrolet-traverse-blazer-smart-key-5b-hatch-remote-start-hyq4ea-13529636-4341",
+      "https://abkeys.com/products/chevrolet-cruze-traverse-smart-key-3buttons-433mhz-hyq4ea-13591384-4385"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Blazer",
+    "yearStart": 2021,
+    "yearEnd": 2023,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100 (emergency blade)",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM EXT / Hitag 3 ID47",
+        "chipClonable": "token",
+        "fccId": "HYQ4ES",
+        "partNumber": "13530713",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "BCM2 immobilizer",
+    "pinRequired": false,
+    "programming": "DIY on-board possible with 2 existing keys; all-keys-lost requires scan tool.",
+    "programmerHint": ["AUTEL IM508", "AUTEL IM608"],
+    "notes": "HYQ4ES at 433.92 MHz (FCC-confirmed). Shared platform with Traverse 2020+ and Trailblazer.",
+    "confidence": "verified",
+    "sources": [
+      "https://keylessbest.com/chevrolet-key-fob-fcc-id-hyq4es-compatibility-and-programming/",
+      "https://fccid.io/HYQ4ES"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "GMC",
+    "model": "Sierra 1500",
+    "yearStart": 2007,
+    "yearEnd": 2013,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "Z (B106-P)",
+        "bladeIlco": "B111-PT (IAX00000532P)",
+        "bladeSilca": "B106",
+        "bladeJma": "TP12GM-37.P",
+        "transponderChip": "Philips ID46 Circle+",
+        "chipClonable": "yes",
+        "fccId": null,
+        "partNumber": "5903089",
+        "frequency": null
+      }
+    ],
+    "immobilizer": "Pass-Key III+",
+    "pinRequired": false,
+    "programming": "On-board with 2 existing keys; all-keys-lost needs scan tool.",
+    "programmerHint": ["AUTEL IM508", "Ilco RW4"],
+    "notes": "B111-PT Z-keyway covering Sierra through early 2014. Immobilizer is Pass-Key III+ (transponder-based).",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/b111-transponder-key-gm",
+      "https://keyless2go.com/blogs/program-instructions/2010-gmc-sierra-1500-keyless-entry-remote-fob-smart-key-programming-instructions"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "GMC",
+    "model": "Sierra 1500",
+    "yearStart": 2014,
+    "yearEnd": 2018,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": "B119-PT",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips 46E PCF7937E / NCF2951E",
+        "chipClonable": "yes",
+        "fccId": null,
+        "partNumber": "7013237 / 23209427",
+        "frequency": null
+      },
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": "B119-PT",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips 46E PCF7937E",
+        "chipClonable": "yes",
+        "fccId": "M3N-32337100",
+        "partNumber": "22881480",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "BCM immobilizer (ID46 HU100 generation)",
+    "pinRequired": false,
+    "programming": "Remote: scan tool required. Transponder: on-board with 2 existing keys.",
+    "programmerHint": ["AUTEL IM508", "AUTEL IM608"],
+    "notes": "Shares identical system with Silverado 1500 2014-2018. M3N-32337100 at 315 MHz.",
+    "confidence": "verified",
+    "sources": [
+      "https://abkeys.com/products/gmc-yukon-sierra-tahoe-transponder-key-hu100-pcf7937e-7013237-3415",
+      "https://www.amazon.com/M3N-32337100-Chevrolet-Silverado-2014-2018-2015-2021/dp/B0FS7GB9SF"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "GMC",
+    "model": "Sierra 1500",
+    "yearStart": 2019,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": "B119-PT",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips 46E PCF7937E",
+        "chipClonable": "yes",
+        "fccId": null,
+        "partNumber": "23209427 / 22984996",
+        "frequency": null
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HU100 (emergency blade)",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM EXT",
+        "chipClonable": "token",
+        "fccId": "HYQ1EA",
+        "partNumber": "13529632 / 13591396",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "BCM2 immobilizer",
+    "pinRequired": false,
+    "programming": "Smart key: scan tool required. Transponder: on-board with 2 existing keys.",
+    "programmerHint": ["AUTEL IM508", "AUTEL IM608"],
+    "notes": "Same FCC HYQ1EA as Silverado 2019-2020. FCC confirms 433.92 MHz. Some aftermarket sources erroneously list 434 MHz for truck applications.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2019-2020-chevrolet-silverado-5-button-smart-key-w-tailgate-pn-13508398-hyq1ea-434-mhz-oem-1",
+      "https://abkeys.com/products/gmc-sierra-chevrolet-silverado-smart-key-433mhz-hyq1ea-3508",
+      "https://fccid.io/HYQ1EA"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "GMC",
+    "model": "Sierra 1500",
+    "yearStart": 2021,
+    "yearEnd": 2021,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100 (emergency blade)",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM EXT",
+        "chipClonable": "token",
+        "fccId": "HYQ1ES",
+        "partNumber": "13522904",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "BCM2 immobilizer",
+    "pinRequired": false,
+    "programming": "Scan tool required; no on-board programming.",
+    "programmerHint": ["AUTEL IM508", "AUTEL IM608"],
+    "notes": "Upgraded to HYQ1ES/433 MHz for 2021 (FCC-confirmed; some aftermarket lists 434 MHz in error).",
+    "confidence": "verified",
+    "sources": [
+      "https://www.bestkeysolution.com/products/chevrolet-silverado-gmc-sierra-for-2021-2022-smart-key-5-button-fcc-hyq1es-434mhz-pn-13522854-13522904",
+      "https://fccid.io/HYQ1ES"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "GMC",
+    "model": "Sierra 1500",
+    "yearStart": 2022,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100 (emergency blade)",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG PRO ID49 128-bit",
+        "chipClonable": "no",
+        "fccId": "YG0G21TB2",
+        "partNumber": "13530574 / 13548438 / 13548439",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "BCM2 / VIP architecture",
+    "pinRequired": false,
+    "programming": "Scan tool required; VIP architecture — AUTEL IM608 Pro or equivalent.",
+    "programmerHint": ["AUTEL IM608 Pro", "Lonsdor K518 Pro"],
+    "notes": "Shared YG0G21TB2 at 433 MHz with 2023-2024 Canyon. ID49 generation.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2023-2024-gmc-canyon-sierra-4-button-smart-key-pn-13530574-yg0g21tb2-oem",
+      "https://abkeys.com/products/gmc-sierra-smart-key-4buttons-13530574-433mhz-yg0g21tb2-5711"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "GMC",
+    "model": "Sierra HD",
+    "yearStart": 2014,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HU100 (emergency blade)",
+        "bladeIlco": "B119-PT (for transponder-only trims)",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips 46E (2014-2021) / NXP HITAG PRO ID49 (2022+)",
+        "chipClonable": "token",
+        "fccId": "M3N-32337100 (2014-2018) / HYQ1EA (2019-2020) / HYQ1ES (2021) / YG0G21TB2 (2022+)",
+        "partNumber": null,
+        "frequency": "315 (2014-2018) / 433 (2019+)"
+      }
+    ],
+    "immobilizer": "BCM/BCM2 immobilizer",
+    "pinRequired": false,
+    "programming": "Scan tool required for remote/smart variants; transponder on-board with 2 existing keys.",
+    "programmerHint": ["AUTEL IM608 Pro", "Lonsdor K518 Pro"],
+    "notes": "HD follows same FCC progression as 1500 across all generations. All post-2019 FCCs confirmed at 433 MHz by FCC database.",
+    "confidence": "verified",
+    "sources": [
+      "https://keyless2go.com/blogs/program-instructions/2024-gmc-sierra-hd-keyless-entry-remote-fob-smart-key-programming-instructions",
+      "https://abkeys.com/products/gmc-yukon-sierra-tahoe-transponder-key-hu100-pcf7937e-7013237-3415"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "GMC",
+    "model": "Canyon",
+    "yearStart": 2015,
+    "yearEnd": 2022,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": "B119-PT",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips 46E PCF7937E",
+        "chipClonable": "yes",
+        "fccId": null,
+        "partNumber": "22984996 / 23209427",
+        "frequency": null
+      },
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": "B119-PT",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips 46E PCF7937E",
+        "chipClonable": "yes",
+        "fccId": "M3N-32337100",
+        "partNumber": "22881480",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "BCM immobilizer (ID46 HU100 generation)",
+    "pinRequired": false,
+    "programming": "Remote: scan tool required. Transponder: on-board with 2 existing keys.",
+    "programmerHint": ["AUTEL IM508", "AUTEL IM608"],
+    "notes": "Same key system as Colorado 2015-2022. M3N-32337100 at 315 MHz.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.amazon.com/M3N-32337100-Chevrolet-Silverado-2014-2018-2015-2021/dp/B0FS7GB9SF",
+      "https://lost-car-keys-replacement.com/gmc/canyon/"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "GMC",
+    "model": "Canyon",
+    "yearStart": 2023,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100 (emergency blade)",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG PRO ID49 128-bit",
+        "chipClonable": "no",
+        "fccId": "YG0G21TB2",
+        "partNumber": "13530574 / 13560215",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "BCM2 / VIP architecture",
+    "pinRequired": false,
+    "programming": "Scan tool required; AUTEL IM608 Pro or equivalent for VIP architecture.",
+    "programmerHint": ["AUTEL IM608 Pro", "Lonsdor K518 Pro"],
+    "notes": "New-gen Canyon fully redesigned for 2023; shares YG0G21TB2 at 433 MHz with Sierra 2022+.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2023-2024-gmc-canyon-sierra-4-button-smart-key-pn-13530574-yg0g21tb2-oem",
+      "https://royalkeysupply.com/products/gmc-new-oem-2023-2024-canyon-sierra-smart-key-4b-remote-start-fccid-yg0g21tb2-pn-13530574"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "GMC",
+    "model": "Yukon / Yukon XL",
+    "yearStart": 2007,
+    "yearEnd": 2014,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "Z (B106-P)",
+        "bladeIlco": "B111-PT (IAX00000532P)",
+        "bladeSilca": "B106",
+        "bladeJma": "TP12GM-37.P",
+        "transponderChip": "Philips ID46 Circle+",
+        "chipClonable": "yes",
+        "fccId": null,
+        "partNumber": "5903089",
+        "frequency": null
+      }
+    ],
+    "immobilizer": "Pass-Key III+",
+    "pinRequired": false,
+    "programming": "On-board with 2 existing keys; all-keys-lost needs scan tool.",
+    "programmerHint": ["AUTEL IM508", "Ilco RW4"],
+    "notes": "B111 Z-keyway generation for Yukon. Immobilizer is Pass-Key III+ (transponder-based).",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/b111-transponder-key-gm",
+      "https://www.locksmithkeyless.com/products/2005-2017-gm-transponder-key-id46-chip-circle-z-keyway-b111-pt-1"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "GMC",
+    "model": "Yukon / Yukon XL",
+    "yearStart": 2015,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100 (emergency blade)",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM EXT PCF7937E / NCF2951E",
+        "chipClonable": "token",
+        "fccId": "HYQ1AA",
+        "partNumber": "13580804 / 13508280 / 5944134",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "BCM immobilizer (ID46 HU100 generation)",
+    "pinRequired": false,
+    "programming": "Scan tool required; some models allow on-board with 2 existing keys.",
+    "programmerHint": ["AUTEL IM508", "AUTEL IM608"],
+    "notes": "315 MHz HYQ1AA generation. Shares key with Tahoe/Suburban 2015-2020.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2015-2019-gmc-yukon-smart-key-6b-fcc-hyq1aa",
+      "https://www.bestkeysolution.com/products/chevrolet-gmc-2015-2020-smart-key-fob-6-btns-with-tailgate-rear-glass-starter-fcc-id-hyq1aa-and-315-mhz-new-key2u"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "GMC",
+    "model": "Yukon / Yukon XL",
+    "yearStart": 2021,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100 (emergency blade)",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG PRO ID49 128-bit",
+        "chipClonable": "no",
+        "fccId": "YG0G21TB2",
+        "partNumber": "13548431 / 13541565 / 13537962",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "BCM2 immobilizer",
+    "pinRequired": false,
+    "programming": "Scan tool required; no on-board programming.",
+    "programmerHint": ["AUTEL IM608 Pro", "Lonsdor K518 Pro"],
+    "notes": "Same ID49/433 MHz platform as Silverado/Sierra/Tahoe/Suburban 2021+.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2022-2024-gmc-sierra-yukon-smart-key-3b-fob-fcc-yg0g21tb2",
+      "https://www.amazon.com/Keyecu-Replacement-Chevrolet-13548431-13545333/dp/B0DDCGHWQP"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "GMC",
+    "model": "Acadia",
+    "yearStart": 2007,
+    "yearEnd": 2016,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "Z (B106-P)",
+        "bladeIlco": "B111-PT (IAX00000532P)",
+        "bladeSilca": "B106",
+        "bladeJma": "TP12GM-37.P",
+        "transponderChip": "Philips ID46 Circle+",
+        "chipClonable": "yes",
+        "fccId": null,
+        "partNumber": "5903089",
+        "frequency": null
+      }
+    ],
+    "immobilizer": "Pass-Key III+",
+    "pinRequired": false,
+    "programming": "On-board with 2 existing keys; all-keys-lost needs scan tool.",
+    "programmerHint": ["AUTEL IM508", "Ilco RW4"],
+    "notes": "First-gen Acadia uses B111-PT Z-keyway through 2016. Redesigned 2017 Acadia switched to HU100/smart-key platform. Immobilizer is Pass-Key III+ (transponder-based).",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/b111-transponder-key-gm",
+      "https://www.ebay.com/itm/284588727763"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "GMC",
+    "model": "Acadia",
+    "yearStart": 2017,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100 (emergency blade)",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM EXT",
+        "chipClonable": "token",
+        "fccId": "HYQ1EA",
+        "partNumber": "13508276 / 5944136",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "BCM2 immobilizer",
+    "pinRequired": false,
+    "programming": "Scan tool required; no on-board self-program.",
+    "programmerHint": ["AUTEL IM508", "AUTEL IM608"],
+    "notes": "Redesigned 2017 Acadia uses HYQ1EA at 433 MHz (FCC-confirmed 433.92 MHz). Without hands-free trim uses 3-button variant.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2017-2020-gmc-acadia-smart-key-5b-fcc-hyq1ea-433-mhz",
+      "https://www.amazon.com/Replacement-Proximity-Keyless-Control-13508275/dp/B0FMKRHMXD",
+      "https://fccid.io/HYQ1EA"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "GMC",
+    "model": "Acadia",
+    "yearStart": 2021,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100 (emergency blade)",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM EXT",
+        "chipClonable": "token",
+        "fccId": "HYQ1ES",
+        "partNumber": "13522895",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "BCM2 immobilizer",
+    "pinRequired": false,
+    "programming": "Scan tool required; no on-board programming.",
+    "programmerHint": ["AUTEL IM508", "AUTEL IM608"],
+    "notes": "Upgraded to HYQ1ES for 2021+. FCC confirms 433.92 MHz. Same part as Terrain 2022-2024. Some aftermarket listings erroneously state 434 MHz.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2021-2023-gmc-smart-key-5b-fcc-hyq1es-434-mhz",
+      "https://www.amazon.com/Replacement-Acadia-Keyless-Remote-Control/dp/B0CZ77PC5K",
+      "https://fccid.io/HYQ1ES"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "GMC",
+    "model": "Terrain",
+    "yearStart": 2010,
+    "yearEnd": 2017,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": "B119-PT",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips 46E PCF7937E / NCF2951E",
+        "chipClonable": "yes",
+        "fccId": null,
+        "partNumber": "7013237",
+        "frequency": null
+      }
+    ],
+    "immobilizer": "BCM immobilizer (ID46 HU100 generation)",
+    "pinRequired": false,
+    "programming": "On-board with 2 existing keys; all-keys-lost needs scan tool.",
+    "programmerHint": ["AUTEL IM508"],
+    "notes": "Terrain 2010-2017 uses B119-PT HU100 transponder.",
+    "confidence": "verified",
+    "sources": [
+      "https://abkeys.com/products/gmc-yukon-sierra-tahoe-transponder-key-hu100-pcf7937e-7013237-3415",
+      "https://www.locksmithkeyless.com/products/2010-2020-strattec-transponder-key-for-gmc-id46-gm-ext-b119-pt-5935765"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "GMC",
+    "model": "Terrain",
+    "yearStart": 2018,
+    "yearEnd": 2021,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100 (emergency blade)",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM EXT",
+        "chipClonable": "token",
+        "fccId": "HYQ1EA",
+        "partNumber": "13508276",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "BCM2 immobilizer",
+    "pinRequired": false,
+    "programming": "Scan tool required; no on-board programming.",
+    "programmerHint": ["AUTEL IM508", "AUTEL IM608"],
+    "notes": "Redesigned 2018 Terrain uses HYQ1EA at 433 MHz (FCC-confirmed 433.92 MHz). Shares FCC with Acadia 2017-2020.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2017-2019-gmc-smart-key-3b-fcc-hyq1ea",
+      "https://www.uhs-hardware.com/products/2017-2023-gmc-acadia-3-button-smart-key-pn-13508276-hyq1ea-oem-refurb",
+      "https://fccid.io/HYQ1EA"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "GMC",
+    "model": "Terrain",
+    "yearStart": 2022,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100 (emergency blade)",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM EXT",
+        "chipClonable": "token",
+        "fccId": "HYQ1ES",
+        "partNumber": "13522895",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "BCM2 immobilizer",
+    "pinRequired": false,
+    "programming": "Scan tool required; no on-board programming.",
+    "programmerHint": ["AUTEL IM508", "AUTEL IM608"],
+    "notes": "Upgraded to HYQ1ES for 2022+. FCC confirms 433.92 MHz. Shared with Acadia 2021-2024. Some aftermarket listings erroneously state 434 MHz.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2021-2023-gmc-smart-key-5b-fcc-hyq1es-434-mhz",
+      "https://fccid.io/HYQ1ES"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Cadillac",
+    "model": "Escalade",
+    "yearStart": 2007,
+    "yearEnd": 2014,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "Z (B106-P)",
+        "bladeIlco": "B111-PT (IAX00000532P)",
+        "bladeSilca": "B106",
+        "bladeJma": "TP12GM-37.P",
+        "transponderChip": "Philips ID46 Circle+",
+        "chipClonable": "yes",
+        "fccId": null,
+        "partNumber": "5903089",
+        "frequency": null
+      }
+    ],
+    "immobilizer": "Pass-Key III+",
+    "pinRequired": false,
+    "programming": "On-board with 2 existing keys; all-keys-lost needs scan tool.",
+    "programmerHint": ["AUTEL IM508", "Ilco RW4"],
+    "notes": "B111-PT Z-keyway for Escalade. yearStart corrected to 2007 — Escalade did not use a transponder key until 2007 (pre-2007 used PassLock without transponder). Immobilizer is Pass-Key III+.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2005-2017-gm-transponder-key-id46-chip-circle-z-keyway-b111-pt-1",
+      "https://abkeys.com/products/cadillac-cts-dts-escalade-srx-transponder-key-b111-pcf7936-692933-id46-185",
+      "https://oemcarkeymall.com/products/2008-cadillac-escalade-transponder-key-blank-b111-pt"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Cadillac",
+    "model": "Escalade",
+    "yearStart": 2015,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100 (emergency blade)",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM EXT PCF7937E / NCF2951E",
+        "chipClonable": "token",
+        "fccId": "HYQ2AB",
+        "partNumber": "13580812 / 13510242",
+        "frequency": "315"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HU100 (emergency blade)",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM EXT",
+        "chipClonable": "token",
+        "fccId": "HYQ2EB",
+        "partNumber": "13598512 / 13510245",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "BCM immobilizer (ID46 HU100 generation)",
+    "pinRequired": false,
+    "programming": "Scan tool required; no on-board programming.",
+    "programmerHint": ["AUTEL IM508", "AUTEL IM608"],
+    "notes": "Two FCC variants: HYQ2AB (315 MHz) is most common; HYQ2EB (433 MHz, FCC-confirmed 433.92 MHz) exists for some 2017+ trims (RPO code XL8). Verify via door sticker RPO codes XL7=315 MHz, XL8=433 MHz before ordering. HYQ2EB part number corrected to 13598512.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2015-2018-cadillac-escalade-smart-key-6b-fcc-hyq2ab",
+      "https://www.uhs-hardware.com/products/2015-2020-cadillac-escalade-6-button-smart-key-pn-13598512-hyq2eb-oem",
+      "https://abkeys.com/products/cadillac-escalade-smart-key-6buttons-315mhz-hyq2ab-13580812-4801",
+      "https://fccid.io/HYQ2EB"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Cadillac",
+    "model": "Escalade",
+    "yearStart": 2021,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HU100 (emergency blade)",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG PRO ID49 128-bit",
+        "chipClonable": "no",
+        "fccId": "YG0G20TB1",
+        "partNumber": "13538866",
+        "frequency": "315"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HU100 (emergency blade)",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG PRO ID49 128-bit",
+        "chipClonable": "no",
+        "fccId": "YG0G20TB1",
+        "partNumber": "13538864 / 13541571 / 13546300",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "BCM2 immobilizer",
+    "pinRequired": false,
+    "programming": "Scan tool required; no on-board programming.",
+    "programmerHint": ["AUTEL IM608 Pro", "Lonsdor K518 Pro"],
+    "notes": "Redesigned 2021 Escalade uses YG0G20TB1 (distinct from YG0G21TB2 on trucks). ID49 HITAG PRO chip. 6-button with hatch glass. TWO frequency variants: PN 13538866 = 315 MHz; PN 13538864/13541571 = 433 MHz. Always match original remote frequency before ordering.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2021-2024-cadillac-escalade-6-button-smart-key-pn-13538866-yg0g20tb1-315-mhz-oem",
+      "https://www.uhs-hardware.com/products/2021-2024-cadillac-escalade-6-button-smart-key-pn-13538864-yg0g20tb1-433-mhz-oem",
+      "https://abkeys.com/products/cadillac-escalade-smart-key-6buttons-315mhz-yg0g20tb1-2021up-13538866-4996",
+      "https://abkeys.com/products/cadillac-escalade-smart-key-6buttons-433mhz-yg0g20tb1-2021up-13538864-4997"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Cadillac",
+    "model": "XT5",
+    "yearStart": 2017,
+    "yearEnd": 2019,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100 (emergency blade)",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM EXT PCF7937E",
+        "chipClonable": "token",
+        "fccId": "HYQ2EB",
+        "partNumber": "13598516 / 13598527 / 5942489",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "BCM2 immobilizer",
+    "pinRequired": false,
+    "programming": "Scan tool required; professional locksmith or dealer.",
+    "programmerHint": ["AUTEL IM508", "AUTEL IM608"],
+    "notes": "XT5 launch uses HYQ2EB at 433 MHz (FCC-confirmed 433.92 MHz; prior entry incorrectly stated 434 MHz). Also covers XT6 2020 and XT4 2019.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2017-2019-cadillac-smart-key-5b-fcc-hyq2eb",
+      "https://www.uhs-hardware.com/products/2017-2020-cadillac-xt5-5-button-smart-key-pn-13598527-hyq2eb-oem",
+      "https://fccid.io/HYQ2EB"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Cadillac",
+    "model": "XT5",
+    "yearStart": 2020,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100 (emergency blade)",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM EXT",
+        "chipClonable": "token",
+        "fccId": "HYQ2ES",
+        "partNumber": "13522879 / 13547851 / 13544052",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "BCM2 immobilizer",
+    "pinRequired": false,
+    "programming": "Scan tool required; professional locksmith or dealer.",
+    "programmerHint": ["AUTEL IM508", "AUTEL IM608"],
+    "notes": "HYQ2ES at 433 MHz (FCC-confirmed 433.92 MHz). Covers XT4/XT5/XT6 2020+. ILCO IAX00020100 (PRX-CAD-5B10).",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2020-2024-cadillac-xt4-xt5-xt6-smart-key-5b-w-hatch-remote-start-hyq2es-13522879",
+      "https://www.amazon.com/Control-Compatible-Cadillac-2020-2023-13522879/dp/B0DJNWMNM7",
+      "https://fccid.io/HYQ2ES"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Cadillac",
+    "model": "XT4",
+    "yearStart": 2019,
+    "yearEnd": 2019,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100 (emergency blade)",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM EXT PCF7937E",
+        "chipClonable": "token",
+        "fccId": "HYQ2EB",
+        "partNumber": "13598516 / 13510245",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "BCM2 immobilizer",
+    "pinRequired": false,
+    "programming": "Scan tool required; professional locksmith or dealer.",
+    "programmerHint": ["AUTEL IM508", "AUTEL IM608"],
+    "notes": "XT4 launched 2019 using HYQ2EB at 433 MHz (FCC-confirmed 433.92 MHz; prior entry incorrectly stated 434 MHz). Same as XT5 2017-2019.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2017-2020-cadillac-xt5-5-button-smart-key-pn-13598527-hyq2eb-oem",
+      "https://abkeys.com/products/cadillac-xt4-xt5-xts-smart-key-5b-433mhz-hyq2eb-13598516-13510245-4351",
+      "https://fccid.io/HYQ2EB"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Cadillac",
+    "model": "XT4",
+    "yearStart": 2020,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100 (emergency blade)",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM EXT",
+        "chipClonable": "token",
+        "fccId": "HYQ2ES",
+        "partNumber": "13522879 / 13544051",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "BCM2 immobilizer",
+    "pinRequired": false,
+    "programming": "Scan tool required; professional locksmith or dealer.",
+    "programmerHint": ["AUTEL IM508", "AUTEL IM608"],
+    "notes": "Upgraded to HYQ2ES for 2020+. FCC-confirmed 433.92 MHz. Shared with XT5/XT6 2020+.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2020-2024-cadillac-xt4-xt5-xt6-smart-key-5b-w-hatch-remote-start-hyq2es-13522879",
+      "https://www.locksmithkeyless.com/products/2019-2021-cadillac-xt4-smart-key-4b-fob-w-remote-start-fcc-hyq2es-13544051",
+      "https://fccid.io/HYQ2ES"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Cadillac",
+    "model": "XT6",
+    "yearStart": 2020,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100 (emergency blade)",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM EXT",
+        "chipClonable": "token",
+        "fccId": "HYQ2EB (2020) / HYQ2ES (2020+)",
+        "partNumber": "13598516 (HYQ2EB) / 13522879 (HYQ2ES)",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "BCM2 immobilizer",
+    "pinRequired": false,
+    "programming": "Scan tool required; professional locksmith or dealer.",
+    "programmerHint": ["AUTEL IM508", "AUTEL IM608"],
+    "notes": "XT6 launched 2020. Early 2020 may use HYQ2EB (433 MHz); refreshed uses HYQ2ES (433 MHz). Both FCC-confirmed at 433.92 MHz. Verify FCC ID on door sticker.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2017-2019-cadillac-smart-key-5b-fcc-hyq2eb",
+      "https://www.locksmithkeyless.com/products/2020-2024-cadillac-xt4-xt5-xt6-smart-key-5b-w-hatch-remote-start-hyq2es-13522879",
+      "https://fccid.io/HYQ2EB",
+      "https://fccid.io/HYQ2ES"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  }
+]

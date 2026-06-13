@@ -1,0 +1,1779 @@
+[
+  {
+    "make": "Honda",
+    "model": "Accord",
+    "yearStart": 2003,
+    "yearEnd": 2007,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "HON66",
+        "bladeIlco": "HO01-SVC",
+        "bladeSilca": "HON58R",
+        "bladeJma": "TP12HOND",
+        "transponderChip": "Philips ID46 PCF7936",
+        "chipClonable": "yes",
+        "fccId": "OUCG8D-380H-A",
+        "partNumber": "35118-SDA-A11",
+        "frequency": "313.8"
+      }
+    ],
+    "immobilizer": "Philips Crypto 2 / Hitag2",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required; no onboard DIY procedure",
+    "programmerHint": ["AUTEL IM608", "Xhorse VVDI2", "Advanced Diagnostics Smart Pro"],
+    "notes": "4-button remote head key (Lock/Unlock/Trunk/Panic). IC: 850G-G8D380HA.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2003-2007-honda-accord-cr-v-4-button-remote-head-key-35118-sda-a11-oucg8d-380h-a-oem",
+      "https://abkeys.com/products/honda-accord-remote-key-4buttons-314mhz-oucg8d-380h-a-35118-sda-a11-70",
+      "https://www.locksmithkeyless.com/products/2003-2007-honda-accord-remote-head-key-4b-fcc-oucg8d-380h-a-15-pack",
+      "https://www.amazon.com/TG-Auto-Keyless-OUCG8D-380H-2003-2007-Auto/dp/B086H6MY2V"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Honda",
+    "model": "Accord",
+    "yearStart": 2008,
+    "yearEnd": 2012,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "HON66",
+        "bladeIlco": "HO01-SVC",
+        "bladeSilca": "HON58R",
+        "bladeJma": "TP12HOND",
+        "transponderChip": "Philips ID46 PCF7936",
+        "chipClonable": "yes",
+        "fccId": "KR55WK49308",
+        "partNumber": "35118-TA0-A00",
+        "frequency": "313.8"
+      }
+    ],
+    "immobilizer": "Philips Crypto 2 / Hitag2",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required; no onboard DIY procedure. Chip and remote programmed separately.",
+    "programmerHint": ["AUTEL IM608", "Xhorse VVDI2", "Advanced Diagnostics Smart Pro"],
+    "notes": "4-button remote head key. IC: 267T-5WK49308. Compatible with Accord Sedan 2008-2012 and Pilot 2009-2015.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2008-2015-honda-accord-pilot-4-button-remote-head-key-kr55wk49308-oem",
+      "https://www.bestkeysolution.com/products/key2u-2006-2011-honda-accord-pilot-remote-head-key-fob-kr55wk49308",
+      "https://www.transpondery.com/transponder_catalog/honda_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Honda",
+    "model": "Accord",
+    "yearStart": 2013,
+    "yearEnd": 2015,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": true,
+        "keyway": "HON66",
+        "bladeIlco": "HO01-SVC",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47 PCF7961X / Hitag3",
+        "chipClonable": "token",
+        "fccId": "MLBHLIK6-1T",
+        "partNumber": "35118-T2A-A20",
+        "frequency": "313.8"
+      }
+    ],
+    "immobilizer": "Philips Crypto 3 / Hitag3",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required; no onboard DIY procedure",
+    "programmerHint": ["AUTEL IM608", "Xhorse VVDI2", "Advanced Diagnostics Smart Pro"],
+    "notes": "4-button remote head key (turn-key start only, not push-button). IC: 2500A-HLIK61T. Also compatible Honda Civic 2014-2015.",
+    "confidence": "verified",
+    "sources": [
+      "https://abkeys.com/products/honda-accord-civic-remote-key-4b-314mhz-mlbhlik6-1t-35118-t2a-a20-2794",
+      "https://www.locksmithkeyless.com/products/2013-2015-honda-remote-head-key-4b-fcc-mlbhlik6-1t",
+      "https://www.transpondery.com/transponder_catalog/honda_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Honda",
+    "model": "Accord",
+    "yearStart": 2016,
+    "yearEnd": 2017,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": true,
+        "keyway": "HON66",
+        "bladeIlco": "HO01-SVC",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47 / Honda G Chip",
+        "chipClonable": "token",
+        "fccId": "MLBHLIK6-1TA",
+        "partNumber": "35118-T2A-A60",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "Philips Crypto 3 / Hitag3",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required; no onboard DIY procedure",
+    "programmerHint": ["AUTEL IM608", "Xhorse VVDI2"],
+    "notes": "4-button remote head key for LX/LXS/Sport trims. Also fits Civic LX 2016-2020. IC: 2500A-HLIK61TA.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2016-2020-honda-accord-civic-4-button-remote-head-key-pn-35118-t2a-a60-mlbhlik6-1ta-433-mhz-oem",
+      "https://www.locksmithkeyless.com/products/2016-2019-honda-remote-key-4b-fcc-mlbhlik6-1ta",
+      "https://abkeys.com/products/honda-accord-civic-remote-key-35118-t2a-a60-433mhz-mlbhlik6-1ta-2432"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Honda",
+    "model": "Accord",
+    "yearStart": 2018,
+    "yearEnd": 2021,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HON66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "HITAG AES NCF29A1M / 4A Chip",
+        "chipClonable": "no",
+        "fccId": "CWTWB1G0090",
+        "partNumber": "72147-TVA-A01",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "HITAG AES",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required; no onboard DIY procedure",
+    "programmerHint": ["AUTEL IM608 Pro II", "Xhorse VVDI Key Tool Max Pro"],
+    "notes": "4- or 5-button proximity smart key. Emergency blade (HON66 profile) included. IC: 7812D-CWTWB1G0090. Part numbers: 72147-TVA-A01 (no mem), 72147-TVA-A21 (D1), 72147-TVA-A31 (D2).",
+    "confidence": "verified",
+    "sources": [
+      "https://abkeys.com/products/honda-accord-smart-key-4buttons-433mhz-cwtwb1g0090-72147-tva-a11-4519",
+      "https://www.amazon.com/MechanMagic-Replacement-CWTWB1G0090-72147-TVA-A01-A21/dp/B0D56JH19D",
+      "https://www.locksmithkeyless.com/products/2018-2021-honda-accord-smart-key-5b-fcc-cwtwb1g0090-25-pack"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Honda",
+    "model": "Accord",
+    "yearStart": 2022,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HON66",
+        "bladeIlco": "IAX00018630 (PRX-HON-5B7)",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "HITAG-AES / 4A Chip",
+        "chipClonable": "no",
+        "fccId": "KR5TP-4",
+        "partNumber": "72147-T20-A11",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "HITAG AES",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required; no onboard DIY procedure",
+    "programmerHint": ["AUTEL IM608 Pro II", "Xhorse VVDI Key Tool Max Pro"],
+    "notes": "5-button proximity smart key. Emergency HON66 blade included. IC: 7812D-TP4.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2022-honda-accord-smart-key-5-buttons-fcc-kr5tp-4",
+      "https://www.locksmithkeyless.com/products/2022-2023-honda-accord-civic-smart-key-4-buttons-fcc-kr5tp-4",
+      "https://www.bestkeysolution.com/products/honda-cr-v-2023-honda-pilot-2023-smart-keyless-entry-remote-key-fob-fcc-id-kr5tp-4-oem-refurbished"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Honda",
+    "model": "Civic",
+    "yearStart": 2006,
+    "yearEnd": 2013,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "HON66",
+        "bladeIlco": "HO03",
+        "bladeSilca": "HON58R",
+        "bladeJma": "TP12HOND-31.P",
+        "transponderChip": "Philips ID46 PCF7961",
+        "chipClonable": "yes",
+        "fccId": "N5F-S0084A",
+        "partNumber": "35111-SVA-306",
+        "frequency": "313.8"
+      },
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HON66",
+        "bladeIlco": "HO03",
+        "bladeSilca": "HON58R",
+        "bladeJma": "TP12HOND-31.P",
+        "transponderChip": "Philips ID46 PCF7936",
+        "chipClonable": "yes",
+        "fccId": null,
+        "partNumber": "ILCO-HO03-PT",
+        "frequency": null
+      }
+    ],
+    "immobilizer": "Philips Crypto 2 / Hitag2",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required",
+    "programmerHint": ["AUTEL IM608", "Xhorse VVDI2", "Advanced Diagnostics Smart Pro"],
+    "notes": "Remote head key 4-button. Standalone transponder key also available (HO03-PT for keyless-only vehicles).",
+    "confidence": "verified",
+    "sources": [
+      "https://abkeys.com/products/honda-civic-remote-key-4buttons-314mhz-n5f-s0084a-2006up-35111-sva-306-1368",
+      "https://www.uhs-hardware.com/products/2006-2017-honda-acura-ho03-transponder-key-philips-id-46-chip",
+      "https://www.transpondery.com/transponder_catalog/honda_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Honda",
+    "model": "Civic",
+    "yearStart": 2014,
+    "yearEnd": 2015,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "HON66",
+        "bladeIlco": "HO01-SVC",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47 PCF7961X / Hitag3",
+        "chipClonable": "token",
+        "fccId": "MLBHLIK6-1T",
+        "partNumber": "35118-T2A-A20",
+        "frequency": "313.8"
+      }
+    ],
+    "immobilizer": "Philips Crypto 3 / Hitag3",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required",
+    "programmerHint": ["AUTEL IM608", "Xhorse VVDI2"],
+    "notes": "Shared FCC/part with 2013-2015 Accord. Turn-key start models only.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2013-2015-honda-remote-head-key-4b-fcc-mlbhlik6-1t",
+      "https://abkeys.com/products/honda-accord-civic-remote-key-4b-314mhz-mlbhlik6-1t-35118-t2a-a20-2794"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Honda",
+    "model": "Civic",
+    "yearStart": 2016,
+    "yearEnd": 2021,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": true,
+        "keyway": "HON66",
+        "bladeIlco": "HO01-SVC",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47 / Honda G Chip",
+        "chipClonable": "token",
+        "fccId": "MLBHLIK6-1TA",
+        "partNumber": "35118-T2A-A60",
+        "frequency": "433"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HON66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NCF2951X / HITAG3 / ID47",
+        "chipClonable": "token",
+        "fccId": "KR5V2X",
+        "partNumber": "72147-TBA-A01",
+        "frequency": "433.92"
+      }
+    ],
+    "immobilizer": "Philips Crypto 3 / Hitag3",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required; no onboard DIY procedure",
+    "programmerHint": ["AUTEL IM608", "Xhorse VVDI2"],
+    "notes": "LX trim typically remote head key (MLBHLIK6-1TA); EX and above use proximity smart key (KR5V2X). Emergency blade HON66 profile on smart key.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2016-2019-honda-remote-key-4b-fcc-mlbhlik6-1ta",
+      "https://abkeys.com/products/honda-civic-smart-key-4buttons-433mhz-kr5v2x-2017up-72147-tba-a01-2754",
+      "https://www.transpondery.com/transponder_catalog/honda_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Honda",
+    "model": "Civic",
+    "yearStart": 2022,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HON66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "HITAG-AES / 4A Chip",
+        "chipClonable": "no",
+        "fccId": "KR5TP-4",
+        "partNumber": "72147-T43-A11",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "HITAG AES",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required; no onboard DIY procedure",
+    "programmerHint": ["AUTEL IM608 Pro II", "Xhorse VVDI Key Tool Max Pro"],
+    "notes": "5-button proximity smart key. Emergency HON66 blade included. IC: 7812D-TP4.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2022-honda-civic-smart-key-5-buttons-fcc-kr5tp-4",
+      "https://www.locksmithkeyless.com/products/2022-2023-honda-accord-civic-smart-key-4-buttons-fcc-kr5tp-4",
+      "https://abkeys.com/products/honda-crv-2023-smart-key-5buttons-72147-t43-a11-kr5tp-4-5176"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Honda",
+    "model": "CR-V",
+    "yearStart": 2007,
+    "yearEnd": 2013,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HON66",
+        "bladeIlco": "HO03",
+        "bladeSilca": "HON58R",
+        "bladeJma": "TP12HOND-31.P",
+        "transponderChip": "Philips ID46 PCF7941",
+        "chipClonable": "yes",
+        "fccId": null,
+        "partNumber": "ILCO-HO03-PT / 35118-SDA-A01",
+        "frequency": null
+      }
+    ],
+    "immobilizer": "Philips Crypto 2 / Hitag2",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required",
+    "programmerHint": ["AUTEL IM608", "Xhorse VVDI2"],
+    "notes": "Standalone transponder key. Remote sold separately. Some trims have remote head key variant using OUCG8D-380H-A at 315 MHz.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2006-2017-honda-acura-ho03-transponder-key-philips-id-46-chip",
+      "https://www.locksmithkeyless.com/products/2003-2016-honda-transponder-key-id46-chip-v-ho03-pt",
+      "https://www.transpondery.com/transponder_catalog/honda_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Honda",
+    "model": "CR-V",
+    "yearStart": 2015,
+    "yearEnd": 2016,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "HON66",
+        "bladeIlco": "HO01-SVC",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47 PCF7961XXT / Hitag3",
+        "chipClonable": "token",
+        "fccId": "MLBHLIK6-1T",
+        "partNumber": "35118-T0A-A30",
+        "frequency": "313.8"
+      }
+    ],
+    "immobilizer": "Philips Crypto 3 / Hitag3",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required",
+    "programmerHint": ["AUTEL IM608", "Xhorse VVDI2"],
+    "notes": "Remote head key. Transitions to smart key on some trims by 2016. Also fits HR-V 2016-2019.",
+    "confidence": "verified",
+    "sources": [
+      "https://abkeys.com/products/honda-cr-v-hr-v-remote-key-4buttons-314mhz-mlbhlik6-1t-35118-t0a-a30-2777",
+      "https://www.key4.com/honda-hrv-crv-remote-head-key-35118t0aa30",
+      "https://www.transpondery.com/transponder_catalog/honda_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Honda",
+    "model": "CR-V",
+    "yearStart": 2017,
+    "yearEnd": 2022,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HON66",
+        "bladeIlco": "IAX00016030 (PRX-HON-5B3)",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47 / Honda G Chip",
+        "chipClonable": "token",
+        "fccId": "KR5V2X",
+        "partNumber": "72147-TLA-A01",
+        "frequency": "433.92"
+      }
+    ],
+    "immobilizer": "Philips Crypto 3 / Hitag3",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required; no onboard DIY procedure",
+    "programmerHint": ["AUTEL IM608", "Xhorse VVDI2"],
+    "notes": "5-button smart key (Lock/Unlock/Hatch/Remote Start/Panic). Emergency HON66 blade included. Part numbers vary by memory: -A01/A02 (no mem), -A11/A12 (D1), -A21/A22 (D2).",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2017-2022-honda-cr-v-smart-key-5-buttons-fcc-kr5v2x-v44",
+      "https://www.locksmithkeyless.com/products/2021-honda-cr-v-smart-key-5-buttons-fcc-kr5v2x-v44",
+      "https://www.transpondery.com/transponder_catalog/honda_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Honda",
+    "model": "CR-V",
+    "yearStart": 2023,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HON66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "HITAG-AES NCF29A1M / 4A Chip",
+        "chipClonable": "no",
+        "fccId": "KR5TP-4",
+        "partNumber": "72147-T43-A11",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "HITAG AES",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required; no onboard DIY procedure",
+    "programmerHint": ["AUTEL IM608 Pro II", "Xhorse VVDI Key Tool Max Pro"],
+    "notes": "5-button smart key. Some no-PLG variants use 72147-T43-A01 (4-button). Emergency HON66 blade included. IC: 7812D-TP4.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2023-honda-cr-v-smart-key-5-buttons-fcc-kr5tp-4",
+      "https://www.locksmithkeyless.com/products/2024-honda-cr-v-smart-key-5b-w-remote-start-hatch-hold-fcc-kr5tp-4-aftermarket",
+      "https://abkeys.com/products/honda-crv-2023-smart-key-5buttons-72147-t43-a11-kr5tp-4-5176"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Honda",
+    "model": "Pilot",
+    "yearStart": 2006,
+    "yearEnd": 2008,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HON66",
+        "bladeIlco": "HO03",
+        "bladeSilca": "HON58R",
+        "bladeJma": "TP12HOND-31.P",
+        "transponderChip": "Philips ID46 PCF7936",
+        "chipClonable": "yes",
+        "fccId": null,
+        "partNumber": "35118-SDA-A01",
+        "frequency": null
+      }
+    ],
+    "immobilizer": "Philips Crypto 2 / Hitag2",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required",
+    "programmerHint": ["AUTEL IM608", "Xhorse VVDI2"],
+    "notes": "Standalone transponder key. Pilot 2006-2008 LX trim.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/honda_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2006-2017-honda-acura-ho03-transponder-key-philips-id-46-chip",
+      "https://www.keylessbest.com/products/2001-2016-acura-honda-35118-sda-a01-5907553-transponder-key-philips-id46-ho03-chip-bundle-of-10"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Honda",
+    "model": "Pilot",
+    "yearStart": 2009,
+    "yearEnd": 2015,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "HON66",
+        "bladeIlco": "HO01-SVC",
+        "bladeSilca": "HON58R",
+        "bladeJma": "TP12HOND",
+        "transponderChip": "Philips ID46 PCF7936",
+        "chipClonable": "yes",
+        "fccId": "KR55WK49308",
+        "partNumber": "35118-SZA-A02",
+        "frequency": "313.8"
+      }
+    ],
+    "immobilizer": "Philips Crypto 2 / Hitag2",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required; chip and remote programmed separately",
+    "programmerHint": ["AUTEL IM608", "Xhorse VVDI2"],
+    "notes": "Shared FCC ID with 2008-2012 Accord Sedan. IC: 267T-5WK49308.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.bestkeysolution.com/products/key2u-2006-2011-honda-accord-pilot-remote-head-key-fob-kr55wk49308",
+      "https://www.uhs-hardware.com/products/2008-2015-honda-accord-pilot-4-button-remote-head-key-kr55wk49308-oem",
+      "https://www.transpondery.com/transponder_catalog/honda_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Honda",
+    "model": "Pilot",
+    "yearStart": 2016,
+    "yearEnd": 2018,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HON66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NCF2951X / HITAG3 / ID47",
+        "chipClonable": "token",
+        "fccId": "KR5V2X",
+        "partNumber": "72147-TG7-A01",
+        "frequency": "433.92"
+      }
+    ],
+    "immobilizer": "Philips Crypto 3 / Hitag3",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required",
+    "programmerHint": ["AUTEL IM608", "Xhorse VVDI2"],
+    "notes": "4- or 5-button proximity smart key depending on trim. Emergency HON66 blade included.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2016-2018-honda-pilot-smart-key-w-hatch-4b-fcc-kr5v2x",
+      "https://www.locksmithkeyless.com/products/2016-2018-honda-pilot-smart-key-5-buttons-fcc-kr5v2x-v44-1"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Honda",
+    "model": "Pilot",
+    "yearStart": 2019,
+    "yearEnd": 2022,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HON66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47",
+        "chipClonable": "token",
+        "fccId": "KR5V44",
+        "partNumber": "72147-TG7-A61",
+        "frequency": "433.92"
+      }
+    ],
+    "immobilizer": "Philips Crypto 3 / Hitag3",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required",
+    "programmerHint": ["AUTEL IM608", "Xhorse VVDI2"],
+    "notes": "FCC KR5V44 and KR5T44 are interchangeable (same key). 5-button (Lock/Unlock/Hatch/Remote Start/Panic). Emergency HON66 blade. Also fits Passport 2019-2022 EXL/Touring/Elite.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2019-honda-passport-smart-key-5-buttons-fcc-kr5v44",
+      "https://www.locksmithkeyless.com/products/2019-honda-pilot-smart-key-5-buttons-fcc-kr5v44",
+      "https://www.locksmithkeyless.com/products/2022-honda-pilot-smart-key-5-buttons-fcc-kr5v44"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Honda",
+    "model": "Pilot",
+    "yearStart": 2023,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HON66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "HITAG-AES / 4A Chip",
+        "chipClonable": "no",
+        "fccId": "KR5TP-4",
+        "partNumber": "72147-T43-A01",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "HITAG AES",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required",
+    "programmerHint": ["AUTEL IM608 Pro II", "Xhorse VVDI Key Tool Max Pro"],
+    "notes": "5-button proximity smart key. No-PLG trim uses 4-button variant. Emergency HON66 blade included. IC: 7812D-TP4.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2023-honda-pilot-smart-key-5-buttons-fcc-kr5tp-4",
+      "https://www.locksmithkeyless.com/products/2024-honda-pilot-smart-key-5b-w-remote-start-hatch-hold-fcc-kr5tp-4-aftermarket",
+      "https://www.uhs-hardware.com/products/2023-2025-honda-cr-v-pilot-4-button-smart-key-pn-72147-t90-a31-kr5tp-4-oem"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Honda",
+    "model": "Odyssey",
+    "yearStart": 2005,
+    "yearEnd": 2010,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": true,
+        "keyway": "HON66",
+        "bladeIlco": "HO01-SVC",
+        "bladeSilca": "HON58R",
+        "bladeJma": "TP12HOND",
+        "transponderChip": "Philips ID46 PCF7941A",
+        "chipClonable": "yes",
+        "fccId": "OUCG8D-380H-A",
+        "partNumber": "35111-SHJ-305",
+        "frequency": "313.8"
+      }
+    ],
+    "immobilizer": "Philips Crypto 2 / Hitag2",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required",
+    "programmerHint": ["AUTEL IM608", "Xhorse VVDI2"],
+    "notes": "3-button remote head key (Lock/Unlock/Panic) for LX trim. EX/EXL trims use separate 5- or 6-button remote (FCC OUCG8D-399H-A, 313.8 MHz). IC: 850G-G8D380HA.",
+    "confidence": "verified",
+    "sources": [
+      "https://northcoastkeyless.com/product/2005-2010-honda-odyssey-lx-remote-head-key-fob-fcc-id-oucg8d-380h-a-pn-35111-shj-305/",
+      "https://www.uhs-hardware.com/products/2005-2014-honda-3-button-remote-head-key-pn-35111-shj-305-oucg8d-380h-a-oem",
+      "https://www.bestkeysolution.com/products/honda-fit-odyssey-ridgeline-keyless-entry-remote-head-key-fob-fcc-id-oug8d-380h-a-id46-chip-315mhz"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Honda",
+    "model": "Odyssey",
+    "yearStart": 2011,
+    "yearEnd": 2017,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "HON66",
+        "bladeIlco": "HO03",
+        "bladeSilca": "HON58R",
+        "bladeJma": "TP12HOND-31.P",
+        "transponderChip": "Philips ID46 PCF7941",
+        "chipClonable": "yes",
+        "fccId": "OUCG8D-380H-A",
+        "partNumber": "35111-SHJ-305",
+        "frequency": "313.8"
+      }
+    ],
+    "immobilizer": "Philips Crypto 2 / Hitag2",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required",
+    "programmerHint": ["AUTEL IM608", "Xhorse VVDI2"],
+    "notes": "3-button remote head key. Per UHS Hardware product compatibility list.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2005-2014-honda-3-button-remote-head-key-pn-35111-shj-305-oucg8d-380h-a-oem",
+      "https://www.uhs-hardware.com/products/2006-2017-honda-acura-ho03-transponder-key-philips-id-46-chip"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Honda",
+    "model": "Odyssey",
+    "yearStart": 2018,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HON66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NCF2951X / HITAG3 / ID47",
+        "chipClonable": "token",
+        "fccId": "KR5V2X",
+        "partNumber": "72147-THR-A31",
+        "frequency": "433.92"
+      }
+    ],
+    "immobilizer": "Philips Crypto 3 / Hitag3",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required",
+    "programmerHint": ["AUTEL IM608", "Xhorse VVDI2"],
+    "notes": "7-button smart key (incl. power doors). Emergency HON66 blade included.",
+    "confidence": "verified",
+    "sources": [
+      "https://abkeys.com/products/honda-odyssey-smart-key-7buttons-433mhz-hitag3-kr5v2x-72147-thr-a31-2749",
+      "https://www.locksmithkeyless.com/products/2017-2022-honda-cr-v-smart-key-5-buttons-fcc-kr5v2x-v44"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Honda",
+    "model": "Odyssey",
+    "yearStart": 2021,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HON66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47 / HITAG3",
+        "chipClonable": "token",
+        "fccId": "KR5T4X",
+        "partNumber": "72147-THR-A61",
+        "frequency": "433.92"
+      }
+    ],
+    "immobilizer": "Philips Crypto 3 / Hitag3",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required",
+    "programmerHint": ["AUTEL IM608 Pro II", "Xhorse VVDI Key Tool Max Pro"],
+    "notes": "7-button smart key. Part numbers vary by memory slot: -A51 (no mem), -A61 (D1), -A72 (D2). Emergency blade included.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2021-2023-honda-odyssey-smart-key-7-buttons-fob-fcc-kr5t4x",
+      "https://www.uhs-hardware.com/products/2021-2022-honda-odyssey-7-button-smart-key-pn-72147-thr-a61-kr5t4x-driver-1-oem",
+      "https://www.amazon.com/Yewong-Smart-Remote-Odyssey-FCC/dp/B0CX1QB7W5"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Honda",
+    "model": "HR-V",
+    "yearStart": 2016,
+    "yearEnd": 2022,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HON66",
+        "bladeIlco": "IAX00015730 (PRX-HON-4B1)",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47",
+        "chipClonable": "token",
+        "fccId": "KR5V1X",
+        "partNumber": "72147-T7S-A01",
+        "frequency": "313.8"
+      }
+    ],
+    "immobilizer": "Philips Crypto 3 / Hitag3",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required; no onboard DIY procedure",
+    "programmerHint": ["AUTEL IM608", "Xhorse VVDI2"],
+    "notes": "4-button smart key (EX trims and above). Emergency blade included. IC: 7812D-V1X. Fit EX 2018-2020 also uses this key.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2016-2019-honda-smart-key-4b-fcc-kr5v1x",
+      "https://www.amazon.com/TG-Auto-A2C80084900-Proximity-2015-2020/dp/B089SBXP1P"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Honda",
+    "model": "HR-V",
+    "yearStart": 2023,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HON66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "HITAG-AES / 4A Chip",
+        "chipClonable": "no",
+        "fccId": "KR5TP-4",
+        "partNumber": "72147-T43-A11",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "HITAG AES",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required",
+    "programmerHint": ["AUTEL IM608 Pro II", "Xhorse VVDI Key Tool Max Pro"],
+    "notes": "5-button smart key. Emergency HON66 blade. IC: 7812D-TP4.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2023-honda-hr-v-smart-key-5-buttons-fcc-kr5tp-4",
+      "https://abkeys.com/products/honda-crv-2023-smart-key-5buttons-72147-t43-a11-kr5tp-4-5176"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Honda",
+    "model": "Ridgeline",
+    "yearStart": 2006,
+    "yearEnd": 2014,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "HON66",
+        "bladeIlco": "HO01-SVC",
+        "bladeSilca": "HON58R",
+        "bladeJma": "TP12HOND",
+        "transponderChip": "Philips ID46",
+        "chipClonable": "yes",
+        "fccId": "OUCG8D-380H-A",
+        "partNumber": "35111-SHJ-305",
+        "frequency": "313.8"
+      }
+    ],
+    "immobilizer": "Philips Crypto 2 / Hitag2",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required; no onboard DIY procedure",
+    "programmerHint": ["AUTEL IM608", "Xhorse VVDI2"],
+    "notes": "3-button remote head key. IC: 850G-G8D380HA. Note: some 2007-2008 units may have Megamos 8E chip; verify by stamp on blade.",
+    "confidence": "verified",
+    "sources": [
+      "https://northcoastkeyless.com/product/2006-2014-honda-ridgeline-remote-head-key-fob-fcc-id-oucg8d-380h-a-pn-35111-shj-305/",
+      "https://www.uhs-hardware.com/products/2005-2014-honda-3-button-remote-head-key-pn-35111-shj-305-oucg8d-380h-a-oem",
+      "https://www.bestkeysolution.com/products/honda-fit-odyssey-ridgeline-keyless-entry-remote-head-key-fob-fcc-id-oug8d-380h-a-id46-chip-315mhz"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Honda",
+    "model": "Ridgeline",
+    "yearStart": 2017,
+    "yearEnd": 2019,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HON66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NCF2951X / HITAG3 / ID47",
+        "chipClonable": "token",
+        "fccId": "KR5V2X",
+        "partNumber": "72147-T6Z-A01",
+        "frequency": "433.92"
+      }
+    ],
+    "immobilizer": "Philips Crypto 3 / Hitag3",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required",
+    "programmerHint": ["AUTEL IM608", "Xhorse VVDI2"],
+    "notes": "4-button smart key. Emergency HON66 blade included.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2017-2019-honda-ridgeline-smart-key-4b-fcc-kr5v2x",
+      "https://www.amazon.com/Keymall-Replacement-Ridgeline-A2C97488400-PN/dp/B0D45HCKKJ",
+      "https://www.americankeysupply.com/product/honda-ridgeline-2017-2019-4-button-smart-key-kr5v2x-oem-7251"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Honda",
+    "model": "Ridgeline",
+    "yearStart": 2020,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HON66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47",
+        "chipClonable": "token",
+        "fccId": "KR5T41",
+        "partNumber": "72147-T6Z-A51",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "Philips Crypto 3 / Hitag3",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required",
+    "programmerHint": ["AUTEL IM608 Pro II", "Xhorse VVDI2"],
+    "notes": "4-button smart key (Lock/Unlock/Remote Start/Panic). Emergency blade included. Part: -A51 no-mem, -A61 D1, -A71 D2. KR5T41 confirmed through at least 2024-2025 Ridgeline.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2020-2021-2022-honda-ridgeline-smart-key-4b-fcc-kr5t41",
+      "https://www.amazon.com/AUTOHAUX-Replacement-Ridgeline-72147-T6Z-A51-72147T6ZA51/dp/B0FD3Z3R2D",
+      "https://royalkeysupply.com/products/honda-new-oem-2020-2022-ridgeline-smart-key-memory-2-4b-remote-start-fccid-kr5t41-pn-72147-t6z-a71"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Honda",
+    "model": "Passport",
+    "yearStart": 2019,
+    "yearEnd": 2022,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HON66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47",
+        "chipClonable": "token",
+        "fccId": "KR5V44",
+        "partNumber": "72147-TG7-A61",
+        "frequency": "433.92"
+      }
+    ],
+    "immobilizer": "Philips Crypto 3 / Hitag3",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required",
+    "programmerHint": ["AUTEL IM608", "Xhorse VVDI2"],
+    "notes": "5-button smart key for EXL/Touring/Elite trims. KR5V44 and KR5T44 are interchangeable. Emergency blade included. Shared with Pilot 2019-2022.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2019-honda-passport-smart-key-5-buttons-fcc-kr5v44",
+      "https://www.locksmithkeyless.com/products/2022-honda-passport-smart-key-5-buttons-fcc-kr5v44"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Honda",
+    "model": "Passport",
+    "yearStart": 2023,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HON66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47",
+        "chipClonable": "token",
+        "fccId": "KR5V41",
+        "partNumber": "72147-TG7-AA1",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "Philips Crypto 3 / Hitag3",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required",
+    "programmerHint": ["AUTEL IM608 Pro II", "Xhorse VVDI Key Tool Max Pro"],
+    "notes": "5-button smart key. FCC KR5V41, confirmed 2019-2025 range for Passport; emergency blade included. Continental A2C18218401.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.carandtruckremotes.com/products/2023-honda-passport-smart-remote-driver-1-72147-tg7-aa1",
+      "https://northcoastkeyless.com/product/honda-passport-4-button-smart-key-fob-remote-memory-1-fcc-kr5v41-p-n-72147-tg7-a82-72147-tg7-a81/",
+      "https://remotesandkeys.com/products/2024-honda-passport-smart-key-fob-driver-1-pn-72147-tg7-aa1-72147-tg7-a82"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Honda",
+    "model": "Fit",
+    "yearStart": 2007,
+    "yearEnd": 2008,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "HON66",
+        "bladeIlco": "HO01-SVC",
+        "bladeSilca": "HON58R",
+        "bladeJma": "TP12HOND",
+        "transponderChip": "Megamos 8E (H-stamp blade) or Philips ID46 (V-stamp blade)",
+        "chipClonable": "no",
+        "fccId": "OUCG8D-380H-A",
+        "partNumber": "35111-SHJ-305",
+        "frequency": "313.8"
+      }
+    ],
+    "immobilizer": "Megamos Crypto 8E or Philips Crypto 2 / Hitag2",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required",
+    "programmerHint": ["AUTEL IM608", "Xhorse VVDI2"],
+    "notes": "3-button remote head key. Caution: blade with 'H' stamp = Megamos 8E chip (not clonable); blade with 'V' stamp = ID46 (clonable). Verify before ordering. chipClonable set to 'no' for safety (8E is the predominant variant per multiple sources).",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2007-2008-honda-fit-3-button-remote-head-key-oucg8d-380h-a-8e-chip-rhk-hon-ouc-8e",
+      "https://www.americankeysupply.com/product/for-honda-fit-2007-2008-3-button-remote-head-key-megamos-8e-brk-11670",
+      "https://yourcarkeyguys.com/products/2007-2008-honda-fit-3b-rhk-8e-chip-oucg8d-380h-a"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Honda",
+    "model": "Fit",
+    "yearStart": 2009,
+    "yearEnd": 2014,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HON66",
+        "bladeIlco": "HO03",
+        "bladeSilca": "HON58R",
+        "bladeJma": "TP12HOND-31.P",
+        "transponderChip": "Philips ID46 PCF7941",
+        "chipClonable": "yes",
+        "fccId": null,
+        "partNumber": "ILCO-HO03-PT",
+        "frequency": null
+      }
+    ],
+    "immobilizer": "Philips Crypto 2 / Hitag2",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required",
+    "programmerHint": ["AUTEL IM608", "Xhorse VVDI2"],
+    "notes": "Standalone transponder key. No remote head variant confirmed for base trims.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2006-2017-honda-acura-ho03-transponder-key-philips-id-46-chip",
+      "https://www.transpondery.com/transponder_catalog/honda_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Honda",
+    "model": "Fit",
+    "yearStart": 2015,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HON66",
+        "bladeIlco": "IAX00015730 (PRX-HON-4B1)",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47",
+        "chipClonable": "token",
+        "fccId": "KR5V1X",
+        "partNumber": "72147-T5A-A01",
+        "frequency": "313.8"
+      }
+    ],
+    "immobilizer": "Philips Crypto 3 / Hitag3",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required",
+    "programmerHint": ["AUTEL IM608", "Xhorse VVDI2"],
+    "notes": "3- or 4-button smart key depending on trim. IC: A2C80084900. Emergency blade included. EX trims only; LX may be transponder only.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.amazon.com/TG-Auto-313-8Mhz-Proximity-2015-2017/dp/B09CTX5J3V",
+      "https://www.amazon.com/Smart-Honda-2014-2017-YIKEBALOG-Replacement/dp/B0DXCWPT63"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Honda",
+    "model": "Insight",
+    "yearStart": 2010,
+    "yearEnd": 2014,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HON66",
+        "bladeIlco": "HO03",
+        "bladeSilca": "HON58R",
+        "bladeJma": "TP12HOND-31.P",
+        "transponderChip": "Philips ID46 PCF7941",
+        "chipClonable": "yes",
+        "fccId": null,
+        "partNumber": "ILCO-HO03-PT",
+        "frequency": null
+      }
+    ],
+    "immobilizer": "Philips Crypto 2 / Hitag2",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required",
+    "programmerHint": ["AUTEL IM608", "Xhorse VVDI2"],
+    "notes": "Standalone transponder key per UHS Hardware and eBay compatibility list for HO03-PT.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2006-2017-honda-acura-ho03-transponder-key-philips-id-46-chip",
+      "https://www.ebay.com/itm/236011024275"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Honda",
+    "model": "Insight",
+    "yearStart": 2019,
+    "yearEnd": 2022,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HON66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP AES 128 Bit / 4A Chip",
+        "chipClonable": "no",
+        "fccId": "CWTWB1G0090",
+        "partNumber": "72147-TXM-A01",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "HITAG AES",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required",
+    "programmerHint": ["AUTEL IM608 Pro II", "Xhorse VVDI Key Tool Max Pro"],
+    "notes": "4-button smart key. Emergency blade included. Hybrid vehicle.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2019-2022-honda-insight-hybrid-smart-key-fob-4b-fcc-cwtwb1g0090",
+      "https://www.amazon.com/MechanMagic-Replacement-CWTWB1G0090-72147-TVA-A01-A21/dp/B0D56JH19D"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Acura",
+    "model": "MDX",
+    "yearStart": 2007,
+    "yearEnd": 2013,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Flip",
+        "trimDependent": false,
+        "keyway": "HON66",
+        "bladeIlco": "HO01",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 PCF7936",
+        "chipClonable": "yes",
+        "fccId": "N5F0602A1A",
+        "partNumber": "35111-STX-325",
+        "frequency": "313.8"
+      }
+    ],
+    "immobilizer": "Philips Crypto 2 / Hitag2",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required",
+    "programmerHint": ["AUTEL IM608", "Xhorse VVDI2"],
+    "notes": "3- or 4-button flip key. Part numbers by memory: -316 (D1), -326 (D2), -306 (base). IC: 850G-N5F0602A1A.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2007-2009-acura-flip-key-4-btn-fcc-n5f0602a1a",
+      "https://www.amazon.com/ePathChina-Replacement-N5F0602A1A-35111-STX-325-313-8MHz/dp/B0D4DJVJCS",
+      "https://www.transpondery.com/transponder_catalog/acura_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Acura",
+    "model": "MDX",
+    "yearStart": 2014,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HON66",
+        "bladeIlco": "IAX00016090 (PRX-ACURA-4B1)",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7953X / HITAG3 / ID47",
+        "chipClonable": "token",
+        "fccId": "KR5V1X",
+        "partNumber": "72147-TZ5-A01",
+        "frequency": "313.8"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HON66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Continental A2C80399900 / ID47",
+        "chipClonable": "token",
+        "fccId": "KR580399900",
+        "partNumber": "72147-TZ5-A11",
+        "frequency": "902"
+      }
+    ],
+    "immobilizer": "Philips Crypto 3 / Hitag3",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required",
+    "programmerHint": ["AUTEL IM608", "Xhorse VVDI2"],
+    "notes": "KR5V1X = base/tech trim 4-button 313.8 MHz; KR580399900 = Advance trim 5-button 902 MHz. IC for KR5V1X: 7812D-V1X. Emergency blade included on both.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2014-2018-acura-smart-key-hatch-4b-fcc-kr5v1x",
+      "https://www.locksmithkeyless.com/products/2016-2020-acura-rdx-mdx-smart-key-5b-w-hatch-engine-start-fob-fcc-kr580399900",
+      "https://www.transpondery.com/transponder_catalog/acura_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Acura",
+    "model": "MDX",
+    "yearStart": 2022,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HON66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47",
+        "chipClonable": "token",
+        "fccId": "KR5BTP",
+        "partNumber": "72147-TYA-C01",
+        "frequency": "920.44"
+      }
+    ],
+    "immobilizer": "Philips Crypto 3 / Hitag3",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required",
+    "programmerHint": ["AUTEL IM608 Pro II", "Xhorse VVDI Key Tool Max Pro"],
+    "notes": "5-button smart key. IC: 7812D-BTP. Driver 1: 72147-TYA-C01, Driver 2: 72147-TYA-C11. No emergency key noted.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2022-2025-acura-mdx-5-button-smart-key-pn-72147-tya-c11-kr5btp-driver-2-oem",
+      "https://royalkeysupply.com/products/acura-new-oem-2022-2023-mdx-smart-key-memory-1-5b-engine-hold-hatch-fccid-kr5btp-pn-72147-tya-c01",
+      "https://www.transpondery.com/transponder_catalog/acura_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Acura",
+    "model": "RDX",
+    "yearStart": 2007,
+    "yearEnd": 2012,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Flip",
+        "trimDependent": false,
+        "keyway": "HON66",
+        "bladeIlco": "HO01",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 PCF7936",
+        "chipClonable": "yes",
+        "fccId": "N5F0602A1A",
+        "partNumber": "35111-STK-315",
+        "frequency": "313.8"
+      }
+    ],
+    "immobilizer": "Philips Crypto 2 / Hitag2",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required",
+    "programmerHint": ["AUTEL IM608", "Xhorse VVDI2"],
+    "notes": "Shared FCC ID with MDX 2007-2013. 3-button flip key.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.amazon.com/ePathChina-Keyless-Entry-Replacement-2007-2013/dp/B0D4DGW6NS",
+      "https://www.transpondery.com/transponder_catalog/acura_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Acura",
+    "model": "RDX",
+    "yearStart": 2013,
+    "yearEnd": 2015,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HON66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP PCF7953 / Hitag2 / ID46",
+        "chipClonable": "yes",
+        "fccId": "KR5434760",
+        "partNumber": "72147-TX4-A01",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "Philips Crypto 2 / Hitag2",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required",
+    "programmerHint": ["AUTEL IM608", "Xhorse VVDI2"],
+    "notes": "4-button proximity smart key. Also fits Acura ILX 2013-2015. Frequency: 315 MHz confirmed by keyinnovations.com and Amazon MADAT listing; one aftermarket source (autokeyhub) lists 313.8 MHz — minor conflict retained as verified given 2+ agreement on 315.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/smart-remote-key-fob-for-acura-rdx-2013-2014-2015-4b-fcc-kr5434760",
+      "https://www.transpondery.com/transponder_catalog/acura_transponder_catalog.html",
+      "https://keyinnovations.com/acura-4-button-smart-key-kr5434760-72147-tx4-a01-315-mhz-aftermarket/"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Acura",
+    "model": "RDX",
+    "yearStart": 2016,
+    "yearEnd": 2018,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HON66",
+        "bladeIlco": "IAX00016090",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7953X / HITAG3 / ID47",
+        "chipClonable": "token",
+        "fccId": "KR5V1X",
+        "partNumber": "72147-TZ5-A01",
+        "frequency": "313.8"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HON66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Continental A2C80399900 / ID47",
+        "chipClonable": "token",
+        "fccId": "KR580399900",
+        "partNumber": "72147-TZ6-A71",
+        "frequency": "902"
+      }
+    ],
+    "immobilizer": "Philips Crypto 3 / Hitag3",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required",
+    "programmerHint": ["AUTEL IM608", "Xhorse VVDI2"],
+    "notes": "KR5V1X = base/tech 4-button 313.8 MHz; KR580399900 = Advance 5-button with engine start. Shared with MDX 2014-2020.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.amazon.com/UrbanX-Replacement-A2C32523200-72147-TZ5-A01-72147-TZ5-A11/dp/B0DH81LH5N",
+      "https://www.locksmithkeyless.com/products/smart-remote-key-fob-for-acura-rdx-mdx-2016-2017-2018-2019-2020-5b-fcc-kr580399900",
+      "https://www.transpondery.com/transponder_catalog/acura_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Acura",
+    "model": "RDX",
+    "yearStart": 2019,
+    "yearEnd": 2021,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HON66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47",
+        "chipClonable": "token",
+        "fccId": "KR5T21",
+        "partNumber": "72147-TJB-A01",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "Philips Crypto 3 / Hitag3",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required",
+    "programmerHint": ["AUTEL IM608 Pro II", "Xhorse VVDI2"],
+    "notes": "4-button smart key. IC: 7812D-T21. Emergency blade included.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2019-2021-acura-rdx-smart-key-4b-fob-fcc-kr5t21-72147-tjb-a01",
+      "https://www.transpondery.com/transponder_catalog/acura_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Acura",
+    "model": "RDX",
+    "yearStart": 2022,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HON66",
+        "bladeIlco": "IAX00020390 (PRX-ACURA-4B11)",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47",
+        "chipClonable": "token",
+        "fccId": "KR5TP-2",
+        "partNumber": "72147-TJB-A21",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "Philips Crypto 3 / Hitag3",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required",
+    "programmerHint": ["AUTEL IM608 Pro II", "Xhorse VVDI Key Tool Max Pro"],
+    "notes": "4-button smart key. IC: 7812D-TP2. Emergency blade included. Memory 1: 72147-TJB-A21, Memory 2: 72147-TJB-A31.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2022-2024-acura-rdx-smart-key-4b-w-hatch-fob-fcc-kr5tp-2-72147-tjb-a21",
+      "https://www.amazon.com/Kilessgo-Replacement-KR5TP-2-433MHz-Buttons/dp/B0FH8BHWTC"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Acura",
+    "model": "TLX",
+    "yearStart": 2015,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HON66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7953X / HITAG3 / ID47",
+        "chipClonable": "token",
+        "fccId": "KR5V1X",
+        "partNumber": "72147-TZ3-A01",
+        "frequency": "313.8"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HON66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Continental A2C80399900 / ID47",
+        "chipClonable": "token",
+        "fccId": "KR580399900",
+        "partNumber": "72147-TZ3-A71",
+        "frequency": "902"
+      }
+    ],
+    "immobilizer": "Philips Crypto 3 / Hitag3",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required",
+    "programmerHint": ["AUTEL IM608", "Xhorse VVDI2"],
+    "notes": "KR5V1X = base/tech 4-button 313.8 MHz; KR580399900 = Advance 5-button 902 MHz with engine start. Also applies to ILX 2016-2020 and RLX 2016-2019.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.amazon.com/Replcament-KR5V1X-2AOKM-HD10-72147-TZ3-A01-72147TZ3A01/dp/B0DBWNDFJ3",
+      "https://www.locksmithkeyless.com/products/2015-2019-acura-smart-key-5b-fcc-kr580399900",
+      "https://www.transpondery.com/transponder_catalog/acura_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Acura",
+    "model": "TLX",
+    "yearStart": 2021,
+    "yearEnd": 2023,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HON66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47",
+        "chipClonable": "token",
+        "fccId": "KR5T21",
+        "partNumber": "72147-TGV-A01",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "Philips Crypto 3 / Hitag3",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required",
+    "programmerHint": ["AUTEL IM608 Pro II", "Xhorse VVDI2"],
+    "notes": "4-button smart key. IC: 7812D-T21. Emergency blade included. Memory 1: -A01, Memory 2: -A11.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2021-2022-acura-tlx-smart-key-4b-fcc-kr5t21",
+      "https://www.transpondery.com/transponder_catalog/acura_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Acura",
+    "model": "TLX",
+    "yearStart": 2024,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HON66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47",
+        "chipClonable": "token",
+        "fccId": "KR5BTP",
+        "partNumber": "72147-TGV-A41",
+        "frequency": "920.44"
+      }
+    ],
+    "immobilizer": "Philips Crypto 3 / Hitag3",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required",
+    "programmerHint": ["AUTEL IM608 Pro II", "Xhorse VVDI Key Tool Max Pro"],
+    "notes": "5-button smart key with remote start and trunk. IC: 7812D-BTP. Shared FCC with MDX 2022+.",
+    "confidence": "verified",
+    "sources": [
+      "https://royalkeysupply.com/products/acura-new-oem-2024-tlx-smart-key-memory-1-5b-remote-start-trunk-fccid-kr5btp-pn-72147-tgv-a41",
+      "https://www.bestkeysupply.com/products/acura-tlx-2024-2025-5button-proximity-smart-key-kr5btp-72147tgva51-driver2-oem2753"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Acura",
+    "model": "ILX",
+    "yearStart": 2013,
+    "yearEnd": 2015,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HON66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP PCF7953 / Hitag2 / ID46",
+        "chipClonable": "yes",
+        "fccId": "KR5434760",
+        "partNumber": "72147-TX6-A01",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "Philips Crypto 2 / Hitag2",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required",
+    "programmerHint": ["AUTEL IM608", "Xhorse VVDI2"],
+    "notes": "4-button proximity smart key. Shared FCC with RDX 2013-2015. 315 MHz confirmed by keyinnovations.com.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/acura_transponder_catalog.html",
+      "https://www.amazon.com/Buttons-Remote-Smart-Acura-2016/dp/B0F2GKQPDX",
+      "https://keyinnovations.com/acura-4-button-smart-key-kr5434760-72147-tx4-a01-315-mhz-aftermarket/"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Acura",
+    "model": "ILX",
+    "yearStart": 2016,
+    "yearEnd": 2022,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HON66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7953X / HITAG3 / ID47",
+        "chipClonable": "token",
+        "fccId": "KR5V1X",
+        "partNumber": "72147-TZ3-A01",
+        "frequency": "313.8"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HON66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Continental A2C80399900 / ID47",
+        "chipClonable": "token",
+        "fccId": "KR580399900",
+        "partNumber": "72147-TZ3-A71",
+        "frequency": "902"
+      }
+    ],
+    "immobilizer": "Philips Crypto 3 / Hitag3",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required",
+    "programmerHint": ["AUTEL IM608", "Xhorse VVDI2"],
+    "notes": "Shared key with TLX 2015-2020. KR5V1X = base/tech 313.8 MHz; KR580399900 = Premium/A-Spec with engine start.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.amazon.com/Buttons-Remote-Smart-Acura-2016/dp/B0F2GKQPDX",
+      "https://www.transpondery.com/transponder_catalog/acura_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Acura",
+    "model": "TSX",
+    "yearStart": 2009,
+    "yearEnd": 2014,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Flip",
+        "trimDependent": false,
+        "keyway": "HON66",
+        "bladeIlco": "HO01",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 PCF7961 / Hitag2",
+        "chipClonable": "yes",
+        "fccId": "MLBHLIK-1T",
+        "partNumber": "35113-TK4-A00",
+        "frequency": "313.8"
+      }
+    ],
+    "immobilizer": "Philips Crypto 2 / Hitag2",
+    "pinRequired": false,
+    "programming": "Professional locksmith or dealer required; separate chip programming",
+    "programmerHint": ["AUTEL IM608", "Xhorse VVDI2"],
+    "notes": "4-button flip key (Lock/Unlock/Trunk/Panic). IC: 2500A-HLIK-1T. Also fits Acura TL 2009-2014 and ZDX 2010-2013.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.bestkeysolution.com/products/2009-acura-flip-key-fob-keyless-entry-remote-fits-2009-2014-tl-tsx-2010-2013-zdx-mlbhlik-1t",
+      "https://www.amazon.com/Keymall-Replacement-MLBHLIK-1T-2009-2014-2010-2013/dp/B0CZ6TLL7K",
+      "https://www.transpondery.com/transponder_catalog/acura_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  }
+]

@@ -1,0 +1,1019 @@
+[
+  {
+    "make": "Nissan",
+    "model": "Altima",
+    "yearStart": 2007,
+    "yearEnd": 2012,
+    "onboard": "Remote (RKE) only — not DIY available per locksmithkeyless.com (2007+ Altima requires diagnostic equipment). The earlier ignition-insert-remove 6× method applies only to pre-2007 Altima and does NOT program the NATS transponder chip.",
+    "addKey": "Connect Autel IM608 (or Lonsdor K518 / OBDSTAR X300 DP) to OBD port under dash driver side. Navigate: IMMO → Nissan → Altima → select year → Smart key or Remote head key → Add key. Tool reads BCM and may calculate 20-digit NATS PIN automatically via OBD (NATS5/NATS5+ generation). Present all existing keys plus new key when prompted; follow ignition-cycle prompts on screen. Erase-all then re-register all keys including working original.",
+    "allKeysLost": "Connect Autel IM608 (or Lonsdor K518) to OBD. Navigate: IMMO → Nissan → Altima → year → All keys lost. Tool reads 20-digit NATS PIN from BCM via OBD. Follow guided prompts: turn hazard on, ignition off, insert/present new key, ignition on per tool instructions. If OBD PIN read fails, read 5-digit hex code from BCM label (behind left kick panel) and use NATS PIN calculator to derive 4-digit working PIN.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN read via OBD (Autel/Lonsdor auto-read) | BCM label 5-digit hex → decode to 4-digit PIN",
+    "obdPort": "Under dash, driver side, left of steering column",
+    "securityWait": "none documented for programming; vehicle enters start-lockout after 5+ consecutive bad-key start attempts (P1610) — clear with scan tool",
+    "specialTool": "Autel IM608 | Lonsdor K518 | OBDSTAR X300 DP",
+    "sources": [
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming",
+      "https://obd2technology.com/product/nissan-nats-pin-code-calculator-instant-digital-download-for-key-programming/",
+      "https://blog.uobdii.com/nissan-rogue-2016-all-keys-lost-programming-tool-review/",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Altima",
+    "yearStart": 2007,
+    "yearEnd": 2012,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 (or Lonsdor K518 / OBDSTAR X300 DP) to OBD port under dash driver side. Navigate: IMMO → Nissan → Altima → year → Smart key → Add key. Tool reads 20-digit NATS PIN from BCM via OBD on 2007–2012 smart-key trims (higher trim push-start). Present new key on start button when prompted; follow all ignition prompts. All keys must be re-registered in one session.",
+    "allKeysLost": "Connect Autel IM608 (or Lonsdor K518) to OBD. Navigate: IMMO → Nissan → Altima → year → Smart key → All keys lost. Tool reads 20-digit NATS PIN via OBD automatically. Turn hazard on, ignition off, follow guided key-present-to-start-button prompts. If PIN read fails via OBD, use BCM label 5-digit hex + NATS calculator.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN read via OBD | BCM label 5-digit hex → decode to 4-digit PIN",
+    "obdPort": "Under dash, driver side, left of steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 | Lonsdor K518 | OBDSTAR X300 DP",
+    "sources": [
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming",
+      "https://obd2technology.com/product/nissan-nats-pin-code-calculator-instant-digital-download-for-key-programming/",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Altima",
+    "yearStart": 2013,
+    "yearEnd": 2018,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Xhorse VVDI2 / Lonsdor K518 to OBD port. Navigate: IMMO → Nissan → Altima → year → All key types → Add key (guided). Tool reads 20-digit NATS PIN from BCM via OBD. Have all existing keys on hand — system erases and re-registers all keys. Follow tool-guided prompts: hazard on, ignition off, present each key to start button sequentially.",
+    "allKeysLost": "Connect Autel IM608 / Lonsdor K518 to OBD. 20-digit NATS PIN read from BCM via OBD (tool auto-reads on most units). Navigate AKL path; delete all key IDs, then program new keys. 2016–2018 units use HiTag AES (PCF7953M/ID4A) — requires tool with HITAG AES support (Autel IM608 with latest update, VVDI2, Lonsdor K518).",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN read via OBD (auto-read by tool)",
+    "obdPort": "Under dash, driver side, left of steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 (HITAG AES update required for 2016–2018) | Xhorse VVDI2 | Lonsdor K518",
+    "sources": [
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming",
+      "https://blog.uobdii.com/nissan-rogue-2016-all-keys-lost-programming-tool-review/",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html",
+      "https://obd2technology.com/product/nissan-nats-pin-code-calculator-instant-digital-download-for-key-programming/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Altima",
+    "yearStart": 2019,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Lonsdor K518 to OBD port. Navigate: IMMO → Nissan → Altima → year → Smart key → Add key. Tool reads 20-digit NATS PIN from BCM via OBD (2019–2021). For 2022+ if PIN cannot be read via OBD alone, use Nissan 40-pin BCM gateway cable (OBDSTAR or Autel BCM40 cable). Have all existing keys; system re-registers all in one session.",
+    "allKeysLost": "Connect Autel IM608 to OBD + 40-pin BCM cable for 2021+ if OBD PIN read fails. Navigate AKL. For 2022+ models: if tool asks for PIN code, remove HFM module (hands-free module above glove box), use Autel APB131 adapter or OBDSTAR G3 with RH850 kit to read 28-digit PIN from HFM EEPROM dump, then enter in tool for key learning.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN via OBD (2019–2021) | 28-digit PIN from HFM module EEPROM (2022+, requires APB131 or RH850 adapter)",
+    "obdPort": "Under dash, driver side, left of steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 with APB131 adapter (2022+) | OBDSTAR G3 with RH850 adapter (2022+) | Nissan 40-pin BCM gateway cable",
+    "sources": [
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html",
+      "https://www.cnautotool.com/blog/autel-im608-program-2021-nissan-altima-all-key-lost/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Sentra",
+    "yearStart": 2007,
+    "yearEnd": 2012,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Lonsdor K518 / OBDSTAR X300 DP to OBD port. Navigate: IMMO → Nissan → Sentra → year → Remote head key → Add key. Tool reads 20-digit NATS PIN from BCM via OBD. All existing keys must be re-registered in same session. Follow tool-guided prompts.",
+    "allKeysLost": "Connect Autel IM608 / Lonsdor K518 to OBD. Tool reads 20-digit NATS PIN from BCM. Navigate AKL path; erase all IDs, program new remote head key. If OBD PIN read fails, use BCM label 5-digit hex + NATS PIN calculator.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN read via OBD | BCM label 5-digit hex → decode to 4-digit PIN",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 | Lonsdor K518 | OBDSTAR X300 DP",
+    "sources": [
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html",
+      "https://obd2technology.com/product/nissan-nats-pin-code-calculator-instant-digital-download-for-key-programming/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Sentra",
+    "yearStart": 2013,
+    "yearEnd": 2019,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Lonsdor K518 / OBDSTAR X300 DP to OBD port. Navigate: IMMO → Nissan → Sentra → year → Smart key → Add key. Tool reads 20-digit NATS PIN from BCM via OBD. Have all existing keys on hand for re-registration in one session. Follow tool-guided prompts: hazard on, ignition off, present each key to start button when prompted.",
+    "allKeysLost": "Connect Autel IM608 / Lonsdor K518 to OBD. Navigate AKL. Tool reads 20-digit NATS PIN from BCM via OBD (auto-read). Erase all existing key IDs, program new smart keys sequentially on start button. ID46/HiTag2 chip on these years — standard NATS OBD procedure.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN read via OBD (auto-read by tool)",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 | Lonsdor K518 | OBDSTAR X300 DP",
+    "sources": [
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming",
+      "https://help.autosvs.com/kb/program-nissan-sentra-all-keys-lost-by-autel-im608-pro/",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Sentra",
+    "yearStart": 2020,
+    "yearEnd": 2022,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Lonsdor K518 to OBD port + optional Nissan 40-pin BCM cable for PIN read. Navigate: IMMO → Nissan → Sentra B18 → year → Smart key → Add key. Tool reads 20-digit NATS PIN via OBD or 40-pin cable. Have all keys; system erases and re-registers all in one session.",
+    "allKeysLost": "Connect Autel IM608 to OBD + Nissan 40-pin BCM gateway cable. Navigate AKL path. For 2021+ B18 Sentra: if PIN not readable via OBD, use APB131 adapter to read 28-digit PIN from HFM module EEPROM (above glove box), then enter in key learning. OBDSTAR G3 + RH850 adapter is an alternative PIN extraction method.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN via OBD or 40-pin BCM cable (2020) | 28-digit PIN from HFM EEPROM via APB131/RH850 (2021+)",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 + APB131 adapter (2021+) | OBDSTAR G3 + RH850 (2021+) | Nissan 40-pin BCM cable",
+    "sources": [
+      "https://help.autosvs.com/kb/program-nissan-sentra-all-keys-lost-by-autel-im608-pro/",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html",
+      "https://www.obd2tool.com/blog/program-nissan-sentra-all-keys-lost-by-autel-im608-pro/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Sentra",
+    "yearStart": 2022,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 to OBD port + Nissan 40-pin BCM gateway cable (may be required). Navigate: IMMO → Nissan → Sentra B18 → Smart key → Add key. Tool reads 28-digit PIN from HFM module via APB131 or calculates via 40-pin cable. Have all existing keys for re-registration.",
+    "allKeysLost": "Use Autel IM608 + APB131 adapter: remove HFM module above glove box, solder/connect APB131 to read EEPROM dump, extract 28-digit PIN. Alternatively use OBDSTAR G3 + RH850/V850 adapter kit for PIN from HFM dump. Enter PIN into key learning via hot functions. New FCC KR5TXPZ1 hardware.",
+    "pinRequired": true,
+    "pinSource": "28-digit PIN from HFM module EEPROM (above glove box) via Autel APB131 or OBDSTAR G3 + RH850 adapter",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 + APB131 adapter | OBDSTAR G3 + RH850/V850 adapter kit",
+    "sources": [
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html",
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Rogue",
+    "yearStart": 2008,
+    "yearEnd": 2013,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Lonsdor K518 / OBDSTAR X300 DP to OBD port. Navigate: IMMO → Nissan → Rogue → year → Remote head key → Add key. Tool reads 20-digit NATS PIN from BCM via OBD. Have all existing keys; erase and re-register all in one session. Follow guided ignition and key-insert prompts.",
+    "allKeysLost": "Connect Autel IM608 / Lonsdor K518 to OBD. Navigate AKL path. Tool reads 20-digit NATS PIN from BCM via OBD. Erase all key IDs, program new remote head key following guided prompts. If OBD PIN read fails, use BCM label 5-digit hex + NATS PIN calculator.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN read via OBD | BCM label 5-digit hex → decode to 4-digit PIN",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 | Lonsdor K518 | OBDSTAR X300 DP",
+    "sources": [
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Rogue",
+    "yearStart": 2014,
+    "yearEnd": 2020,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Xhorse VVDI2 / Lonsdor K518 to OBD port. Navigate: IMMO → Nissan → Rogue T32 → year → Smart key → Add key (guided). Tool reads 20-digit NATS PIN from BCM via OBD. Have all existing keys; system erases all and re-registers in one session. Follow prompts: hazard on, ignition off/on, present each key to start button.",
+    "allKeysLost": "Connect Autel IM608 / Lonsdor K518 to OBD. Navigate: IMMO → Nissan → Rogue → year → 20-bit PIN → AKL. Tool reads 20-digit NATS PIN from BCM via OBD automatically. Erase all key IDs, then program each new smart key. Warning: several BCM part numbers (284B1-4CB1A series, 2014–2018) are defective — verify BCM PN before programming or BCM may be permanently disabled.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN read via OBD (auto-read by Autel/Lonsdor)",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 | Lonsdor K518 | Xhorse VVDI2",
+    "sources": [
+      "https://blog.uobdii.com/nissan-rogue-2016-all-keys-lost-programming-tool-review/",
+      "https://blog.obdii.shop/how-to-program-2018-2021-nissan-rogue-a-new-smart-key-by-autel-im508-im608/",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Rogue",
+    "yearStart": 2021,
+    "yearEnd": 2022,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 to OBD port + Nissan 40-pin BCM gateway cable (plugs into BCM connector and OBD port). Navigate: IMMO → Nissan → Rogue T33 → year → Smart key → Add key. Tool reads PIN automatically via 40-pin cable. Have all existing keys for re-registration in one session.",
+    "allKeysLost": "Connect Autel IM608 to OBD + Nissan 40-pin BCM cable. Navigate AKL. If 40-pin cable AKL is successful, proceed with key learning. If tool still asks for PIN (security update), remove HFM module above glove box and use Autel APB131 adapter or OBDSTAR G3 + RH850 kit to read 28-digit PIN from EEPROM dump, then enter PIN in key learning.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN via 40-pin BCM cable (most 2021) | 28-digit PIN from HFM EEPROM via APB131/RH850 (post-dealer-update units)",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Nissan 40-pin BCM gateway cable | Autel IM608 + APB131 (if HFM read needed) | OBDSTAR G3 + RH850",
+    "sources": [
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html",
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Rogue",
+    "yearStart": 2022,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 to OBD + Nissan 40-pin BCM gateway cable (required). Navigate: IMMO → Nissan → Rogue T33 → year → Smart key → Add key. 40-pin cable connects to BCM (under dash or driver kick area) and OBD simultaneously. Have all existing keys for same-session re-registration.",
+    "allKeysLost": "2022 Rogue: Autel IM608 + 40-pin BCM cable via OBD — reads PIN automatically, follow AKL prompts. 2023–2024 Rogue: if tool asks for PIN even with 40-pin cable (dealer security update applied), must read 28-digit PIN from HFM module EEPROM using Autel APB131 or OBDSTAR G3 + RH850 adapter. New FCC KR5TXPZ3 hardware.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN via Nissan 40-pin BCM cable (2022) | 28-digit PIN from HFM EEPROM via APB131/RH850 (2023–2024 or post-dealer-update)",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Nissan 40-pin BCM gateway cable | Autel IM608 + APB131 adapter | OBDSTAR G3 + RH850/V850 adapter kit",
+    "sources": [
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Rogue Sport",
+    "yearStart": 2017,
+    "yearEnd": 2018,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Lonsdor K518 to OBD port. Navigate: IMMO → Nissan → Rogue Sport / Qashqai → year → Smart key → Add key. Reads 20-digit NATS PIN from BCM via OBD. Have all existing keys for re-registration in one session. Same platform/procedure as Rogue T32.",
+    "allKeysLost": "Connect Autel IM608 / Lonsdor K518 to OBD. Navigate AKL path. Tool reads 20-digit NATS PIN from BCM via OBD. Erase all key IDs, program new smart keys sequentially. HiTag AES PCF7953M chip — requires HITAG AES-capable tool.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN read via OBD (auto-read by tool)",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 | Lonsdor K518 | Xhorse VVDI2",
+    "sources": [
+      "https://blog.uobdii.com/nissan-rogue-2016-all-keys-lost-programming-tool-review/",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Rogue Sport",
+    "yearStart": 2019,
+    "yearEnd": 2022,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Lonsdor K518 to OBD port. Navigate: IMMO → Nissan → Rogue Sport → year → Smart key → Add key. Reads 20-digit NATS PIN from BCM via OBD. Have all existing keys. HiTag AES NCF29A1M chip on 2019+.",
+    "allKeysLost": "Connect Autel IM608 / Lonsdor K518 to OBD. Navigate AKL path. Tool reads 20-digit NATS PIN from BCM via OBD. Erase all key IDs, program new smart keys. For 2021–2022 units, may need 40-pin BCM gateway cable if OBD PIN read is blocked.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN read via OBD | 40-pin BCM cable for 2021–2022 if OBD-only fails",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 | Lonsdor K518 | Nissan 40-pin BCM cable (2021–2022)",
+    "sources": [
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html",
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Versa",
+    "yearStart": 2007,
+    "yearEnd": 2012,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Lonsdor K518 to OBD port. Navigate: IMMO → Nissan → Versa → year → Remote head key → Add key. Tool reads 20-digit NATS PIN from BCM via OBD. Have all existing keys; erase and re-register all in one session. ID46 PCF7952 chip.",
+    "allKeysLost": "Connect Autel IM608 / Lonsdor K518 to OBD. Navigate AKL path. Tool reads 20-digit NATS PIN from BCM via OBD. Erase all key IDs, program new remote head key. If OBD PIN read fails, use BCM label 5-digit hex + NATS PIN calculator.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN read via OBD | BCM label 5-digit hex → decode to 4-digit PIN",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 | Lonsdor K518",
+    "sources": [
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Versa",
+    "yearStart": 2013,
+    "yearEnd": 2019,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Lonsdor K518 to OBD port. Navigate: IMMO → Nissan → Versa → year → Smart key → Add key. Tool reads 20-digit NATS PIN from BCM via OBD. Have all existing keys; system erases and re-registers all. ID46 PCF7952A chip (NATS5+ generation).",
+    "allKeysLost": "Connect Autel IM608 / Lonsdor K518 to OBD. Navigate AKL path. Tool reads 20-digit NATS PIN from BCM via OBD. Erase all key IDs, program new smart keys sequentially to start button.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN read via OBD (auto-read by tool)",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 | Lonsdor K518",
+    "sources": [
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Versa",
+    "yearStart": 2020,
+    "yearEnd": 2022,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Lonsdor K518 to OBD port. Navigate: IMMO → Nissan → Versa N18 → year → Smart key → Add key. Tool reads 20-digit NATS PIN from BCM via OBD. Have all existing keys; re-register all in one session. HiTag AES NCF29A1M chip.",
+    "allKeysLost": "Connect Autel IM608 / Lonsdor K518 to OBD. Navigate AKL. Tool reads 20-digit NATS PIN. Erase all key IDs, program new smart keys. For 2021+ units, may need 40-pin BCM cable if OBD PIN read is blocked by gateway.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN via OBD | 40-pin BCM cable (2021+ if OBD-only fails)",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 | Lonsdor K518 | Nissan 40-pin BCM cable (2021+)",
+    "sources": [
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Versa",
+    "yearStart": 2022,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 to OBD port + Nissan 40-pin BCM cable (may be required). Navigate: IMMO → Nissan → Versa N18 → year → Smart key → Add key. 40-pin cable reads PIN from BCM. Have all existing keys for re-registration.",
+    "allKeysLost": "Use Autel IM608 + 40-pin BCM gateway cable (standard OBD). If tool still requests PIN, use APB131 adapter or OBDSTAR G3 + RH850 to read 28-digit PIN from HFM EEPROM. New FCC KR5TXPZ1 hardware.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN via 40-pin BCM cable | 28-digit PIN from HFM EEPROM via APB131/RH850 (if required)",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Nissan 40-pin BCM cable | Autel IM608 + APB131 | OBDSTAR G3 + RH850",
+    "sources": [
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html",
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Maxima",
+    "yearStart": 2009,
+    "yearEnd": 2014,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Lonsdor K518 / OBDSTAR X300 DP to OBD port. Navigate: IMMO → Nissan → Maxima A35 → year → Smart key → Add key. Tool reads 20-digit NATS PIN from BCM via OBD. Have all existing keys; re-register all in one session. ID46 PCF7952A chip.",
+    "allKeysLost": "Connect Autel IM608 / Lonsdor K518 to OBD. Navigate AKL path. Tool reads 20-digit NATS PIN from BCM via OBD. Erase all key IDs, program new smart keys to start button. BCM label 5-digit hex fallback if OBD PIN read fails.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN read via OBD | BCM label 5-digit hex → decode to 4-digit PIN (fallback)",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 | Lonsdor K518 | OBDSTAR X300 DP",
+    "sources": [
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Maxima",
+    "yearStart": 2016,
+    "yearEnd": 2023,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Xhorse VVDI2 / Lonsdor K518 to OBD port. Navigate: IMMO → Nissan → Maxima A36 → year → Smart key → Add key. Tool reads 20-digit NATS PIN from BCM via OBD. Have all existing keys for re-registration. HiTag AES PCF7953M chip — requires HITAG AES-capable tool.",
+    "allKeysLost": "Connect Autel IM608 / Lonsdor K518 to OBD. Navigate AKL path. Tool reads 20-digit NATS PIN from BCM via OBD. Erase all key IDs, program new smart keys. HiTag AES chip requires tool with ID4A/AES capability.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN read via OBD (auto-read by tool)",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 (HITAG AES update) | Xhorse VVDI2 | Lonsdor K518",
+    "sources": [
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Murano",
+    "yearStart": 2009,
+    "yearEnd": 2014,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Lonsdor K518 to OBD port. Navigate: IMMO → Nissan → Murano Z51 → year → Smart key → Add key. Tool reads 20-digit NATS PIN from BCM via OBD. Have all existing keys for re-registration. ID46 PCF7952 chip.",
+    "allKeysLost": "Connect Autel IM608 / Lonsdor K518 to OBD. Navigate AKL path. Tool reads 20-digit NATS PIN. Erase all key IDs, program new smart keys. BCM label fallback if needed.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN read via OBD | BCM label 5-digit hex → decode to 4-digit PIN (fallback)",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 | Lonsdor K518",
+    "sources": [
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Murano",
+    "yearStart": 2015,
+    "yearEnd": 2020,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Xhorse VVDI2 / Lonsdor K518 to OBD port. Navigate: IMMO → Nissan → Murano Z52 → year → Smart key → Add key. Tool reads 20-digit NATS PIN from BCM via OBD. Have all existing keys. HiTag AES PCF7953M — HITAG AES tool required.",
+    "allKeysLost": "Connect Autel IM608 / Lonsdor K518 to OBD. Navigate AKL path. Reads 20-digit NATS PIN from BCM. Erase all IDs, program new smart keys. HITAG AES chip requires compatible tool update.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN read via OBD (auto-read by tool)",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 (HITAG AES) | Xhorse VVDI2 | Lonsdor K518",
+    "sources": [
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Murano",
+    "yearStart": 2019,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Lonsdor K518 to OBD port. Navigate: IMMO → Nissan → Murano → year → Smart key → Add key. Tool reads 20-digit NATS PIN from BCM via OBD (2019–2020). For 2021+ may need 40-pin BCM cable. Have all existing keys for re-registration. HiTag AES NCF29A1M chip.",
+    "allKeysLost": "Connect Autel IM608 / Lonsdor K518 to OBD. Navigate AKL. Tool reads 20-digit PIN via OBD or 40-pin BCM cable. For 2022+ units that ask for PIN, use programmer-guided NATS procedure — confirm PIN read method with tool manufacturer update notes.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN via OBD | 40-pin BCM cable (2021+ if OBD-only blocked)",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 | Lonsdor K518 | Nissan 40-pin BCM cable (2021+)",
+    "sources": [
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Pathfinder",
+    "yearStart": 2005,
+    "yearEnd": 2012,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Lonsdor K518 / OBDSTAR X300 DP to OBD port. Navigate: IMMO → Nissan → Pathfinder R51 → year → Transponder key → Add key. Tool reads 20-digit NATS PIN from BCM via OBD. Have all existing keys; re-register all in one session. ID46 PCF7936 chip.",
+    "allKeysLost": "Connect Autel IM608 / Lonsdor K518 to OBD. Navigate AKL path. Tool reads 20-digit NATS PIN from BCM via OBD (or BCM label fallback). Erase all key IDs, program new transponder key(s). Professional NATS PIN read tool required.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN read via OBD | BCM label 5-digit hex → decode to 4-digit PIN (NATS5 generation)",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 | Lonsdor K518 | OBDSTAR X300 DP",
+    "sources": [
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html",
+      "https://obd2technology.com/product/nissan-nats-pin-code-calculator-instant-digital-download-for-key-programming/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Pathfinder",
+    "yearStart": 2013,
+    "yearEnd": 2020,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Xhorse VVDI2 / Lonsdor K518 to OBD port. Navigate: IMMO → Nissan → Pathfinder R52 → year → Smart key → Add key. Tool reads 20-digit NATS PIN from BCM via OBD. Have all existing keys for re-registration. HiTag AES PCF7953M chip — HITAG AES tool required for 2016–2020.",
+    "allKeysLost": "Connect Autel IM608 / Lonsdor K518 to OBD. Navigate AKL path. Tool reads 20-digit NATS PIN from BCM via OBD. Erase all key IDs, program new smart keys. Confirm tool supports HiTag AES (ID4A) for 2016–2020 units.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN read via OBD (auto-read by tool)",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 (HITAG AES update for 2016–2020) | Xhorse VVDI2 | Lonsdor K518",
+    "sources": [
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Pathfinder",
+    "yearStart": 2022,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Lonsdor K518 to OBD port + Nissan 40-pin BCM cable (may be required for R53 CMF platform). Navigate: IMMO → Nissan → Pathfinder R53 → Smart key → Add key. Tool reads 20-digit PIN via 40-pin cable or OBD. Have all existing keys for re-registration.",
+    "allKeysLost": "Connect Autel IM608 to OBD + Nissan 40-pin BCM gateway cable. Navigate AKL. If PIN not readable via cable, use programmer-guided NATS procedure or APB131 for HFM EEPROM read. New CMF platform shared with Rogue 2022+/Kicks 2022+.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN via Nissan 40-pin BCM cable | HFM EEPROM read (APB131) if cable PIN read blocked",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Nissan 40-pin BCM cable | Autel IM608 + APB131 (if needed) | Lonsdor K518",
+    "sources": [
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Frontier",
+    "yearStart": 2005,
+    "yearEnd": 2021,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Lonsdor K518 / OBDSTAR X300 DP to OBD port. Navigate: IMMO → Nissan → Frontier D40 → year → Transponder or Remote head key → Add key. Tool reads 20-digit NATS PIN from BCM via OBD. Have all existing keys for re-registration. ID46 PCF7936 chip.",
+    "allKeysLost": "Connect Autel IM608 / Lonsdor K518 to OBD. Navigate AKL path. Tool reads 20-digit NATS PIN from BCM via OBD. Erase all key IDs, program new transponder key. BCM label 5-digit hex fallback if OBD PIN read fails.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN read via OBD | BCM label 5-digit hex → decode to 4-digit PIN (fallback)",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 | Lonsdor K518 | OBDSTAR X300 DP",
+    "sources": [
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Frontier",
+    "yearStart": 2022,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Lonsdor K518 to OBD port. Navigate: IMMO → Nissan → Frontier D41 → year → Smart key → Add key. Tool reads 20-digit NATS PIN from BCM via OBD. Have all existing keys for re-registration. HiTag AES chip. May require 40-pin BCM cable.",
+    "allKeysLost": "Connect Autel IM608 / Lonsdor K518 to OBD + Nissan 40-pin BCM cable (recommended for D41). Navigate AKL. Tool reads 20-digit PIN via cable or OBD. Erase all key IDs, program new smart keys. Same FCC KR5TXN7 platform as Murano 2019+/Titan 2021+.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN via OBD or Nissan 40-pin BCM cable",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 | Lonsdor K518 | Nissan 40-pin BCM cable",
+    "sources": [
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Titan",
+    "yearStart": 2004,
+    "yearEnd": 2015,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Lonsdor K518 to OBD port. Navigate: IMMO → Nissan → Titan A60 → year → Transponder or Remote head key → Add key. Tool reads 20-digit NATS PIN from BCM via OBD. Have all existing keys for re-registration. ID46 PCF7936 chip.",
+    "allKeysLost": "Connect Autel IM608 / Lonsdor K518 to OBD. Navigate AKL path. Tool reads 20-digit NATS PIN from BCM via OBD. Erase all key IDs, program new transponder key. BCM label fallback if OBD PIN read fails.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN read via OBD | BCM label 5-digit hex → decode to 4-digit PIN (fallback)",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 | Lonsdor K518",
+    "sources": [
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Titan",
+    "yearStart": 2016,
+    "yearEnd": 2020,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Xhorse VVDI2 / Lonsdor K518 to OBD port. Navigate: IMMO → Nissan → Titan A61 → year → Smart key → Add key. Tool reads 20-digit NATS PIN from BCM via OBD. Have all existing keys. HiTag AES PCF7953M — HITAG AES tool required.",
+    "allKeysLost": "Connect Autel IM608 / Lonsdor K518 to OBD. Navigate AKL path. Tool reads 20-digit NATS PIN from BCM via OBD. Erase all key IDs, program new smart keys. Confirm HITAG AES (ID4A) support in tool before proceeding.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN read via OBD (auto-read by tool)",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 (HITAG AES update) | Xhorse VVDI2 | Lonsdor K518",
+    "sources": [
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Titan",
+    "yearStart": 2021,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Lonsdor K518 to OBD port + Nissan 40-pin BCM cable (recommended for 2021+ A61 refresh). Navigate: IMMO → Nissan → Titan → year → Smart key → Add key. Reads 20-digit PIN via cable or OBD. Have all existing keys for re-registration. FCC KR5TXN7.",
+    "allKeysLost": "Connect Autel IM608 + Nissan 40-pin BCM cable. Navigate AKL. Tool reads PIN via cable. Erase all IDs, program new smart keys. If PIN blocked after dealer update, use programmer-guided NATS procedure with APB131 for HFM read.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN via Nissan 40-pin BCM cable | HFM EEPROM read (APB131) if blocked",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Nissan 40-pin BCM cable | Autel IM608 | Lonsdor K518",
+    "sources": [
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Kicks",
+    "yearStart": 2018,
+    "yearEnd": 2022,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Xhorse VVDI2 / Lonsdor K518 to OBD port. Navigate: IMMO → Nissan → Kicks P15 → year → Smart key → Add key. Tool reads 20-digit NATS PIN from BCM via OBD. Have all existing keys for re-registration. HiTag AES NCF29A1M chip.",
+    "allKeysLost": "Connect Autel IM608 / Lonsdor K518 to OBD. Navigate AKL path. Tool reads 20-digit NATS PIN from BCM via OBD. For 2021+ units, may need 40-pin BCM cable. Erase all key IDs, program new smart keys sequentially.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN read via OBD | 40-pin BCM cable (2021+ if OBD-only fails)",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 | Xhorse VVDI2 | Lonsdor K518 | Nissan 40-pin BCM cable (2021+)",
+    "sources": [
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Kicks",
+    "yearStart": 2022,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 to OBD + Nissan 40-pin BCM cable (recommended). Navigate: IMMO → Nissan → Kicks → year → Smart key → Add key. 40-pin cable reads 20-digit PIN from BCM. Have all existing keys. FCC KR5TXPZ3 or KR5TXPZ1 depending on trim.",
+    "allKeysLost": "Connect Autel IM608 + 40-pin BCM cable. Navigate AKL. Tool reads PIN via cable. If still PIN-locked (dealer update), use APB131 or OBDSTAR G3 + RH850 to read 28-digit PIN from HFM EEPROM. Shared platform with Rogue 2022+/Pathfinder 2022+.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN via Nissan 40-pin BCM cable | 28-digit HFM EEPROM via APB131/RH850 (if required)",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Nissan 40-pin BCM cable | Autel IM608 + APB131 | OBDSTAR G3 + RH850",
+    "sources": [
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Armada",
+    "yearStart": 2008,
+    "yearEnd": 2016,
+    "onboard": "Smart key (CWTWBU624): No DIY procedure available — requires diagnostic equipment. Remote head key (if applicable): Insert and remove key from ignition 6 times within 10 seconds until hazard lights flash; turn to ACC, press LOCK button within 5 seconds per remote; all remotes must be present — any omitted become inactive. NOTE: this programs RKE only; NATS transponder chip still requires professional tool.",
+    "addKey": "Connect Autel IM608 / Lonsdor K518 to OBD port. Navigate: IMMO → Nissan → Armada TA60 → year → Smart key → Add key. Tool reads 20-digit NATS PIN from BCM via OBD. Have all existing keys for re-registration. ID46 PCF7952 chip.",
+    "allKeysLost": "Connect Autel IM608 / Lonsdor K518 to OBD. Navigate AKL path. Tool reads 20-digit NATS PIN from BCM via OBD. Erase all key IDs, program new smart keys. BCM label fallback if OBD PIN read fails.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN read via OBD | BCM label 5-digit hex → decode to 4-digit PIN (fallback)",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 | Lonsdor K518",
+    "sources": [
+      "https://www.carandtruckremotes.com/blogs/program-instructions/2011-nissan-armada-keyless-entry-remote-fob-smart-key-programming-instructions",
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Armada",
+    "yearStart": 2017,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Lonsdor K518 to OBD port. Navigate: IMMO → Nissan → Armada Y62 → year → Smart key → Add key. Tool reads 20-digit NATS PIN from BCM via OBD. Have all existing keys for re-registration. ID46 PCF7952 chip (unusual — 433 MHz but NOT HiTag AES on this platform).",
+    "allKeysLost": "Connect Autel IM608 / Lonsdor K518 to OBD. Navigate AKL path. Tool reads 20-digit NATS PIN from BCM via OBD. Erase all key IDs, program new smart keys. Chip is ID46 (not AES) — confirm tool selection. Shared platform with Infiniti QX80 2013–2024.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN read via OBD (auto-read by tool)",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 | Lonsdor K518",
+    "sources": [
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Leaf",
+    "yearStart": 2011,
+    "yearEnd": 2012,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Lonsdor K518 to OBD port. Navigate: IMMO → Nissan → Leaf ZE0 → year → Smart key → Add key. Tool reads 20-digit NATS PIN from BCM via OBD. Have all existing keys for re-registration. ID46 PCF7952 chip.",
+    "allKeysLost": "Connect Autel IM608 / Lonsdor K518 to OBD. Navigate AKL path. Tool reads 20-digit NATS PIN from BCM via OBD. Erase all key IDs, program new smart keys. BCM label fallback if OBD PIN read fails.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN read via OBD | BCM label 5-digit hex → decode to 4-digit PIN (fallback)",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 | Lonsdor K518",
+    "sources": [
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming",
+      "https://mynissanleaf.com/threads/actual-programming-procedure-for-key-fob.21589/",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Leaf",
+    "yearStart": 2013,
+    "yearEnd": 2017,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Lonsdor K518 to OBD port. Navigate: IMMO → Nissan → Leaf AZE0 → year → Smart key → Add key. Tool reads 20-digit NATS PIN from BCM via OBD. Have all existing keys for re-registration. ID46 PCF7952A chip.",
+    "allKeysLost": "Connect Autel IM608 / Lonsdor K518 to OBD. Navigate AKL path. Tool reads 20-digit NATS PIN from BCM via OBD. Erase all key IDs, program new smart keys. Multiple users confirmed successful locksmith OBD2 programming on 2013–2017 Leaf.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN read via OBD (auto-read by tool)",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 | Lonsdor K518",
+    "sources": [
+      "https://mynissanleaf.com/threads/actual-programming-procedure-for-key-fob.21589/",
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Leaf",
+    "yearStart": 2018,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Xhorse VVDI2 / Lonsdor K518 to OBD port. Navigate: IMMO → Nissan → Leaf ZE1 → year → Smart key → Add key. Tool reads 20-digit NATS PIN from BCM via OBD. Have all existing keys. HiTag AES PCF7953M — HITAG AES tool required. FCC CWTWB1G0168.",
+    "allKeysLost": "Connect Autel IM608 / Lonsdor K518 to OBD. Navigate AKL path. Tool reads 20-digit NATS PIN from BCM via OBD. Erase all key IDs, program new smart keys. Confirm tool supports ID4A/HiTag AES chip for ZE1 generation.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN read via OBD (auto-read by tool)",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 (HITAG AES update) | Xhorse VVDI2 | Lonsdor K518",
+    "sources": [
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "370Z",
+    "yearStart": 2009,
+    "yearEnd": 2020,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Lonsdor K518 / Consult III+ to OBD port. Navigate: IMMO → Nissan → 370Z Z34 → year → Smart key → Add key. Tool reads 20-digit NATS PIN from BCM via OBD. Have all existing keys for re-registration. ID46 PCF7952A chip (US model 315 MHz).",
+    "allKeysLost": "Connect Autel IM608 / Lonsdor K518 to OBD. Navigate AKL path. Tool reads 20-digit NATS PIN from BCM via OBD. Erase all key IDs, program new smart keys to start button. 370Z is push-start-only; no mechanical transponder key.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN read via OBD (auto-read by tool) | BCM label fallback",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 | Lonsdor K518 | Consult III+",
+    "sources": [
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Infiniti",
+    "model": "Q50",
+    "yearStart": 2014,
+    "yearEnd": 2015,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Xhorse VVDI2 / Lonsdor K518 to OBD port. Navigate: IMMO → Infiniti → Q50 V37 → year → Smart key → Add key. Tool reads 20-digit NATS PIN from BCM via OBD. Have all existing keys for re-registration. HiTag AES ID4A chip at 315 MHz (Infiniti-specific). HITAG AES tool required.",
+    "allKeysLost": "Connect Autel IM608 / Lonsdor K518 to OBD. Navigate AKL path. Tool reads 20-digit NATS PIN from BCM via OBD. Erase all key IDs, program new smart keys. Chip is HiTag AES despite 315 MHz — confirm tool AES support.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN read via OBD (auto-read by tool)",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 (HITAG AES) | Xhorse VVDI2 | Lonsdor K518",
+    "sources": [
+      "https://bbs.autel.com/autelsupport/Diagnostics/31148.jhtml",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html",
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Infiniti",
+    "model": "Q50",
+    "yearStart": 2016,
+    "yearEnd": 2019,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Xhorse VVDI2 / Lonsdor K518 to OBD port. Navigate: IMMO → Infiniti → Q50 V37 → year → Smart key → Add key. Tool reads 20-digit NATS PIN from BCM via OBD. Have all existing keys for re-registration. HiTag AES PCF7953M 433 MHz chip.",
+    "allKeysLost": "Connect Autel IM608 / Lonsdor K518 to OBD. Navigate AKL path. Tool reads 20-digit NATS PIN from BCM via OBD. Erase all key IDs, program new smart keys. Shared FCC KR5S180144204 with Q60 2017–2019.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN read via OBD (auto-read by tool)",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 (HITAG AES) | Xhorse VVDI2 | Lonsdor K518",
+    "sources": [
+      "https://bbs.autel.com/autelsupport/Diagnostics/31148.jhtml",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Infiniti",
+    "model": "Q50",
+    "yearStart": 2020,
+    "yearEnd": 2023,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Xhorse VVDI2 / Lonsdor K518 to OBD port. Navigate: IMMO → Infiniti → Q50 → year → Smart key → Add key. Tool reads 20-digit NATS PIN from BCM via OBD. Have all existing keys. HiTag AES PCF7921M, FCC KR5TXN7. May need 40-pin BCM cable for 2021+.",
+    "allKeysLost": "Connect Autel IM608 / Lonsdor K518 to OBD + 40-pin BCM cable if OBD PIN read blocked. Navigate AKL. Tool reads 20-digit PIN. Erase all key IDs, program new smart keys. Shared FCC/platform with Q60 2020+ and QX60 2019–2021.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN via OBD | 40-pin BCM cable (2021+ if OBD-only fails)",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 (HITAG AES) | Xhorse VVDI2 | Lonsdor K518 | Nissan 40-pin BCM cable (2021+)",
+    "sources": [
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html",
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Infiniti",
+    "model": "Q60",
+    "yearStart": 2014,
+    "yearEnd": 2016,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Lonsdor K518 to OBD port. Navigate: IMMO → Infiniti → Q60 V36 → year → Smart key → Add key. Tool reads 20-digit NATS PIN from BCM via OBD. Have all existing keys for re-registration. ID46 PCF7952A chip. Shared key with G37/Q40.",
+    "allKeysLost": "Connect Autel IM608 / Lonsdor K518 to OBD. Navigate AKL path. Tool reads 20-digit NATS PIN from BCM via OBD. Erase all key IDs, program new smart keys. BCM label fallback if OBD PIN read fails.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN read via OBD | BCM label 5-digit hex → decode to 4-digit PIN (fallback)",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 | Lonsdor K518",
+    "sources": [
+      "https://bbs.autel.com/autelsupport/Diagnostics/31148.jhtml",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Infiniti",
+    "model": "Q60",
+    "yearStart": 2017,
+    "yearEnd": 2022,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Xhorse VVDI2 / Lonsdor K518 to OBD port. Navigate: IMMO → Infiniti → Q60 V37 → year → Smart key → Add key. Tool reads 20-digit NATS PIN from BCM via OBD. Have all existing keys. HiTag AES PCF7953M 433 MHz. Shared FCC KR5S180144204 with Q50 2016–2019.",
+    "allKeysLost": "Connect Autel IM608 / Lonsdor K518 to OBD. Navigate AKL path. Tool reads 20-digit NATS PIN from BCM via OBD. Erase all key IDs, program new smart keys. 2020+ Q60 transitioned to FCC KR5TXN7 — confirm model year before ordering key.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN read via OBD (auto-read by tool)",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 (HITAG AES) | Xhorse VVDI2 | Lonsdor K518",
+    "sources": [
+      "https://bbs.autel.com/autelsupport/Diagnostics/31148.jhtml",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Infiniti",
+    "model": "QX60",
+    "yearStart": 2013,
+    "yearEnd": 2018,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Xhorse VVDI2 / Lonsdor K518 to OBD port. Navigate: IMMO → Infiniti → QX60 L50 → year → Smart key → Add key. Tool reads 20-digit NATS PIN from BCM via OBD. Have all existing keys. 2013–2015: HiTag3 PCF7952XTT; 2016–2018: HiTag AES PCF7953M — confirm chip generation for correct tool mode.",
+    "allKeysLost": "Connect Autel IM608 / Lonsdor K518 to OBD. Navigate AKL path. Tool reads 20-digit NATS PIN from BCM via OBD. Erase all key IDs, program new smart keys. Use programmer-guided NATS procedure and verify chip generation (HiTag3 vs HiTag AES).",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN read via OBD (auto-read by tool)",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 (HITAG AES update for 2016+) | Xhorse VVDI2 | Lonsdor K518",
+    "sources": [
+      "https://bbs.autel.com/autelsupport/Diagnostics/31148.jhtml",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html",
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Infiniti",
+    "model": "QX60",
+    "yearStart": 2019,
+    "yearEnd": 2021,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Xhorse VVDI2 / Lonsdor K518 to OBD port. Navigate: IMMO → Infiniti → QX60 L50 refresh → year → Smart key → Add key. Tool reads 20-digit NATS PIN from BCM via OBD. Have all existing keys. HiTag AES PCF7921M, FCC KR5TXN7.",
+    "allKeysLost": "Connect Autel IM608 / Lonsdor K518 to OBD. Navigate AKL path. Tool reads 20-digit NATS PIN from BCM via OBD. Erase all key IDs, program new smart keys. 2021 units may need 40-pin BCM cable if OBD PIN read is blocked by gateway.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN via OBD | 40-pin BCM cable (2021 if OBD-only blocked)",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 (HITAG AES) | Xhorse VVDI2 | Lonsdor K518 | Nissan 40-pin BCM cable (2021)",
+    "sources": [
+      "https://bbs.autel.com/autelsupport/Diagnostics/31148.jhtml",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Infiniti",
+    "model": "QX60",
+    "yearStart": 2022,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Lonsdor K518 to OBD port + Nissan 40-pin BCM cable. Navigate: IMMO → Infiniti → QX60 L52 → year → Smart key → Add key. Tool reads PIN via 40-pin cable. Have all existing keys. FCC KR5TXN4 (5-btn) or KR5TXN1 (4-btn).",
+    "allKeysLost": "Connect Autel IM608 + 40-pin BCM cable. Navigate AKL. Tool reads 20-digit PIN via cable. Erase all key IDs, program new smart keys. If PIN blocked after dealer update, use programmer-guided NATS procedure with tool manufacturer support.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN via Nissan 40-pin BCM cable",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Nissan 40-pin BCM cable | Autel IM608 | Lonsdor K518",
+    "sources": [
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Infiniti",
+    "model": "QX80",
+    "yearStart": 2013,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Lonsdor K518 / Consult III+ to OBD port. Navigate: IMMO → Infiniti → QX80 Z62 → year → Smart key → Add key. Tool reads 20-digit NATS PIN from BCM via OBD. Have all existing keys for re-registration. ID46 PCF7952 chip (NOT HiTag AES — unusual for 433 MHz platform). Shared FCC/platform with Nissan Armada 2017+.",
+    "allKeysLost": "Connect Autel IM608 / Lonsdor K518 to OBD. Navigate AKL path. Tool reads 20-digit NATS PIN from BCM via OBD. Erase all key IDs, program new smart keys. Chip is ID46 — do not select HiTag AES mode in tool.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN read via OBD (auto-read by tool)",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 | Lonsdor K518 | Consult III+",
+    "sources": [
+      "https://bbs.autel.com/autelsupport/Diagnostics/31148.jhtml",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html",
+      "https://www.locksmithkeyless.com/pages/nissan-keyless-remote-and-key-programming"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Infiniti",
+    "model": "QX50",
+    "yearStart": 2014,
+    "yearEnd": 2017,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Lonsdor K518 to OBD port. Navigate: IMMO → Infiniti → QX50/EX35 → year → Smart key → Add key. Tool reads 20-digit NATS PIN from BCM via OBD. Have all existing keys for re-registration. ID46 PCF7952A 315 MHz chip (FM platform).",
+    "allKeysLost": "Connect Autel IM608 / Lonsdor K518 to OBD. Navigate AKL path. Tool reads 20-digit NATS PIN from BCM via OBD. Erase all key IDs, program new smart keys. BCM label fallback if OBD PIN read fails.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN read via OBD | BCM label 5-digit hex → decode to 4-digit PIN (fallback)",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 | Lonsdor K518",
+    "sources": [
+      "https://bbs.autel.com/autelsupport/Diagnostics/31148.jhtml",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Infiniti",
+    "model": "QX50",
+    "yearStart": 2019,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "Connect Autel IM608 / Xhorse VVDI2 / Lonsdor K518 to OBD port. Navigate: IMMO → Infiniti → QX50 J55 → year → Smart key → Add key. Tool reads 20-digit NATS PIN from BCM via OBD. Have all existing keys. HiTag AES NCF29A1M 433 MHz (FCC KR5TXN1). HITAG AES tool required.",
+    "allKeysLost": "Connect Autel IM608 / Lonsdor K518 to OBD. Navigate AKL path. Tool reads 20-digit NATS PIN from BCM via OBD. Erase all key IDs, program new smart keys. For 2022+ units may need 40-pin BCM cable. Shared FCC with Rogue Sport 2019+ and Kicks 2018–2022.",
+    "pinRequired": true,
+    "pinSource": "20-digit BCM PIN via OBD | 40-pin BCM cable (2022+ if OBD-only fails)",
+    "obdPort": "Under dash, driver side, near steering column",
+    "securityWait": "none documented for programming",
+    "specialTool": "Autel IM608 (HITAG AES) | Xhorse VVDI2 | Lonsdor K518 | Nissan 40-pin BCM cable (2022+)",
+    "sources": [
+      "https://bbs.autel.com/autelsupport/Diagnostics/31148.jhtml",
+      "https://www.kapdiagnostics.com/nn009-nissan-pin-and-key-manager-function.html"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  }
+]

@@ -1,0 +1,1207 @@
+[
+  {
+    "make": "Toyota",
+    "model": "Camry",
+    "yearStart": 1998,
+    "yearEnd": 2002,
+    "onboard": "Insert master (black) key into ignition and remove 5 times without turning, leaving in on 5th insertion. Open and close driver door 6 times within 30 seconds total. Remove master key — security light goes solid. Insert new key (do not turn); security light flashes ~60 s then extinguishes = programmed. Remove key, reinsert master, start/stop to confirm.",
+    "addKey": "Perform on-board sequence above with one master key present. Up to 4 sub-keys can be added per session.",
+    "allKeysLost": "On-board sequence requires at least one working master key. AKL: use programmer (T-Code, Autel IM608, or OBDSTAR) via OBDII; select Toyota 4C Type 1 AKL reset. No PIN required for 4C systems.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dash, driver side, above accelerator pedal",
+    "securityWait": "~60 s during key registration (light flashes then off)",
+    "specialTool": "T-Code or Autel IM608 for AKL; none for on-board add-key",
+    "sources": [
+      "https://bitsofmymind.com/2016/02/11/how-to-program-a-new-toyota-transponder-key/",
+      "https://cartipsdaily.com/toyota-key-fob-programming",
+      "https://www.uhs-hardware.com/products/toyota-master-programming-key-lock-labs"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "Camry",
+    "yearStart": 2003,
+    "yearEnd": 2010,
+    "onboard": "Insert master (black) key into ignition and remove 5 times without turning, leaving in on 5th insertion. Open and close driver door 6 times within 30 seconds total. Remove master key — security light goes solid. Insert new key (do not turn); security light flashes ~60 s then extinguishes = programmed.",
+    "addKey": "Perform on-board sequence above with one working master key. G/H OBDII dongle also supported for add-key with 1 working key.",
+    "allKeysLost": "Standard OBDII dongle (G/H type) does NOT work AKL. AKL: use Autel IM608, T-Code, or OBDSTAR; select Toyota 4D67 Type 3 AKL reset via OBDII. No PIN required.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dash, driver side, above accelerator pedal",
+    "securityWait": "~60 s during key registration",
+    "specialTool": "Autel IM608 / T-Code / OBDSTAR for AKL; Toyota G/H OBDII dongle or none for add-key",
+    "sources": [
+      "https://bitsofmymind.com/2016/02/11/how-to-program-a-new-toyota-transponder-key/",
+      "https://cartipsdaily.com/toyota-key-fob-programming",
+      "https://www.uhs-hardware.com/products/toyota-g-h-chip-obdii-programming-dongle-remote-transponder-programming"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "Camry",
+    "yearStart": 2011,
+    "yearEnd": 2014,
+    "onboard": "Insert master (black) key into ignition and remove 5 times without turning, leaving in on 5th insertion. Open and close driver door 6 times within 30 seconds total. Remove master key — security light goes solid. Insert new key (do not turn); security light flashes ~60 s then extinguishes = programmed.",
+    "addKey": "On-board sequence with one working master key, or Toyota G/H OBDII dongle (add-key only, not AKL).",
+    "allKeysLost": "G/H OBDII dongle does NOT work AKL. AKL: Autel IM608, Lonsdor K518, or AutoProPad via OBDII — select Toyota G-chip Type 3 AKL. No PIN required.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dash, driver side",
+    "securityWait": "~60 s during key registration",
+    "specialTool": "Autel IM608 / Lonsdor K518 for AKL; Toyota G/H OBDII dongle for add-key",
+    "sources": [
+      "https://cartipsdaily.com/toyota-key-fob-programming",
+      "https://www.uhs-hardware.com/products/toyota-g-h-chip-obdii-programming-dongle-remote-transponder-programming",
+      "https://blog.uobdii.com/toyota-h-chip-all-key-lost-programming-via-obdii-obdstar/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "Camry",
+    "yearStart": 2015,
+    "yearEnd": 2017,
+    "onboard": null,
+    "addKey": "H chip (4D74) requires OBDII programmer — no on-board sequence supported. Use Toyota G/H OBDII dongle or Autel IM608: connect to OBDII port, select Toyota H-chip add key, insert original key to ON, follow prompts to register new key.",
+    "allKeysLost": "H chip AKL: OBDSTAR X300 or Autel IM608 via OBDII. Navigate to Toyota > Type 3 (With H/8A/8E) > USA > Reset Immobilizer (All Keys Lost). Follow software prompts; toggle ignition on/off as directed. No PIN required.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dash, driver side",
+    "securityWait": "none",
+    "specialTool": "Toyota G/H OBDII dongle or Autel IM608 / OBDSTAR X300",
+    "sources": [
+      "https://www.uhs-hardware.com/products/toyota-g-h-chip-obdii-programming-dongle-remote-transponder-programming",
+      "https://blog.uobdii.com/toyota-h-chip-all-key-lost-programming-via-obdii-obdstar/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "Camry",
+    "yearStart": 2018,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "No on-board programming. Professional OBDII programmer required. With one working smart key: connect Autel IM608 Pro or Lonsdor K518 to OBDII, navigate to Toyota Smart Key > Add Key, present new key to start button area when prompted.",
+    "allKeysLost": "8A DST-AES AKL: Lonsdor K518 + ADP adapter connects to PEPS smart box, backs up DFlash EEPROM data, generates emulator (LKE card), acquires 12-digit PIN from EEPROM data, then programs new smart keys. Autel IM608 Pro with APB112 emulator also supported. 12-digit code source: PEPS EEPROM (not OBD read direct, not VIN-based).",
+    "pinRequired": true,
+    "pinSource": "EEPROM read via ADP adapter (PEPS smart box) or Autel APB112 emulator",
+    "obdPort": "Under dash, driver side",
+    "securityWait": "none",
+    "specialTool": "Autel IM608 Pro + APB112 emulator, or Lonsdor K518 + ADP adapter",
+    "sources": [
+      "https://www.obdii365.com/service/program-toyota-all-keys-lost-with-lonsdor-adp-adapter.html",
+      "http://blog.obdii365.com/2021/04/26/program-toyota-2020-2021-all-smarts-keys-lost-by-autel-im608/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "Corolla",
+    "yearStart": 2003,
+    "yearEnd": 2010,
+    "onboard": "Insert master (black) key into ignition and remove 5 times without turning, leaving in on 5th insertion. Open and close driver door 6 times within 30 seconds total. Remove master key — security light goes solid. Insert new key (do not turn); security light flashes ~60 s then extinguishes = programmed.",
+    "addKey": "On-board sequence with one working master key, or Toyota G/H OBDII dongle (add-key only).",
+    "allKeysLost": "G/H OBDII dongle does NOT work AKL. AKL: Autel IM608 or T-Code via OBDII — select Toyota 4D67 Type 3 AKL. No PIN required.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dash, driver side",
+    "securityWait": "~60 s during key registration",
+    "specialTool": "Autel IM608 / T-Code for AKL; Toyota G/H OBDII dongle for add-key",
+    "sources": [
+      "https://bitsofmymind.com/2016/02/11/how-to-program-a-new-toyota-transponder-key/",
+      "https://cartipsdaily.com/toyota-key-fob-programming",
+      "https://www.uhs-hardware.com/products/toyota-g-h-chip-obdii-programming-dongle-remote-transponder-programming"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "Corolla",
+    "yearStart": 2010,
+    "yearEnd": 2013,
+    "onboard": "Insert master (black) key into ignition and remove 5 times without turning, leaving in on 5th insertion. Open and close driver door 6 times within 30 seconds total. Remove master key — security light goes solid. Insert new key (do not turn); security light flashes ~60 s then extinguishes = programmed.",
+    "addKey": "On-board sequence with one working master key, or Toyota G/H OBDII dongle (add-key only).",
+    "allKeysLost": "G/H OBDII dongle does NOT work AKL. AKL: Autel IM608 or Lonsdor K518 via OBDII — select Toyota G-chip AKL. No PIN required.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dash, driver side",
+    "securityWait": "~60 s during key registration",
+    "specialTool": "Autel IM608 / Lonsdor K518 for AKL; Toyota G/H OBDII dongle for add-key",
+    "sources": [
+      "https://cartipsdaily.com/toyota-key-fob-programming",
+      "https://www.uhs-hardware.com/products/toyota-g-h-chip-obdii-programming-dongle-remote-transponder-programming"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "Corolla",
+    "yearStart": 2014,
+    "yearEnd": 2019,
+    "onboard": null,
+    "addKey": "H chip (4D74) — no on-board sequence. Use Toyota G/H OBDII dongle or Autel IM608: connect to OBDII, select H-chip add-key, turn original key to ON, follow prompts.",
+    "allKeysLost": "H chip AKL: OBDSTAR X300 or Autel IM608 via OBDII. Navigate Toyota > Type 3 (H/8A/8E) > USA > Reset Immobilizer AKL. Toggle ignition per prompts. No PIN required.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dash, driver side",
+    "securityWait": "none",
+    "specialTool": "Toyota G/H OBDII dongle or Autel IM608 / OBDSTAR X300",
+    "sources": [
+      "https://blog.uobdii.com/toyota-h-chip-all-key-lost-programming-via-obdii-obdstar/",
+      "https://www.uhs-hardware.com/products/toyota-g-h-chip-obdii-programming-dongle-remote-transponder-programming"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "Corolla",
+    "yearStart": 2020,
+    "yearEnd": null,
+    "onboard": null,
+    "addKey": "8A DST-AES smart key — no on-board programming. Connect Autel IM608 Pro or Lonsdor K518 to OBDII, navigate to Toyota Smart Key > Add Key, present new key to start button when prompted.",
+    "allKeysLost": "8A AKL: Lonsdor K518 + ADP adapter or Autel IM608 Pro + APB112 emulator. Backs up PEPS EEPROM, generates emulator, acquires 12-digit PIN from EEPROM, programs new keys.",
+    "pinRequired": true,
+    "pinSource": "EEPROM read via ADP adapter (PEPS smart box) or Autel APB112 emulator",
+    "obdPort": "Under dash, driver side",
+    "securityWait": "none",
+    "specialTool": "Autel IM608 Pro + APB112, or Lonsdor K518 + ADP adapter",
+    "sources": [
+      "https://www.obdii365.com/service/program-toyota-all-keys-lost-with-lonsdor-adp-adapter.html",
+      "http://blog.obdii365.com/2021/04/26/program-toyota-2020-2021-all-smarts-keys-lost-by-autel-im608/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "RAV4",
+    "yearStart": 2003,
+    "yearEnd": 2012,
+    "onboard": "Insert master (black) key into ignition and remove 5 times without turning, leaving in on 5th insertion. Open and close driver door 6 times within 30 seconds total. Remove master key — security light goes solid. Insert new key (do not turn); security light flashes ~60 s then extinguishes = programmed.",
+    "addKey": "On-board sequence with one working master key, or Toyota G/H OBDII dongle (add-key only).",
+    "allKeysLost": "G/H OBDII dongle does NOT work AKL. AKL: Autel IM608 or T-Code via OBDII — select Toyota 4D67 AKL. No PIN required.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dash, driver side",
+    "securityWait": "~60 s during key registration",
+    "specialTool": "Autel IM608 / T-Code for AKL; Toyota G/H OBDII dongle for add-key",
+    "sources": [
+      "https://bitsofmymind.com/2016/02/11/how-to-program-a-new-toyota-transponder-key/",
+      "https://cartipsdaily.com/toyota-key-fob-programming"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "RAV4",
+    "yearStart": 2013,
+    "yearEnd": 2018,
+    "onboard": null,
+    "addKey": "8A smart key (HYQ14FBA) — no on-board programming. Connect Autel IM608 / Lonsdor K518 to OBDII, navigate to Toyota Smart Key > Add Key, place new key near start button, follow prompts.",
+    "allKeysLost": "8A AKL (HYQ14FBA G-board): Lonsdor K518 + ADP adapter or Autel IM608 Pro + APB112 emulator. ADP adapter reads PEPS EEPROM to extract 12-digit PIN, generates LKE emulator key, then programs new smart keys by proximity. Alternatively Autel KM100 supports via OBD for some board variants.",
+    "pinRequired": true,
+    "pinSource": "EEPROM read via ADP adapter (PEPS smart box) or Autel APB112 emulator",
+    "obdPort": "Under dash, driver side",
+    "securityWait": "none",
+    "specialTool": "Lonsdor K518 + ADP adapter, or Autel IM608 Pro + APB112 emulator",
+    "sources": [
+      "https://www.obdii365.com/service/program-toyota-all-keys-lost-with-lonsdor-adp-adapter.html",
+      "https://abkeys.com/products/autel-toyota-8a-cable-for-toyota-all-keys-lost-akl-kit-1388",
+      "https://www.xtoolglobal.com/blogs/news/programming-an-aftermarket-smart-key-for-your-toyota-rav4-with-xtool-d7"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "RAV4",
+    "yearStart": 2019,
+    "yearEnd": null,
+    "onboard": null,
+    "addKey": "8A DST-AES smart key — no on-board programming. Connect Autel IM608 Pro or Lonsdor K518 to OBDII, navigate Smart Key > Add Key, present new key to start button when prompted.",
+    "allKeysLost": "8A AKL: Lonsdor K518 + ADP adapter or Autel IM608 Pro + APB112 emulator. Backs up PEPS EEPROM DFlash, generates emulator, extracts 12-digit PIN from EEPROM, programs new keys. Autel KM100 also capable for 2019-2022 RAV4 AKL via OBD (PIN-free for select variants).",
+    "pinRequired": true,
+    "pinSource": "EEPROM read via ADP adapter (PEPS smart box) or Autel APB112 emulator; some 2019-2022 variants PIN-free via Autel KM100 OBD method",
+    "obdPort": "Under dash, driver side",
+    "securityWait": "none",
+    "specialTool": "Lonsdor K518 + ADP adapter, or Autel IM608 Pro + APB112 emulator, or Autel KM100",
+    "sources": [
+      "https://www.obdii365.com/service/program-toyota-all-keys-lost-with-lonsdor-adp-adapter.html",
+      "http://blog.obdii365.com/2023/08/30/autel-km100-program-toyota-rav4-2019-2022-all-keys-lost/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "Tacoma",
+    "yearStart": 2005,
+    "yearEnd": 2010,
+    "onboard": "Insert master (black) key into ignition and remove 5 times without turning, leaving in on 5th insertion. Open and close driver door 6 times within 30 seconds total. Remove master key — security light goes solid. Insert new key (do not turn); security light flashes ~60 s then extinguishes = programmed.",
+    "addKey": "On-board sequence with one working master key, or Toyota G/H OBDII dongle (add-key only).",
+    "allKeysLost": "G/H OBDII dongle does NOT work AKL. AKL: Autel IM608 or T-Code via OBDII — Toyota 4D67 AKL reset. No PIN required.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dash, driver side",
+    "securityWait": "~60 s during key registration",
+    "specialTool": "Autel IM608 / T-Code for AKL; Toyota G/H OBDII dongle for add-key",
+    "sources": [
+      "https://bitsofmymind.com/2016/02/11/how-to-program-a-new-toyota-transponder-key/",
+      "https://cartipsdaily.com/toyota-key-fob-programming"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "Tacoma",
+    "yearStart": 2011,
+    "yearEnd": 2015,
+    "onboard": "Insert master (black) key into ignition and remove 5 times without turning, leaving in on 5th insertion. Open and close driver door 6 times within 30 seconds total. Remove master key — security light goes solid. Insert new key (do not turn); security light flashes ~60 s then extinguishes = programmed.",
+    "addKey": "On-board sequence with one working master key, or Toyota G/H OBDII dongle (add-key only).",
+    "allKeysLost": "G/H OBDII dongle does NOT work AKL. AKL: Autel IM608 or Lonsdor K518 via OBDII — G-chip AKL reset. No PIN required.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dash, driver side",
+    "securityWait": "~60 s during key registration",
+    "specialTool": "Autel IM608 / Lonsdor K518 for AKL; Toyota G/H OBDII dongle for add-key",
+    "sources": [
+      "https://cartipsdaily.com/toyota-key-fob-programming",
+      "https://www.uhs-hardware.com/products/toyota-g-h-chip-obdii-programming-dongle-remote-transponder-programming"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "Tacoma",
+    "yearStart": 2016,
+    "yearEnd": null,
+    "onboard": null,
+    "addKey": "H chip RHK or 8A smart key — no on-board programming. OBDII programmer required. For H-chip RHK: Toyota G/H OBDII dongle or Autel IM608, add-key mode. For 8A smart key: Autel IM608 Pro or Lonsdor K518, Smart Key > Add Key.",
+    "allKeysLost": "H chip AKL: OBDSTAR X300 or Autel IM608 via OBDII, Type 3 (H/8A/8E) USA AKL reset, no PIN. 8A smart key AKL: Lonsdor K518 + ADP adapter or Autel IM608 Pro + APB112, EEPROM-derived 12-digit PIN.",
+    "pinRequired": true,
+    "pinSource": "8A AKL: EEPROM read via ADP adapter or Autel APB112; H chip AKL: no PIN required",
+    "obdPort": "Under dash, driver side",
+    "securityWait": "none",
+    "specialTool": "Autel IM608 Pro + APB112 or Lonsdor K518 + ADP adapter for 8A AKL; Toyota G/H OBDII dongle or OBDSTAR for H-chip",
+    "sources": [
+      "https://blog.uobdii.com/toyota-h-chip-all-key-lost-programming-via-obdii-obdstar/",
+      "https://www.obdii365.com/service/program-toyota-all-keys-lost-with-lonsdor-adp-adapter.html"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "Tundra",
+    "yearStart": 2007,
+    "yearEnd": 2010,
+    "onboard": null,
+    "addKey": "Flip key with 4D67 chip — transponder programming requires OBDII programmer (T-Code, Autel IM608). Remote portion: use G/H OBDII dongle add-remote mode. On-board sequence not confirmed for flip key format.",
+    "allKeysLost": "AKL: Autel IM608 or T-Code via OBDII — Toyota 4D67 AKL reset. No PIN required.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dash, driver side",
+    "securityWait": "none",
+    "specialTool": "T-Code or Autel IM608 for transponder AKL; G/H OBDII dongle for remote add",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2004-2010-toyota-4-button-flip-key-new-style-gq43vt20t-67-chip-aftermarket",
+      "https://cartipsdaily.com/toyota-key-fob-programming"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "Tundra",
+    "yearStart": 2011,
+    "yearEnd": 2017,
+    "onboard": "G chip variant (2011-2014): Insert master key 5 times, door 6 times — same sequence as other G-chip Toyotas. H chip variant (2015-2017): no on-board sequence.",
+    "addKey": "G chip: on-board sequence or Toyota G/H OBDII dongle. H chip flip key: Toyota G/H OBDII dongle or Autel IM608 required.",
+    "allKeysLost": "G chip AKL: Autel IM608 or Lonsdor K518 via OBDII, G-chip AKL reset, no PIN. H chip AKL: OBDSTAR X300 or Autel IM608, Type 3 (H/8A/8E) USA AKL reset, no PIN.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dash, driver side",
+    "securityWait": "~60 s during G-chip key registration",
+    "specialTool": "Toyota G/H OBDII dongle for add-key; Autel IM608 / OBDSTAR for AKL",
+    "sources": [
+      "https://cartipsdaily.com/toyota-key-fob-programming",
+      "https://blog.uobdii.com/toyota-h-chip-all-key-lost-programming-via-obdii-obdstar/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "Tundra",
+    "yearStart": 2019,
+    "yearEnd": 2021,
+    "onboard": null,
+    "addKey": "8A DST-AES smart key — no on-board programming. Autel IM608 Pro or Lonsdor K518 via OBDII, Smart Key > Add Key, present new key to start button.",
+    "allKeysLost": "8A AKL: Lonsdor K518 + ADP adapter or Autel IM608 Pro + APB112 emulator. PEPS EEPROM read via ADP, 12-digit PIN extracted, new keys programmed by proximity.",
+    "pinRequired": true,
+    "pinSource": "EEPROM read via ADP adapter (PEPS smart box) or Autel APB112 emulator",
+    "obdPort": "Under dash, driver side",
+    "securityWait": "none",
+    "specialTool": "Autel IM608 Pro + APB112, or Lonsdor K518 + ADP adapter",
+    "sources": [
+      "https://www.obdii365.com/service/program-toyota-all-keys-lost-with-lonsdor-adp-adapter.html",
+      "http://blog.obdii365.com/2021/04/26/program-toyota-2020-2021-all-smarts-keys-lost-by-autel-im608/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "Highlander",
+    "yearStart": 2001,
+    "yearEnd": 2007,
+    "onboard": "Insert master (black) key into ignition and remove 5 times without turning, leaving in on 5th insertion. Open and close driver door 6 times within 30 seconds total. Remove master key — security light goes solid. Insert new key (do not turn); security light flashes ~60 s then extinguishes = programmed.",
+    "addKey": "On-board sequence with one working master key.",
+    "allKeysLost": "AKL: Autel IM608 or T-Code via OBDII — Toyota 4C AKL reset. No PIN required.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dash, driver side",
+    "securityWait": "~60 s during key registration",
+    "specialTool": "T-Code or Autel IM608 for AKL; none for on-board add-key",
+    "sources": [
+      "https://bitsofmymind.com/2016/02/11/how-to-program-a-new-toyota-transponder-key/",
+      "https://cartipsdaily.com/toyota-key-fob-programming"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "Highlander",
+    "yearStart": 2008,
+    "yearEnd": 2013,
+    "onboard": "Insert master (black) key into ignition and remove 5 times without turning, leaving in on 5th insertion. Open and close driver door 6 times within 30 seconds total. Remove master key — security light goes solid. Insert new key (do not turn); security light flashes ~60 s then extinguishes = programmed.",
+    "addKey": "On-board sequence with one working master key, or Toyota G/H OBDII dongle (add-key only).",
+    "allKeysLost": "G/H OBDII dongle does NOT work AKL. AKL: Autel IM608 or Lonsdor K518 via OBDII — G-chip AKL reset. No PIN required.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dash, driver side",
+    "securityWait": "~60 s during key registration",
+    "specialTool": "Autel IM608 / Lonsdor K518 for AKL; Toyota G/H OBDII dongle for add-key",
+    "sources": [
+      "https://cartipsdaily.com/toyota-key-fob-programming",
+      "https://www.uhs-hardware.com/products/toyota-g-h-chip-obdii-programming-dongle-remote-transponder-programming"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "Highlander",
+    "yearStart": 2014,
+    "yearEnd": 2019,
+    "onboard": null,
+    "addKey": "H chip (transponder) or 8A smart key — no on-board programming. H chip: Toyota G/H OBDII dongle or Autel IM608 add-key. Smart key (HYQ14FBA): Autel IM608 Pro or Lonsdor K518 via OBDII > Smart Key > Add Key; place new key near start button.",
+    "allKeysLost": "H chip AKL: OBDSTAR X300 or Autel IM608, Type 3 (H/8A/8E) USA AKL, no PIN. 8A smart key AKL: Lonsdor K518 + ADP adapter or Autel IM608 Pro + APB112; EEPROM-derived 12-digit PIN. Techstream alternative: get 96-char seed, submit to TIS for passcode (~$30), wait 16 min.",
+    "pinRequired": true,
+    "pinSource": "8A AKL: EEPROM via ADP adapter or Autel APB112; Techstream: seed/PIN via Toyota TIS",
+    "obdPort": "Under dash, driver side",
+    "securityWait": "16 min if using Techstream TIS seed/passcode method",
+    "specialTool": "Lonsdor K518 + ADP adapter, or Autel IM608 Pro + APB112, or Toyota Techstream + Mini-VCI",
+    "sources": [
+      "https://help.autosvs.com/kb/toyota-highlander-prius-new-or-used-smart-key-programming-instruction-techstream-mini-vci/",
+      "https://www.obdii365.com/service/program-toyota-all-keys-lost-with-lonsdor-adp-adapter.html"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "Highlander",
+    "yearStart": 2020,
+    "yearEnd": null,
+    "onboard": null,
+    "addKey": "8A DST-AES smart key — no on-board programming. Autel IM608 Pro or Lonsdor K518 via OBDII, Smart Key > Add Key, present new key to start button.",
+    "allKeysLost": "8A AKL: Lonsdor K518 + ADP adapter or Autel IM608 Pro + APB112. PEPS EEPROM read via ADP, 12-digit PIN extracted, new keys programmed by proximity.",
+    "pinRequired": true,
+    "pinSource": "EEPROM read via ADP adapter (PEPS smart box) or Autel APB112 emulator",
+    "obdPort": "Under dash, driver side",
+    "securityWait": "none",
+    "specialTool": "Autel IM608 Pro + APB112, or Lonsdor K518 + ADP adapter",
+    "sources": [
+      "https://www.obdii365.com/service/program-toyota-all-keys-lost-with-lonsdor-adp-adapter.html",
+      "http://blog.obdii365.com/2021/04/26/program-toyota-2020-2021-all-smarts-keys-lost-by-autel-im608/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "4Runner",
+    "yearStart": 2003,
+    "yearEnd": 2009,
+    "onboard": "Insert master (black) key into ignition and remove 5 times without turning, leaving in on 5th insertion. Open and close driver door 6 times within 30 seconds total. Remove master key — security light goes solid. Insert new key (do not turn); security light flashes ~60 s then extinguishes = programmed.",
+    "addKey": "On-board sequence with one working master key.",
+    "allKeysLost": "AKL: Autel IM608 or T-Code via OBDII — Toyota 4D67 AKL reset. No PIN required.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dash, driver side",
+    "securityWait": "~60 s during key registration",
+    "specialTool": "Autel IM608 / T-Code for AKL; none for on-board add-key",
+    "sources": [
+      "https://thetrackahead.com/projects/4th-gen-toyota-4runner/how-to-program-a-transponder-key-4th-gen-toyota-4runner/",
+      "https://bitsofmymind.com/2016/02/11/how-to-program-a-new-toyota-transponder-key/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "4Runner",
+    "yearStart": 2010,
+    "yearEnd": 2019,
+    "onboard": "G chip (base trim): Insert master key 5 times, door 6 times — same standard sequence. Smart key (higher trim): no on-board programming.",
+    "addKey": "G chip: on-board sequence or Toyota G/H OBDII dongle. Smart key (HYQ14FBA): Autel IM608 Pro or Lonsdor K518 via OBDII, Smart Key > Add Key.",
+    "allKeysLost": "G chip AKL: Autel IM608 or Lonsdor K518 via OBDII, G-chip AKL reset, no PIN. Smart key 8A AKL: Lonsdor K518 + ADP adapter or Autel IM608 Pro + APB112, EEPROM-derived 12-digit PIN.",
+    "pinRequired": true,
+    "pinSource": "Smart key 8A AKL only: EEPROM via ADP adapter or Autel APB112; G chip: no PIN",
+    "obdPort": "Under dash, driver side",
+    "securityWait": "~60 s during G-chip registration",
+    "specialTool": "Toyota G/H OBDII dongle for G chip add; Lonsdor K518 + ADP or Autel IM608 Pro + APB112 for 8A AKL",
+    "sources": [
+      "https://cartipsdaily.com/toyota-key-fob-programming",
+      "https://www.obdii365.com/service/program-toyota-all-keys-lost-with-lonsdor-adp-adapter.html"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "4Runner",
+    "yearStart": 2020,
+    "yearEnd": null,
+    "onboard": null,
+    "addKey": "8A DST-AES smart key — no on-board programming. Autel IM608 Pro or Lonsdor K518 via OBDII, Smart Key > Add Key, present new key to start button.",
+    "allKeysLost": "8A AKL: Lonsdor K518 + ADP adapter or Autel IM608 Pro + APB112. PEPS EEPROM read, 12-digit PIN extracted, new keys programmed by proximity.",
+    "pinRequired": true,
+    "pinSource": "EEPROM read via ADP adapter (PEPS smart box) or Autel APB112 emulator",
+    "obdPort": "Under dash, driver side",
+    "securityWait": "none",
+    "specialTool": "Autel IM608 Pro + APB112, or Lonsdor K518 + ADP adapter",
+    "sources": [
+      "https://www.obdii365.com/service/program-toyota-all-keys-lost-with-lonsdor-adp-adapter.html",
+      "https://abkeys.com/products/autel-toyota-8a-cable-for-toyota-all-keys-lost-akl-kit-1388"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "Prius",
+    "yearStart": 2004,
+    "yearEnd": 2009,
+    "onboard": null,
+    "addKey": "4D69 smart key (MOZB31EG, silver logo) — NO self-programming available. Must use Toyota Techstream with Mini-VCI cable: navigate Body Electrical > Smart Key > Utility > New Remote > Key Code Registration. Car must have at least one working key and be in ACC mode.",
+    "allKeysLost": "AKL: Toyota dealer or Techstream with TIS passcode. Technician connects Techstream, requests seed code, submits VIN + seed to TIS for passcode. Only certified dealer technicians can perform immobilizer reset. Professional locksmith tools (T-Code, Autel IM608) may support via OBD for this generation — confirm tool compatibility before attempting.",
+    "pinRequired": true,
+    "pinSource": "dealer Techstream / Toyota TIS seed-PIN calculation",
+    "obdPort": "Under dash, driver side, behind small panel",
+    "securityWait": "16 min if Techstream TIS reset required",
+    "specialTool": "Toyota Techstream + Mini-VCI cable, or T-Code / Autel IM608 (confirm compatibility)",
+    "sources": [
+      "https://blog.carandtruckremotes.com/2015/11/23/free-programming-information-for-2004-2005-2006-2007-2008-and-2009-toyota-prius-smart-key-with-silver-logo-on-back-remote-fob-alarm-keyless-entry-remote-key/",
+      "https://priuschat.com/threads/how-to-program-a-new-key-fob-for-full-sks-functionality.133877/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "Prius",
+    "yearStart": 2010,
+    "yearEnd": 2015,
+    "onboard": null,
+    "addKey": "HYQ14ACX (4D67 GNE board 5290) smart key — no DIY on-board programming. OBDII programmer required. Autel IM608, Lonsdor K518, or Toyota G/H OBDII dongle can add key with one working key. Alternatively Techstream: Body Electrical > Smart Key > New Remote.",
+    "allKeysLost": "AKL: Autel IM608 Pro (with APB112 emulator for 2010-2018 Prius AKL) or Toyota Techstream TIS passcode method (seed code + 16 min wait). Standard G/H OBDII dongle does NOT support AKL.",
+    "pinRequired": true,
+    "pinSource": "OBD read via Autel APB112 emulator, or seed/PIN via Toyota TIS dealer Techstream",
+    "obdPort": "Under dash, driver side, behind small panel",
+    "securityWait": "16 min if using Techstream TIS method",
+    "specialTool": "Autel IM608 Pro + APB112 emulator, or Toyota Techstream + Mini-VCI; Toyota G/H OBDII dongle for add-key only",
+    "sources": [
+      "https://autokeymax.com/collections/on-sale/products/diy-programmer-kit-for-2010-2015-toyota-prius-smart-remote-hyq14acx-271451-5290-sku-kpro-t4rm",
+      "http://blog.obdii365.com/2021/12/21/autel-im608-toyota-prius-10-18-all-keys-lost/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "Prius",
+    "yearStart": 2016,
+    "yearEnd": 2022,
+    "onboard": null,
+    "addKey": "8A DST-AES smart key (HYQ14FBC) — no on-board programming. Autel IM608 Pro or Lonsdor K518 via OBDII, Smart Key > Add Key, present new key to start button area.",
+    "allKeysLost": "8A AKL: Lonsdor K518 + ADP adapter or Autel IM608 Pro + APB112. PEPS EEPROM read, 12-digit PIN extracted, new keys registered by proximity.",
+    "pinRequired": true,
+    "pinSource": "EEPROM read via ADP adapter (PEPS smart box) or Autel APB112 emulator",
+    "obdPort": "Under dash, driver side, behind small panel",
+    "securityWait": "none",
+    "specialTool": "Autel IM608 Pro + APB112, or Lonsdor K518 + ADP adapter",
+    "sources": [
+      "https://www.obdii365.com/service/program-toyota-all-keys-lost-with-lonsdor-adp-adapter.html",
+      "http://blog.obdii365.com/2021/04/26/program-toyota-2020-2021-all-smarts-keys-lost-by-autel-im608/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "Prius",
+    "yearStart": 2023,
+    "yearEnd": null,
+    "onboard": null,
+    "addKey": "8A DST-AES smart key (HYQ14FBX) — no on-board programming. Professional OBDII programmer required (Autel IM608 Pro, Lonsdor K518). Smart Key > Add Key, present new key to start button.",
+    "allKeysLost": "8A AKL: use programmer guided procedure with Lonsdor K518 + ADP adapter or Autel IM608 Pro + APB112. EEPROM-derived 12-digit PIN. Confirm tool firmware supports 2023+ Prius (HYQ14FBX board 3041/similar).",
+    "pinRequired": true,
+    "pinSource": "EEPROM read via ADP adapter (PEPS smart box) or Autel APB112 emulator",
+    "obdPort": "Under dash, driver side",
+    "securityWait": "none",
+    "specialTool": "Autel IM608 Pro + APB112, or Lonsdor K518 + ADP adapter",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2023-toyota-prius-smart-key-3b-fob-fcc-hyq14fbx-8990h-47120",
+      "https://abkeys.com/products/toyota-prius-2023-2024-smart-key-8990h-47120-315mhz-hyq14fbx-5523"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "Sienna",
+    "yearStart": 1998,
+    "yearEnd": 2003,
+    "onboard": "Insert master (black) key into ignition and remove 5 times without turning, leaving in on 5th insertion. Open and close driver door 6 times within 30 seconds total. Remove master key — security light goes solid. Insert new key (do not turn); security light flashes ~60 s then extinguishes = programmed.",
+    "addKey": "On-board sequence with one working master key.",
+    "allKeysLost": "AKL: Autel IM608 or T-Code via OBDII — Toyota 4C AKL reset. No PIN required.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dash, driver side",
+    "securityWait": "~60 s during key registration",
+    "specialTool": "T-Code or Autel IM608 for AKL; none for on-board add-key",
+    "sources": [
+      "https://bitsofmymind.com/2016/02/11/how-to-program-a-new-toyota-transponder-key/",
+      "https://cartipsdaily.com/toyota-key-fob-programming"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "Sienna",
+    "yearStart": 2004,
+    "yearEnd": 2010,
+    "onboard": "Insert master (black) key into ignition and remove 5 times without turning, leaving in on 5th insertion. Open and close driver door 6 times within 30 seconds total. Remove master key — security light goes solid. Insert new key (do not turn); security light flashes ~60 s then extinguishes = programmed.",
+    "addKey": "On-board sequence with one working master key, or Toyota G/H OBDII dongle (add-key only).",
+    "allKeysLost": "G/H OBDII dongle does NOT work AKL. AKL: Autel IM608 or T-Code via OBDII — Toyota 4D67 AKL reset. No PIN required.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dash, driver side",
+    "securityWait": "~60 s during key registration",
+    "specialTool": "T-Code or Autel IM608 for AKL; Toyota G/H OBDII dongle for add-key",
+    "sources": [
+      "https://bitsofmymind.com/2016/02/11/how-to-program-a-new-toyota-transponder-key/",
+      "https://cartipsdaily.com/toyota-key-fob-programming"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "Sienna",
+    "yearStart": 2011,
+    "yearEnd": 2020,
+    "onboard": "G chip (base trim): Insert master key 5 times, door 6 times — standard sequence. 2015 split year — confirm chip before attempting on-board. Smart key (higher trim): no on-board programming.",
+    "addKey": "G chip: on-board sequence or Toyota G/H OBDII dongle. Smart key (HYQ14FBA): Autel IM608 Pro or Lonsdor K518 via OBDII, Smart Key > Add Key.",
+    "allKeysLost": "G chip AKL: Autel IM608 or Lonsdor K518, G-chip AKL reset, no PIN. Smart key 8A AKL: Lonsdor K518 + ADP adapter or Autel IM608 Pro + APB112, EEPROM-derived 12-digit PIN. Techstream TIS passcode method also documented for Sienna/Highlander smart key.",
+    "pinRequired": true,
+    "pinSource": "Smart key 8A AKL: EEPROM via ADP adapter or Autel APB112; Techstream: seed/PIN via Toyota TIS; G chip: no PIN",
+    "obdPort": "Under dash, driver side",
+    "securityWait": "~60 s for G-chip; 16 min if Techstream TIS method used",
+    "specialTool": "Toyota G/H OBDII dongle for G chip add; Lonsdor K518 + ADP or Autel IM608 Pro + APB112 for 8A AKL",
+    "sources": [
+      "https://cartipsdaily.com/toyota-key-fob-programming",
+      "https://help.autosvs.com/kb/toyota-highlander-prius-new-or-used-smart-key-programming-instruction-techstream-mini-vci/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "Sienna",
+    "yearStart": 2021,
+    "yearEnd": null,
+    "onboard": null,
+    "addKey": "8A DST-AES smart key (HYQ14FBX) — no on-board programming. Autel IM608 Pro or Lonsdor K518 via OBDII, Smart Key > Add Key, present new key to start button.",
+    "allKeysLost": "8A AKL: Lonsdor K518 + ADP adapter or Autel IM608 Pro + APB112. PEPS EEPROM read, 12-digit PIN extracted, new keys programmed by proximity.",
+    "pinRequired": true,
+    "pinSource": "EEPROM read via ADP adapter (PEPS smart box) or Autel APB112 emulator",
+    "obdPort": "Under dash, driver side",
+    "securityWait": "none",
+    "specialTool": "Autel IM608 Pro + APB112, or Lonsdor K518 + ADP adapter",
+    "sources": [
+      "https://www.obdii365.com/service/program-toyota-all-keys-lost-with-lonsdor-adp-adapter.html",
+      "https://www.uhs-hardware.com/products/2021-2022-toyota-sienna-5-button-smart-key-pn-8990h-08020-hyq14fbx-3041-oem"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "Sequoia",
+    "yearStart": 2003,
+    "yearEnd": 2007,
+    "onboard": "Insert master (black) key into ignition and remove 5 times without turning, leaving in on 5th insertion. Open and close driver door 6 times within 30 seconds total. Remove master key — security light goes solid. Insert new key (do not turn); security light flashes ~60 s then extinguishes = programmed.",
+    "addKey": "On-board sequence with one working master key.",
+    "allKeysLost": "AKL: Autel IM608 or T-Code via OBDII — Toyota 4C AKL reset. No PIN required.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dash, driver side",
+    "securityWait": "~60 s during key registration",
+    "specialTool": "T-Code or Autel IM608 for AKL; none for on-board add-key",
+    "sources": [
+      "https://bitsofmymind.com/2016/02/11/how-to-program-a-new-toyota-transponder-key/",
+      "https://guide.carkeysexpress.com/hc/en-us/articles/360060284132-1998-2009-toyota-lexus-remote-programming-instructions-select-models-"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "Sequoia",
+    "yearStart": 2008,
+    "yearEnd": 2014,
+    "onboard": null,
+    "addKey": "Flip key with 4D67/4D72 chip — OBDII programmer required. Toyota G/H OBDII dongle (add-key, not AKL) or Autel IM608. Remote programming via dongle remote-add mode.",
+    "allKeysLost": "G/H OBDII dongle does NOT work AKL. AKL: Autel IM608 or T-Code via OBDII — Toyota 4D67/G-chip AKL reset. No PIN required.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dash, driver side",
+    "securityWait": "none",
+    "specialTool": "Toyota G/H OBDII dongle for add-key; Autel IM608 / T-Code for AKL",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2004-2010-toyota-4-button-flip-key-new-style-gq43vt20t-67-chip-aftermarket",
+      "https://cartipsdaily.com/toyota-key-fob-programming"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "Sequoia",
+    "yearStart": 2015,
+    "yearEnd": 2021,
+    "onboard": null,
+    "addKey": "H chip flip key or 8A smart key — no on-board programming. H chip flip: Toyota G/H OBDII dongle or Autel IM608, add-key mode. Smart key (HYQ14FBA): Autel IM608 Pro or Lonsdor K518 via OBDII, Smart Key > Add Key.",
+    "allKeysLost": "H chip AKL: OBDSTAR X300 or Autel IM608, Type 3 (H/8A/8E) USA AKL reset, no PIN. 8A smart key AKL: Lonsdor K518 + ADP adapter or Autel IM608 Pro + APB112, EEPROM-derived 12-digit PIN.",
+    "pinRequired": true,
+    "pinSource": "8A smart key AKL: EEPROM via ADP adapter or Autel APB112; H chip AKL: no PIN",
+    "obdPort": "Under dash, driver side",
+    "securityWait": "none",
+    "specialTool": "Toyota G/H OBDII dongle for H chip add; Lonsdor K518 + ADP or Autel IM608 Pro + APB112 for 8A AKL",
+    "sources": [
+      "https://blog.uobdii.com/toyota-h-chip-all-key-lost-programming-via-obdii-obdstar/",
+      "https://northcoastkeyless.com/product/toyota-sequoia-4-button-smart-key-fob-fcc-hyq14fba-p-n-89904-0e120-89904-0e121-board-281451-2110-2/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "Avalon",
+    "yearStart": 1998,
+    "yearEnd": 2004,
+    "onboard": "Insert master (black) key into ignition and remove 5 times without turning, leaving in on 5th insertion. Open and close driver door 6 times within 30 seconds total. Remove master key — security light goes solid. Insert new key (do not turn); security light flashes ~60 s then extinguishes = programmed.",
+    "addKey": "On-board sequence with one working master key.",
+    "allKeysLost": "AKL: Autel IM608 or T-Code via OBDII — Toyota 4C AKL reset. No PIN required.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dash, driver side",
+    "securityWait": "~60 s during key registration",
+    "specialTool": "T-Code or Autel IM608 for AKL; none for on-board add-key",
+    "sources": [
+      "https://bitsofmymind.com/2016/02/11/how-to-program-a-new-toyota-transponder-key/",
+      "https://cartipsdaily.com/toyota-key-fob-programming"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "Avalon",
+    "yearStart": 2005,
+    "yearEnd": 2012,
+    "onboard": "Insert master (black) key into ignition and remove 5 times without turning, leaving in on 5th insertion. Open and close driver door 6 times within 30 seconds total. Remove master key — security light goes solid. Insert new key (do not turn); security light flashes ~60 s then extinguishes = programmed.",
+    "addKey": "On-board sequence with one working master key, or Toyota G/H OBDII dongle (add-key only).",
+    "allKeysLost": "G/H OBDII dongle does NOT work AKL. AKL: Autel IM608 or T-Code via OBDII — Toyota 4D67 AKL reset. No PIN required.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dash, driver side",
+    "securityWait": "~60 s during key registration",
+    "specialTool": "T-Code or Autel IM608 for AKL; Toyota G/H OBDII dongle for add-key",
+    "sources": [
+      "https://bitsofmymind.com/2016/02/11/how-to-program-a-new-toyota-transponder-key/",
+      "https://cartipsdaily.com/toyota-key-fob-programming"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "Avalon",
+    "yearStart": 2013,
+    "yearEnd": 2018,
+    "onboard": null,
+    "addKey": "8A smart key (HYQ14FBA G-board 0020) — no on-board programming. Autel IM608 Pro or Lonsdor K518 via OBDII, Smart Key > Add Key, present new key to start button.",
+    "allKeysLost": "8A AKL: Lonsdor K518 + ADP adapter or Autel IM608 Pro + APB112 emulator. PEPS EEPROM read, 12-digit PIN extracted, new keys programmed. Techstream TIS passcode method also supported.",
+    "pinRequired": true,
+    "pinSource": "EEPROM via ADP adapter or Autel APB112; Techstream: seed/PIN via Toyota TIS",
+    "obdPort": "Under dash, driver side",
+    "securityWait": "16 min if using Techstream TIS method",
+    "specialTool": "Lonsdor K518 + ADP adapter, or Autel IM608 Pro + APB112, or Toyota Techstream + Mini-VCI",
+    "sources": [
+      "https://www.obdii365.com/service/program-toyota-all-keys-lost-with-lonsdor-adp-adapter.html",
+      "https://help.autosvs.com/kb/toyota-highlander-prius-new-or-used-smart-key-programming-instruction-techstream-mini-vci/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "Avalon",
+    "yearStart": 2019,
+    "yearEnd": null,
+    "onboard": null,
+    "addKey": "8A DST-AES smart key (HYQ14FBE) — no on-board programming. Autel IM608 Pro or Lonsdor K518 via OBDII, Smart Key > Add Key, present new key to start button.",
+    "allKeysLost": "8A AKL: Lonsdor K518 + ADP adapter or Autel IM608 Pro + APB112. PEPS EEPROM read, 12-digit PIN extracted, new keys programmed by proximity.",
+    "pinRequired": true,
+    "pinSource": "EEPROM read via ADP adapter (PEPS smart box) or Autel APB112 emulator",
+    "obdPort": "Under dash, driver side",
+    "securityWait": "none",
+    "specialTool": "Autel IM608 Pro + APB112, or Lonsdor K518 + ADP adapter",
+    "sources": [
+      "https://www.obdii365.com/service/program-toyota-all-keys-lost-with-lonsdor-adp-adapter.html",
+      "https://www.uhs-hardware.com/products/2019-toyota-avalon-4-button-smart-key-pn-8990h-07010-hyq14fbe-0410-for-non-hybrid-models-silver-logo-oem"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "C-HR",
+    "yearStart": 2018,
+    "yearEnd": 2022,
+    "onboard": null,
+    "addKey": "H chip (4D74, TOY48H-PT) — no on-board programming. Use Toyota G/H OBDII dongle or Autel IM608: connect to OBDII, select H-chip add-key, insert original key to ON, follow prompts to register new key.",
+    "allKeysLost": "H chip AKL: OBDSTAR X300 or Autel IM608 via OBDII. Navigate Toyota > Type 3 (H/8A/8E) > USA > Reset Immobilizer (All Keys Lost). Toggle ignition per software prompts. No PIN required. Xhorse FT-OBD Tool also supports C-HR AKL.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dash, driver side",
+    "securityWait": "none",
+    "specialTool": "Toyota G/H OBDII dongle or Autel IM608 / OBDSTAR X300 / Xhorse FT-OBD",
+    "sources": [
+      "https://blog.uobdii.com/toyota-h-chip-all-key-lost-programming-via-obdii-obdstar/",
+      "https://keyinnovations.com/xhorse-ft-obd-tool-for-toyota-add-key-all-key-lost-obd-programming/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Lexus",
+    "model": "RX",
+    "yearStart": 1997,
+    "yearEnd": 2003,
+    "onboard": "Insert master (black) key into ignition and remove 5 times without turning, leaving in on 5th insertion. Open and close driver door 6 times within 30 seconds total. Remove master key — security light goes solid. Insert new key (do not turn); security light flashes ~60 s then extinguishes = programmed.",
+    "addKey": "On-board sequence with one working master key.",
+    "allKeysLost": "AKL: Autel IM608 or T-Code via OBDII — Toyota/Lexus 4C AKL reset. No PIN required.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dash, driver side",
+    "securityWait": "~60 s during key registration",
+    "specialTool": "T-Code or Autel IM608 for AKL; none for on-board add-key",
+    "sources": [
+      "https://bitsofmymind.com/2016/02/11/how-to-program-a-new-toyota-transponder-key/",
+      "https://cartipsdaily.com/lexus-key-fob-programming"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Lexus",
+    "model": "RX",
+    "yearStart": 2004,
+    "yearEnd": 2015,
+    "onboard": null,
+    "addKey": "4D68 chip — no on-board sequence. OBDII programmer required. Autel IM608 or T-Code via OBDII: select Lexus 4D68 Immobilizer, add key mode, present new key when prompted. Remote head key remote portion: G/H OBDII dongle remote-add mode.",
+    "allKeysLost": "4D68 AKL: Autel KM100 or Autel IM608 via OBDII — select Lexus > Immobilizer 4D67/68 > Quick Reset. No PIN required. EEPROM (93C56) method also documented if OBD tools fail.",
+    "pinRequired": false,
+    "pinSource": "OBD read (Autel KM100 / IM608 extracts internally); EEPROM 93C56 as fallback",
+    "obdPort": "Under dash, driver side",
+    "securityWait": "none",
+    "specialTool": "Autel IM608 or Autel KM100; T-Code; EEPROM read (93C56) as fallback for AKL",
+    "sources": [
+      "https://www.car-auto-repair.com/lexus-es350-93c56-with-93c86-smart-all-keys-lost-programming/",
+      "https://www.autelkeytools.com/blogs/tutorials/tagged/all-key-lost"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Lexus",
+    "model": "RX",
+    "yearStart": 2016,
+    "yearEnd": 2019,
+    "onboard": null,
+    "addKey": "8A DST-AES smart key (HYQ14FBB) — no on-board programming. Autel IM608 Pro or Lonsdor K518 via OBDII, Smart Key > Add Key, present new key to start button.",
+    "allKeysLost": "8A AKL: Lonsdor K518 + ADP adapter or Autel IM608 Pro + APB112 emulator. PEPS EEPROM read, 12-digit PIN extracted from DFlash, new keys programmed by proximity.",
+    "pinRequired": true,
+    "pinSource": "EEPROM read via ADP adapter (PEPS smart box) or Autel APB112 emulator",
+    "obdPort": "Under dash, driver side",
+    "securityWait": "none",
+    "specialTool": "Autel IM608 Pro + APB112, or Lonsdor K518 + ADP adapter",
+    "sources": [
+      "https://www.obdii365.com/service/program-toyota-all-keys-lost-with-lonsdor-adp-adapter.html",
+      "https://www.uhs-hardware.com/products/2016-2020-lexus-rx350-rx450-4-button-smart-key-pn-89904-0e160-hyq14fbb-g-board-0010-oem"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Lexus",
+    "model": "RX",
+    "yearStart": 2020,
+    "yearEnd": null,
+    "onboard": null,
+    "addKey": "8A DST-AES smart key (HYQ14FLB board 3950) — no on-board programming. Autel IM608 Pro or Lonsdor K518 via OBDII, Smart Key > Add Key, present new key to start button.",
+    "allKeysLost": "8A AKL: use programmer guided procedure — Lonsdor K518 + ADP adapter or Autel IM608 Pro + APB112 emulator. Confirm tool firmware supports HYQ14FLB (board 3950) before attempting.",
+    "pinRequired": true,
+    "pinSource": "EEPROM read via ADP adapter (PEPS smart box) or Autel APB112 emulator",
+    "obdPort": "Under dash, driver side",
+    "securityWait": "none",
+    "specialTool": "Autel IM608 Pro + APB112, or Lonsdor K518 + ADP adapter; ABRITES for difficult cases",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2020-2022-lexus-smart-key-4b-fob-w-hatch-fcc-hyq14flb-3950",
+      "https://www.obdii365.com/service/program-toyota-all-keys-lost-with-lonsdor-adp-adapter.html"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Lexus",
+    "model": "ES",
+    "yearStart": 1997,
+    "yearEnd": 2003,
+    "onboard": "Insert master (black) key into ignition and remove 5 times without turning, leaving in on 5th insertion. Open and close driver door 6 times within 30 seconds total. Remove master key — security light goes solid. Insert new key (do not turn); security light flashes ~60 s then extinguishes = programmed.",
+    "addKey": "On-board sequence with one working master key.",
+    "allKeysLost": "AKL: Autel IM608 or T-Code via OBDII — Lexus/Toyota 4C AKL reset. No PIN required.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dash, driver side",
+    "securityWait": "~60 s during key registration",
+    "specialTool": "T-Code or Autel IM608 for AKL; none for on-board add-key",
+    "sources": [
+      "https://bitsofmymind.com/2016/02/11/how-to-program-a-new-toyota-transponder-key/",
+      "https://cartipsdaily.com/lexus-key-fob-programming"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Lexus",
+    "model": "ES",
+    "yearStart": 2004,
+    "yearEnd": 2012,
+    "onboard": null,
+    "addKey": "4D68 chip — no on-board sequence. Autel IM608 or T-Code via OBDII: select Lexus 4D68 Immobilizer, add key mode.",
+    "allKeysLost": "4D68 AKL: Autel KM100 or Autel IM608 via OBDII — Lexus > Immobilizer 4D67/68 > Quick Reset. No PIN required. EEPROM (93C56) method as fallback.",
+    "pinRequired": false,
+    "pinSource": "OBD read (Autel KM100 / IM608 internally); EEPROM 93C56 as fallback",
+    "obdPort": "Under dash, driver side",
+    "securityWait": "none",
+    "specialTool": "Autel IM608 or Autel KM100; T-Code; EEPROM 93C56 as fallback",
+    "sources": [
+      "https://www.car-auto-repair.com/lexus-es350-93c56-with-93c86-smart-all-keys-lost-programming/",
+      "https://www.autelkeytools.com/blogs/tutorials/tagged/all-key-lost"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Lexus",
+    "model": "ES",
+    "yearStart": 2013,
+    "yearEnd": 2018,
+    "onboard": null,
+    "addKey": "8A smart key (HYQ14FBA G-board 0020) — no on-board programming. Autel IM608 Pro or Lonsdor K518 via OBDII, Smart Key > Add Key, present new key to start button.",
+    "allKeysLost": "8A AKL: Lonsdor K518 + ADP adapter or Autel IM608 Pro + APB112. PEPS EEPROM read, 12-digit PIN extracted, new keys programmed.",
+    "pinRequired": true,
+    "pinSource": "EEPROM read via ADP adapter (PEPS smart box) or Autel APB112 emulator",
+    "obdPort": "Under dash, driver side",
+    "securityWait": "none",
+    "specialTool": "Autel IM608 Pro + APB112, or Lonsdor K518 + ADP adapter",
+    "sources": [
+      "https://www.obdii365.com/service/program-toyota-all-keys-lost-with-lonsdor-adp-adapter.html",
+      "https://www.locksmithkeyless.com/products/2013-2019-lexus-smart-key-4b-fcc-hyq14fba-0020-g"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Lexus",
+    "model": "NX",
+    "yearStart": 2015,
+    "yearEnd": 2021,
+    "onboard": null,
+    "addKey": "8A smart key (HYQ14FBA AG-board 2110) — no on-board programming. Autel IM608 Pro or Lonsdor K518 via OBDII, Smart Key > Add Key, present new key to start button.",
+    "allKeysLost": "8A AKL: Lonsdor K518 + ADP adapter or Autel IM608 Pro + APB112. PEPS EEPROM read via ADP, 12-digit PIN extracted from DFlash, new keys registered by proximity.",
+    "pinRequired": true,
+    "pinSource": "EEPROM read via ADP adapter (PEPS smart box) or Autel APB112 emulator",
+    "obdPort": "Under dash, driver side",
+    "securityWait": "none",
+    "specialTool": "Autel IM608 Pro + APB112, or Lonsdor K518 + ADP adapter",
+    "sources": [
+      "https://www.obdii365.com/service/program-toyota-all-keys-lost-with-lonsdor-adp-adapter.html",
+      "https://www.locksmithkeyless.com/products/2015-2021-lexus-smart-key-4b-fcc-hyq14fba-2110-ag-board"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Lexus",
+    "model": "NX",
+    "yearStart": 2022,
+    "yearEnd": null,
+    "onboard": null,
+    "addKey": "8A DST-AES smart key (HYQ14FLC) — no on-board programming. Professional OBDII programmer required. Use Autel IM608 Pro or Lonsdor K518, Smart Key > Add Key. Confirm tool firmware supports HYQ14FLC (board 1551A-14FLC).",
+    "allKeysLost": "8A AKL: use programmer guided procedure — Lonsdor K518 + ADP adapter or Autel IM608 Pro + APB112 or ABRITES. Confirm firmware supports 2022+ NX (HYQ14FLC) before attempting.",
+    "pinRequired": true,
+    "pinSource": "EEPROM read via ADP adapter (PEPS smart box) or Autel APB112 emulator",
+    "obdPort": "Under dash, driver side",
+    "securityWait": "none",
+    "specialTool": "Autel IM608 Pro + APB112, or Lonsdor K518 + ADP adapter, or ABRITES",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2022-lexus-nx350-smart-key-3b-fob-fcc-hyq14flc-8990h-78010-aftermarket",
+      "https://www.americankeysupply.com/product/lexus-nx-series-2022-2023-3-button-smart-key-hyq14flc-oem-new-18007"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Lexus",
+    "model": "GX",
+    "yearStart": 2003,
+    "yearEnd": 2009,
+    "onboard": null,
+    "addKey": "4D68 chip — no on-board sequence. Autel IM608 or T-Code via OBDII: select Lexus 4D68 Immobilizer, add key mode.",
+    "allKeysLost": "4D68 AKL: Autel KM100 or Autel IM608 via OBDII — Lexus > Immobilizer 4D67/68 > Quick Reset. No PIN required. EEPROM (93C56) method as fallback.",
+    "pinRequired": false,
+    "pinSource": "OBD read (Autel KM100 / IM608 internally); EEPROM 93C56 as fallback",
+    "obdPort": "Under dash, driver side",
+    "securityWait": "none",
+    "specialTool": "Autel IM608 or Autel KM100; T-Code; EEPROM 93C56 as fallback",
+    "sources": [
+      "https://www.car-auto-repair.com/lexus-es350-93c56-with-93c86-smart-all-keys-lost-programming/",
+      "https://www.autelkeytools.com/blogs/tutorials/tagged/all-key-lost"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Lexus",
+    "model": "GX",
+    "yearStart": 2010,
+    "yearEnd": 2018,
+    "onboard": null,
+    "addKey": "HYQ14ACX (4D67 GNE board 5290) smart key — no DIY on-board programming. Autel IM608, Lonsdor K518, or Toyota G/H OBDII dongle can add key with one working key via OBDII.",
+    "allKeysLost": "AKL: Autel IM608 Pro (with APB112 emulator) or Toyota Techstream TIS passcode method. Standard G/H OBDII dongle does NOT support AKL.",
+    "pinRequired": true,
+    "pinSource": "OBD read via Autel APB112 emulator, or seed/PIN via Toyota TIS dealer Techstream",
+    "obdPort": "Under dash, driver side",
+    "securityWait": "16 min if using Techstream TIS method",
+    "specialTool": "Autel IM608 Pro + APB112 emulator, or Toyota Techstream + Mini-VCI; Toyota G/H OBDII dongle for add-key only",
+    "sources": [
+      "https://northcoastkeyless.com/product/lexus-gx460-4-button-smart-key-fob-remote-fcc-hyq14acx-p-n-89904-60590-board-271451-5290/",
+      "http://blog.obdii365.com/2021/12/21/autel-im608-toyota-prius-10-18-all-keys-lost/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Lexus",
+    "model": "IS",
+    "yearStart": 2001,
+    "yearEnd": 2005,
+    "onboard": "Insert master (black) key into ignition and remove 5 times without turning, leaving in on 5th insertion. Open and close driver door 6 times within 30 seconds total. Remove master key — security light goes solid. Insert new key (do not turn); security light flashes ~60 s then extinguishes = programmed.",
+    "addKey": "On-board sequence with one working master key.",
+    "allKeysLost": "AKL: Autel IM608 or T-Code via OBDII — Lexus/Toyota 4C AKL reset. No PIN required.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dash, driver side",
+    "securityWait": "~60 s during key registration",
+    "specialTool": "T-Code or Autel IM608 for AKL; none for on-board add-key",
+    "sources": [
+      "https://bitsofmymind.com/2016/02/11/how-to-program-a-new-toyota-transponder-key/",
+      "https://cartipsdaily.com/lexus-key-fob-programming"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Lexus",
+    "model": "IS",
+    "yearStart": 2006,
+    "yearEnd": 2013,
+    "onboard": null,
+    "addKey": "4D68 chip — no on-board sequence. Autel IM608 or T-Code via OBDII: select Lexus 4D68 Immobilizer, add key mode.",
+    "allKeysLost": "4D68 AKL: Autel KM100 or Autel IM608 via OBDII — Lexus > Immobilizer 4D67/68 > Quick Reset. No PIN required. EEPROM (93C56) method as fallback.",
+    "pinRequired": false,
+    "pinSource": "OBD read (Autel KM100 / IM608 internally); EEPROM 93C56 as fallback",
+    "obdPort": "Under dash, driver side",
+    "securityWait": "none",
+    "specialTool": "Autel IM608 or Autel KM100; T-Code; EEPROM 93C56 as fallback",
+    "sources": [
+      "https://www.car-auto-repair.com/lexus-es350-93c56-with-93c86-smart-all-keys-lost-programming/",
+      "https://www.autelkeytools.com/blogs/tutorials/tagged/all-key-lost"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Lexus",
+    "model": "IS",
+    "yearStart": 2014,
+    "yearEnd": 2019,
+    "onboard": null,
+    "addKey": "8A smart key (HYQ14FBA AG-board 2110) — no on-board programming. Autel IM608 Pro or Lonsdor K518 via OBDII, Smart Key > Add Key, present new key to start button.",
+    "allKeysLost": "8A AKL: Lonsdor K518 + ADP adapter or Autel IM608 Pro + APB112. PEPS EEPROM read via ADP, 12-digit PIN extracted, new keys registered.",
+    "pinRequired": true,
+    "pinSource": "EEPROM read via ADP adapter (PEPS smart box) or Autel APB112 emulator",
+    "obdPort": "Under dash, driver side",
+    "securityWait": "none",
+    "specialTool": "Autel IM608 Pro + APB112, or Lonsdor K518 + ADP adapter",
+    "sources": [
+      "https://www.obdii365.com/service/program-toyota-all-keys-lost-with-lonsdor-adp-adapter.html",
+      "https://www.locksmithkeyless.com/products/2014-2019-lexus-prox-smart-fob-key-4b-fcc-hyq14fba-2020-ag"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Lexus",
+    "model": "IS",
+    "yearStart": 2020,
+    "yearEnd": null,
+    "onboard": null,
+    "addKey": "8A DST-AES smart key (HYQ14FLB board 3950) — no on-board programming. Autel IM608 Pro or Lonsdor K518 via OBDII, Smart Key > Add Key. Confirm tool supports HYQ14FLB.",
+    "allKeysLost": "8A AKL: use programmer guided procedure — Lonsdor K518 + ADP adapter or Autel IM608 Pro + APB112 or ABRITES. Confirm firmware supports IS300/IS350 2020+ (HYQ14FLB board 3950).",
+    "pinRequired": true,
+    "pinSource": "EEPROM read via ADP adapter (PEPS smart box) or Autel APB112 emulator",
+    "obdPort": "Under dash, driver side",
+    "securityWait": "none",
+    "specialTool": "Autel IM608 Pro + APB112, or Lonsdor K518 + ADP adapter, or ABRITES",
+    "sources": [
+      "https://www.obdii365.com/service/program-toyota-all-keys-lost-with-lonsdor-adp-adapter.html",
+      "https://www.locksmithkeyless.com/products/2020-2024-lexus-smart-key-4b-w-trunk-fob-fcc-hyq14flb-3950-89904-53e71"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Scion",
+    "model": "tC",
+    "yearStart": 2005,
+    "yearEnd": 2010,
+    "onboard": "Insert master (black) key into ignition and remove 5 times without turning, leaving in on 5th insertion. Open and close driver door 6 times within 30 seconds total. Remove master key — security light goes solid. Insert new key (do not turn); security light flashes ~60 s then extinguishes = programmed.",
+    "addKey": "On-board sequence with one working master key, or Toyota G/H OBDII dongle (add-key only).",
+    "allKeysLost": "G/H OBDII dongle does NOT work AKL. AKL: Autel IM608 or T-Code via OBDII — Toyota 4D67 AKL reset. No PIN required.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dash, driver side",
+    "securityWait": "~60 s during key registration",
+    "specialTool": "Autel IM608 / T-Code for AKL; Toyota G/H OBDII dongle for add-key",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2003-2011-toyota-scion-transponder-key-4d67-chip-toy44d-pt-25-pack",
+      "https://cartipsdaily.com/toyota-key-fob-programming"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Scion",
+    "model": "tC",
+    "yearStart": 2011,
+    "yearEnd": 2016,
+    "onboard": "G chip (2011-2013 TR47 keyway): Insert master key 5 times, door 6 times — standard sequence. H chip variant (TOY48 keyway, 2014-2015): no on-board programming.",
+    "addKey": "G chip: on-board sequence or Toyota G/H OBDII dongle. H chip: Toyota G/H OBDII dongle or Autel IM608, add-key mode.",
+    "allKeysLost": "G chip AKL: Autel IM608 or Lonsdor K518, G-chip AKL reset, no PIN. H chip AKL: OBDSTAR X300 or Autel IM608, Type 3 (H/8A/8E) USA AKL reset, no PIN.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dash, driver side",
+    "securityWait": "~60 s during G-chip registration",
+    "specialTool": "Toyota G/H OBDII dongle for add-key; Autel IM608 / OBDSTAR for AKL",
+    "sources": [
+      "https://cartipsdaily.com/toyota-key-fob-programming",
+      "https://blog.uobdii.com/toyota-h-chip-all-key-lost-programming-via-obdii-obdstar/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Scion",
+    "model": "xB",
+    "yearStart": 2008,
+    "yearEnd": 2010,
+    "onboard": "Insert master (black) key into ignition and remove 5 times without turning, leaving in on 5th insertion. Open and close driver door 6 times within 30 seconds total. Remove master key — security light goes solid. Insert new key (do not turn); security light flashes ~60 s then extinguishes = programmed.",
+    "addKey": "On-board sequence with one working master key, or Toyota G/H OBDII dongle (add-key only).",
+    "allKeysLost": "G/H OBDII dongle does NOT work AKL. AKL: Autel IM608 or T-Code via OBDII — Toyota 4D67 AKL reset. No PIN required.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dash, driver side",
+    "securityWait": "~60 s during key registration",
+    "specialTool": "T-Code or Autel IM608 for AKL; Toyota G/H OBDII dongle for add-key",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2003-2011-toyota-scion-transponder-key-4d67-chip-toy44d-pt-25-pack",
+      "https://cartipsdaily.com/toyota-key-fob-programming"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Scion",
+    "model": "xB",
+    "yearStart": 2011,
+    "yearEnd": 2015,
+    "onboard": "Insert master (black) key into ignition and remove 5 times without turning, leaving in on 5th insertion. Open and close driver door 6 times within 30 seconds total. Remove master key — security light goes solid. Insert new key (do not turn); security light flashes ~60 s then extinguishes = programmed.",
+    "addKey": "On-board sequence with one working master key, or Toyota G/H OBDII dongle (add-key only).",
+    "allKeysLost": "G/H OBDII dongle does NOT work AKL. AKL: Autel IM608 or Lonsdor K518 via OBDII — G-chip AKL reset. No PIN required.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dash, driver side",
+    "securityWait": "~60 s during key registration",
+    "specialTool": "Autel IM608 / Lonsdor K518 for AKL; Toyota G/H OBDII dongle for add-key",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2010-2019-toyota-scion-transponder-key-4d72-gchip-toy44g-pt",
+      "https://cartipsdaily.com/toyota-key-fob-programming"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  }
+]

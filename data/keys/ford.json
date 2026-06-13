@@ -1,0 +1,2121 @@
+[
+  {
+    "make": "Ford",
+    "model": "F-150",
+    "yearStart": 2004,
+    "yearEnd": 2010,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "H75",
+        "bladeIlco": "H92-PT",
+        "bladeSilca": "FO38R",
+        "bladeJma": "FO21R",
+        "transponderChip": "Texas 4D63 80-bit",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U331",
+        "partNumber": "164-R8040",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SecuriLock PATS",
+    "pinRequired": false,
+    "programming": "Onboard: cycle ignition OFF-RUN 8x ending in RUN, press any remote button; locks cycle to confirm. Professional tool required if <2 existing keys.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608", "Snap-on Zeus", "AutoProPAD"],
+    "notes": "4D63 80-bit. ILCO blade H92-PT uses H75 keyway profile (H92-PT is the transponder-key part number, not a different keyway). CWTWB1U331 is OEM FCC for 2004-2006 F-150 (oemcarkeymall confirmed per year); CWTWB1U793 takes over ~2007-2010; 2011+ row separately listed. This row covers 2004-2006 OEM accurately; 2007-2010 also accepts CWTWB1U793 as cross-compatible replacement.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/ford_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/2000-2019-ford-transponder-key-4d63-80-bits-chip-h92-pt",
+      "https://oemcarkeymall.com/products/2004-ford-f-series-keyless-remote-cwtwb1u331",
+      "https://oemcarkeymall.com/products/2006-ford-f-series-keyless-remote-cwtwb1u331"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "F-150",
+    "yearStart": 2011,
+    "yearEnd": 2014,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "H75",
+        "bladeIlco": "H92-PT",
+        "bladeSilca": "FO38R",
+        "bladeJma": "FO21R",
+        "transponderChip": "Texas 4D63 80-bit",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U793",
+        "partNumber": "164-R8070",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SecuriLock PATS",
+    "pinRequired": false,
+    "programming": "Onboard if 2 existing keys available: OFF-RUN 8x, press remote button. Otherwise dealer/locksmith with IDS.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608", "Snap-on Zeus"],
+    "notes": "CWTWB1U793 also covers F-250/F-350 2011-2016. Part numbers: 164-R8064, 164-R8067, 164-R8070.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2000-2019-ford-lincoln-mazda-mercury-transponder-key-4d63-80-bits-chip-h92-pt-2",
+      "https://www.bestkeysolution.com/products/key2u-2013-2019-ford-remote-head-key-fob-transmitter-3b-fcc-id-cwtwb1u793",
+      "https://northcoastkeyless.com/product/2011-2014-ford-f-series-f150-remote-head-key-fob-3-button-fcc-id-cwtwb1u793-pn-164-r8070/"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "F-150",
+    "yearStart": 2015,
+    "yearEnd": 2017,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HU101",
+        "bladeIlco": "H128-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP39FO-24.P2",
+        "transponderChip": "NXP PCF7953P / HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "M3N-A2C31243300",
+        "partNumber": "164-R8117",
+        "frequency": "902"
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HU101",
+        "bladeIlco": "FLIP-FORD-3B1HS",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "N5F-A08TAA",
+        "partNumber": "164-R8130",
+        "frequency": "315"
+      },
+      {
+        "keyType": "Transponder",
+        "trimDependent": true,
+        "keyway": "HU101",
+        "bladeIlco": "H128-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP39FO-24.P2",
+        "transponderChip": "NXP PCF7939F HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": null,
+        "partNumber": "164-R8128",
+        "frequency": null
+      }
+    ],
+    "immobilizer": "SecuriLock PATS / PEPS",
+    "pinRequired": false,
+    "programming": "No onboard programming. Requires professional diagnostic tool (IDS/FDRS or Autel/Snap-on).",
+    "programmerHint": ["IDS/FDRS", "Autel IM608", "Snap-on Zeus", "AutoProPAD G2"],
+    "notes": "Smart key (push-button start) on XLT+ trims; flip key on lower/commercial trims. 2015-2017 smart key uses 902 MHz M3N-A2C31243300 (164-R8117). Confirmed 902 MHz via uhs-hardware.com and locksmithkeyless.com.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2015-2017-ford-f-150-5-button-smart-key-pn-164-r8117-m3n-a2c31243300-oem",
+      "https://www.locksmithkeyless.com/products/2015-2017-ford-f-150-smart-key-w-tailgate-2-way-5b-fcc-m3n-a2c31243300-902-mhz",
+      "https://www.bestkeysolution.com/products/ford-3-button-remote-head-flip-key-fob-fcc-id-n5f-a08taa-p-n-164-r8130-key-hu101-refurbished"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "F-150",
+    "yearStart": 2018,
+    "yearEnd": 2022,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HU101",
+        "bladeIlco": "H128-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP39FO-24.P2",
+        "transponderChip": "NXP NCF2951F / HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "M3N-A2C93142600",
+        "partNumber": "164-R8166",
+        "frequency": "902"
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HU101",
+        "bladeIlco": "FLIP-FORD-3B1HS",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "N5F-A08TAA",
+        "partNumber": "164-R8130",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SecuriLock PATS / PEPS",
+    "pinRequired": false,
+    "programming": "No onboard programming. Requires IDS/FDRS or equivalent professional tool.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608", "Snap-on Zeus", "AutoProPAD G2"],
+    "notes": "2018-2022 smart uses M3N-A2C93142600 (164-R8166) at 902 MHz. Flip key N5F-A08TAA on base/work trims.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2017-2022-ford-smart-key-5b-fcc-m3n-a2c93142600",
+      "https://remotesandkeys.com/products/2019-ford-f-150-smart-key-remote-3048",
+      "https://www.locksmithkeyless.com/products/ilco-2013-2020-ford-transponder-key-nxp-128-bits-chip-h128-pt"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "F-150",
+    "yearStart": 2023,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HU101",
+        "bladeIlco": "H128-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP39FO-24.P2",
+        "transponderChip": "NXP HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "M3N-A2C93142600",
+        "partNumber": "164-R8166",
+        "frequency": "902"
+      },
+      {
+        "keyType": "Transponder",
+        "trimDependent": true,
+        "keyway": "HU101",
+        "bladeIlco": "H128-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP39FO-24.P2",
+        "transponderChip": "NXP HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": null,
+        "partNumber": "164-R8289",
+        "frequency": null
+      }
+    ],
+    "immobilizer": "SecuriLock PATS / PEPS",
+    "pinRequired": false,
+    "programming": "No onboard programming. Requires IDS/FDRS or equivalent professional tool.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608", "Snap-on Zeus"],
+    "notes": "Lightning EV (2022-2024) shares same key platform. Transponder 164-R8289 covers base keyed-ignition variants.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/ilco-2013-2020-ford-transponder-key-nxp-128-bits-chip-h128-pt",
+      "https://www.locksmithkeyless.com/products/2020-2024-ford-transponder-key-id49-hitag-pro-chip-hu101-5940086"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "F-250/F-350 Super Duty",
+    "yearStart": 2004,
+    "yearEnd": 2010,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "H75",
+        "bladeIlco": "H92-PT",
+        "bladeSilca": "FO38R",
+        "bladeJma": "FO21R",
+        "transponderChip": "Texas 4D63 80-bit",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U331",
+        "partNumber": "164-R8040",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SecuriLock PATS",
+    "pinRequired": false,
+    "programming": "Onboard if 2 existing keys: OFF-RUN 8x, press remote button. Else locksmith/dealer.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608"],
+    "notes": "Super Duty shares key platform with F-150 of same generation. ILCO blade H92-PT (H75 keyway profile) — H92-PT is the transponder-key part number for 2004+ Ford.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/ford_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/2000-2019-ford-lincoln-mazda-mercury-transponder-key-4d63-80-bits-chip-h92-pt-2"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "F-250/F-350 Super Duty",
+    "yearStart": 2011,
+    "yearEnd": 2016,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "H75",
+        "bladeIlco": "H92-PT",
+        "bladeSilca": "FO38R",
+        "bladeJma": "FO21R",
+        "transponderChip": "Texas 4D63 80-bit (DST80/Tiris)",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U793",
+        "partNumber": "164-R8070",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SecuriLock PATS",
+    "pinRequired": false,
+    "programming": "Onboard if 2 existing keys. Otherwise IDS/FDRS required.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608", "Snap-on Zeus"],
+    "notes": "Transpondery lists F-250 2011-2016 as Texas Crypto 2 / Tiris DST80 generation.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/ford_transponder_catalog.html",
+      "https://www.bestkeysolution.com/products/key2u-2013-2019-ford-remote-head-key-fob-transmitter-3b-fcc-id-cwtwb1u793"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "F-250/F-350 Super Duty",
+    "yearStart": 2017,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HU101",
+        "bladeIlco": "H128-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP39FO-24.P2",
+        "transponderChip": "NXP NCF2951F / HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "M3N-A2C93142600",
+        "partNumber": "164-R8166",
+        "frequency": "902"
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HU101",
+        "bladeIlco": "FLIP-FORD-3B1HS",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "N5F-A08TAA",
+        "partNumber": "164-R8130",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SecuriLock PATS / PEPS",
+    "pinRequired": false,
+    "programming": "No onboard programming. Requires IDS/FDRS or Autel/Snap-on.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608", "Snap-on Zeus", "AutoProPAD G2"],
+    "notes": "Transpondery confirms F-250 2017+ uses Philips Crypto 3 / HiTAG Pro. Smart trim uses M3N-A2C93142600.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/ford_transponder_catalog.html",
+      "https://www.bestkeysolution.com/products/2017-2022-ford-smart-key-5b-fcc-m3n-a2c93142600"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Ranger",
+    "yearStart": 2011,
+    "yearEnd": 2011,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "H75",
+        "bladeIlco": "H92-PT",
+        "bladeSilca": "FO38R",
+        "bladeJma": "FO21R",
+        "transponderChip": "Texas 4D63 80-bit / DST80",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U793",
+        "partNumber": "164-R8070",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SecuriLock PATS",
+    "pinRequired": false,
+    "programming": "Onboard if 2 existing keys available.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608"],
+    "notes": "Last year of US Ranger before 2019 relaunch. Transpondery: Ranger 2011+ Texas Crypto 2/Tiris DST80.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/ford_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Ranger",
+    "yearStart": 2019,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HU101",
+        "bladeIlco": "H128-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP39FO-24.P2",
+        "transponderChip": "NXP NCF2951F / HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "M3N-A2C93142600",
+        "partNumber": "164-R8166",
+        "frequency": "902"
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HU101",
+        "bladeIlco": "FLIP-FORD-3B1HS",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "N5F-A08TAA",
+        "partNumber": "164-R8130",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SecuriLock PATS / PEPS",
+    "pinRequired": false,
+    "programming": "No onboard programming. Professional tool required.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608", "Snap-on Zeus"],
+    "notes": "Ranger returned to US market for 2019 MY. Flip key covers base/XL; smart key on XLT/Lariat. 2024 programming confirmed professional-only.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.bestkeysolution.com/products/ford-3-button-remote-head-flip-key-fob-fcc-id-n5f-a08taa-p-n-164-r8130-key-hu101-refurbished",
+      "https://keyless2go.com/blogs/program-instructions/2024-ford-ranger-keyless-entry-remote-fob-smart-key-programming-instructions"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Maverick",
+    "yearStart": 2022,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HU101",
+        "bladeIlco": "H128-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP39FO-24.P2",
+        "transponderChip": "NXP HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "M3N-A2C931426",
+        "partNumber": "164-R8182",
+        "frequency": "902"
+      },
+      {
+        "keyType": "Transponder",
+        "trimDependent": true,
+        "keyway": "HU101",
+        "bladeIlco": "H128-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP39FO-24.P2",
+        "transponderChip": "NXP PCF7939F HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": null,
+        "partNumber": "164-R8128",
+        "frequency": null
+      }
+    ],
+    "immobilizer": "SecuriLock PATS / PEPS",
+    "pinRequired": false,
+    "programming": "No onboard programming. Professional tool required.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608", "Snap-on Zeus"],
+    "notes": "New nameplate 2022. XL/XLT work trims may use keyed ignition with transponder; Lariat uses smart key. Smart key FCC M3N-A2C931426 / 164-R8182 confirmed 902 MHz.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2022-ford-maverick-smart-key-4-buttons-fcc-m3n-a2c931426",
+      "https://northcoastkeyless.com/product/ford-maverick-4-button-smart-key-fob-remote-fcc-m3n-a2c931426-p-n-164-r8182/",
+      "https://www.locksmithkeyless.com/products/ilco-2013-2020-ford-transponder-key-nxp-128-bits-chip-h128-pt"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Bronco",
+    "yearStart": 2021,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HU101",
+        "bladeIlco": "H128-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP39FO-24.P2",
+        "transponderChip": "NXP HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "M3N-A2C931423",
+        "partNumber": "164-R8287",
+        "frequency": "315"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HU101",
+        "bladeIlco": "H128-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP39FO-24.P2",
+        "transponderChip": "NXP HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "M3N-A2C931426",
+        "partNumber": "164-R8288",
+        "frequency": "902"
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HU101",
+        "bladeIlco": "FLIP-FORD-3B1HS",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "N5F-A08TAA",
+        "partNumber": "164-R8130",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SecuriLock PEPS",
+    "pinRequired": false,
+    "programming": "No onboard programming. PEPS requires professional IDS/FDRS or Autel.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608", "Snap-on Zeus"],
+    "notes": "Returned 2021. Two smart key FCC IDs depending on trim/remote-start option. 315 MHz (M3N-A2C931423/164-R8287) for base PEPS; 902 MHz (M3N-A2C931426/164-R8288) for remote-start equipped. Part number corrected from 164-R8297 to 164-R8288 per locksmithkeyless.com OEM listing.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2021-ford-bronco-smart-key-hatch-4b-fcc-m3n-a2c931423",
+      "https://www.locksmithkeyless.com/products/2021-2022-ford-bronco-smart-key-5b-fcc-m3n-a2c931426",
+      "https://www.bestkeysolution.com/products/ford-3-button-remote-head-flip-key-fob-fcc-id-n5f-a08taa-p-n-164-r8130-key-hu101-refurbished"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Bronco Sport",
+    "yearStart": 2021,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU101",
+        "bladeIlco": "H128-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP39FO-24.P2",
+        "transponderChip": "NXP HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "M3N-A2C931426",
+        "partNumber": "164-R8288",
+        "frequency": "902"
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HU101",
+        "bladeIlco": "FLIP-FORD-3B1HS",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "N5F-A08TAA",
+        "partNumber": "164-R8283",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SecuriLock PEPS",
+    "pinRequired": false,
+    "programming": "No onboard programming. Professional IDS/FDRS or Autel required.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608"],
+    "notes": "Distinct from full Bronco; smaller unibody crossover. Smart key 164-R8288 confirmed via remotesandkeys.com.",
+    "confidence": "verified",
+    "sources": [
+      "https://remotesandkeys.com/products/2024-ford-bronco-sport-smart-key-fob-pn-164-r8288-5940278",
+      "https://www.locksmithkeyless.com/products/2015-2019-ford-flip-key-3b-fcc-n5f-a08taa-5923667"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Escape",
+    "yearStart": 2005,
+    "yearEnd": 2012,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "H75",
+        "bladeIlco": "H92-PT",
+        "bladeSilca": "FO38R",
+        "bladeJma": "FO21R",
+        "transponderChip": "Texas 4D63 80-bit",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U793",
+        "partNumber": "164-R8070",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SecuriLock PATS",
+    "pinRequired": false,
+    "programming": "Onboard if 2 existing keys.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608"],
+    "notes": "Transpondery: Escape 2005-2012 Texas Crypto 4D63/ID63. CWTWB1U793 confirmed for this generation.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/ford_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/2000-2019-ford-lincoln-mazda-mercury-transponder-key-4d63-80-bits-chip-h92-pt-2"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Escape",
+    "yearStart": 2013,
+    "yearEnd": 2019,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": true,
+        "keyway": "HU101",
+        "bladeIlco": "RHK-FORD-4B1HS",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 4D63 80-bit",
+        "chipClonable": "no",
+        "fccId": "OUCD6000022",
+        "partNumber": "164-R8046",
+        "frequency": "315"
+      },
+      {
+        "keyType": "Transponder",
+        "trimDependent": true,
+        "keyway": "HU101",
+        "bladeIlco": "H128-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP39FO-24.P2",
+        "transponderChip": "NXP PCF7939F HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": null,
+        "partNumber": "164-R8128",
+        "frequency": null
+      }
+    ],
+    "immobilizer": "SecuriLock PATS",
+    "pinRequired": false,
+    "programming": "OUCD6000022: onboard capable (some trims). H128-PT: requires professional tool.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608"],
+    "notes": "New HU101 high-security blade introduced 2013. Non-proximity trims use remote head key (OUCD6000022/164-R8046, 315 MHz, 4D63); push-button start trims use smart key. Chip confirmed Texas 4D63 for remote head key via uhs-hardware.com and locksmithkeyless.com.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2013-ford-escape-key-fob-4b-fcc-oucd6000022-hu101",
+      "https://northcoastkeyless.com/product/2013-2018-ford-escape-4-button-high-security-remote-head-key-fob-fcc-oucd6000022-p-n-164-r8046/",
+      "https://www.locksmithkeyless.com/products/ilco-2013-2020-ford-transponder-key-nxp-128-bits-chip-h128-pt"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Escape",
+    "yearStart": 2020,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU101",
+        "bladeIlco": "H128-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP39FO-24.P2",
+        "transponderChip": "NXP NCF2951F / HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "M3N-A2C931426",
+        "partNumber": "164-R8198",
+        "frequency": "902"
+      }
+    ],
+    "immobilizer": "SecuriLock PEPS",
+    "pinRequired": false,
+    "programming": "No onboard programming. Requires professional IDS/FDRS or Autel.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608", "Snap-on Zeus"],
+    "notes": "Redesigned Escape 2020. All trims push-button start. FCC M3N-A2C931426 confirmed via locksmithkeyless.com.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2020-ford-escape-smart-key-4-buttons-fcc-m3n-a2c931426",
+      "https://www.locksmithkeyless.com/products/2024-ford-escape-smart-key-5b-fcc-m3n-a2c931426"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Explorer",
+    "yearStart": 2004,
+    "yearEnd": 2010,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "H75",
+        "bladeIlco": "H92-PT",
+        "bladeSilca": "FO38R",
+        "bladeJma": "FO21R",
+        "transponderChip": "Texas 4D63 80-bit",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U793",
+        "partNumber": "164-R8070",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SecuriLock PATS",
+    "pinRequired": false,
+    "programming": "Onboard if 2 existing keys.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608"],
+    "notes": "Transpondery: Explorer 2004-2012 Texas 4D63/ID63.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/ford_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/2000-2019-ford-lincoln-mazda-mercury-transponder-key-4d63-80-bits-chip-h92-pt-2"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Explorer",
+    "yearStart": 2011,
+    "yearEnd": 2015,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": true,
+        "keyway": "H75",
+        "bladeIlco": "H92-PT",
+        "bladeSilca": "FO38R",
+        "bladeJma": "FO21R",
+        "transponderChip": "Texas 4D63 80-bit / DST80",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U793",
+        "partNumber": "164-R8070",
+        "frequency": "315"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "H75",
+        "bladeIlco": "PRX-FORD-5B2",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips PCF7945A / PCF7953A HITAG 2+ ID46",
+        "chipClonable": "no",
+        "fccId": "M3N5WY8609",
+        "partNumber": "164-R8092",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SecuriLock PATS / PEPS",
+    "pinRequired": false,
+    "programming": "CWTWB1U793: onboard capable. M3N5WY8609: professional tool required.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608"],
+    "notes": "Explorer 2011+ gen introduced smart PEPS option. M3N5WY8609 uses PCF7945A/PCF7953A ID46 chip at 315 MHz with H75 blade — confirmed via abkeys.com and locksmithkeyless.com.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2011-2019-ford-smart-key-5b-fcc-m3n5wy8609-h75",
+      "https://www.transpondery.com/transponder_catalog/ford_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Explorer",
+    "yearStart": 2016,
+    "yearEnd": 2017,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU101",
+        "bladeIlco": "H128-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP39FO-24.P2",
+        "transponderChip": "NXP PCF7939F HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "M3N-A2C31243300",
+        "partNumber": "164-R8117",
+        "frequency": "902"
+      }
+    ],
+    "immobilizer": "SecuriLock PEPS",
+    "pinRequired": false,
+    "programming": "No onboard programming. Professional IDS/FDRS or Autel.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608"],
+    "notes": "Explorer switched to HiTAG Pro / HU101 blade 2016. Transpondery: Explorer 2016+ Philips Crypto 3.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/ford_transponder_catalog.html",
+      "https://www.bestkeysolution.com/products/ford-5-button-smart-key-model-m3n-a2c31243300-164-r7989-operating-at-902-mhz-key2u"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Explorer",
+    "yearStart": 2018,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU101",
+        "bladeIlco": "H128-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP39FO-24.P2",
+        "transponderChip": "NXP NCF2951F / HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "M3N-A2C931426",
+        "partNumber": "164-R8198",
+        "frequency": "902"
+      }
+    ],
+    "immobilizer": "SecuriLock PEPS",
+    "pinRequired": false,
+    "programming": "No onboard programming. Requires IDS/FDRS or Autel.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608", "Snap-on Zeus"],
+    "notes": "Redesigned 2020; key spec unchanged 2018-2024. FCC corrected from M3N-A2C93142600 to M3N-A2C931426 — the OEM-stamped FCC on 164-R8198 is M3N-A2C931426 (confirmed bestkeysolution, northcoastkeyless, remotesandkeys). M3N-A2C93142600 is the long-form variant used on F-series trucks (164-R8166).",
+    "confidence": "verified",
+    "sources": [
+      "https://www.bestkeysolution.com/products/key2u-new-smart-proximity-keyless-entry-exact-match-to-oem-car-key-fob-replacement-for-ford-expedition-explorer-escape-with-m3n-a2c931426-164-r8198",
+      "https://northcoastkeyless.com/product/ford-explorer-5-button-smart-key-fob-remote-fcc-m3n-a2c931426-p-n-164-r8198/",
+      "https://remotesandkeys.com/products/2018-ford-explorer-smart-key-fob-pn-164-r8198-5933985"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Edge",
+    "yearStart": 2006,
+    "yearEnd": 2010,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "H75",
+        "bladeIlco": "H92-PT",
+        "bladeSilca": "FO38R",
+        "bladeJma": "FO21R",
+        "transponderChip": "Texas 4D63 80-bit",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U793",
+        "partNumber": "164-R8070",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SecuriLock PATS",
+    "pinRequired": false,
+    "programming": "Onboard if 2 existing keys.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608"],
+    "notes": "Transpondery: Edge 2006-2010 Texas 4D63.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/ford_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Edge",
+    "yearStart": 2011,
+    "yearEnd": 2014,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": true,
+        "keyway": "H75",
+        "bladeIlco": "H92-PT",
+        "bladeSilca": "FO38R",
+        "bladeJma": "FO21R",
+        "transponderChip": "Texas 4D63 80-bit / DST80",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U793",
+        "partNumber": "164-R8070",
+        "frequency": "315"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "H75",
+        "bladeIlco": "PRX-FORD-5B2",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips PCF7945A HITAG 2+ ID46",
+        "chipClonable": "no",
+        "fccId": "M3N5WY8609",
+        "partNumber": "164-R8092",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SecuriLock PATS / PEPS",
+    "pinRequired": false,
+    "programming": "CWTWB1U793: onboard capable. M3N5WY8609: professional tool.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608"],
+    "notes": "Transpondery: Edge 2010-2014 Tiris DST80 generation. Smart key option on Titanium/Sport trims. M3N5WY8609 uses PCF7945A/ID46 at 315 MHz with H75 blade.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/ford_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/2011-2019-ford-smart-key-5b-fcc-m3n5wy8609-h75"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Edge",
+    "yearStart": 2015,
+    "yearEnd": 2016,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU101",
+        "bladeIlco": "H128-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP39FO-24.P2",
+        "transponderChip": "NXP PCF7939F HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "M3N-A2C31243300",
+        "partNumber": "164-R7989",
+        "frequency": "902"
+      }
+    ],
+    "immobilizer": "SecuriLock PEPS",
+    "pinRequired": false,
+    "programming": "No onboard programming. Professional tool required.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608"],
+    "notes": "Transpondery: Edge 2014+ Philips Crypto 3 / HiTAG Pro.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2015-ford-edge-smart-key-5b-fcc-m3n-a2c31243300",
+      "https://www.transpondery.com/transponder_catalog/ford_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Edge",
+    "yearStart": 2017,
+    "yearEnd": 2022,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU101",
+        "bladeIlco": "H128-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP39FO-24.P2",
+        "transponderChip": "NXP NCF2951F / HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "M3N-A2C93142600",
+        "partNumber": "164-R8149",
+        "frequency": "902"
+      }
+    ],
+    "immobilizer": "SecuriLock PEPS",
+    "pinRequired": false,
+    "programming": "No onboard programming. IDS/FDRS or Autel required.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608"],
+    "notes": "Edge discontinued after 2022 MY in US. Part numbers vary by trim: 164-R8149/164-R8182/164-R8244.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2018-ford-edge-smart-key-4-buttons-fcc-m3n-a2c931426",
+      "https://northcoastkeyless.com/product/ford-edge-5-button-smart-key-fob-remote-start-fcc-m3n-a2c931426-p-n-h87t-15k601-bc-164-r8149/"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Expedition",
+    "yearStart": 2006,
+    "yearEnd": 2010,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "H75",
+        "bladeIlco": "H92-PT",
+        "bladeSilca": "FO38R",
+        "bladeJma": "FO21R",
+        "transponderChip": "Texas 4D63 80-bit",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U793",
+        "partNumber": "164-R8070",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SecuriLock PATS",
+    "pinRequired": false,
+    "programming": "Onboard if 2 existing keys.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608"],
+    "notes": "Transpondery: Expedition 2006-2010 Texas 4D63.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/ford_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Expedition",
+    "yearStart": 2011,
+    "yearEnd": 2017,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": true,
+        "keyway": "H75",
+        "bladeIlco": "H92-PT",
+        "bladeSilca": "FO38R",
+        "bladeJma": "FO21R",
+        "transponderChip": "Texas 4D63 80-bit / DST80",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U793",
+        "partNumber": "164-R8070",
+        "frequency": "315"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "H75",
+        "bladeIlco": "PRX-FORD-5B10",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips PCF7945A HITAG 2+ ID46",
+        "chipClonable": "no",
+        "fccId": "M3N5WY8609",
+        "partNumber": "164-R8092",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SecuriLock PATS / PEPS",
+    "pinRequired": false,
+    "programming": "CWTWB1U793: onboard capable. M3N5WY8609: professional tool.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608"],
+    "notes": "Transpondery: Expedition 2011-2017 Texas Crypto 2/Tiris DST80. Expedition Limited/Platinum may have PEPS.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/ford_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/2011-2019-ford-smart-key-5b-fcc-m3n5wy8609-h75"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Expedition",
+    "yearStart": 2018,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU101",
+        "bladeIlco": "H128-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP39FO-24.P2",
+        "transponderChip": "NXP NCF2951F / HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "M3N-A2C931426",
+        "partNumber": "164-R8198",
+        "frequency": "902"
+      }
+    ],
+    "immobilizer": "SecuriLock PEPS",
+    "pinRequired": false,
+    "programming": "No onboard programming. IDS/FDRS or Autel required.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608", "Snap-on Zeus"],
+    "notes": "Transpondery: Expedition 2018+ Philips Crypto 3/HiTAG Pro. FCC corrected from M3N-A2C93142600 to M3N-A2C931426 — OEM-stamped FCC on 164-R8198 confirmed via northcoastkeyless and bestkeysolution Expedition listings.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/ford_transponder_catalog.html",
+      "https://northcoastkeyless.com/product/ford-expedition-5-button-smart-key-fob-remote-fcc-m3n-a2c931426-p-n-164-r8198/",
+      "https://www.bestkeysolution.com/products/key2u-new-smart-proximity-keyless-entry-exact-match-to-oem-car-key-fob-replacement-for-ford-expedition-explorer-escape-with-m3n-a2c931426-164-r8198"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "EcoSport",
+    "yearStart": 2018,
+    "yearEnd": 2022,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HU101",
+        "bladeIlco": "H128-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP39FO-24.P2",
+        "transponderChip": "NXP HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "M3N-A2C93142300",
+        "partNumber": "164-R8163",
+        "frequency": "315"
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HU101",
+        "bladeIlco": "FLIP-FORD-3B1HS",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "N5F-A08TAA",
+        "partNumber": "164-R8130",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SecuriLock PATS / PEPS",
+    "pinRequired": false,
+    "programming": "No onboard programming. Professional tool required.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608"],
+    "notes": "EcoSport entered US market 2018. Smart key FCC M3N-A2C93142300 confirmed 315 MHz / 164-R8163 via locksmithkeyless.com and carandtruckremotes.com.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2019-ford-ecosport-smart-key-3b-fcc-m3n-a2c93142300",
+      "https://www.carandtruckremotes.com/products/2020-ford-ecosport-smart-remote-key-fob",
+      "https://www.bestkeysolution.com/products/ford-3-button-remote-head-flip-key-fob-fcc-id-n5f-a08taa-p-n-164-r8130-key-hu101-refurbished"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Focus",
+    "yearStart": 2011,
+    "yearEnd": 2014,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "HU101",
+        "bladeIlco": "RHK-FORD-4B1HS",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 4D63 80-bit / DST80",
+        "chipClonable": "no",
+        "fccId": "OUCD6000022",
+        "partNumber": "164-R8046",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SecuriLock PATS",
+    "pinRequired": false,
+    "programming": "Onboard capable on some trims.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608"],
+    "notes": "Transpondery: Focus 2011-2015 Texas Crypto 2/Tiris DST80. HU101 blade introduced on Focus 2011.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/ford_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/2012-2019-ford-remote-key-4b-fcc-ouc6000022-hu101"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Focus",
+    "yearStart": 2015,
+    "yearEnd": 2018,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "H75",
+        "bladeIlco": "PRX-FORD-5B10",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips PCF7945A / PCF7953A HITAG 2+ ID46",
+        "chipClonable": "no",
+        "fccId": "M3N5WY8609",
+        "partNumber": "164-R8092",
+        "frequency": "315"
+      },
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": true,
+        "keyway": "HU101",
+        "bladeIlco": "RHK-FORD-4B1HS",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 4D63 80-bit / DST80",
+        "chipClonable": "no",
+        "fccId": "OUCD6000022",
+        "partNumber": "164-R8046",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SecuriLock PATS / PEPS",
+    "pinRequired": false,
+    "programming": "OUCD6000022: onboard capable. M3N5WY8609: professional tool.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608"],
+    "notes": "Focus smart key (Titanium/push-button-start trims) uses M3N5WY8609 with H75 blade / PCF7945A ID46 chip at 315 MHz — NOT HU101/ID49 as previously listed. Corrected via locksmithkeyless.com and abkeys.com cross-reference.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2017-ford-focus-smart-key-5b-fcc-m3n5wy8609-h75",
+      "https://www.transpondery.com/transponder_catalog/ford_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/2012-2019-ford-remote-key-4b-fcc-ouc6000022-hu101"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Fusion",
+    "yearStart": 2006,
+    "yearEnd": 2010,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "H75",
+        "bladeIlco": "H92-PT",
+        "bladeSilca": "FO38R",
+        "bladeJma": "FO21R",
+        "transponderChip": "Texas 4D63 80-bit",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U793",
+        "partNumber": "164-R8070",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SecuriLock PATS",
+    "pinRequired": false,
+    "programming": "Onboard if 2 existing keys.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608"],
+    "notes": "Transpondery: Fusion 2006-2010 Texas 4D63.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/ford_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Fusion",
+    "yearStart": 2011,
+    "yearEnd": 2012,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "H75",
+        "bladeIlco": "H92-PT",
+        "bladeSilca": "FO38R",
+        "bladeJma": "FO21R",
+        "transponderChip": "Texas 4D63 80-bit / DST80",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U793",
+        "partNumber": "164-R8070",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SecuriLock PATS",
+    "pinRequired": false,
+    "programming": "Onboard if 2 existing keys.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608"],
+    "notes": "CWTWB1U793 confirmed for Fusion 2011-2012 via locksmithkeyless and bestkeysolution.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2011-ford-fusion-key-fob-3b-fcc-cwtwb1u793",
+      "https://www.bestkeysolution.com/products/ford-lincoln-mercury-4-button-key-fob-4b-chip-4d63-80-bit-fcc-cwtwb1u793-315-mhz"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Fusion",
+    "yearStart": 2013,
+    "yearEnd": 2016,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HU101",
+        "bladeIlco": "H128-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP39FO-24.P2",
+        "transponderChip": "NXP PCF7939F HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "M3N-A2C31243300",
+        "partNumber": "164-R7989",
+        "frequency": "902"
+      },
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": true,
+        "keyway": "HU101",
+        "bladeIlco": "RHK-FORD-4B1HS",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 4D63 80-bit / DST80",
+        "chipClonable": "no",
+        "fccId": "OUCD6000022",
+        "partNumber": "164-R8046",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SecuriLock PATS / PEPS",
+    "pinRequired": false,
+    "programming": "Smart key: professional only. Remote head: onboard if 2 existing keys.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608"],
+    "notes": "Redesigned 2013 Fusion. Smart key (push-button) on Titanium/Energi; remote head on SE/SE Luxury.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.bestkeysolution.com/products/ford-5-button-smart-key-model-m3n-a2c31243300-164-r7989-operating-at-902-mhz-key2u",
+      "https://www.transpondery.com/transponder_catalog/ford_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Fusion",
+    "yearStart": 2017,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU101",
+        "bladeIlco": "H128-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP39FO-24.P2",
+        "transponderChip": "NXP NCF2951F / HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "M3N-A2C93142600",
+        "partNumber": "164-R8149",
+        "frequency": "902"
+      }
+    ],
+    "immobilizer": "SecuriLock PEPS",
+    "pinRequired": false,
+    "programming": "No onboard programming. IDS/FDRS or Autel required.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608"],
+    "notes": "Fusion discontinued after 2020 MY in US. Transpondery: Fusion 2017-2020 Philips Crypto 3. Part number corrected from 164-R8166 (that is the F-Series truck part) to 164-R8149 (Fusion/Mustang/Edge), confirmed locksmithkeyless.com and oemcarkeymall.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/ford_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/2018-ford-fusion-smart-key-5b-fcc-m3n-a2c93142600",
+      "https://oemcarkeymall.com/products/2017-ford-fusion-2-way-peps-smart-key-5b-trunk-remote-start-m3n-a2c93142600"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Mustang",
+    "yearStart": 2005,
+    "yearEnd": 2010,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "H75",
+        "bladeIlco": "H92-PT",
+        "bladeSilca": "FO38R",
+        "bladeJma": "FO21R",
+        "transponderChip": "Texas 4D63 80-bit",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U793",
+        "partNumber": "164-R8070",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SecuriLock PATS",
+    "pinRequired": false,
+    "programming": "Onboard if 2 existing keys.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608"],
+    "notes": "Transpondery: Mustang 2005-2012 Texas 4D63.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/ford_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Mustang",
+    "yearStart": 2011,
+    "yearEnd": 2014,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "H75",
+        "bladeIlco": "H92-PT",
+        "bladeSilca": "FO38R",
+        "bladeJma": "FO21R",
+        "transponderChip": "Texas 4D63 80-bit / DST80",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U793",
+        "partNumber": "164-R8070",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SecuriLock PATS",
+    "pinRequired": false,
+    "programming": "Onboard if 2 existing keys.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608"],
+    "notes": "Transpondery: Mustang 2011-2014 Texas Crypto 2/Tiris DST80.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/ford_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Mustang",
+    "yearStart": 2015,
+    "yearEnd": 2017,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HU101",
+        "bladeIlco": "H128-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP39FO-24.P2",
+        "transponderChip": "NXP PCF7939F HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "M3N-A2C31243300",
+        "partNumber": "164-R8120",
+        "frequency": "902"
+      },
+      {
+        "keyType": "Transponder",
+        "trimDependent": true,
+        "keyway": "HU101",
+        "bladeIlco": "H128-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP39FO-24.P2",
+        "transponderChip": "NXP PCF7939F HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": null,
+        "partNumber": "164-R8128",
+        "frequency": null
+      }
+    ],
+    "immobilizer": "SecuriLock PATS / PEPS",
+    "pinRequired": false,
+    "programming": "No onboard programming. Professional tool required.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608"],
+    "notes": "S550 generation 2015+. Transpondery: Mustang 2015+ Philips Crypto 3/HiTAG Pro.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2015-2017-ford-mustang-smart-key-5b-fcc-m3n-a2c31243300-902-mhz",
+      "https://www.transpondery.com/transponder_catalog/ford_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Mustang",
+    "yearStart": 2018,
+    "yearEnd": 2021,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU101",
+        "bladeIlco": "H128-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP39FO-24.P2",
+        "transponderChip": "NXP NCF2951F / HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "M3N-A2C93142600",
+        "partNumber": "164-R8149",
+        "frequency": "902"
+      }
+    ],
+    "immobilizer": "SecuriLock PEPS",
+    "pinRequired": false,
+    "programming": "No onboard programming. Professional tool required.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608"],
+    "notes": "Refresh generation 2018-2021. Part number corrected from 164-R8166 (F-series truck part) to 164-R8149 (Mustang/Fusion/Edge). Both use M3N-A2C93142600 FCC ID but different OEM part numbers.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2018-ford-mustang-smart-key-5b-fcc-m3n-a2c93142600",
+      "https://www.bestkeysolution.com/products/2017-2022-ford-proximity-smart-remote-key-5-button-164-r8149-m3n-a2c931426"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Mustang",
+    "yearStart": 2022,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU101",
+        "bladeIlco": "H128-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP39FO-24.P2",
+        "transponderChip": "NXP NCF2951F / HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "M3N-A3C054339",
+        "partNumber": "164-R8324",
+        "frequency": "902"
+      }
+    ],
+    "immobilizer": "SecuriLock PEPS",
+    "pinRequired": false,
+    "programming": "No onboard programming. IDS/FDRS or Autel required.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608", "Snap-on Zeus"],
+    "notes": "S650 Mustang 2022+. New FCC ID M3N-A3C054339 (164-R8324) confirmed via uhs-hardware.com and locksmithkeyless.com.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2022-2024-ford-mustang-5-button-smart-key-pn-164-r8324-m3n-a3c054339-oem",
+      "https://www.locksmithkeyless.com/products/2022-2023-ford-mustang-smart-key-w-remote-start-5b-fcc-m3n-a3c054339"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Transit",
+    "yearStart": 2015,
+    "yearEnd": 2019,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "HU101",
+        "bladeIlco": "RHK-FORD-4B1HS",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 4D63 80-bit / DST80",
+        "chipClonable": "no",
+        "fccId": "OUCD6000022",
+        "partNumber": "164-R8126",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SecuriLock PATS",
+    "pinRequired": false,
+    "programming": "Onboard capable on some configurations.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608"],
+    "notes": "North American Transit launched 2015 MY. Transpondery: Transit 2013-2016 Tiris DST80; 2016+ HiTAG Pro.",
+    "confidence": "verified",
+    "sources": [
+      "https://northcoastkeyless.com/product/2015-2017-ford-transit-high-security-remote-head-key-fob-4-button-fcc-id-oucd6000022-pn-164-r8126/"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Transit",
+    "yearStart": 2019,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Flip",
+        "trimDependent": false,
+        "keyway": "HU101",
+        "bladeIlco": "FLIP-FORD-3B1HS",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "N5F-A08TAA",
+        "partNumber": "164-R8281",
+        "frequency": "315"
+      },
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HU101",
+        "bladeIlco": "H128-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP39FO-24.P2",
+        "transponderChip": "NXP HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": null,
+        "partNumber": "164-R8289",
+        "frequency": null
+      }
+    ],
+    "immobilizer": "SecuriLock PATS",
+    "pinRequired": false,
+    "programming": "No onboard programming. Professional tool required.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608"],
+    "notes": "Transit van 2019+ uses flip key N5F-A08TAA (164-R8281). 2020-2024 Transit Econoline uses transponder 164-R8289.",
+    "confidence": "verified",
+    "sources": [
+      "https://northcoastkeyless.com/product/ford-transit-4-button-flip-key-fob-fcc-n5f-a08taa-p-n-164-r8281/",
+      "https://www.locksmithkeyless.com/products/2020-2024-ford-transponder-key-id49-hitag-pro-chip-hu101-5940086"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Transit Connect",
+    "yearStart": 2010,
+    "yearEnd": 2013,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "FO21T",
+        "bladeIlco": "FO21T17",
+        "bladeSilca": "FO21T3",
+        "bladeJma": "TP02FD-6P",
+        "transponderChip": "Texas 4D63 80-bit",
+        "chipClonable": "no",
+        "fccId": "KR55WK47899",
+        "partNumber": "164-R8042",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SecuriLock PATS",
+    "pinRequired": false,
+    "programming": "Professional programming required.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608"],
+    "notes": "Transit Connect uses Tibbe blade (FO21T) in this generation. Remote head key FCC KR55WK47899 / part 164-R8042 confirmed at 315 MHz via uhs-hardware.com. Standalone transponder-only key (no remote) is 164-R8051.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2010-2013-ford-transit-connect-3-button-remote-head-key-pn-164-r8042-kr55wk47899-aftermarket",
+      "https://www.locksmithkeyless.com/products/2010-2013-ford-transit-connect-remote-key-for-3b-fcc-kr55wk47899"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Transit Connect",
+    "yearStart": 2014,
+    "yearEnd": 2019,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "HU101",
+        "bladeIlco": "RHK-FORD-4B1HS",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 4D63 80-bit",
+        "chipClonable": "no",
+        "fccId": "OUCD6000022",
+        "partNumber": "164-R8007",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SecuriLock PATS",
+    "pinRequired": false,
+    "programming": "Onboard capable some trims.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608"],
+    "notes": "New generation Transit Connect 2014 adopted HU101 blade.",
+    "confidence": "verified",
+    "sources": [
+      "https://northcoastkeyless.com/ford-transit-connect-keyless-entry-remote-fob-programming-instructions/"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Ford",
+    "model": "Transit Connect",
+    "yearStart": 2019,
+    "yearEnd": 2023,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Flip",
+        "trimDependent": false,
+        "keyway": "HU101",
+        "bladeIlco": "FLIP-FORD-3B1HS",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "N5F-A08TAA",
+        "partNumber": "164-R8236",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SecuriLock PATS",
+    "pinRequired": false,
+    "programming": "No onboard programming. Professional tool required.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608"],
+    "notes": "Transit Connect discontinued in US after 2023 MY. FCC N5F-A08TAA (164-R8236) confirmed via Amazon listings.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2015-2019-ford-flip-key-3b-fcc-n5f-a08taa-5923667"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Lincoln",
+    "model": "Navigator",
+    "yearStart": 2003,
+    "yearEnd": 2009,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "H75",
+        "bladeIlco": "H92-PT",
+        "bladeSilca": "FO38R",
+        "bladeJma": "FO21R",
+        "transponderChip": "Texas 4D63 80-bit",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U793",
+        "partNumber": "164-R8070",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SecuriLock PATS",
+    "pinRequired": false,
+    "programming": "Onboard if 2 existing keys.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608"],
+    "notes": "Transpondery: Navigator 2002-2009 Texas 4D63. ILCO blade H92-PT (H75 keyway profile).",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/lincoln_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/2000-2019-ford-lincoln-mazda-mercury-transponder-key-4d63-80-bits-chip-h92-pt-2"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Lincoln",
+    "model": "Navigator",
+    "yearStart": 2010,
+    "yearEnd": 2012,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "H75",
+        "bladeIlco": "H92-PT",
+        "bladeSilca": "FO38R",
+        "bladeJma": "FO21R",
+        "transponderChip": "Texas 4D63 80-bit / DST80",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U793",
+        "partNumber": "164-R8070",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SecuriLock PATS",
+    "pinRequired": false,
+    "programming": "Onboard if 2 existing keys.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608"],
+    "notes": "Transpondery: Navigator 2010-2013 Texas Crypto 4D DST80. ILCO blade H92-PT (H75 keyway profile).",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/lincoln_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Lincoln",
+    "model": "Navigator",
+    "yearStart": 2013,
+    "yearEnd": 2017,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "H75",
+        "bladeIlco": "PRX-FORD-5B10",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips PCF7945A / PCF7953A HITAG 2+ ID46",
+        "chipClonable": "no",
+        "fccId": "M3N5WY8609",
+        "partNumber": "164-R8092",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SecuriLock PEPS",
+    "pinRequired": false,
+    "programming": "No onboard programming. Professional tool required.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608"],
+    "notes": "Transpondery: Navigator 2013-2017 Hitag 2+/ID46. M3N5WY8609 also used on MKS/MKT/MKX 2013-2015.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/lincoln_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/2011-2019-ford-smart-key-5b-fcc-m3n5wy8609-h75"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Lincoln",
+    "model": "Navigator",
+    "yearStart": 2018,
+    "yearEnd": 2021,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU101",
+        "bladeIlco": "H128-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP39FO-24.P2",
+        "transponderChip": "NXP PCF7939FA / HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "M3N-A2C940780",
+        "partNumber": "164-R8226",
+        "frequency": "902"
+      }
+    ],
+    "immobilizer": "SecuriLock PEPS",
+    "pinRequired": false,
+    "programming": "No onboard programming. IDS/FDRS or Autel required.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608", "Snap-on Zeus"],
+    "notes": "Redesigned 2018 Navigator. FCC M3N-A2C940780 / part 164-R8226 confirmed for 2018-2021 via uhs-hardware.com. Split from 2022+ row which uses M3N-A2C931426 / 164-R8278.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2018-2021-lincoln-navigator-5-button-smart-key-pn-164-r8226-m3n-a2c940780-oem",
+      "https://www.transpondery.com/transponder_catalog/lincoln_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Lincoln",
+    "model": "Navigator",
+    "yearStart": 2022,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU101",
+        "bladeIlco": "H128-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP39FO-24.P2",
+        "transponderChip": "NXP PCF7939FA / HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "M3N-A2C931426",
+        "partNumber": "164-R8278",
+        "frequency": "902"
+      }
+    ],
+    "immobilizer": "SecuriLock PEPS",
+    "pinRequired": false,
+    "programming": "No onboard programming. IDS/FDRS or Autel required.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608", "Snap-on Zeus"],
+    "notes": "2022+ Navigator updated to FCC M3N-A2C931426 / part 164-R8278 (shared with Aviator/Corsair/Nautilus). Confirmed via bestkeysolution.com OEM listing.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.bestkeysolution.com/products/2021-lincoln-navigator-smart-key-fob-pn-164-r8278-5938568-kl7t-15k601-ba-kl7t15k601ba",
+      "https://remotesandkeys.com/products/2022-lincoln-navigator-smart-key-fob-pn-164-r8278-5938568-kl7t-15k601-ba-kl7t15k601ba"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Lincoln",
+    "model": "MKZ",
+    "yearStart": 2007,
+    "yearEnd": 2009,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "H75",
+        "bladeIlco": "H92-PT",
+        "bladeSilca": "FO38R",
+        "bladeJma": "FO21R",
+        "transponderChip": "Texas 4D63 80-bit",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U793",
+        "partNumber": "164-R8070",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SecuriLock PATS",
+    "pinRequired": false,
+    "programming": "Onboard if 2 existing keys.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608"],
+    "notes": "Transpondery: MKZ 2007-2009 Texas 4D63. ILCO blade H92-PT (H75 keyway profile).",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/lincoln_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Lincoln",
+    "model": "MKZ",
+    "yearStart": 2010,
+    "yearEnd": 2012,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "H75",
+        "bladeIlco": "PRX-FORD-5B2",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 4D63 80-bit / DST80",
+        "chipClonable": "no",
+        "fccId": "M3N5WY8609",
+        "partNumber": "164-R8092",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "SecuriLock PEPS",
+    "pinRequired": false,
+    "programming": "Professional tool required.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608"],
+    "notes": "Transpondery: MKZ 2010-2012 Texas Crypto 4D DST80.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/lincoln_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Lincoln",
+    "model": "MKZ",
+    "yearStart": 2013,
+    "yearEnd": 2016,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU101",
+        "bladeIlco": "H128-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP39FO-24.P2",
+        "transponderChip": "NXP PCF7939FA HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "M3N-A2C31243300",
+        "partNumber": "164-R7991",
+        "frequency": "902"
+      }
+    ],
+    "immobilizer": "SecuriLock PEPS",
+    "pinRequired": false,
+    "programming": "No onboard programming. IDS/FDRS or Autel required.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608"],
+    "notes": "Transpondery: MKZ 2013-2016 HiTAG Pro 128-bit. Part number corrected from 164-R8117 (that is the Ford F-150 2015-2017 part) to 164-R7991, confirmed via locksmithkeyless.com and oemcarkeymall MKZ-specific listings.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/lincoln_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/2013-2016-lincoln-mkz-smart-key-5b-fcc-m3n-a2c31243300",
+      "https://oemcarkeymall.com/products/2015-lincoln-mkz-smart-key-2way-trunk-remote-start-m3n-a2c31243300"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Lincoln",
+    "model": "MKZ",
+    "yearStart": 2017,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU101",
+        "bladeIlco": "H128-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP39FO-24.P2",
+        "transponderChip": "NXP PCF7939FA HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "M3N-A2C94078000",
+        "partNumber": "164-R8154",
+        "frequency": "902"
+      }
+    ],
+    "immobilizer": "SecuriLock PEPS",
+    "pinRequired": false,
+    "programming": "No onboard programming. IDS/FDRS or Autel required.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608"],
+    "notes": "Transpondery: MKZ 2017+ HiTAG Pro. Discontinued after 2020 MY. Part number corrected from 164-R8278 (wrong — that is Navigator/Aviator) to 164-R8154 (5-button) / 164-R8155 (4-button). FCC M3N-A2C94078000 confirmed via northcoastkeyless.com and uhs-hardware.com.",
+    "confidence": "verified",
+    "sources": [
+      "https://northcoastkeyless.com/product/lincoln-mkz-5-button-smart-key-fob-remote-fcc-m3n-a2c940780-p-n-164-r8154/",
+      "https://www.uhs-hardware.com/products/2017-2021-lincoln-continental-mkc-mkz-navigator-4-button-smart-key-pn-5929516-m3n-a2c94078000-2-way-peps-strattec"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Lincoln",
+    "model": "Aviator",
+    "yearStart": 2020,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU101",
+        "bladeIlco": "H128-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP39FO-24.P2",
+        "transponderChip": "NXP PCF7939FA / HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "M3N-A2C931426",
+        "partNumber": "164-R8279",
+        "frequency": "902"
+      }
+    ],
+    "immobilizer": "SecuriLock PEPS",
+    "pinRequired": false,
+    "programming": "No onboard programming. IDS/FDRS or Autel required.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608"],
+    "notes": "Reintroduced Aviator as 2020 MY. FCC M3N-A2C931426 / part 164-R8279 confirmed via northcoastkeyless.com for 4-button variant.",
+    "confidence": "verified",
+    "sources": [
+      "https://northcoastkeyless.com/product/lincoln-aviator-4-button-smart-key-fob-remote-fcc-m3n-a2c931426-p-n-164-r8279/",
+      "https://www.transpondery.com/transponder_catalog/lincoln_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Lincoln",
+    "model": "Corsair",
+    "yearStart": 2020,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU101",
+        "bladeIlco": "H128-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP39FO-24.P2",
+        "transponderChip": "NXP PCF7939FA / HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "M3N-A2C931426",
+        "partNumber": "164-R8278",
+        "frequency": "902"
+      }
+    ],
+    "immobilizer": "SecuriLock PEPS",
+    "pinRequired": false,
+    "programming": "No onboard programming. IDS/FDRS or Autel required.",
+    "programmerHint": ["IDS/FDRS", "Autel IM608"],
+    "notes": "Replaced MKC 2020. Part 164-R8278 confirmed via uhs-hardware.com. Shares key with Aviator/Nautilus.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/lincoln_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2020-2023-lincoln-corsair-5-button-smart-key-pn-164-r8278-m3n-a2c931426-oem-refurb"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  }
+]

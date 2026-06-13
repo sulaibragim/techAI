@@ -1,0 +1,1528 @@
+[
+  {
+    "make": "Chevrolet",
+    "model": "Equinox",
+    "yearStart": 2010,
+    "yearEnd": 2017,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": "B116-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP37OP-11.P1",
+        "transponderChip": "PCF7937E (Philips ID46 GM EXT / Hitag2 Extended)",
+        "chipClonable": "token",
+        "fccId": null,
+        "partNumber": "22984996 / 13523903 / 23326748",
+        "frequency": null
+      }
+    ],
+    "immobilizer": "GM BCM-based Hitag2 immobilizer",
+    "pinRequired": false,
+    "programming": "On-board programmable with one working key; or OBD programmer (AUTEL, OBDSTAR, Xhorse)",
+    "programmerHint": [
+      "Autel IM608",
+      "OBDSTAR X300 PRO3",
+      "Xhorse VVDI2"
+    ],
+    "notes": "B111 (Z-keyway / PCF7936 circle+) used on pre-2010 Equinox. 2010+ moved to HU100 high-security blade with PCF7937E extended chip.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/chevrolet_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/2015-2020-chevrolet-transponder-key-id-46-gm-ext-chip-b116-pt",
+      "https://www.uhs-hardware.com/products/2010-2020-gm-b116-pt-transponder-key-46-gm-chip-jma"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Equinox",
+    "yearStart": 2018,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": "B119-PT (emergency blade)",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7945A / Hitag2 ID46",
+        "chipClonable": "token",
+        "fccId": "HYQ4AA",
+        "partNumber": "13529650 / 13584498 / 13522875",
+        "frequency": "315"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": "B119-PT (emergency blade)",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7945A / Hitag2 ID46",
+        "chipClonable": "token",
+        "fccId": "HYQ4AS",
+        "partNumber": "13522874",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "GM BCM-based Hitag2/smart-key PEPS immobilizer",
+    "pinRequired": false,
+    "programming": "Requires professional OBD programmer; no onboard DIY procedure",
+    "programmerHint": [
+      "Autel IM508",
+      "Autel IM608",
+      "Xhorse VVDI2",
+      "OBDSTAR X300 PRO3"
+    ],
+    "notes": "2018-2021 primarily HYQ4AA (315 MHz); 2022-2024 HYQ4AS. Both use HU100 emergency blade. Push-button start vehicles only.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.bestkeysolution.com/products/smart-key-fob-replacement-for-2018-2019-chevrolet-equinox-smart-key-remote-fob-315mhz-hyq4aa-1551a-4aa",
+      "https://www.locksmithkeyless.com/products/2024-chevrolet-equinox-smart-key-4b-w-remote-start-fob-fcc-hyq4as",
+      "https://www.transpondery.com/transponder_catalog/chevrolet_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Trax",
+    "yearStart": 2013,
+    "yearEnd": 2022,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": "B116-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP37OP-11.P1",
+        "transponderChip": "PCF7937E (Philips ID46 GM EXT)",
+        "chipClonable": "token",
+        "fccId": null,
+        "partNumber": "22984996",
+        "frequency": null
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HU100",
+        "bladeIlco": "B119-PT (emergency blade)",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7945A / Hitag2 ID46",
+        "chipClonable": "token",
+        "fccId": "HYQ4AS",
+        "partNumber": "13522874 / 13530712",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "GM BCM-based Hitag2 immobilizer",
+    "pinRequired": false,
+    "programming": "Transponder: on-board programmable with one working key. Smart key: professional OBD programmer required.",
+    "programmerHint": [
+      "Autel IM608",
+      "OBDSTAR X300 PRO3",
+      "Xhorse VVDI2"
+    ],
+    "notes": "2013-2019: mechanical HU100/B116-PT transponder standard. 2020-2022: Smart key (HYQ4AS) became common. Some trim levels offered both options.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2010-2020-gm-b116-pt-transponder-key-46-gm-chip-jma",
+      "https://www.locksmithkeyless.com/products/2022-chevrolet-trax-smart-key-4b-w-remote-start-fob-fcc-hyq4as",
+      "https://www.transpondery.com/transponder_catalog/chevrolet_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Trax",
+    "yearStart": 2024,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM EXT",
+        "chipClonable": "token",
+        "fccId": "HYQ4ES",
+        "partNumber": "13530712",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "GM BCM-based PEPS immobilizer",
+    "pinRequired": false,
+    "programming": "Professional OBD programmer required; no onboard DIY procedure",
+    "programmerHint": [
+      "Autel IM508",
+      "Autel IM608",
+      "Xhorse VVDI2"
+    ],
+    "notes": "All-new 2024 Trax (new platform) uses HYQ4ES at 434 MHz, same FCC ID family as Trailblazer/Blazer/Traverse.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.ebay.com/itm/116933449292",
+      "https://remotesandkeys.com/products/2024-chevrolet-trax-smart-key-remote-pn-13530712",
+      "https://www.locksmithkeyless.com/products/2022-chevrolet-trax-smart-key-4b-w-remote-start-fob-fcc-hyq4as"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Trailblazer",
+    "yearStart": 2021,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7937E / Philips ID46 GM EXT",
+        "chipClonable": "token",
+        "fccId": "HYQ4ES",
+        "partNumber": "13530713",
+        "frequency": "434"
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HU100",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM EXT",
+        "chipClonable": "token",
+        "fccId": "LXP-T004",
+        "partNumber": null,
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "GM BCM-based PEPS immobilizer",
+    "pinRequired": false,
+    "programming": "Professional OBD programmer required; no onboard DIY procedure",
+    "programmerHint": [
+      "Autel IM508",
+      "Autel IM608",
+      "Xhorse VVDI2"
+    ],
+    "notes": "Primary key is HYQ4ES smart key. LXP-T004 flip key is XL8 trim only per product listings. 434 MHz (also listed as 433 MHz in some aftermarket descriptions).",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2022-chevrolet-trailblazer-smart-key-5b-fob-fcc-hyq4es",
+      "https://www.locksmithkeyless.com/products/2023-chevrolet-trailblazer-flip-key-fob-3b-fcc-lxp-t004-only-xl-8",
+      "https://www.amazon.com/HYQ4ES-Replacement-2021-2022-Chevrolet-Trailblazer/dp/B0CBK5GCRW"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Malibu",
+    "yearStart": 2013,
+    "yearEnd": 2015,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": "B116-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP37OP-11.P1",
+        "transponderChip": "PCF7937E (Philips ID46 GM EXT / Hitag2 Extended)",
+        "chipClonable": "token",
+        "fccId": null,
+        "partNumber": "22984996",
+        "frequency": null
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HU100",
+        "bladeIlco": "B116-PT",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7937E (Philips ID46 GM EXT)",
+        "chipClonable": "token",
+        "fccId": "OHT01060512",
+        "partNumber": "13500221 / 13504199 / 5913397",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "GM BCM-based Hitag2 immobilizer",
+    "pinRequired": false,
+    "programming": "Transponder: on-board programmable with one working key. Flip key: professional OBD programmer required.",
+    "programmerHint": [
+      "Autel IM608",
+      "OBDSTAR X300 PRO3"
+    ],
+    "notes": "7th-gen Malibu (2013-2015). Standard ignition key is B116-PT transponder (PN 22984996). OHT01060512 is the FCC ID for the optional flip key remote (NOT a transponder part number — corrected from prior version). Older 2003-2012 Malibu used B111 Z-keyway with PCF7936 (not in scope).",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/chevrolet_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2010-2020-gm-b116-pt-transponder-key-46-gm-chip-jma",
+      "https://www.locksmithkeyless.com/products/2013-chevrolet-malibu-flip-key-fob-5b-fcc-oht01060512-5913397",
+      "https://remotesandkeys.com/products/2013-chevrolet-malibu-transponder-key"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Malibu",
+    "yearStart": 2016,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HU100",
+        "bladeIlco": "B119-PT (emergency blade)",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NCF2951E / Hitag2 ID46",
+        "chipClonable": "token",
+        "fccId": "HYQ4EA",
+        "partNumber": "13508769A / 13529662A",
+        "frequency": "433"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HU100",
+        "bladeIlco": "B119-PT (emergency blade)",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM EXT",
+        "chipClonable": "token",
+        "fccId": "HYQ4ES",
+        "partNumber": "13522890 / 13522891",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "GM BCM-based PEPS immobilizer",
+    "pinRequired": false,
+    "programming": "Professional OBD programmer required; no onboard DIY procedure",
+    "programmerHint": [
+      "Autel IM508",
+      "Autel IM608",
+      "Xhorse VVDI2"
+    ],
+    "notes": "8th-gen Malibu (2016-2024). 2016-2020: HYQ4EA 433 MHz. 2021-2024: HYQ4ES 434 MHz. Both use HU100 emergency blade. Check SPID label for exact frequency.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.bestkeysolution.com/products/smart-remote-key-fob-433mhz-id46-chip-5-button-for-chevrolet-camaro-cruze-malibu-2016-2017-2018-2019-fccid-hyq4ea-p-n-13508771-433mhz",
+      "https://www.locksmithkeyless.com/products/2021-2024-chevrolet-smart-key-4b-fob-fcc-hyq4es",
+      "https://www.transpondery.com/transponder_catalog/chevrolet_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Cruze",
+    "yearStart": 2011,
+    "yearEnd": 2015,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": "B116-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP37OP-11.P1",
+        "transponderChip": "PCF7952E (Philips ID46 GM EXT / Hitag2 Extended)",
+        "chipClonable": "token",
+        "fccId": null,
+        "partNumber": "13500318",
+        "frequency": null
+      }
+    ],
+    "immobilizer": "GM BCM-based Hitag2 immobilizer",
+    "pinRequired": false,
+    "programming": "On-board programmable with one working key; or OBD programmer",
+    "programmerHint": [
+      "Autel IM608",
+      "OBDSTAR X300 PRO3"
+    ],
+    "notes": "1st-gen Cruze (J300 platform). Transpondery lists PCF7952E for this gen; B116-PT / HU100 confirmed via UHS Hardware and locksmithkeyless.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/chevrolet_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/2015-2020-chevrolet-transponder-key-id-46-gm-ext-chip-b116-pt",
+      "https://www.uhs-hardware.com/products/2010-2020-gm-b116-pt-transponder-key-46-gm-chip-jma"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Cruze",
+    "yearStart": 2016,
+    "yearEnd": 2019,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HU100",
+        "bladeIlco": "B119-PT (emergency blade)",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NCF2951E / Hitag2 ID46",
+        "chipClonable": "token",
+        "fccId": "HYQ4EA",
+        "partNumber": "13508771 / 13529662",
+        "frequency": "433"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HU100",
+        "bladeIlco": "B119-PT (emergency blade)",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7945A / Hitag2 ID46",
+        "chipClonable": "token",
+        "fccId": "HYQ4AA",
+        "partNumber": "13529663",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "GM BCM-based PEPS immobilizer",
+    "pinRequired": false,
+    "programming": "Professional OBD programmer required; no onboard DIY procedure. Note: early 2016 production may have 315 MHz vs 433 MHz — verify via SPID label.",
+    "programmerHint": [
+      "Autel IM608",
+      "OBDSTAR X300 PRO3",
+      "Xhorse VVDI2"
+    ],
+    "notes": "2nd-gen Cruze (J400). HYQ4EA (433 MHz) for most trims; HYQ4AA (315 MHz) for some base/RS trims. Both use HU100 emergency blade.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.bestkeysolution.com/products/smart-remote-key-fob-433mhz-id46-chip-5-button-for-chevrolet-camaro-cruze-malibu-2016-2017-2018-2019-fccid-hyq4ea-p-n-13508771-433mhz",
+      "https://www.americankeysupply.com/product/chevrolet-cruze-2016-2018-4-button-smart-key-w-trunk-hyq4aa-oem-8111",
+      "https://www.transpondery.com/transponder_catalog/chevrolet_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Impala",
+    "yearStart": 2014,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": "B116-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP37OP-11.P1",
+        "transponderChip": "PCF7937E (Philips ID46 GM EXT)",
+        "chipClonable": "token",
+        "fccId": null,
+        "partNumber": "22984996 / 23209427",
+        "frequency": null
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HU100",
+        "bladeIlco": "B116-PT",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7937E (Philips ID46 GM EXT)",
+        "chipClonable": "token",
+        "fccId": "OHT01060512",
+        "partNumber": "5913397",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "GM BCM-based Hitag2 immobilizer",
+    "pinRequired": false,
+    "programming": "Transponder: on-board programmable. Flip key: professional OBD programmer required.",
+    "programmerHint": [
+      "Autel IM608",
+      "OBDSTAR X300 PRO3"
+    ],
+    "notes": "10th-gen Impala (2014-2020). Standard ignition key is B116-PT transponder; flip remote key available as optional upgrade. Last Impala sold in 2020.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/chevrolet_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/2017-chevrolet-impala-flip-key-fob-5b-fcc-oht01060512-5913397",
+      "https://remotesandkeys.com/products/2016-chevrolet-impala-transponder-key"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Camaro",
+    "yearStart": 2010,
+    "yearEnd": 2015,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": "B116-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP37OP-11.P1",
+        "transponderChip": "PCF7937E (Philips ID46 GM EXT)",
+        "chipClonable": "token",
+        "fccId": null,
+        "partNumber": "5912545",
+        "frequency": null
+      }
+    ],
+    "immobilizer": "GM BCM-based Hitag2 immobilizer",
+    "pinRequired": false,
+    "programming": "On-board programmable with one working key",
+    "programmerHint": [
+      "Autel IM608",
+      "OBDSTAR X300 PRO3"
+    ],
+    "notes": "5th-gen Camaro first gen (2010-2015). HU100 high-security blade with PCF7937E extended chip.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/chevrolet_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2010-2020-gm-b116-pt-transponder-key-46-gm-chip-jma"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Camaro",
+    "yearStart": 2016,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": "B119-PT (emergency blade)",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7952E / PCF7961E (Hitag2 Extended ID46)",
+        "chipClonable": "token",
+        "fccId": "HYQ4EA",
+        "partNumber": "13508769A / 13529653",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "GM BCM-based PEPS immobilizer",
+    "pinRequired": false,
+    "programming": "Professional OBD programmer required; no onboard DIY procedure",
+    "programmerHint": [
+      "Autel IM608",
+      "Xhorse VVDI2"
+    ],
+    "notes": "6th-gen Camaro (2016-2024). 2016-2020 uses HYQ4EA 433 MHz. Transpondery and multiple aftermarket sources confirm PCF7952E / PCF7961E as the correct chip for HYQ4EA (same chip family as Cruze/Malibu HYQ4EA). Prior entry incorrectly listed PCF7937E which belongs to the HYQ4ES generation. Some OEM 6-button convertible variants (PN 13522886) may use PCF7937E — verify against specific part number.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/chevrolet_transponder_catalog.html",
+      "https://www.bestkeysolution.com/products/smart-remote-key-fob-433mhz-id46-chip-5-button-for-chevrolet-camaro-cruze-malibu-2016-2017-2018-2019-fccid-hyq4ea-p-n-13508771-433mhz",
+      "https://www.uhs-hardware.com/products/2016-2022-chevrolet-4-button-smart-key-hyq4ea-433-mhz-aftermarket",
+      "https://remotesandkeys.com/products/2018-chevrolet-camaro-smart-key-remote-1039"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Camaro",
+    "yearStart": 2021,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM EXT",
+        "chipClonable": "token",
+        "fccId": "HYQ4ES",
+        "partNumber": "13522890 / 13522891",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "GM BCM-based PEPS immobilizer",
+    "pinRequired": false,
+    "programming": "Professional OBD programmer required; no onboard DIY procedure",
+    "programmerHint": [
+      "Autel IM508",
+      "Autel IM608",
+      "Xhorse VVDI2"
+    ],
+    "notes": "6th-gen Camaro final years. Strattec 5947799, ILCO PRX-GM-4B14. 2024 models may use NXP AES 128-bit chip per some listings.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2021-2024-chevrolet-smart-key-4b-fob-fcc-hyq4es",
+      "https://www.uhs-hardware.com/products/2021-chevrolet-camaro-5-button-smart-key-pn-13522891-hyq4es-oem-recase",
+      "https://www.amazon.com/Chevrolet-2016-2024-FengRKey-Compatible-HYQ4ES/dp/B0G1JS8935"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Spark",
+    "yearStart": 2013,
+    "yearEnd": 2015,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "DW05AP",
+        "bladeIlco": "DW04CT6",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "ID48 (Megamos Crypto)",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": null,
+        "frequency": null
+      },
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "DWO4T",
+        "bladeIlco": "DWO4T",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7937EA (Philips ID46 GM EXT)",
+        "chipClonable": "token",
+        "fccId": null,
+        "partNumber": "95233522",
+        "frequency": null
+      }
+    ],
+    "immobilizer": "GM Megamos ID48 immobilizer (ID48 variant) / GM BCM-based Hitag2 immobilizer (ID46 variant)",
+    "pinRequired": false,
+    "programming": "ID48 variant: professional OBD programmer required. ID46 variant: on-board programmable with one working key.",
+    "programmerHint": [
+      "Autel IM608",
+      "OBDSTAR X300 PRO3"
+    ],
+    "notes": "1st-gen Spark (M300). TWO key variants exist: (1) DW04CT6/DW05AP keyway with ID48 Megamos Crypto chip — atypical for GM US. (2) DWO4T keyway with PCF7937EA ID46 GM EXT chip (PN 95233522) — confirmed by UHS Hardware and locksmithkeyless. Prior version only listed ID48 and missed the ID46 variant. Verify which variant by reading the existing key.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2013-2015-chevrolet-spark-transponder-key-id46-gm-ext-chip-dw04ct6-1",
+      "https://www.uhs-hardware.com/products/2013-2015-chevrolet-spark-dw04ct6-transponder-key-megamos-id-48",
+      "https://www.uhs-hardware.com/products/2013-2016-chevrolet-spark-dwo4t-transponder-key-philips-id-46-gm-ext",
+      "https://www.locksmithkeyless.com/products/2013-2015-chevrolet-spark-transponder-key-id46-gm-ext-chip-dw04ct6"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Spark",
+    "yearStart": 2016,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": "B116-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP37OP-11.P1",
+        "transponderChip": "PCF7937E (Philips ID46 GM EXT)",
+        "chipClonable": "token",
+        "fccId": null,
+        "partNumber": "22984996",
+        "frequency": null
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HU100",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7937E (Philips ID46 GM EXT)",
+        "chipClonable": "token",
+        "fccId": "KR55WK50073",
+        "partNumber": "13575182",
+        "frequency": "315"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HU100",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7945A / Hitag2 ID46",
+        "chipClonable": "token",
+        "fccId": "HYQ4AA",
+        "partNumber": "13529665",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "GM BCM-based Hitag2 immobilizer",
+    "pinRequired": false,
+    "programming": "Transponder: on-board programmable. Flip/Smart key: professional OBD programmer required.",
+    "programmerHint": [
+      "Autel IM608",
+      "OBDSTAR X300 PRO3"
+    ],
+    "notes": "2nd-gen Spark (M400). Switched from DW04/ID48 to HU100/ID46 ext. Multiple key types per trim. KR55WK50073 flip key confirmed at 315 MHz.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2016-chevrolet-spark-flip-key-fob-3b-fcc-kr55wk50073",
+      "https://www.uhs-hardware.com/products/2013-2016-chevrolet-spark-dwo4t-transponder-key-philips-id-46-gm-ext",
+      "https://www.locksmithkeyless.com/products/2015-2020-chevrolet-transponder-key-id-46-gm-ext-chip-b116-pt"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Spark",
+    "yearStart": 2021,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM EXT",
+        "chipClonable": "token",
+        "fccId": "HYQ4AS",
+        "partNumber": null,
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "GM BCM-based PEPS immobilizer",
+    "pinRequired": false,
+    "programming": "Professional OBD programmer required",
+    "programmerHint": [
+      "Autel IM508",
+      "Autel IM608"
+    ],
+    "notes": "2021-2024 Spark uses HYQ4AS smart key (same as Equinox/Trax of same era). Confirmed by multiple Amazon/retailer listings.",
+    "confidence": "verified",
+    "sources": [
+      "https://yourcarkeyguys.com/products/2021-2022-chevrolet-spark-equinox-3b-smart-key-hyq4as",
+      "https://www.uhs-hardware.com/products/2021-2024-chevrolet-3-button-smart-key-hyq4as-aftermarket"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Sonic",
+    "yearStart": 2012,
+    "yearEnd": 2016,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": "B116-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP37OP-11.P1",
+        "transponderChip": "PCF7937E (Philips ID46 GM EXT / Hitag2 Extended)",
+        "chipClonable": "token",
+        "fccId": null,
+        "partNumber": null,
+        "frequency": null
+      }
+    ],
+    "immobilizer": "GM BCM-based Hitag2 immobilizer",
+    "pinRequired": false,
+    "programming": "On-board programmable with one working key; or OBD programmer",
+    "programmerHint": [
+      "Autel IM608",
+      "OBDSTAR X300 PRO3"
+    ],
+    "notes": "1st-gen Sonic (T300). Transpondery lists PCF7937E. OEM flip key FCC# KR55WK50073 (PN 13584829/13579221) is separate product — not listed here as partNumber. HU100/B116-PT confirmed via UHS/locksmithkeyless.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/chevrolet_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2010-2020-gm-b116-pt-transponder-key-46-gm-chip-jma",
+      "https://remotesandkeys.com/products/2014-chevrolet-sonic-transponder-key"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Sonic",
+    "yearStart": 2017,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": "B119-PT (emergency blade)",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7952E / PCF7961E (Hitag2 Extended ID46)",
+        "chipClonable": "token",
+        "fccId": "HYQ4AA",
+        "partNumber": "13529664",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "GM BCM-based PEPS immobilizer",
+    "pinRequired": false,
+    "programming": "Professional OBD programmer required; no onboard DIY procedure",
+    "programmerHint": [
+      "Autel IM608",
+      "OBDSTAR X300 PRO3",
+      "Xhorse VVDI2"
+    ],
+    "notes": "Transpondery lists PCF7952E for this generation. HYQ4AA confirmed at 315 MHz via bestkeysolution (part 13529664).",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/chevrolet_transponder_catalog.html",
+      "https://www.bestkeysolution.com/products/chevrolet-smart-key-fob-bolt-equinox-trax-2016-2022-fccid-hyq4a-p-n-13508769433mhz",
+      "https://www.americankeysupply.com/product/chevrolet-cruze-xl7-sonic-2016-2020-5-button-smart-key-hyq4aa-oem-new-16596"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Buick",
+    "model": "Encore",
+    "yearStart": 2013,
+    "yearEnd": 2016,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": "B116-PT",
+        "bladeSilca": null,
+        "bladeJma": "TP37OP-11.P1",
+        "transponderChip": "PCF7937E / PCF7941E (Philips ID46 GM EXT / Hitag2 Extended)",
+        "chipClonable": "token",
+        "fccId": null,
+        "partNumber": "22984996",
+        "frequency": null
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HU100",
+        "bladeIlco": "B116-PT",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7937E / PCF7941E (Philips ID46 GM EXT)",
+        "chipClonable": "token",
+        "fccId": "OHT01060512",
+        "partNumber": "13504204 / 13500226 / 5912556",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "GM BCM-based Hitag2 immobilizer",
+    "pinRequired": false,
+    "programming": "Transponder: on-board programmable with one working key. Flip key: professional OBD programmer required.",
+    "programmerHint": [
+      "Autel IM608",
+      "OBDSTAR X300 PRO3"
+    ],
+    "notes": "1st-gen Encore (2013-2016). CORRECTED: OHT01060512 (13504204/13500226) are the flip key FCC ID and part numbers — NOT transponder part numbers. The B116-PT transponder uses PN 22984996. Both variants exist: transponder-only ignition key and flip key remote with same keyway. Transpondery lists PCF7937E/PCF7941E.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/buick_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2010-2020-gm-b116-pt-transponder-key-46-gm-chip-jma",
+      "https://www.amazon.com/UrbanX-Replacement-13504204-13500226-13504200/dp/B0DH7P2B17",
+      "https://remotesandkeys.com/products/2014-buick-encore-transponder-key"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Buick",
+    "model": "Encore",
+    "yearStart": 2017,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": "B119-PT (emergency blade)",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7952E / PCF7961E (Hitag2 Extended ID46)",
+        "chipClonable": "token",
+        "fccId": "HYQ4AA",
+        "partNumber": "13506665 / 13532383",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "GM BCM-based PEPS immobilizer",
+    "pinRequired": false,
+    "programming": "Professional OBD programmer required; no onboard DIY procedure",
+    "programmerHint": [
+      "Autel IM608",
+      "Xhorse VVDI2"
+    ],
+    "notes": "1st-gen Encore late refresh. Transpondery lists PCF7952E/PCF7961E. HYQ4AA 315 MHz confirmed via UHS Hardware (PN 13506665).",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/buick_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2017-2020-buick-encore-4-button-smart-key-pn-13506665-hyq4aa-aftermarket"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Buick",
+    "model": "Encore",
+    "yearStart": 2021,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM EXT",
+        "chipClonable": "token",
+        "fccId": "HYQ4ES",
+        "partNumber": "13530511",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "GM BCM-based PEPS immobilizer",
+    "pinRequired": false,
+    "programming": "Professional OBD programmer required",
+    "programmerHint": [
+      "Autel IM508",
+      "Autel IM608",
+      "Xhorse VVDI2"
+    ],
+    "notes": "HYQ4ES 434 MHz confirmed via UHS Hardware OEM listing (PN 13530511). Also shares FCC family with Enclave/Encore GX of same vintage.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2021-2024-buick-encore-5-button-smart-key-pn-13530511-hyq4es-oem",
+      "https://yourcarkeyguys.com/products/2021-2022-buick-enclave-encore-5b-hatch-smart-key-hyq4es"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Buick",
+    "model": "Encore GX",
+    "yearStart": 2020,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HU100",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NCF2951E / Hitag2 ID46",
+        "chipClonable": "token",
+        "fccId": "HYQ4EA",
+        "partNumber": "13506668 / 13521090 / 13532751",
+        "frequency": "433"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HU100",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM EXT",
+        "chipClonable": "token",
+        "fccId": "HYQ4ES",
+        "partNumber": "13530511",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "GM BCM-based PEPS immobilizer",
+    "pinRequired": false,
+    "programming": "Professional OBD programmer required",
+    "programmerHint": [
+      "Autel IM508",
+      "Autel IM608",
+      "Xhorse VVDI2"
+    ],
+    "notes": "Encore GX (new model 2020+). 2020 uses HYQ4EA (remotesandkeys PN 13506668); locksmithkeyless also lists HYQ4ES starting 2020. 2021+ HYQ4ES is standard. Check SPID for split year 2020.",
+    "confidence": "verified",
+    "sources": [
+      "https://remotesandkeys.com/products/2020-buick-encore-gx-smart-key-remote-1005",
+      "https://www.locksmithkeyless.com/products/2020-2025-buick-encore-gx-envista-smart-key-peps-3b-fob-fcc-hyq4es-13547675",
+      "https://www.uhs-hardware.com/products/2018-2020-buick-regal-enclave-encore-gx-5-button-smart-key-pn-13506668-hyq4ea-rsk-gm-2751"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Buick",
+    "model": "Enclave",
+    "yearStart": 2008,
+    "yearEnd": 2017,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "B111 (Z-keyway)",
+        "bladeIlco": "B111-PT",
+        "bladeSilca": "B106",
+        "bladeJma": "TP12GM",
+        "transponderChip": "PCF7936AS (Philips Crypto 2 / Hitag2 / ID46 circle+)",
+        "chipClonable": "token",
+        "fccId": null,
+        "partNumber": null,
+        "frequency": null
+      }
+    ],
+    "immobilizer": "GM BCM-based Hitag2 immobilizer",
+    "pinRequired": false,
+    "programming": "On-board programmable with one working key (circle+ chip pattern)",
+    "programmerHint": [
+      "Autel IM608",
+      "OBDSTAR X300 PRO3",
+      "OLS-B111-AG Lishi"
+    ],
+    "notes": "1st-gen Enclave (Lambda platform). Uses B111 Z-keyway with PCF7936AS circle+ chip. Confirmed via transpondery.com.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/buick_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/b111-transponder-key-gm"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Buick",
+    "model": "Enclave",
+    "yearStart": 2018,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": "B119-PT (emergency blade)",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7952E / PCF7961E (Hitag2 Extended ID46)",
+        "chipClonable": "token",
+        "fccId": "HYQ4EA",
+        "partNumber": "13532751 / 13521090 / 13506668",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "GM BCM-based PEPS immobilizer",
+    "pinRequired": false,
+    "programming": "Professional OBD programmer required",
+    "programmerHint": [
+      "Autel IM608",
+      "Xhorse VVDI2"
+    ],
+    "notes": "2nd-gen Enclave (C1 platform, 2018-2020). Transpondery lists PCF7952E/PCF7961E with HYQ4EA. eBay/remotesandkeys confirm PN 13532751.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/buick_transponder_catalog.html",
+      "https://www.ebay.com/p/17049195018",
+      "https://remotesandkeys.com/products/2018-buick-enclave-smart-key-remote-1005"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Buick",
+    "model": "Enclave",
+    "yearStart": 2021,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM EXT",
+        "chipClonable": "token",
+        "fccId": "HYQ4ES",
+        "partNumber": "13530511",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "GM BCM-based PEPS immobilizer",
+    "pinRequired": false,
+    "programming": "Professional OBD programmer required",
+    "programmerHint": [
+      "Autel IM508",
+      "Autel IM608",
+      "Xhorse VVDI2"
+    ],
+    "notes": "2021-2024 Enclave. Transitioned from HYQ4EA to HYQ4ES. Confirmed via remotesandkeys (2023 PN 13530511) and keylessentryremotefob.com.",
+    "confidence": "verified",
+    "sources": [
+      "https://remotesandkeys.com/products/2023-buick-enclave-smart-key-fob-fcc-id-hyq4es-pn-13530511",
+      "https://remotesandkeys.com/products/2024-buick-enclave-smart-key-fob-fcc-id-hyq4es-pn-13530511",
+      "https://www.keylessentryremotefob.com/buick-enclave-oem-5-button-w-remote-start-key-fob-hyq4es/"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Buick",
+    "model": "Envision",
+    "yearStart": 2016,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": "B119-PT (emergency blade)",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7952E / PCF7961E (Hitag2 Extended ID46)",
+        "chipClonable": "token",
+        "fccId": "HYQ4AA",
+        "partNumber": "13532385 / 13508406 / 13584500",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "GM BCM-based PEPS immobilizer",
+    "pinRequired": false,
+    "programming": "Professional OBD programmer required",
+    "programmerHint": [
+      "Autel IM608",
+      "OBDSTAR X300 PRO3",
+      "Xhorse VVDI2"
+    ],
+    "notes": "1st-gen US-spec Envision. Transpondery lists PCF7952E/PCF7961E. HYQ4AA 315 MHz confirmed via Walmart listing and locksmithkeyless.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/buick_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/2016-2020-buick-envision-smart-key-5b-fcc-hyq4aa",
+      "https://www.walmart.com/ip/HYQ4AA-315-MHz-Replacement-Keyless-Entry-Remote-Smart-Key-Fob-for-Buick-Envision-2016-2017-2018-2019-2020-No-13584500-13508406-13532385-5-Buttons/17219551882"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Buick",
+    "model": "Envision",
+    "yearStart": 2021,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG PRO ID49 128-bit AES",
+        "chipClonable": "no",
+        "fccId": "YG0G21TB2",
+        "partNumber": "13537970 / 13547571",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "GM BCM-based HITAG PRO / ID49 immobilizer",
+    "pinRequired": false,
+    "programming": "Professional OBD programmer required; no onboard DIY. Requires advanced programmer supporting ID49/HITAG PRO.",
+    "programmerHint": [
+      "Autel IM608 Pro II",
+      "OBDSTAR X300 PRO4"
+    ],
+    "notes": "2nd-gen Envision (2021+). Upgraded to HITAG PRO ID49 AES — not cloneable. FCC ID YG0G21TB2 confirmed via Amazon listing. Different ecosystem from earlier HYQ4AA.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.amazon.com/Button-Remote-Keyless-Entry-Envision/dp/B0F9RXDTMF",
+      "https://www.amazon.com/Keylessbest-Replacement-Envision-Control-YG0G21TB2/dp/B0DMSQYSV8",
+      "https://www.locksmithkeyless.com/products/2021-2023-buick-envision-smart-key-4b-fob-fcc-yg0g21tb2"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Cadillac",
+    "model": "ATS",
+    "yearStart": 2013,
+    "yearEnd": 2014,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": "B119-PT (emergency blade)",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7952E / PCF7941E (Hitag2 Extended ID46)",
+        "chipClonable": "token",
+        "fccId": "NBG009768T",
+        "partNumber": "22856930 / 5931856",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "GM BCM-based PEPS immobilizer",
+    "pinRequired": false,
+    "programming": "Professional OBD programmer required",
+    "programmerHint": [
+      "Autel IM608",
+      "Xhorse VVDI2"
+    ],
+    "notes": "1st-gen ATS early production. Transpondery lists PCF7952E/PCF7941E with OEM NBG009768T. Same FCC ID as early SRX.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/cadillac_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/2010-2016-cadillac-srx-prox-key-fob-3b-fcc-nbg009768t"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Cadillac",
+    "model": "ATS",
+    "yearStart": 2015,
+    "yearEnd": 2019,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HU100",
+        "bladeIlco": "B119-PT (emergency blade)",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7941E / PCF7937E (Philips ID46 GM EXT)",
+        "chipClonable": "token",
+        "fccId": "HYQ2AB",
+        "partNumber": "13510253 / 13598506 / 13594023",
+        "frequency": "315"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HU100",
+        "bladeIlco": "B119-PT (emergency blade)",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7941E / PCF7937E (Philips ID46 GM EXT)",
+        "chipClonable": "token",
+        "fccId": "HYQ2AF",
+        "partNumber": null,
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "GM BCM-based PEPS immobilizer",
+    "pinRequired": false,
+    "programming": "Professional OBD programmer required; Strattec 5942488 / ILCO PRX-CAD-4B1",
+    "programmerHint": [
+      "Autel IM608",
+      "Xhorse VVDI2"
+    ],
+    "notes": "HYQ2AB (315 MHz) is primary US key; HYQ2AF (433 MHz) used in some markets. Transpondery confirms PCF7941E/PCF7937E. UHS Hardware and locksmithkeyless both list HYQ2AB with HU100 blade.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/cadillac_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2014-2019-cadillac-ats-cts-xts-4-button-smart-key-hyq2ab-rsk-cad-2ab-4",
+      "https://www.locksmithkeyless.com/products/2014-2019-cadillac-smart-key-4b-fcc-hyq2ab"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Cadillac",
+    "model": "CTS",
+    "yearStart": 2008,
+    "yearEnd": 2013,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "B111 (Z-keyway)",
+        "bladeIlco": "B111-PT",
+        "bladeSilca": "B106",
+        "bladeJma": "TP12GM",
+        "transponderChip": "PCF7936AS (Philips ID46 Circle+ / Crypto2)",
+        "chipClonable": "token",
+        "fccId": null,
+        "partNumber": "15824471 / 89024363 / 15824470 / 23372322",
+        "frequency": null
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HU100",
+        "bladeIlco": "B119-PT (emergency blade)",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7952E / PCF7941E (Hitag2 Extended ID46)",
+        "chipClonable": "token",
+        "fccId": "M3N5WY7777A",
+        "partNumber": "25943676 / 25943677 / 25946298",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "GM BCM-based Hitag2 immobilizer",
+    "pinRequired": false,
+    "programming": "Transponder: on-board programmable with one working key. Smart key: professional OBD programmer required.",
+    "programmerHint": [
+      "Autel IM608",
+      "OBDSTAR X300 PRO3"
+    ],
+    "notes": "3rd-gen CTS (2008-2013). CORRECTED: prior version incorrectly placed M3N5WY7777A (a smart prox key FCC ID) in the transponder row and listed wrong chip PCF7952E for transponder. The B111 ignition transponder key uses PCF7936AS (Circle+ ID46), NOT PCF7952E — confirmed by northcoastkeyless, abkeys, Amazon, and oemcarkeymall. Separately, the M3N5WY7777A smart prox key (Wagon and optional sedan) at 315 MHz uses PCF7952E/PCF7941E — this is a distinct product. Both variants exist for 2008-2013 CTS.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/cadillac_transponder_catalog.html",
+      "https://northcoastkeyless.com/product/2008-2012-cadillac-cts-b111pt-circle-plus-chip-transponder-key-p-n-15824471-89024363-15824470-strattec-5903089/",
+      "https://abkeys.com/products/cadillac-cts-dts-escalade-srx-transponder-key-b111-pcf7936-692933-id46-185",
+      "https://www.uhs-hardware.com/products/2008-2014-cadillac-cts-sts-5-button-smart-key-pn-25943677-m3n5wy7777a-aftermarket"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Cadillac",
+    "model": "CTS",
+    "yearStart": 2014,
+    "yearEnd": 2019,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": "B119-PT (emergency blade)",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7937E / PCF7961E (Philips ID46 GM EXT)",
+        "chipClonable": "token",
+        "fccId": "HYQ2AB",
+        "partNumber": "13598537 / 13589986 / 13594024",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "GM BCM-based PEPS immobilizer",
+    "pinRequired": false,
+    "programming": "Professional OBD programmer required; ILCO PRX-CAD-4B1",
+    "programmerHint": [
+      "Autel IM608",
+      "Xhorse VVDI2"
+    ],
+    "notes": "4th-gen CTS (2014-2019). Transpondery lists PCF7937E/PCF7961E. Shares HYQ2AB FCC ID with ATS/XTS. UHS Hardware and locksmithkeyless confirm 315 MHz.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/cadillac_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/2014-2019-cadillac-smart-key-4b-fcc-hyq2ab",
+      "https://www.uhs-hardware.com/products/2014-2019-cadillac-ats-cts-xts-4-button-smart-key-hyq2ab-rsk-cad-2ab-4"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Cadillac",
+    "model": "CT4",
+    "yearStart": 2020,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG PRO ID49 128-bit AES",
+        "chipClonable": "no",
+        "fccId": "YG0G20TB1",
+        "partNumber": "13541988 / 13536990 / 13538860",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "GM BCM-based HITAG PRO / ID49 immobilizer",
+    "pinRequired": false,
+    "programming": "Professional OBD programmer required; no onboard DIY. Requires programmer supporting ID49/HITAG PRO.",
+    "programmerHint": [
+      "Autel IM608 Pro II",
+      "OBDSTAR X300 PRO4"
+    ],
+    "notes": "CT4 shares platform/key with CT5. YG0G20TB1 FCC ID confirmed via locksmithkeyless and Amazon. IC: 4008C-G20TB1. Not in transpondery catalog; confirmed via two independent live sources. Battery: CR2450.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2020-2022-cadillac-ct4-ct5-smart-key-fcc-yg0g20tb1",
+      "https://www.amazon.com/Keyless-YG0G20TB1-Replacement-2020-2023-Cadillac/dp/B0CBC4CRFY",
+      "https://royalkeysupply.com/products/cadillac-aftermarket-2020-2022-ct4-ct5-smart-key-5b-trunk-remote-start-fccid-yg0g20tb1-pn-13536990-13538860"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Cadillac",
+    "model": "CT5",
+    "yearStart": 2020,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG PRO ID49 128-bit AES",
+        "chipClonable": "no",
+        "fccId": "YG0G20TB1",
+        "partNumber": "13541988 / 13536990 / 13538860",
+        "frequency": "434"
+      }
+    ],
+    "immobilizer": "GM BCM-based HITAG PRO / ID49 immobilizer",
+    "pinRequired": false,
+    "programming": "Professional OBD programmer required; no onboard DIY. Requires programmer supporting ID49/HITAG PRO.",
+    "programmerHint": [
+      "Autel IM608 Pro II",
+      "OBDSTAR X300 PRO4"
+    ],
+    "notes": "CT5 shares exact same key system as CT4. YG0G20TB1 at 434 MHz confirmed. V-Series (CT4-V, CT5-V) uses same FCC ID with colored (red/blue) trim variants. IC: 4008C-G20TB1.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2020-2022-cadillac-ct4-ct5-smart-key-fcc-yg0g20tb1",
+      "https://www.locksmithkeyless.com/products/2021-2024-cadillac-ct4-v-ct5-v-smart-key-5b-fob-red-fcc-yg0g20tb1-85541927",
+      "https://www.amazon.com/Keyless-YG0G20TB1-Replacement-2020-2023-Cadillac/dp/B0CBC4CRFY"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Cadillac",
+    "model": "SRX",
+    "yearStart": 2010,
+    "yearEnd": 2015,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7952E / NCF2951E (Hitag2 Extended ID46)",
+        "chipClonable": "token",
+        "fccId": "NBG009768T",
+        "partNumber": "20984232 / 25959015 / 22865378",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "GM BCM-based PEPS immobilizer",
+    "pinRequired": false,
+    "programming": "Professional OBD programmer required; ILCO PRX-CAD-3B2 / Strattec 5931852",
+    "programmerHint": [
+      "Autel IM608",
+      "Xhorse VVDI2"
+    ],
+    "notes": "2nd-gen SRX (2010-2016). 2010-2015 uses NBG009768T (locksmithkeyless lists 2010-2015; UHS OEM Strattec PN 5931852 confirms same range). Transpondery lists PCF7952E/NCF2951E. Locksmithkeyless and UHS confirm NBG009768T at 315 MHz.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2010-2015-cadillac-srx-smart-prox-key-fob-5b-fcc-nbg009768t",
+      "https://www.uhs-hardware.com/products/2010-2015-cadillac-srx-5-button-smart-key-w-hatch-pn-5931857-nbg009768t-strattec",
+      "https://www.transpondery.com/transponder_catalog/cadillac_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Cadillac",
+    "model": "SRX",
+    "yearStart": 2015,
+    "yearEnd": 2016,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7937E / PCF7961E (Philips ID46 GM EXT)",
+        "chipClonable": "token",
+        "fccId": "HYQ2AB",
+        "partNumber": "13580797 / 13598525",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "GM BCM-based PEPS immobilizer",
+    "pinRequired": false,
+    "programming": "Professional OBD programmer required",
+    "programmerHint": [
+      "Autel IM608",
+      "Xhorse VVDI2"
+    ],
+    "notes": "Final SRX model years. Switched from NBG009768T to HYQ2AB family. Both UHS Hardware and transpondery confirm transition at 2015-2016. 2015 is a split year (some units still NBG009768T, others HYQ2AB). Same key as ATS/CTS/XTS of same era.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2015-2016-cadillac-srx-prox-key-5b-fcc-hyq2ab",
+      "https://www.uhs-hardware.com/products/2015-2016-cadillac-srx-3-button-smart-key-pn-13580797-hyq2ab-aftermarket",
+      "https://www.transpondery.com/transponder_catalog/cadillac_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  }
+]

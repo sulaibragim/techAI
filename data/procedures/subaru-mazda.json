@@ -1,0 +1,823 @@
+[
+  {
+    "make": "Subaru",
+    "model": "Outback",
+    "yearStart": 2005,
+    "yearEnd": 2009,
+    "onboard": null,
+    "addKey": "OBD via Advanced Diagnostics Smart Pro, Autel IM508/IM608, or Lonsdor K518. Connect to OBD port (driver side under dash, left of steering column). Select Subaru > Immobilizer > Add Key. Ignition on with existing working key; follow tool prompts to register new 4D62 key. Up to 4 key slots total.",
+    "allKeysLost": "OBD-based AKL via BIU (Body Integrated Unit) access using Advanced Diagnostics Smart Pro, Autel IM508/IM608, or equivalent dealer-grade tool. Connect to OBD port, select Subaru > Immobilizer > All Keys Lost. Tool communicates with BIU to erase and re-register keys. If OBD route fails on earlier years, BCM EEPROM read (93C86 type) may be required as fallback.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Driver side under dash, left of steering column, above brake pedal — standard 16-pin OBD2",
+    "securityWait": "none",
+    "specialTool": "Advanced Diagnostics Smart Pro ADS2330 | Autel IM508/IM608 | Lonsdor K518",
+    "sources": [
+      "https://www.clksupplies.com/blogs/news/subaru-transponder-key-dat17t13-everything-you-need-to-know",
+      "https://www.locksmithkeyless.com/pages/subaru-keyless-remote-and-key-programming",
+      "https://canadianlocksmiths.com/subaru-car-key-replacement-windsor"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "Outback",
+    "yearStart": 2010,
+    "yearEnd": 2014,
+    "onboard": null,
+    "addKey": "OBD via Lonsdor K518USA (can pull PIN if needed), Autel IM608, or Advanced Diagnostics Smart Pro. Connect to OBD port, select Subaru > Immobilizer > Add Key. Ignition on, present existing working key near start area, then new G-chip key. Up to 4 key slots. No PIN required for add-key on most units; Lonsdor K518USA can read PIN if tool demands it.",
+    "allKeysLost": "OBD-based AKL using Tango key programmer (Subaru 80-bit AKL via OBD emulator method), Autel IM608, or Lonsdor K518. Tango uses emulator to bypass need for working key and forces vehicle to learn new key via OBD. Alternative: BCM EEPROM dump (93C86 data), import to Lonsdor LKE generator, use generated emulator to power dash, then add key via OBD.",
+    "pinRequired": false,
+    "pinSource": "OBD read via Lonsdor K518USA if tool requires it (optional)",
+    "obdPort": "Driver side under dash, left of steering column, above brake pedal — standard 16-pin OBD2",
+    "securityWait": "none",
+    "specialTool": "Lonsdor K518USA | Autel IM608 | Advanced Diagnostics Smart Pro | Tango (for AKL emulator method)",
+    "sources": [
+      "https://www.obdii365.com/service/tango-program-subaru-smart-key-via-obd.html",
+      "http://www.lonsdor.org/lonsdor-k518ise-subaru-smart-key-programming-manual/",
+      "https://www.uhs-hardware.com/products/2010-2014-subaru-legacy-outback-4-button-remote-head-key-cwtwbu766-4d60-chip-dat17-rhk-sub-hs76"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "Outback",
+    "yearStart": 2015,
+    "yearEnd": 2019,
+    "onboard": null,
+    "addKey": "OBD via Autel IM608/IM508 or Advanced Diagnostics Smart Pro ADS2255. Connect to OBD port, select Subaru > Immobilizer > Add Key (Smart Key if applicable). Present working key near start button, follow prompts to register new G-chip or H-chip key. 2017+ models use H chip (8A) — same OBD flow but requires Autel IM608 Pro or Lonsdor K518 for H-chip support.",
+    "allKeysLost": "OBD-based AKL via Autel IM608 Pro (with APB112 emulator for 2017+) or Lonsdor K518. For 2017-2019 H-chip models: reset PEPS (takes ~13 minutes), then add key by presenting new H-chip key near start button within 30 seconds. Remove horn relay to prevent continuous alarm during reset. If OBD method fails, BCM EEPROM (93C86) dump and LKE generation required.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Driver side under dash, left of steering column, above brake pedal — standard 16-pin OBD2",
+    "securityWait": "~13 min PEPS reset for 2017+ AKL",
+    "specialTool": "Autel IM608 Pro + APB112 emulator (2017+) | Advanced Diagnostics Smart Pro ADS2255 | Lonsdor K518",
+    "sources": [
+      "https://blog.uobdii.com/lonsdor-k518-program-2017-subaru-outback-smart-key-when-akl/",
+      "https://blog.obdii.shop/tips-to-program-2020-2021-subaru-all-smart-keys-lost-with-autel-im608im508/",
+      "http://www.lonsdor.org/lonsdor-k518ise-subaru-smart-key-programming-manual/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "Outback",
+    "yearStart": 2020,
+    "yearEnd": null,
+    "onboard": null,
+    "addKey": "OBD via Autel IM608 Pro or Lonsdor K518. Connect to OBD port, select Subaru > Smart Key > Add Key. Remove horn relay before starting (prevents 15-minute alarm). Present existing key near start button (one beep), then new HYQ14AHK H-chip key near start button. Up to 4 key slots.",
+    "allKeysLost": "OBD-based AKL via Autel IM608/IM508 or Lonsdor K518. Two-step: (1) Reset Smart Box (remove horn relay first; ~15-min process); (2) Add key by presenting new H-chip key near start button within 60 seconds when prompted. APB112 smart key emulator used with Autel to generate initial 'analog key' for ignition. Network connection required. ABRITES AVDI with SB002/SB003 licenses also supported; SB003 handles faulty ESL via bench-level RH850 programmer for worst-case scenarios.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Driver side under dash, left of steering column, above brake pedal — standard 16-pin OBD2",
+    "securityWait": "~15 min Smart Box reset",
+    "specialTool": "Autel IM608 Pro + APB112 emulator | Lonsdor K518 | ABRITES AVDI SB002/SB003 (AKL bench fallback)",
+    "sources": [
+      "https://blog.obdii.shop/tips-to-program-2020-2021-subaru-all-smart-keys-lost-with-autel-im608im508/",
+      "https://abrites.com/products/pkg-subaru-full",
+      "https://www.key-programmer.com/2023/07/05/2022-subaru-outback-all-keys-lost-with-autel-im608/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "Forester",
+    "yearStart": 2004,
+    "yearEnd": 2011,
+    "onboard": null,
+    "addKey": "OBD via Advanced Diagnostics Smart Pro or Autel IM508/IM608. Connect to OBD port (driver side under dash, left of column). Select Subaru > Immobilizer > Add Key. Ignition on with existing working key; follow tool prompts to register new 4D62 key. No PIN required. Verify chip type before programming: 2004-2007 typically 4D62 40-bit; 2008-2011 may be 4D62 40-bit or G-chip 80-bit variant.",
+    "allKeysLost": "OBD-based AKL via BIU access using Advanced Diagnostics Smart Pro or Autel IM508/IM608. Select Subaru > Immobilizer > All Keys Lost. If OBD route not supported by tool for this age, BCM/BIU EEPROM dump (93C86 type) required as fallback — extract EEPROM, import data to compatible programmer, then generate and add new key.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Driver side under dash, left of steering column, above brake pedal — standard 16-pin OBD2",
+    "securityWait": "none",
+    "specialTool": "Advanced Diagnostics Smart Pro | Autel IM508/IM608",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/subaru_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/pages/subaru-keyless-remote-and-key-programming",
+      "https://canadianlocksmiths.com/subaru-car-key-replacement-windsor"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "Forester",
+    "yearStart": 2012,
+    "yearEnd": 2018,
+    "onboard": null,
+    "addKey": "OBD via Advanced Diagnostics Smart Pro ADS2255 or Autel IM608. Connect to OBD port, select Subaru > Immobilizer > Add Key. Present existing working key near start button, then new G-chip (4D60 80-bit) key. No PIN required on most units. 2016-2018 may overlap with H-chip on upper trims — verify chip before programming.",
+    "allKeysLost": "OBD-based AKL via Tango (80-bit emulator method via OBD) or Autel IM608. Alternatively: BCM EEPROM dump (93C86 data), generate LKE via Lonsdor K518, use LKE emulator to power dash, then add key via OBD. Remove horn relay to suppress alarm if present.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Driver side under dash, left of steering column, above brake pedal — standard 16-pin OBD2",
+    "securityWait": "none",
+    "specialTool": "Advanced Diagnostics Smart Pro ADS2255 | Autel IM608 | Lonsdor K518 | Tango (AKL emulator)",
+    "sources": [
+      "https://www.obdii365.com/service/tango-program-subaru-smart-key-via-obd.html",
+      "http://www.lonsdor.org/lonsdor-k518ise-subaru-smart-key-programming-manual/",
+      "https://www.uhs-hardware.com/products/2012-2019-subaru-4-button-remote-head-key-cwtwb1u811-b110-g-chip-80-bit-rhk-sub-1110"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "Forester",
+    "yearStart": 2019,
+    "yearEnd": null,
+    "onboard": null,
+    "addKey": "OBD via Autel IM608 Pro or Lonsdor K518. Connect to OBD port, select Subaru > Smart Key > Add Key. Remove horn relay before starting. Present existing key near start button (beep confirms), then new HYQ14AHK H-chip key. Up to 4 key slots. Network connection required for Autel online functions.",
+    "allKeysLost": "OBD-based AKL via Autel IM608 Pro (with APB112 emulator) or Lonsdor K518. Reset PEPS/Smart Box (~13-15 min; remove horn relay first), then add new H-chip key near start button when prompted. ABRITES AVDI SB002/SB003 also supported; SB003 for faulty ESL/bench-level RH850 fallback.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Driver side under dash, left of steering column, above brake pedal — standard 16-pin OBD2",
+    "securityWait": "~13-15 min PEPS/Smart Box reset for AKL",
+    "specialTool": "Autel IM608 Pro + APB112 emulator | Lonsdor K518 | ABRITES AVDI SB002/SB003",
+    "sources": [
+      "https://blog.uobdii.com/lonsdor-k518-program-2017-subaru-outback-smart-key-when-akl/",
+      "https://blog.obdii.shop/tips-to-program-2020-2021-subaru-all-smart-keys-lost-with-autel-im608im508/",
+      "https://abrites.com/products/pkg-subaru-full"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "Crosstrek",
+    "yearStart": 2013,
+    "yearEnd": 2018,
+    "onboard": null,
+    "addKey": "OBD via Advanced Diagnostics Smart Pro ADS2255 or Autel IM608. Connect to OBD port, select Subaru > Immobilizer > Add Key. Present existing working G-chip (4D60 80-bit) key; follow prompts to register new key. No PIN required.",
+    "allKeysLost": "OBD-based AKL via Tango (80-bit emulator via OBD) or Autel IM608. Alternatively: BCM EEPROM dump (93C86 data), LKE generation via Lonsdor K518, use LKE to power dash, then add key. Remove horn relay to suppress alarm if needed.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Driver side under dash, left of steering column, above brake pedal — standard 16-pin OBD2",
+    "securityWait": "none",
+    "specialTool": "Advanced Diagnostics Smart Pro ADS2255 | Autel IM608 | Lonsdor K518 | Tango (AKL)",
+    "sources": [
+      "https://www.obdii365.com/service/tango-program-subaru-smart-key-via-obd.html",
+      "http://www.lonsdor.org/lonsdor-k518ise-subaru-smart-key-programming-manual/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "Crosstrek",
+    "yearStart": 2019,
+    "yearEnd": null,
+    "onboard": null,
+    "addKey": "OBD via Autel IM608 Pro or Lonsdor K518. Connect to OBD port, select Subaru > Smart Key > Add Key. Remove horn relay before starting. Present existing H-chip key near start button, then new HYQ14AHK key. Up to 4 key slots. Network connection required.",
+    "allKeysLost": "OBD-based AKL via Autel IM608 Pro (with APB112 emulator) or Lonsdor K518. Reset PEPS/Smart Box (~13-15 min; remove horn relay first), then present new H-chip key near start button when prompted. ABRITES AVDI SB002/SB003 for fallback including bench-level RH850 if ESL is faulty.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Driver side under dash, left of steering column, above brake pedal — standard 16-pin OBD2",
+    "securityWait": "~13-15 min PEPS/Smart Box reset for AKL",
+    "specialTool": "Autel IM608 Pro + APB112 emulator | Lonsdor K518 | ABRITES AVDI SB002/SB003",
+    "sources": [
+      "https://blog.obdii.shop/tips-to-program-2020-2021-subaru-all-smart-keys-lost-with-autel-im608im508/",
+      "https://abrites.com/products/pkg-subaru-full",
+      "https://www.uhs-hardware.com/products/2018-2020-subaru-crosstrek-4-button-smart-key-pn-88835-fl040-88835-fl041-hyq14ahk-oem"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "Impreza",
+    "yearStart": 2004,
+    "yearEnd": 2011,
+    "onboard": null,
+    "addKey": "OBD via Advanced Diagnostics Smart Pro or Autel IM508/IM608. Connect to OBD port (driver side under dash, left of column). Select Subaru > Immobilizer > Add Key. Existing working key required. No PIN. Note: 2011 may use G-chip 80-bit — verify chip type before programming.",
+    "allKeysLost": "OBD-based AKL via BIU access using Advanced Diagnostics Smart Pro or Autel IM508/IM608. If OBD AKL not supported by tool, BCM EEPROM dump (93C86 type) required as fallback.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Driver side under dash, left of steering column, above brake pedal — standard 16-pin OBD2",
+    "securityWait": "none",
+    "specialTool": "Advanced Diagnostics Smart Pro | Autel IM508/IM608",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/subaru_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/pages/subaru-keyless-remote-and-key-programming"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "Impreza",
+    "yearStart": 2012,
+    "yearEnd": 2016,
+    "onboard": null,
+    "addKey": "OBD via Advanced Diagnostics Smart Pro ADS2255 or Autel IM608. Select Subaru > Immobilizer > Add Key. Present existing G-chip (4D60 80-bit) key, follow tool prompts. No PIN required.",
+    "allKeysLost": "OBD-based AKL via Tango (80-bit emulator) or Autel IM608. Alternatively: BCM EEPROM dump (93C86 data), generate LKE via Lonsdor K518, power dash with emulator, then add key via OBD.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Driver side under dash, left of steering column, above brake pedal — standard 16-pin OBD2",
+    "securityWait": "none",
+    "specialTool": "Advanced Diagnostics Smart Pro ADS2255 | Autel IM608 | Lonsdor K518 | Tango (AKL)",
+    "sources": [
+      "https://www.obdii365.com/service/tango-program-subaru-smart-key-via-obd.html",
+      "http://www.lonsdor.org/lonsdor-k518ise-subaru-smart-key-programming-manual/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "Impreza",
+    "yearStart": 2017,
+    "yearEnd": null,
+    "onboard": null,
+    "addKey": "OBD via Autel IM608 Pro or Lonsdor K518. Connect to OBD port, select Subaru > Smart Key > Add Key. Remove horn relay before starting. Present existing H-chip key near start button, then new HYQ14AHK key. Network connection required.",
+    "allKeysLost": "OBD-based AKL via Autel IM608 Pro (with APB112 emulator) or Lonsdor K518. Reset PEPS/Smart Box (~13-15 min; remove horn relay), then present new H-chip key near start button when prompted. ABRITES AVDI SB002/SB003 available as alternative/fallback.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Driver side under dash, left of steering column, above brake pedal — standard 16-pin OBD2",
+    "securityWait": "~13-15 min PEPS/Smart Box reset for AKL",
+    "specialTool": "Autel IM608 Pro + APB112 emulator | Lonsdor K518 | ABRITES AVDI SB002/SB003",
+    "sources": [
+      "https://blog.uobdii.com/lonsdor-k518-program-2017-subaru-outback-smart-key-when-akl/",
+      "https://blog.obdii.shop/tips-to-program-2020-2021-subaru-all-smart-keys-lost-with-autel-im608im508/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "Legacy",
+    "yearStart": 2005,
+    "yearEnd": 2009,
+    "onboard": null,
+    "addKey": "OBD via Advanced Diagnostics Smart Pro or Autel IM508/IM608. Connect to OBD port (driver side under dash, left of column). Select Subaru > Immobilizer > Add Key. Existing working 4D62 key required. No PIN.",
+    "allKeysLost": "OBD-based AKL via BIU access using Advanced Diagnostics Smart Pro or Autel IM508/IM608. Select Subaru > Immobilizer > All Keys Lost. If OBD AKL not supported, BCM EEPROM dump (93C86 type) required as fallback.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Driver side under dash, left of steering column, above brake pedal — standard 16-pin OBD2",
+    "securityWait": "none",
+    "specialTool": "Advanced Diagnostics Smart Pro | Autel IM508/IM608",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/subaru_transponder_catalog.html",
+      "https://canadianlocksmiths.com/subaru-car-key-replacement-windsor"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "Legacy",
+    "yearStart": 2010,
+    "yearEnd": 2014,
+    "onboard": null,
+    "addKey": "OBD via Lonsdor K518USA (can read PIN if needed), Autel IM608, or Advanced Diagnostics Smart Pro. Select Subaru > Immobilizer > Add Key. Present existing G-chip (4D60 80-bit) key; follow prompts to register new key. No PIN required on most units.",
+    "allKeysLost": "OBD-based AKL via Tango (80-bit emulator method via OBD) or Autel IM608. Alternatively: BCM EEPROM dump (93C86 data), LKE generation via Lonsdor K518, use LKE to power dash, add key via OBD.",
+    "pinRequired": false,
+    "pinSource": "OBD read via Lonsdor K518USA if tool requires it (optional)",
+    "obdPort": "Driver side under dash, left of steering column, above brake pedal — standard 16-pin OBD2",
+    "securityWait": "none",
+    "specialTool": "Lonsdor K518USA | Autel IM608 | Advanced Diagnostics Smart Pro | Tango (AKL)",
+    "sources": [
+      "https://www.obdii365.com/service/tango-program-subaru-smart-key-via-obd.html",
+      "http://www.lonsdor.org/lonsdor-k518ise-subaru-smart-key-programming-manual/",
+      "https://www.uhs-hardware.com/products/2010-2014-subaru-legacy-outback-4-button-remote-head-key-cwtwbu766-4d60-chip-dat17-rhk-sub-hs76"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "Legacy",
+    "yearStart": 2015,
+    "yearEnd": 2019,
+    "onboard": null,
+    "addKey": "OBD via Advanced Diagnostics Smart Pro ADS2255 or Autel IM608. Select Subaru > Immobilizer > Add Key. Present existing G-chip (4D60 80-bit) key; follow prompts. 2017+ may use H-chip — verify before programming. No PIN required.",
+    "allKeysLost": "OBD-based AKL via Tango (80-bit for pre-2017 G chip) or Autel IM608 Pro (with APB112 emulator for 2017+ H chip). For H-chip AKL: reset PEPS (~13 min; remove horn relay), present new H-chip key near start button when prompted. BCM EEPROM fallback (93C86) via Lonsdor LKE if OBD fails.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Driver side under dash, left of steering column, above brake pedal — standard 16-pin OBD2",
+    "securityWait": "~13 min PEPS reset for 2017+ AKL",
+    "specialTool": "Autel IM608 Pro + APB112 emulator | Advanced Diagnostics Smart Pro ADS2255 | Lonsdor K518",
+    "sources": [
+      "https://blog.uobdii.com/lonsdor-k518-program-2017-subaru-outback-smart-key-when-akl/",
+      "https://blog.obdii.shop/tips-to-program-2020-2021-subaru-all-smart-keys-lost-with-autel-im608im508/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "Legacy",
+    "yearStart": 2020,
+    "yearEnd": null,
+    "onboard": null,
+    "addKey": "OBD via Autel IM608 Pro or Lonsdor K518. Connect to OBD port, select Subaru > Smart Key > Add Key. Remove horn relay before starting. Present existing H-chip key near start button, then new HYQ14AHK key. Up to 4 key slots. Network connection required.",
+    "allKeysLost": "OBD-based AKL via Autel IM608 Pro (with APB112 emulator) or Lonsdor K518. Two-step: reset Smart Box (~15 min; remove horn relay), then add new H-chip key near start button within 60 seconds. ABRITES AVDI SB002/SB003 available as alternative.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Driver side under dash, left of steering column, above brake pedal — standard 16-pin OBD2",
+    "securityWait": "~15 min Smart Box reset for AKL",
+    "specialTool": "Autel IM608 Pro + APB112 emulator | Lonsdor K518 | ABRITES AVDI SB002/SB003",
+    "sources": [
+      "https://blog.obdii.shop/tips-to-program-2020-2021-subaru-all-smart-keys-lost-with-autel-im608im508/",
+      "https://abrites.com/products/pkg-subaru-full",
+      "https://www.uhs-hardware.com/products/2020-2022-subaru-legacy-4-button-smart-key-pn-88835-an00a-hyq14ahk-oem"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "Ascent",
+    "yearStart": 2019,
+    "yearEnd": null,
+    "onboard": null,
+    "addKey": "OBD via Autel IM608 Pro or Lonsdor K518. Connect to OBD port, select Subaru > Smart Key > Add Key. Remove horn relay before starting. Present existing H-chip key (HYQ14AHK or CWTB1G077) near start button, then new key. Up to 4 key slots. Network connection required.",
+    "allKeysLost": "OBD-based AKL via Autel IM608 Pro (with APB112 emulator) or Lonsdor K518. Reset Smart Box/PEPS (~13-15 min; remove horn relay), then present new H-chip key near start button when prompted. ABRITES AVDI SB002/SB003 for alternative/fallback.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Driver side under dash, left of steering column, above brake pedal — standard 16-pin OBD2",
+    "securityWait": "~13-15 min PEPS/Smart Box reset for AKL",
+    "specialTool": "Autel IM608 Pro + APB112 emulator | Lonsdor K518 | ABRITES AVDI SB002/SB003",
+    "sources": [
+      "https://blog.obdii.shop/tips-to-program-2020-2021-subaru-all-smart-keys-lost-with-autel-im608im508/",
+      "https://abrites.com/products/pkg-subaru-full",
+      "https://www.uhs-hardware.com/products/2019-subaru-4-button-remote-head-key-pn-57497-sj050-cwtb1g077-h-chip-oem"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "WRX",
+    "yearStart": 2008,
+    "yearEnd": 2014,
+    "onboard": null,
+    "addKey": "OBD via Advanced Diagnostics Smart Pro or Autel IM508/IM608. Select Subaru > Immobilizer > Add Key. Present existing working 4D62 key; follow tool prompts. No PIN required. Shares Impreza platform — same procedure.",
+    "allKeysLost": "OBD-based AKL via BIU access using Advanced Diagnostics Smart Pro or Autel IM508/IM608. If OBD AKL not supported, BCM EEPROM dump (93C86 type) required as fallback.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Driver side under dash, left of steering column, above brake pedal — standard 16-pin OBD2",
+    "securityWait": "none",
+    "specialTool": "Advanced Diagnostics Smart Pro | Autel IM508/IM608",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/subaru_transponder_catalog.html",
+      "https://canadianlocksmiths.com/subaru-car-key-replacement-windsor"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "WRX",
+    "yearStart": 2015,
+    "yearEnd": 2021,
+    "onboard": null,
+    "addKey": "OBD via Advanced Diagnostics Smart Pro ADS2255 or Autel IM608. Select Subaru > Immobilizer > Add Key. Present existing G-chip (4D60 80-bit) key; follow tool prompts. No PIN required.",
+    "allKeysLost": "OBD-based AKL via Tango (80-bit emulator via OBD) or Autel IM608. Alternatively: BCM EEPROM dump (93C86 data), LKE generation via Lonsdor K518, use LKE to power dash, add key via OBD.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Driver side under dash, left of steering column, above brake pedal — standard 16-pin OBD2",
+    "securityWait": "none",
+    "specialTool": "Advanced Diagnostics Smart Pro ADS2255 | Autel IM608 | Lonsdor K518 | Tango (AKL)",
+    "sources": [
+      "https://www.obdii365.com/service/tango-program-subaru-smart-key-via-obd.html",
+      "http://www.lonsdor.org/lonsdor-k518ise-subaru-smart-key-programming-manual/",
+      "https://www.uhs-hardware.com/products/2012-2019-subaru-4-button-remote-head-key-cwtwb1u811-b110-g-chip-80-bit-rhk-sub-1110"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "WRX",
+    "yearStart": 2022,
+    "yearEnd": null,
+    "onboard": null,
+    "addKey": "OBD via Autel IM608 Pro or Lonsdor K518. New generation WRX uses H chip (CWTB1G077 remote head key, not smart key). Connect to OBD port, select Subaru > Immobilizer/Smart Key > Add Key. Remove horn relay before starting. Present existing H-chip key; follow prompts to register new CWTB1G077 key.",
+    "allKeysLost": "OBD-based AKL via Autel IM608 Pro (with APB112 emulator) or Lonsdor K518. Reset Smart Box/PEPS (~13-15 min; remove horn relay), then present new H-chip key when prompted. ABRITES AVDI SB002/SB003 as fallback.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Driver side under dash, left of steering column, above brake pedal — standard 16-pin OBD2",
+    "securityWait": "~13-15 min PEPS/Smart Box reset for AKL",
+    "specialTool": "Autel IM608 Pro + APB112 emulator | Lonsdor K518 | ABRITES AVDI SB002/SB003",
+    "sources": [
+      "https://blog.obdii.shop/tips-to-program-2020-2021-subaru-all-smart-keys-lost-with-autel-im608im508/",
+      "https://www.uhs-hardware.com/products/2019-subaru-4-button-remote-head-key-pn-57497-sj050-cwtb1g077-h-chip-oem"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "BRZ",
+    "yearStart": 2013,
+    "yearEnd": 2020,
+    "onboard": null,
+    "addKey": "OBD via Advanced Diagnostics Smart Pro or Autel IM608. Connect to OBD port, select Subaru > Immobilizer > Add Key (shared Toyota 86/Scion FR-S platform — tool may list as Toyota in some menus). Present existing G-chip (HYQ12BBY) key; follow prompts. No PIN required. Lonsdor K518USA noted as capable of pulling PIN if needed.",
+    "allKeysLost": "OBD-based AKL via Tango (80-bit emulator via OBD) or Autel IM608. Alternatively: BCM EEPROM dump (93C86 data), LKE generation via Lonsdor K518, use LKE to power dash, add key. Lonsdor K518USA is the primary noted tool for PIN read on this platform.",
+    "pinRequired": false,
+    "pinSource": "OBD read via Lonsdor K518USA if tool demands it (optional)",
+    "obdPort": "Driver side under dash, left of steering column, above brake pedal — standard 16-pin OBD2",
+    "securityWait": "none",
+    "specialTool": "Advanced Diagnostics Smart Pro | Autel IM608 | Lonsdor K518USA (PIN read capable)",
+    "sources": [
+      "https://northcoastkeyless.com/subaru-brz-keyless-entry-remote-fob-programming-instructions/",
+      "https://www.uhs-hardware.com/products/2013-2020-subaru-brz-scion-fr-s-4-button-remote-head-key-pn-57497-ca110-hyq12bby-g-chip-rk-toy-bf86",
+      "https://northcoastkeyless.com/product/2013-2019-subaru-brz-4-button-g-chip-remote-head-key-fob-fcc-hyq12bby-p-n-57497-ca110-57497-ca310/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Subaru",
+    "model": "BRZ",
+    "yearStart": 2022,
+    "yearEnd": null,
+    "onboard": null,
+    "addKey": "OBD via Autel IM608 Pro or Lonsdor K518. New generation BRZ uses H chip (8A). Connect to OBD port, select Subaru > Smart Key > Add Key. Remove horn relay before starting. Present existing H-chip HYQ14AHK key near start button, then new key.",
+    "allKeysLost": "OBD-based AKL via Autel IM608 Pro (with APB112 emulator) or Lonsdor K518. Reset PEPS/Smart Box (~13-15 min; remove horn relay), present new H-chip key near start button when prompted. ABRITES AVDI SB002/SB003 as fallback.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Driver side under dash, left of steering column, above brake pedal — standard 16-pin OBD2",
+    "securityWait": "~13-15 min PEPS/Smart Box reset for AKL",
+    "specialTool": "Autel IM608 Pro + APB112 emulator | Lonsdor K518 | ABRITES AVDI SB002/SB003",
+    "sources": [
+      "https://blog.obdii.shop/tips-to-program-2020-2021-subaru-all-smart-keys-lost-with-autel-im608im508/",
+      "https://www.uhs-hardware.com/products/2022-2023-subaru-brz-4-button-smart-key-pn-88835-fl032-hyq14ahk-oem"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mazda",
+    "model": "Mazda3",
+    "yearStart": 2004,
+    "yearEnd": 2013,
+    "onboard": "DIY key-dance with 2 working keys: (1) Insert key 1, turn ON for 1+ sec until red key light extinguishes, remove within 5 sec. (2) Insert key 2, turn ON for 1-5 sec, remove within 10 sec. (3) Insert new unprogrammed key, turn ON — red key light illuminates then extinguishes = success. Max 3 keys. Does NOT work if only 1 key available. Applies to MAZ24 transponder and flip key types.",
+    "addKey": "Use onboard key-dance procedure (requires 2 existing working keys). For remote/RF portion of flip key only (not transponder chip): with 2 working keys, enter programming mode then press remote buttons twice — up to 3 remotes total. For transponder programming without 2 keys: requires professional OBD tool (Autel IM508, VVDI2, or Advanced Diagnostics Smart Pro). FORScan with OBD adapter can add transponder key if 1 working key exists (extended license required).",
+    "allKeysLost": "Professional OBD tool required: Autel IM508/IM608 or OBDSTAR X300 MINI (Ford/Mazda AKL specialist). FORScan with extended license can program transponder if at least 1 key exists. For true AKL: use Autel IM508 > Immobilizer > Mazda > Manual Selection > model > Transponder > All Keys Lost. Tool erases existing keys, programs 2 new 4D63 80-bit keys via OBD. Note: 40-bit vs 80-bit chip mismatch can cause failures — verify chip before programming.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Driver side under dash, above pedals — standard 16-pin OBD2, no panel removal needed",
+    "securityWait": "none",
+    "specialTool": "Autel IM508/IM608 | OBDSTAR X300 MINI | VVDI2 | Advanced Diagnostics Smart Pro | FORScan (1-key add only)",
+    "sources": [
+      "https://mazdas247.com/forum/threads/self-programming-keys-and-remote.123765365/",
+      "https://nikolay100.com/en/how-to-program-new-mazda-key-without-a-locksmith/",
+      "https://forscan.org/forum/viewtopic.php?t=15773"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mazda",
+    "model": "Mazda3",
+    "yearStart": 2014,
+    "yearEnd": 2018,
+    "onboard": null,
+    "addKey": "OBD via Autel IM608, Lonsdor K518, or Advanced Diagnostics Smart Pro. Connect to OBD port (driver side under dash, above pedals). Select Mazda > Smart Key > Add Key (or guided wizard). Tool detects HITAG Pro ID49 system, prompts to present new key near Start button when indicator goes green. No PIN required.",
+    "allKeysLost": "OBD-based AKL via Autel IM608 II or Lonsdor K518. Navigate: Immobilizer > Mazda > Manual Selection > Japan > Mazda 3 > Smart Key > Keyless System (CAN) > All Smart Keys Lost. System erases all keys (~7 min process), then programs minimum 2 new HITAG Pro ID49 (WAZSKE13D01) keys by proximity to Start button. Network connection may be required. No EEPROM required for standard AKL.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Driver side under dash, above pedals — standard 16-pin OBD2, no panel removal needed",
+    "securityWait": "~7 min key erasure during AKL",
+    "specialTool": "Autel IM608 II | Lonsdor K518 | Advanced Diagnostics Smart Pro",
+    "sources": [
+      "https://www.key-programmer.com/2020/08/11/program-mazda6-2017-id49-all-keys-lost-with-autel-im508/",
+      "https://www.locksmithkeyless.com/products/2014-2019-mazda-smart-prox-key-4b-fcc-wazske13d01-wazske13d02"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mazda",
+    "model": "Mazda3",
+    "yearStart": 2019,
+    "yearEnd": null,
+    "onboard": null,
+    "addKey": "OBD via Autel IM608 Pro or Lonsdor K518 (free PIN via OBD). Connect to OBD port (driver side under dash, above pedals). Select Mazda > Smart Key > Add Key. When prompted, hold Start button 10 seconds, then press once when indicator changes green to yellow. Present new HITAG AES (WAZSKE11D01) key near Start button when indicator turns green — wait for beep. Minimum 2 keys required to complete.",
+    "allKeysLost": "OBD-based AKL via Lonsdor K518 (free PIN) or Autel IM608 Pro. Lonsdor path: Immo & Remote > Mazda > Axela > 2020- > All Smart Key Lost. Hold Start button 10 sec then press once; wait ~7 min security access; system deletes existing keys; program each new WAZSKE11D01 key by proximity to Start button (green indicator). Test engine start with each key. Minimum 2 keys required. No EEPROM needed for standard OBD AKL.",
+    "pinRequired": false,
+    "pinSource": "OBD read (Lonsdor K518 provides security access automatically — no PIN purchase needed)",
+    "obdPort": "Driver side under dash, above pedals — standard 16-pin OBD2, no panel removal needed",
+    "securityWait": "~7 min security access during AKL",
+    "specialTool": "Autel IM608 Pro | Lonsdor K518",
+    "sources": [
+      "https://medium.com/@obd2eshopcom/lonsdor-k518ise-program-2020-mazda-3-all-key-lost-free-pin-98546bd99444",
+      "https://www.locksmithkeyless.com/products/2019-2025-mazda-smart-key-3b-fob-fcc-wazske11d01-bcyn-67-5dy"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mazda",
+    "model": "Mazda6",
+    "yearStart": 2003,
+    "yearEnd": 2013,
+    "onboard": "DIY key-dance with 2 working keys: (1) Insert key 1, turn ON for 1+ sec until red key light extinguishes, remove within 5 sec. (2) Insert key 2, turn ON for 1-5 sec, remove within 10 sec. (3) Insert new unprogrammed key, turn ON — red key light illuminates then extinguishes = success. Max 3 keys. Requires 2 existing working keys. Applies to MAZ24 transponder and flip key types.",
+    "addKey": "Use onboard key-dance procedure (2 existing working keys required). For flip key remote portion: enter programming mode then press remote buttons twice. For transponder-only AKL scenario: professional OBD tool required (Autel IM508, VVDI2, or Advanced Diagnostics Smart Pro).",
+    "allKeysLost": "Professional OBD tool required: Autel IM508/IM608 or OBDSTAR X300 MINI. Navigate to Mazda > Transponder > All Keys Lost. Programs 2 new 4D63 80-bit keys via OBD. No PIN required. Verify 4D63 80-bit (not 40-bit) before programming.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Driver side under dash, above pedals — standard 16-pin OBD2, no panel removal needed",
+    "securityWait": "none",
+    "specialTool": "Autel IM508/IM608 | OBDSTAR X300 MINI | VVDI2 | Advanced Diagnostics Smart Pro",
+    "sources": [
+      "https://mazdas247.com/forum/threads/self-programming-keys-and-remote.123765365/",
+      "https://nikolay100.com/en/how-to-program-new-mazda-key-without-a-locksmith/",
+      "https://www.uhs-hardware.com/products/2003-2014-mazda-mz24-mz34-transponder-key-chip-4d63-80-bit-k-mz34"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mazda",
+    "model": "Mazda6",
+    "yearStart": 2014,
+    "yearEnd": 2018,
+    "onboard": null,
+    "addKey": "OBD via Autel IM608, Lonsdor K518, or Advanced Diagnostics Smart Pro. Connect to OBD port (driver side under dash). Select Mazda > Smart Key > Add Key. Follow tool prompts; present new HITAG Pro ID49 (WAZSKE13D01) key near Start button when indicator goes green. No PIN required. Minimum 2 keys needed to complete programming.",
+    "allKeysLost": "OBD-based AKL via Autel IM508/IM608 or Lonsdor K518. Navigate: Immobilizer > Mazda > Manual Selection > Japan > Mazda 6 > 2017 > Smart Key > Keyless System (CAN) > All Smart Keys Lost. Key erasure takes ~7 min. Program minimum 2 new WAZSKE13D01 keys by proximity to Start button. Verify engine start with each key after programming. No EEPROM required.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Driver side under dash, above pedals — standard 16-pin OBD2, no panel removal needed",
+    "securityWait": "~7 min key erasure during AKL",
+    "specialTool": "Autel IM508/IM608 | Lonsdor K518 | Advanced Diagnostics Smart Pro",
+    "sources": [
+      "https://www.key-programmer.com/2020/08/11/program-mazda6-2017-id49-all-keys-lost-with-autel-im508/",
+      "https://northcoastkeyless.com/product/mazda-6-sedan-keyless-entry-remote-fcc-id-wazske13d01-pn-gjr9-67-5ry-662f-ske13d01/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mazda",
+    "model": "Mazda6",
+    "yearStart": 2019,
+    "yearEnd": null,
+    "onboard": null,
+    "addKey": "OBD via Autel IM608 Pro or Lonsdor K518. Connect to OBD port (driver side under dash). Select Mazda > Smart Key > Add Key. Present new HITAG Pro ID49 (WAZSKE13D03) key near Start button when prompted. Minimum 2 keys required. No PIN needed.",
+    "allKeysLost": "OBD-based AKL via Autel IM608 Pro or Lonsdor K518. Navigate to Mazda > Smart Key > Keyless System (CAN) > All Smart Keys Lost. Key erasure ~7 min; program minimum 2 new WAZSKE13D03 keys by proximity. No EEPROM required for standard AKL.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Driver side under dash, above pedals — standard 16-pin OBD2, no panel removal needed",
+    "securityWait": "~7 min key erasure during AKL",
+    "specialTool": "Autel IM608 Pro | Lonsdor K518",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2019-2022-mazda-smart-key-4b-w-trunk-fcc-wazske13d03",
+      "https://www.transpondery.com/transponder_catalog/mazda_transponder_catalog.html"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mazda",
+    "model": "CX-5",
+    "yearStart": 2013,
+    "yearEnd": 2018,
+    "onboard": null,
+    "addKey": "OBD via Autel IM608, Lonsdor K518, or Advanced Diagnostics Smart Pro. Connect to OBD port (driver side under dash, left of steering wheel). Select Mazda > Smart Key > Add Key. Follow prompts; present new HITAG Pro ID49 (WAZSKE13D01) key near Start button when indicator turns green. Minimum 2 keys required. No PIN needed.",
+    "allKeysLost": "OBD-based AKL via Autel IM608 II or Lonsdor K518. Navigate: Immobilizer > Mazda > Smart Key > Keyless System (CAN) > All Smart Keys Lost. Key erasure ~7 min; program minimum 2 new WAZSKE13D01 keys by proximity to Start button. OBDSTAR G3 also confirmed for AKL but requires PIN. No EEPROM required for standard Autel/Lonsdor AKL.",
+    "pinRequired": false,
+    "pinSource": "PIN required if using OBDSTAR G3 (OBD PIN read); not required for Autel IM608 or Lonsdor K518",
+    "obdPort": "Driver side under dash, left of steering wheel, above pedals — standard 16-pin OBD2",
+    "securityWait": "~7 min key erasure during AKL",
+    "specialTool": "Autel IM608 II | Lonsdor K518 | OBDSTAR G3 (needs PIN) | Advanced Diagnostics Smart Pro",
+    "sources": [
+      "https://northcoastkeyless.com/product/mazda-cx-5-keyless-entry-remote-fcc-id-wazske13d01-pn-kdy3-67-5dy-662f-ske13d01/",
+      "https://www.transpondery.com/transponder_catalog/mazda_transponder_catalog.html",
+      "http://www.key-programmer.org/2024/08/13/obdstar-g3-program-2024-mazda-cx-5-all-smart-keys-lost-by-obd/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mazda",
+    "model": "CX-5",
+    "yearStart": 2019,
+    "yearEnd": null,
+    "onboard": null,
+    "addKey": "OBD via Autel IM608 Pro or Lonsdor K518. Connect to OBD port (driver side under dash). Select Mazda > Smart Key > Add Key. Present new HITAG Pro ID49 (WAZSKE13D03) key near Start button when prompted. Minimum 2 keys required. No PIN needed for Autel/Lonsdor.",
+    "allKeysLost": "OBD-based AKL via Autel IM608 II (confirmed 2023 CX-5 by OBD) or Lonsdor K518. Navigate to Mazda > Smart Key > Keyless System (CAN) > All Smart Keys Lost. Key erasure ~7 min; program minimum 2 new WAZSKE13D03 keys by proximity. OBDSTAR G3 also works but requires PIN. No EEPROM required for standard AKL.",
+    "pinRequired": false,
+    "pinSource": "PIN required if using OBDSTAR G3 (OBD PIN read); not required for Autel IM608 or Lonsdor K518",
+    "obdPort": "Driver side under dash, above pedals — standard 16-pin OBD2",
+    "securityWait": "~7 min key erasure during AKL",
+    "specialTool": "Autel IM608 II | Lonsdor K518 | OBDSTAR G3 (needs PIN)",
+    "sources": [
+      "http://blog.autelshop.de/autel-im608-ii-program-2023-mazda-cx-5-all-keys-lost-by-obd/",
+      "http://www.key-programmer.org/2024/08/13/obdstar-g3-program-2024-mazda-cx-5-all-smart-keys-lost-by-obd/",
+      "https://www.locksmithkeyless.com/products/2020-2021-mazda-prox-smart-key-4b-fcc-wazske13d03"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mazda",
+    "model": "CX-9",
+    "yearStart": 2007,
+    "yearEnd": 2015,
+    "onboard": "DIY key-dance with 2 working keys: (1) Insert key 1, turn ON for 1+ sec until red key light extinguishes, remove within 5 sec. (2) Insert key 2, turn ON for 1-5 sec, remove within 10 sec. (3) Insert new unprogrammed key, turn ON — red key light illuminates then extinguishes = success. Max 3 keys. Requires 2 existing working keys.",
+    "addKey": "Use onboard key-dance procedure (2 existing working keys required). For transponder-only with fewer than 2 keys: professional OBD tool required (Autel IM508, VVDI2).",
+    "allKeysLost": "Professional OBD tool required: Autel IM508/IM608 or OBDSTAR X300 MINI. Navigate to Mazda > Transponder > All Keys Lost. Programs 2 new 4D63 80-bit keys via OBD. No PIN required. Verify 4D63 80-bit chip before programming.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Driver side under dash, above pedals — standard 16-pin OBD2",
+    "securityWait": "none",
+    "specialTool": "Autel IM508/IM608 | OBDSTAR X300 MINI | VVDI2",
+    "sources": [
+      "https://mazdas247.com/forum/threads/self-programming-keys-and-remote.123765365/",
+      "https://www.transpondery.com/transponder_catalog/mazda_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2003-2014-mazda-mz24-mz34-transponder-key-chip-4d63-80-bit-k-mz34"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mazda",
+    "model": "CX-9",
+    "yearStart": 2016,
+    "yearEnd": 2019,
+    "onboard": null,
+    "addKey": "OBD via Autel IM608, Lonsdor K518, or Advanced Diagnostics Smart Pro. Connect to OBD port (driver side under dash). Select Mazda > Smart Key > Add Key. Present new HITAG Pro ID49 (WAZSKE13D01) key near Start button when prompted. Minimum 2 keys required. No PIN needed.",
+    "allKeysLost": "OBD-based AKL via Lonsdor K518ISE (confirmed for CX-9 2017) or Autel IM608. Navigate to Mazda > Smart Key > All Smart Keys Lost. System detects existing key count, erases (~7 min), then programs 2 new WAZSKE13D01 keys by proximity to Start button. Test remote and engine start for each key. No EEPROM required.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Driver side under dash, above pedals — standard 16-pin OBD2",
+    "securityWait": "~7 min key erasure during AKL",
+    "specialTool": "Lonsdor K518ISE | Autel IM608 | Advanced Diagnostics Smart Pro",
+    "sources": [
+      "https://www.obd2tool.com/blog/how-to-program-all-key-lost-for-mazda-cx9-second-generation-2017/",
+      "https://northcoastkeyless.com/product/mazda-cx-9-4-button-smart-key-fob-remote-fcc-wazske13d01-p-n-tky2-67-5dy/",
+      "https://www.transpondery.com/transponder_catalog/mazda_transponder_catalog.html"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mazda",
+    "model": "CX-9",
+    "yearStart": 2020,
+    "yearEnd": null,
+    "onboard": null,
+    "addKey": "OBD via Autel IM608 Pro or Lonsdor K518. Connect to OBD port (driver side under dash). Select Mazda > Smart Key > Add Key. Present new HITAG Pro ID49 (WAZSKE13D03) key near Start button when prompted. Minimum 2 keys required. No PIN needed for Autel/Lonsdor.",
+    "allKeysLost": "OBD-based AKL via Autel IM608 Pro or Lonsdor K518. Navigate to Mazda > Smart Key > Keyless System (CAN) > All Smart Keys Lost. Key erasure ~7 min; program minimum 2 new WAZSKE13D03 keys by proximity. No EEPROM required for standard AKL.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Driver side under dash, above pedals — standard 16-pin OBD2",
+    "securityWait": "~7 min key erasure during AKL",
+    "specialTool": "Autel IM608 Pro | Lonsdor K518",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2020-2021-mazda-prox-smart-key-4b-fcc-wazske13d03",
+      "https://www.uhs-hardware.com/products/2019-2023-mazda-cx-5-cx-9-4-button-smart-key-pn-tayb-67-5dyb-wazske13d03-oem-refurb"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mazda",
+    "model": "CX-30",
+    "yearStart": 2020,
+    "yearEnd": null,
+    "onboard": null,
+    "addKey": "OBD via Autel IM608 Pro or Lonsdor K518 (free PIN). Connect to OBD port (driver side under dash). Select Mazda > Smart Key > Add Key. When prompted, hold Start button 10 sec, press once when indicator changes color. Present new HITAG AES (WAZSKE11D01) key near Start button when green indicator appears. Minimum 2 keys required.",
+    "allKeysLost": "OBD-based AKL via Lonsdor K518 (free PIN, no EEPROM) or Autel IM608 Pro. Shares key system with Mazda3 2019+ and CX-50. Navigate: Immo & Remote > Mazda > CX-30 > 2020- > All Smart Key Lost. Hold Start button 10 sec then press once; wait ~7 min security access; program minimum 2 new WAZSKE11D01 keys by proximity. No EEPROM required for standard AKL.",
+    "pinRequired": false,
+    "pinSource": "OBD read (Lonsdor K518 provides security access automatically — no PIN purchase needed)",
+    "obdPort": "Driver side under dash, above pedals — standard 16-pin OBD2",
+    "securityWait": "~7 min security access during AKL",
+    "specialTool": "Autel IM608 Pro | Lonsdor K518",
+    "sources": [
+      "https://medium.com/@obd2eshopcom/lonsdor-k518ise-program-2020-mazda-3-all-key-lost-free-pin-98546bd99444",
+      "https://yourcarkeyguys.com/products/2020-2025-mazda-cx-30-cx-50-cx-70-cx-90-4b-hatch-smart-key-wazske11d01-oem",
+      "https://www.locksmithkeyless.com/products/2020-2023-mazda-smart-key-4b-fob-hatch-function-fcc-wazske11d01"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mazda",
+    "model": "CX-50",
+    "yearStart": 2023,
+    "yearEnd": null,
+    "onboard": null,
+    "addKey": "OBD via Autel IM608 Pro or Lonsdor K518. Connect to OBD port (driver side under dash). Select Mazda > Smart Key > Add Key. Present new HITAG AES (WAZSKE11D01) key near Start button when prompted. Minimum 2 keys required. Shares key system with CX-30 and Mazda3 2019+. No PIN needed for Autel/Lonsdor.",
+    "allKeysLost": "OBD-based AKL via Lonsdor K518 (free PIN) or Autel IM608 Pro. Same procedure as CX-30 and Mazda3 2019+ (WAZSKE11D01 / HITAG AES 6A chip system). ~7 min security access during AKL. Program minimum 2 new keys. No EEPROM required for standard AKL.",
+    "pinRequired": false,
+    "pinSource": "OBD read (Lonsdor K518 provides security access automatically — no PIN purchase needed)",
+    "obdPort": "Driver side under dash, above pedals — standard 16-pin OBD2",
+    "securityWait": "~7 min security access during AKL",
+    "specialTool": "Autel IM608 Pro | Lonsdor K518",
+    "sources": [
+      "https://yourcarkeyguys.com/products/2020-2025-mazda-cx-30-cx-50-cx-70-cx-90-4b-hatch-smart-key-wazske11d01-oem",
+      "https://www.locksmithkeyless.com/products/2025-mazda-cx-50-smart-key-3b-fob-fcc-wazske11d01-bcyn-67-5dy-aftermarket"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mazda",
+    "model": "MX-5 Miata",
+    "yearStart": 2006,
+    "yearEnd": 2015,
+    "onboard": "DIY key-dance with 2 working keys: (1) Insert key 1, turn ON for 1+ sec until red key light extinguishes, remove within 5 sec. (2) Insert key 2, turn ON for 1-5 sec, remove within 10 sec. (3) Insert new unprogrammed key, turn ON — red key light illuminates then extinguishes = success. Max 3 keys. Requires 2 existing working keys (NC generation MX-5).",
+    "addKey": "Use onboard key-dance procedure (2 existing working keys required). For transponder-only with fewer than 2 keys: professional OBD tool required (Autel IM508, VVDI2, or Advanced Diagnostics Smart Pro).",
+    "allKeysLost": "Professional OBD tool required: Autel IM508/IM608 or VVDI2. Navigate to Mazda > Transponder > All Keys Lost. Programs 2 new 4D63 80-bit keys via OBD. No PIN required.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Driver side under dash, above pedals — standard 16-pin OBD2",
+    "securityWait": "none",
+    "specialTool": "Autel IM508/IM608 | VVDI2 | Advanced Diagnostics Smart Pro",
+    "sources": [
+      "https://mazdas247.com/forum/threads/self-programming-keys-and-remote.123765365/",
+      "https://www.transpondery.com/transponder_catalog/mazda_transponder_catalog.html",
+      "https://yourcarkeyguys.com/products/2006-2016-mazda-mx5-miata-3-6-speed3-4b-flip-key-bgbx1t478ske125-01"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mazda",
+    "model": "MX-5 Miata",
+    "yearStart": 2016,
+    "yearEnd": 2019,
+    "onboard": null,
+    "addKey": "OBD via Autel IM608, Lonsdor K518, or Advanced Diagnostics Smart Pro. Connect to OBD port (driver side under dash). Select Mazda > Smart Key > Add Key. Present new HITAG Pro ID49 (WAZSKE13D01) key near Start button when prompted. Minimum 2 keys required. No PIN needed. Shares key system with Mazda3 2016-2018.",
+    "allKeysLost": "OBD-based AKL via Autel IM608 or Lonsdor K518. Navigate to Mazda > Smart Key > Keyless System (CAN) > All Smart Keys Lost. Key erasure ~7 min; program minimum 2 new WAZSKE13D01 keys by proximity. No EEPROM required.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Driver side under dash, above pedals — standard 16-pin OBD2",
+    "securityWait": "~7 min key erasure during AKL",
+    "specialTool": "Autel IM608 | Lonsdor K518 | Advanced Diagnostics Smart Pro",
+    "sources": [
+      "https://northcoastkeyless.com/product/mazda-miata-mx-5-keyless-entry-remote-fcc-id-wazske13d01-pn-gjy9-67-5dy-gjr9-67-5ry/",
+      "https://www.transpondery.com/transponder_catalog/mazda_transponder_catalog.html"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mazda",
+    "model": "MX-5 Miata",
+    "yearStart": 2020,
+    "yearEnd": null,
+    "onboard": null,
+    "addKey": "OBD via Autel IM608 Pro or Lonsdor K518. Connect to OBD port (driver side under dash). Select Mazda > Smart Key > Add Key. Present new HITAG Pro ID49 (WAZSKE13D03) key near Start button when prompted. Minimum 2 keys required. No PIN needed.",
+    "allKeysLost": "OBD-based AKL via Autel IM608 Pro or Lonsdor K518. Navigate to Mazda > Smart Key > Keyless System (CAN) > All Smart Keys Lost. Key erasure ~7 min; program minimum 2 new WAZSKE13D03 keys by proximity. No EEPROM required.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Driver side under dash, above pedals — standard 16-pin OBD2",
+    "securityWait": "~7 min key erasure during AKL",
+    "specialTool": "Autel IM608 Pro | Lonsdor K518",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2019-2022-mazda-smart-key-4b-w-trunk-fcc-wazske13d03",
+      "https://remotesandkeys.com/products/2023-mazda-mx-5-miata-smart-key-fob-pn-gdyl-67-5dyb-gdyl-67-5dy-nfyr-67-5dy"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mazda",
+    "model": "CX-3",
+    "yearStart": 2016,
+    "yearEnd": 2020,
+    "onboard": null,
+    "addKey": "OBD via Autel IM608, Lonsdor K518, or Advanced Diagnostics Smart Pro. Connect to OBD port (driver side under dash). Select Mazda > Smart Key > Add Key. Present new HITAG Pro ID49 (WAZSKE13D01) key near Start button when prompted. Minimum 2 keys required. No PIN needed. Shares key system with CX-5 2013-2018.",
+    "allKeysLost": "OBD-based AKL via Autel IM608 or Lonsdor K518. Navigate to Mazda > Smart Key > Keyless System (CAN) > All Smart Keys Lost. Key erasure ~7 min; program minimum 2 new WAZSKE13D01 keys by proximity. No EEPROM required.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Driver side under dash, above pedals — standard 16-pin OBD2",
+    "securityWait": "~7 min key erasure during AKL",
+    "specialTool": "Autel IM608 | Lonsdor K518 | Advanced Diagnostics Smart Pro",
+    "sources": [
+      "https://www.transpondery.com/transponder_catalog/mazda_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2012-2019-mazda-3-cx-3-cx-5-3-button-smart-key-pn-kdy3-67-5dy-wazske13d01-oem"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Mazda",
+    "model": "CX-3",
+    "yearStart": 2021,
+    "yearEnd": null,
+    "onboard": null,
+    "addKey": "OBD via Autel IM608 Pro or Lonsdor K518. Connect to OBD port (driver side under dash). Select Mazda > Smart Key > Add Key. Present new HITAG Pro ID49 (WAZSKE13D03) key near Start button when prompted. Minimum 2 keys required. No PIN needed. Note: CX-3 discontinued in US after 2021.",
+    "allKeysLost": "OBD-based AKL via Autel IM608 Pro or Lonsdor K518. Navigate to Mazda > Smart Key > Keyless System (CAN) > All Smart Keys Lost. Key erasure ~7 min; program minimum 2 new WAZSKE13D03 keys by proximity. No EEPROM required.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Driver side under dash, above pedals — standard 16-pin OBD2",
+    "securityWait": "~7 min key erasure during AKL",
+    "specialTool": "Autel IM608 Pro | Lonsdor K518",
+    "sources": [
+      "https://store.carkeysexpress.com/keys-and-remotes/Mazda/CX-3/2021/1012113-mazda-3-button-smartkey-fcc-id-wazske13d03",
+      "https://www.locksmithkeyless.com/products/2020-2021-mazda-prox-smart-key-4b-fcc-wazske13d03"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  }
+]

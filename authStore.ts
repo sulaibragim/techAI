@@ -224,10 +224,10 @@ export const can = {
 
 // Which tabs a role may see, in display order.
 export const visibleTabsFor = (r: Role): string[] => {
-  if (r === 'technician') return ['calendar', 'jobs', 'inventory', 'settings'];
+  if (r === 'technician') return ['calendar', 'jobs', 'autokey', 'inventory', 'settings'];
   if (r === 'accountant') return ['accounting', 'analytics', 'settings'];
-  if (r === 'manager')    return ['calendar', 'jobs', 'messages', 'calls', 'clients', 'analytics', 'accounting', 'inventory', 'brain', 'settings'];
-  return ['calendar', 'jobs', 'messages', 'calls', 'clients', 'analytics', 'accounting', 'inventory', 'brain', 'settings'];
+  if (r === 'manager')    return ['calendar', 'jobs', 'messages', 'calls', 'clients', 'analytics', 'accounting', 'autokey', 'inventory', 'brain', 'settings'];
+  return ['calendar', 'jobs', 'messages', 'calls', 'clients', 'analytics', 'accounting', 'autokey', 'inventory', 'brain', 'settings'];
 };
 
 export const ROLE_LABELS: Record<Role, string> = {

@@ -1,0 +1,899 @@
+[
+  {
+    "make": "Chevrolet",
+    "model": "Silverado 1500",
+    "yearStart": 2007,
+    "yearEnd": 2013,
+    "onboard": "All-keys-lost (30 min): Insert new cut key, turn ignition ON (do not start). Security/THEFT light comes on. Wait ~10 min until light goes off. Cycle OFF then ON within 55 sec. Repeat twice more (3 cycles total, ~30 min). After 3rd cycle, turn OFF and remove key. All previous keys erased. Insert key and start to confirm. Adding with 1 working key (fast): Insert working key, turn ON until THEFT light goes off (~5-10 sec for already-learned key), turn OFF, remove. Within 10 sec insert new key, turn ON, wait for light off, turn OFF. New key programmed without erasing others.",
+    "addKey": "With 1 working programmed key: insert working key, turn to ON until security light extinguishes (~5-10 sec), turn to OFF, remove. Within 10 sec insert new cut transponder key (B111-PT), turn to ON, wait for security light off, turn to OFF. Key is now programmed. Up to 10 keys storable.",
+    "allKeysLost": "30-min on-board relearn (no scan tool required): Insert new cut key into ignition, turn to ON (do not start). THEFT light illuminates. Wait 10 min until light goes off. Cycle to OFF, then back to ON within 55 sec. Repeat wait. Cycle OFF/ON third time, wait 10 min for light to go off. Turn OFF, remove key, all prior keys erased. Re-insert and start to verify. Alternatively use scan tool (Autel IM508/IM608, Lonsdor K518) via OBD port for faster AKL.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "10 min x3 (30 min) for AKL; ~5-10 sec per key when adding with working key",
+    "specialTool": null,
+    "sources": [
+      "https://automotivelocksmiths.com/gm-keys-onboard-key-programming/",
+      "https://moduleexperts.com/gm-security-relearn-procedure/",
+      "https://brandtlocksmiths.com/doc/DOcGM.htm",
+      "https://www.gm-trucks.com/forums/topic/99580-how-to-program-new-transponder-key/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Silverado 1500",
+    "yearStart": 2014,
+    "yearEnd": 2018,
+    "onboard": "Transponder (B119-PT) add-key with 1 working key: insert working key, turn to ON until THEFT light goes off, turn OFF, remove; within 10 sec insert new cut B119-PT key, turn ON, wait for light off, turn OFF. AKL also possible via 30-min 3-cycle on-board relearn (same as PK3+ sequence). Remote head key: no on-board; scan tool required.",
+    "addKey": "Transponder add with 1 working key: turn working key to ON, wait for THEFT light off, turn OFF, remove; within 10 sec insert new B119-PT key, turn ON, wait for THEFT light off, turn OFF. Remote/RemoteHead: requires scan tool (Autel IM508/IM608, Lonsdor K518) via OBD port.",
+    "allKeysLost": "Transponder AKL: 30-min on-board 3-cycle security-light relearn (insert new cut B119-PT, ON x3 with 10-min waits, all previous keys erased). Remote head AKL: scan tool required — connect to OBD port, access BCM IMMO module, enter 24-digit ECM+BCM security codes (obtain from third-party calculator). Open/close driver door every 3-4 sec during 12-min timer cycle.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "10 min x3 (30 min) for AKL transponder on-board; 12 min door-cycle for scan tool AKL",
+    "specialTool": "Scan tool required for remote head key add and AKL; transponder add/AKL can be done on-board",
+    "sources": [
+      "https://www.silveradosierra.com/threads/master-key-program.186329/",
+      "https://www.key-programmer.com/2024/11/22/autel-im508-program-gm-2021-2024-all-smart-keys-lost-guide/",
+      "https://www.carandtruckremotes.com/b119-pt.html",
+      "https://www.uhs-hardware.com/products/2010-2018-gm-b119-pt-transponder-key-philips-id-46-gm-ext"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Silverado 1500",
+    "yearStart": 2019,
+    "yearEnd": 2020,
+    "onboard": "Transponder trims (B119-PT): same 1-working-key add sequence or 30-min 3-cycle AKL as 2014-2018. Smart key (HYQ1EA) trims: no on-board; scan tool required via OBD.",
+    "addKey": "Transponder: insert working key, turn ON until THEFT light off, turn OFF, within 10 sec insert new key, turn ON, wait for light off, turn OFF. Smart key: scan tool required — connect Autel IM508/IM608 with CAN FD adapter, select add-key, place new key in cup holder when prompted.",
+    "allKeysLost": "Transponder AKL: 30-min on-board 3-cycle relearn. Smart key AKL: scan tool required; connect Autel IM508/IM608 with CAN FD adapter to OBD port; obtain 24-digit ECM+BCM security codes; open/close driver door every 3-4 sec during 12-min timer; program minimum 2 keys.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "Transponder: 10 min x3 (30 min) AKL; Smart key: 12 min door-cycle during scan tool AKL",
+    "specialTool": "Scan tool with CAN FD adapter required for smart key trims (HYQ1EA); transponder trims can use on-board",
+    "sources": [
+      "https://automotivelocksmiths.com/gm-keys-onboard-key-programming/",
+      "http://blog.obdii365.com/2024/11/11/program-gm-2021-2024-all-keys-lost-with-autel-im508-im608/",
+      "https://www.key-programmer.com/2024/11/22/autel-im508-program-gm-2021-2024-all-smart-keys-lost-guide/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Silverado 1500",
+    "yearStart": 2021,
+    "yearEnd": 2021,
+    "onboard": null,
+    "addKey": "Scan tool required (no on-board procedure). Connect Autel IM508/IM608 with CAN FD adapter to OBD port. Select IMMO add-key for 2021 Silverado smart key (HYQ1ES). Place new key in cup holder when prompted. Obtain 24-digit ECM+BCM security codes from third-party calculator if required.",
+    "allKeysLost": "Scan tool required. Connect Autel IM508/IM608 with CAN FD adapter, select All Smart Keys Lost. Enter 24-digit ECM and BCM rolling security codes (obtain from third-party provider or use OBDSTAR/Xtool/Autopropad which can bypass internally). Open/close driver door every 3-4 sec during 12-min timer cycle. Program minimum 2 keys.",
+    "pinRequired": false,
+    "pinSource": "OBD read (via compatible tool) or third-party rolling code calculator",
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "12 min door-cycling during scan tool AKL sequence",
+    "specialTool": "Scan tool with CAN FD adapter (Autel IM508/IM608, OBDSTAR X300 DP Plus, Xtool, Lonsdor K518 Pro)",
+    "sources": [
+      "https://www.key-programmer.com/2024/11/22/autel-im508-program-gm-2021-2024-all-smart-keys-lost-guide/",
+      "http://blog.obdii365.com/2024/11/11/program-gm-2021-2024-all-keys-lost-with-autel-im508-im608/",
+      "https://abkeys.com/blogs/news/how-to-program-gmc-yukon-2021-smart-key-all-keys-lost-by-the-obdstar-x300-dp-plus-can-fd-adapter"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Silverado 1500",
+    "yearStart": 2022,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "Scan tool required (VIP/CAN FD architecture, no on-board). Connect Autel IM608 Pro or OBDSTAR X300 DP Plus with CAN FD adapter to OBD port. Select add-key for 2022-2024 Silverado smart key (YG0G21TB2/ID49). Place new key in cup holder when prompted. Security codes required.",
+    "allKeysLost": "Scan tool required. Autel IM608 Pro or OBDSTAR/Xtool with CAN FD adapter. Navigate: IMMO → GM → Silverado → Proximity → 2022+ → All Keys Lost. Obtain 24-digit ECM+BCM rolling codes (OBDSTAR/Xtool/Autopropad can bypass internally without third-party). Open/close driver door every 3-4 sec during 12-min timer. Program minimum 2 keys. Alternatively use GM SPS2 J2534 device.",
+    "pinRequired": false,
+    "pinSource": "OBD read via compatible tool (OBDSTAR/Xtool) or third-party rolling code calculator",
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "12 min door-cycling during scan tool AKL; mandatory 10 min wait in some tool flows",
+    "specialTool": "Scan tool with CAN FD adapter required — Autel IM608 Pro, OBDSTAR X300 DP Plus with CAN FD GM adapter, Xtool, or GM SPS2 J2534",
+    "sources": [
+      "https://www.key-programmer.com/2024/11/22/autel-im508-program-gm-2021-2024-all-smart-keys-lost-guide/",
+      "http://blog.obdii365.com/2024/11/11/program-gm-2021-2024-all-keys-lost-with-autel-im508-im608/",
+      "https://abkeys.com/blogs/news/how-to-program-gmc-yukon-2021-smart-key-all-keys-lost-by-the-obdstar-x300-dp-plus-can-fd-adapter"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Silverado 2500/3500 HD",
+    "yearStart": 2014,
+    "yearEnd": 2018,
+    "onboard": "Transponder (B119-PT) add-key with 1 working key: insert working key, turn ON until THEFT light off, turn OFF, within 10 sec insert new key, turn ON, wait for light off, turn OFF. AKL: 30-min 3-cycle on-board relearn. Remote head: scan tool required.",
+    "addKey": "Same as Silverado 1500 2014-2018: transponder on-board with 1 working key; remote head key requires scan tool via OBD.",
+    "allKeysLost": "Transponder AKL: 30-min on-board 3-cycle security-light relearn. Remote head AKL: scan tool (Autel IM508/IM608) via OBD port with 24-digit ECM+BCM codes.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "10 min x3 (30 min) for transponder AKL on-board",
+    "specialTool": "Scan tool required for remote head key only; transponder add/AKL can be done on-board",
+    "sources": [
+      "https://automotivelocksmiths.com/gm-keys-onboard-key-programming/",
+      "https://www.uhs-hardware.com/products/2010-2018-gm-b119-pt-transponder-key-philips-id-46-gm-ext"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Silverado 2500/3500 HD",
+    "yearStart": 2019,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "Scan tool required (smart key, no on-board procedure). Connect Autel IM508/IM608 (2019-2021) or IM608 Pro with CAN FD adapter (2022-2024) to OBD port. Select add-key for applicable FCC ID (HYQ1EA/HYQ1ES/YG0G21TB2).",
+    "allKeysLost": "Scan tool required. 2019-2021: Autel IM508/IM608 with CAN FD adapter, 24-digit rolling codes, 12-min door-cycle. 2022-2024: same process with IM608 Pro or OBDSTAR with CAN FD GM adapter; OBDSTAR/Xtool can bypass codes internally.",
+    "pinRequired": false,
+    "pinSource": "OBD read via compatible tool or third-party rolling code calculator",
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "12 min door-cycling during scan tool AKL",
+    "specialTool": "Scan tool with CAN FD adapter (Autel IM508/IM608 for 2019-2021; IM608 Pro or OBDSTAR for 2022-2024)",
+    "sources": [
+      "https://www.key-programmer.com/2024/11/22/autel-im508-program-gm-2021-2024-all-smart-keys-lost-guide/",
+      "http://blog.obdii365.com/2024/11/11/program-gm-2021-2024-all-keys-lost-with-autel-im508-im608/"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Colorado",
+    "yearStart": 2015,
+    "yearEnd": 2022,
+    "onboard": "Transponder (B119-PT) add-key with 1 working key: insert working key, turn ON until THEFT light off, turn OFF, within 10 sec insert new key, turn ON, wait for light off, turn OFF. AKL: 30-min 3-cycle on-board relearn. Remote head (M3N-32337100): scan tool required.",
+    "addKey": "Transponder on-board with 1 working key (same 2-key swap sequence). Remote head key: scan tool (Autel IM508/IM608) via OBD port.",
+    "allKeysLost": "Transponder AKL: 30-min on-board 3-cycle security-light relearn. Remote head AKL: scan tool required via OBD.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "10 min x3 (30 min) for transponder AKL on-board",
+    "specialTool": "Scan tool required for remote head key only; transponder can use on-board",
+    "sources": [
+      "https://automotivelocksmiths.com/gm-keys-onboard-key-programming/",
+      "https://www.coloradofans.com/threads/programming-2017-18-keys.377609/",
+      "https://www.uhs-hardware.com/products/2010-2018-gm-b119-pt-transponder-key-philips-id-46-gm-ext"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Colorado",
+    "yearStart": 2023,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "Scan tool required (VIP/CAN FD architecture). Connect Autel IM608 Pro or OBDSTAR X300 DP Plus with CAN FD adapter to OBD port. Select add-key for 2023-2024 Colorado smart key (YG0G21TB2/ID49).",
+    "allKeysLost": "Scan tool required. Autel IM608 Pro or OBDSTAR/Xtool with CAN FD adapter. Same CAN FD AKL flow as 2022+ Silverado: 24-digit rolling codes (or OBDSTAR/Xtool bypass), 12-min door-cycle, minimum 2 keys.",
+    "pinRequired": false,
+    "pinSource": "OBD read via compatible tool or third-party rolling code calculator",
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "12 min door-cycling during scan tool AKL",
+    "specialTool": "Scan tool with CAN FD adapter required (Autel IM608 Pro, OBDSTAR X300 DP Plus, Xtool)",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2023-chevrolet-colorado-smart-key-3b-fob-fcc-yg0g21tb2",
+      "http://blog.obdii365.com/2024/11/11/program-gm-2021-2024-all-keys-lost-with-autel-im508-im608/"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Tahoe",
+    "yearStart": 2007,
+    "yearEnd": 2014,
+    "onboard": "All-keys-lost (30 min): Insert new cut key, turn ignition ON (do not start). THEFT light illuminates. Wait ~10 min until light goes off. Cycle OFF then ON within 55 sec. Repeat twice more (3 cycles total). After 3rd light-off, turn OFF, remove key. Re-insert and start to verify. Adding with 1 working key (fast): insert working key, ON until THEFT light off, OFF, remove; within 10 sec insert new B111-PT key, ON, wait for light off, OFF.",
+    "addKey": "Insert working key, turn to ON until THEFT/security light extinguishes, turn to OFF, remove. Within 10 sec insert new cut B111-PT key (Z/B106-P keyway), turn to ON, wait for light off, turn to OFF. Key is programmed without erasing others.",
+    "allKeysLost": "30-min on-board 3-cycle relearn: insert new cut key, ON (light on, wait 10 min until off), OFF, ON (wait 10 min), OFF, ON (wait 10 min until off), OFF. All prior keys erased. Alternatively, scan tool via OBD for faster AKL.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "10 min x3 (30 min) for AKL; ~5-10 sec per key when adding with working key",
+    "specialTool": null,
+    "sources": [
+      "https://automotivelocksmiths.com/gm-keys-onboard-key-programming/",
+      "https://moduleexperts.com/gm-security-relearn-procedure/",
+      "https://www.tahoeyukonforum.com/threads/transponder-key-programming.57627/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Tahoe",
+    "yearStart": 2015,
+    "yearEnd": 2020,
+    "onboard": "Adding with 2 working smart keys (DIC method): remove emergency blade from working key, place 2 working keys in front cup holder. Insert blade into driver door lock cylinder, turn counterclockwise to unlock 5 times within 10 sec. DIC shows 'READY TO LEARN ELECTRONIC KEY #2, 3, 4, ETC.' Place new smart key in center console transmitter pocket (open storage area, remove tray). Press ENGINE START/STOP. DIC confirms; remove key and press LOCK or UNLOCK. Repeat for additional keys. Hold ENGINE START/STOP ~5-12 sec to exit. AKL (30-35 min): same 5-turn blade entry, DIC shows 'REMOTE LEARN PENDING, PLEASE WAIT'. Wait 10 min, DIC shows 'PRESS ENGINE START BUTTON TO LEARN', press button. Repeat twice more (3 cycles). DIC shows 'READY FOR REMOTE #1'. Program new keys as above.",
+    "addKey": "DIC on-board with 2 working smart keys: emergency blade 5-turn unlock in driver door, 2 working keys in cup holder, new key in center console transmitter pocket, press START/STOP. See onboard field for full steps.",
+    "allKeysLost": "On-board 30-35 min DIC method (no scan tool needed): emergency blade 5-turn unlock in driver door, DIC shows 'REMOTE LEARN PENDING, PLEASE WAIT', 3x 10-min wait cycles with START/STOP press between each, all prior keys erased, then program new keys in transmitter pocket. Not available in Canada. Alternatively, scan tool via OBD port.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "10 min x3 (30-35 min) for AKL on-board",
+    "specialTool": "Scan tool (Autel IM508/IM608) for AKL if on-board not preferred; on-board DIC method supported",
+    "sources": [
+      "https://www.carandtruckremotes.com/blogs/program-instructions/2015-chevrolet-tahoe-keyless-entry-remote-fob-smart-key-programming-instructions",
+      "https://www.carandtruckremotes.com/blogs/program-instructions/2017-chevrolet-tahoe-keyless-entry-remote-fob-smart-key-programming-instructions",
+      "https://keyless2go.com/blogs/program-instructions/2020-chevrolet-traverse-keyless-entry-remote-fob-smart-key-programming-instructions"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Tahoe",
+    "yearStart": 2021,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "Scan tool required (BCM2/CAN FD, no on-board). Connect Autel IM608 Pro or OBDSTAR X300 DP Plus with CAN FD adapter to OBD port. Select add-key for 2021-2024 Tahoe smart key (YG0G21TB2/ID49). 24-digit rolling codes required; OBDSTAR/Xtool can bypass internally.",
+    "allKeysLost": "Scan tool required. Autel IM608 Pro or OBDSTAR X300 DP Plus with CAN FD adapter. 24-digit ECM+BCM rolling codes (or tool internal bypass). Open/close driver door every 3-4 sec during 12-min timer. Program minimum 2 keys. Alternatively GM SPS2 J2534 device.",
+    "pinRequired": false,
+    "pinSource": "OBD read via compatible tool or third-party rolling code calculator",
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "12 min door-cycling during scan tool AKL; 10 min mandatory wait in some tool flows",
+    "specialTool": "Scan tool with CAN FD adapter (Autel IM608 Pro, OBDSTAR X300 DP Plus with CAN FD GM adapter, Xtool)",
+    "sources": [
+      "https://www.key-programmer.com/2024/11/22/autel-im508-program-gm-2021-2024-all-smart-keys-lost-guide/",
+      "http://blog.obdii365.com/2024/11/11/program-gm-2021-2024-all-keys-lost-with-autel-im508-im608/",
+      "http://blog.obdii365.com/2021/06/25/obdstar-program-2021-gmc-yukon-prox-all-keys-lost/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Suburban",
+    "yearStart": 2015,
+    "yearEnd": 2020,
+    "onboard": "Same DIC on-board method as Tahoe 2015-2020 (identical key system HYQ1AA). Emergency blade 5-turn unlock in driver door lock, 2 working keys in cup holder, new key in center console transmitter pocket, press ENGINE START/STOP. AKL: 3x 10-min wait cycles with START/STOP press, then program. Hold START/STOP 5-12 sec to exit.",
+    "addKey": "DIC on-board with 2 working smart keys (same as Tahoe 2015-2020). See Tahoe 2015-2020 for full steps.",
+    "allKeysLost": "On-board 30-35 min DIC method (same as Tahoe 2015-2020): 5-turn blade unlock, 3x 10-min wait cycles, program new keys in transmitter pocket. Not available in Canada. Scan tool (Autel IM508/IM608) also viable.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "10 min x3 (30-35 min) for AKL on-board",
+    "specialTool": "Scan tool optional (Autel IM508/IM608); on-board DIC method supported",
+    "sources": [
+      "https://www.carandtruckremotes.com/blogs/program-instructions/2015-chevrolet-tahoe-keyless-entry-remote-fob-smart-key-programming-instructions",
+      "https://www.bestkeysolution.com/products/chevrolet-gmc-2015-2020-smart-key-fob-6-btns-with-tailgate-rear-glass-starter-fcc-id-hyq1aa-and-315-mhz-new-key2u"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Suburban",
+    "yearStart": 2021,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "Scan tool required (BCM2/CAN FD, same as Tahoe 2021-2024). Connect Autel IM608 Pro or OBDSTAR with CAN FD adapter, select add-key for YG0G21TB2/ID49.",
+    "allKeysLost": "Scan tool required. Same CAN FD AKL procedure as Tahoe 2021-2024: 24-digit rolling codes, 12-min door-cycle, minimum 2 keys.",
+    "pinRequired": false,
+    "pinSource": "OBD read via compatible tool or third-party rolling code calculator",
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "12 min door-cycling during scan tool AKL",
+    "specialTool": "Scan tool with CAN FD adapter (Autel IM608 Pro, OBDSTAR X300 DP Plus, Xtool)",
+    "sources": [
+      "https://www.key-programmer.com/2024/11/22/autel-im508-program-gm-2021-2024-all-smart-keys-lost-guide/",
+      "https://abkeys.com/blogs/news/how-to-program-gmc-yukon-2021-smart-key-all-keys-lost-by-the-obdstar-x300-dp-plus-can-fd-adapter"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Traverse",
+    "yearStart": 2009,
+    "yearEnd": 2017,
+    "onboard": "All-keys-lost (30 min): Insert new cut B111-PT key, turn ignition ON (do not start). THEFT light illuminates. Wait ~10 min until off. Cycle OFF/ON within 55 sec, repeat. Third cycle: wait until light off, turn OFF. All prior keys erased. Insert and start to verify. Adding with 1 working key: insert working key, ON until light off, OFF, within 10 sec insert new key, ON, wait for light off, OFF.",
+    "addKey": "Insert working key, turn to ON until THEFT light extinguishes, turn to OFF, remove. Within 10 sec insert new cut B111-PT key (Z/B106-P keyway), turn to ON, wait for security light off, turn to OFF.",
+    "allKeysLost": "30-min on-board 3-cycle relearn (same as Tahoe/Silverado PK3+ platform). Scan tool also viable via OBD.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "10 min x3 (30 min) for AKL; ~5-10 sec per key when adding with working key",
+    "specialTool": null,
+    "sources": [
+      "https://automotivelocksmiths.com/gm-keys-onboard-key-programming/",
+      "https://www.locksmithkeyless.com/products/2005-2017-gm-transponder-key-id46-chip-circle-z-keyway-b111-pt-1"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Traverse",
+    "yearStart": 2018,
+    "yearEnd": 2020,
+    "onboard": null,
+    "addKey": "Scan tool required (HYQ4EA, BCM2, no confirmed on-board DIC procedure for 2018-2020 Traverse). Connect Autel IM508/IM608 to OBD port, select add-key for Traverse HYQ4EA smart key.",
+    "allKeysLost": "Scan tool required. Connect Autel IM508/IM608 to OBD port, access BCM IMMO, select all-keys-lost for Traverse 2018-2020. Enter security codes. Program minimum 2 keys.",
+    "pinRequired": false,
+    "pinSource": "OBD read via scan tool",
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": null,
+    "specialTool": "Scan tool required (Autel IM508/IM608)",
+    "sources": [
+      "https://northcoastkeyless.com/chevrolet-traverse-keyless-entry-remote-fob-programming-instructions/",
+      "https://transponderisland.com/shop/tik-chv-95-2018-2020-chevrolet-traverse-blazer-smart-key-5b-hatch-remote-start-hyq4ea-13529636-4341"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Traverse",
+    "yearStart": 2020,
+    "yearEnd": 2024,
+    "onboard": "Adding with 2 working smart keys (DIC method, HYQ4ES): remove emergency blade from working key, place 2 working keys in front cup holder. Insert blade into driver door lock cylinder, turn counterclockwise to unlock 5 times within 10 sec. DIC shows ready status for next remote. Place new smart key in front cup holder transmitter spot. Press ENGINE START/STOP to program. Remove key, press LOCK or UNLOCK. Repeat for additional keys (up to 8). Hold ENGINE START/STOP ~12 sec to exit. AKL: same 5-turn blade entry, wait 10 min x3 (DIC prompts), then program new keys. Note: yearStart 2020 per key file data for HYQ4ES; key file shows 2020 as overlap with HYQ4EA row.",
+    "addKey": "On-board DIC with 2 working smart keys: blade 5-turn unlock, 2 working keys in cup holder, new key in cup holder transmitter spot, press START/STOP. See onboard field.",
+    "allKeysLost": "On-board 30-min DIC method: blade 5-turn unlock in driver door, DIC shows 'REMOTE LEARN PENDING, PLEASE WAIT'. Wait 10 min x3 (press START/STOP between each when DIC prompts), all prior keys erased. Program new keys in cup holder transmitter spot. Not available in Canada. Scan tool also viable.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "10 min x3 (30 min) for AKL on-board",
+    "specialTool": "Scan tool optional; on-board DIC method supported for add-key with 2 working keys and AKL",
+    "sources": [
+      "https://keyless2go.com/blogs/program-instructions/2020-chevrolet-traverse-keyless-entry-remote-fob-smart-key-programming-instructions",
+      "https://keylessbest.com/chevrolet-key-fob-fcc-id-hyq4es-compatibility-and-programming/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Blazer",
+    "yearStart": 2019,
+    "yearEnd": 2020,
+    "onboard": null,
+    "addKey": "Scan tool required (HYQ4EA, BCM2, no confirmed on-board DIC procedure for 2019-2020 Blazer). Connect Autel IM508/IM608 to OBD port, select add-key for Blazer HYQ4EA.",
+    "allKeysLost": "Scan tool required. Connect Autel IM508/IM608 to OBD port, select all-keys-lost for Blazer 2019-2020 HYQ4EA. Program minimum 2 keys.",
+    "pinRequired": false,
+    "pinSource": "OBD read via scan tool",
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": null,
+    "specialTool": "Scan tool required (Autel IM508/IM608)",
+    "sources": [
+      "https://transponderisland.com/shop/tik-chv-95-2018-2020-chevrolet-traverse-blazer-smart-key-5b-hatch-remote-start-hyq4ea-13529636-4341",
+      "https://www.locksmithkeyless.com/products/2019-chevrolet-blazer-smart-key-3b-fob-fcc-hyq4ea"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Blazer",
+    "yearStart": 2021,
+    "yearEnd": 2023,
+    "onboard": "Adding with 2 working smart keys (DIC method, HYQ4ES): remove emergency blade from working key, place 2 working keys in cup holder. Insert blade into driver door lock cylinder, turn counterclockwise to unlock 5 times within 10 sec. DIC shows ready status for next remote. Place new smart key in cup holder transmitter spot, press ENGINE START/STOP. Remove, press LOCK or UNLOCK. Repeat for additional keys. Hold START/STOP ~12 sec to exit. AKL: 3x 10-min wait cycles after 5-turn blade entry.",
+    "addKey": "On-board DIC with 2 working smart keys (same as Traverse HYQ4ES): blade 5-turn unlock, new key in cup holder, press START/STOP.",
+    "allKeysLost": "On-board 30-min DIC method: same HYQ4ES AKL procedure as Traverse 2020+. 3x 10-min wait cycles, all prior keys erased. Scan tool also viable.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "10 min x3 (30 min) for AKL on-board",
+    "specialTool": "Scan tool optional; on-board DIC method supported",
+    "sources": [
+      "https://keylessbest.com/chevrolet-key-fob-fcc-id-hyq4es-compatibility-and-programming/",
+      "https://fccid.io/HYQ4ES"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "GMC",
+    "model": "Sierra 1500",
+    "yearStart": 2007,
+    "yearEnd": 2013,
+    "onboard": "Same Pass-Key III+ on-board procedure as Silverado 2007-2013. All-keys-lost (30 min): insert new cut B111-PT key, ON until THEFT light off (10 min) x3, all prior keys erased. Adding with 1 working key: insert working key ON until light off, OFF, within 10 sec insert new key ON until light off, OFF.",
+    "addKey": "Insert working key, turn to ON until THEFT light extinguishes, turn to OFF, remove. Within 10 sec insert new cut B111-PT key, turn to ON, wait for security light off, turn to OFF.",
+    "allKeysLost": "30-min on-board 3-cycle relearn: insert new cut key, ON (wait ~10 min for THEFT light off), OFF, ON (wait), OFF, ON (wait until off), OFF. All prior keys erased. Scan tool also viable via OBD.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "10 min x3 (30 min) for AKL; ~5-10 sec per key when adding with working key",
+    "specialTool": null,
+    "sources": [
+      "https://automotivelocksmiths.com/gm-keys-onboard-key-programming/",
+      "https://moduleexperts.com/gm-security-relearn-procedure/",
+      "https://keyless2go.com/blogs/program-instructions/2010-gmc-sierra-1500-keyless-entry-remote-fob-smart-key-programming-instructions"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "GMC",
+    "model": "Sierra 1500",
+    "yearStart": 2014,
+    "yearEnd": 2018,
+    "onboard": "Transponder (B119-PT) add-key with 1 working key: insert working key ON until THEFT light off, OFF, within 10 sec insert new key ON until light off, OFF. AKL: 30-min 3-cycle on-board relearn. Remote head (M3N-32337100): scan tool required.",
+    "addKey": "Transponder on-board with 1 working key (same 2-key swap). Remote head: scan tool (Autel IM508/IM608) via OBD.",
+    "allKeysLost": "Transponder AKL: 30-min on-board 3-cycle relearn. Remote head AKL: scan tool required with 24-digit ECM+BCM codes.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "10 min x3 (30 min) for transponder AKL on-board",
+    "specialTool": "Scan tool required for remote head key only",
+    "sources": [
+      "https://automotivelocksmiths.com/gm-keys-onboard-key-programming/",
+      "https://abkeys.com/products/gmc-yukon-sierra-tahoe-transponder-key-hu100-pcf7937e-7013237-3415"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "GMC",
+    "model": "Sierra 1500",
+    "yearStart": 2019,
+    "yearEnd": 2020,
+    "onboard": "Transponder trims (B119-PT): same 1-working-key add sequence or 30-min 3-cycle AKL. Smart key trims (HYQ1EA): no on-board; scan tool required.",
+    "addKey": "Transponder: insert working key ON until THEFT light off, OFF, within 10 sec insert new key ON until off, OFF. Smart key: scan tool required (Autel IM508/IM608 with CAN FD adapter).",
+    "allKeysLost": "Transponder AKL: 30-min on-board 3-cycle relearn. Smart key AKL: scan tool required with CAN FD adapter, 24-digit rolling codes, 12-min door-cycle.",
+    "pinRequired": false,
+    "pinSource": "OBD read (smart key only) via compatible tool",
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "Transponder: 10 min x3 (30 min) AKL; Smart key: 12 min door-cycle",
+    "specialTool": "Scan tool with CAN FD adapter for smart key trims; transponder on-board capable",
+    "sources": [
+      "https://automotivelocksmiths.com/gm-keys-onboard-key-programming/",
+      "https://www.key-programmer.com/2024/11/22/autel-im508-program-gm-2021-2024-all-smart-keys-lost-guide/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "GMC",
+    "model": "Sierra 1500",
+    "yearStart": 2021,
+    "yearEnd": 2021,
+    "onboard": null,
+    "addKey": "Scan tool required (HYQ1ES, no on-board). Connect Autel IM508/IM608 with CAN FD adapter to OBD port, select add-key for 2021 Sierra HYQ1ES.",
+    "allKeysLost": "Scan tool required. Same CAN FD AKL flow as Silverado 2021: 24-digit rolling codes, 12-min door-cycle, minimum 2 keys. OBDSTAR/Xtool can bypass codes internally.",
+    "pinRequired": false,
+    "pinSource": "OBD read via compatible tool or third-party rolling code calculator",
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "12 min door-cycling during scan tool AKL",
+    "specialTool": "Scan tool with CAN FD adapter (Autel IM508/IM608, OBDSTAR, Xtool)",
+    "sources": [
+      "https://www.key-programmer.com/2024/11/22/autel-im508-program-gm-2021-2024-all-smart-keys-lost-guide/",
+      "http://blog.obdii365.com/2024/11/11/program-gm-2021-2024-all-keys-lost-with-autel-im508-im608/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "GMC",
+    "model": "Sierra 1500",
+    "yearStart": 2022,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "Scan tool required (VIP/CAN FD). Connect Autel IM608 Pro or OBDSTAR X300 DP Plus with CAN FD adapter, select add-key for 2022-2024 Sierra (YG0G21TB2/ID49).",
+    "allKeysLost": "Scan tool required. Same CAN FD AKL as Silverado 2022-2024. Navigate: IMMO → GM → Sierra → Proximity → 2022+ → All Keys Lost. 24-digit rolling codes (or OBDSTAR/Xtool internal bypass). 12-min door-cycle. Minimum 2 keys.",
+    "pinRequired": false,
+    "pinSource": "OBD read via compatible tool or third-party rolling code calculator",
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "12 min door-cycling during scan tool AKL",
+    "specialTool": "Scan tool with CAN FD adapter (Autel IM608 Pro, OBDSTAR X300 DP Plus, Xtool, GM SPS2)",
+    "sources": [
+      "https://www.key-programmer.com/2024/11/22/autel-im508-program-gm-2021-2024-all-smart-keys-lost-guide/",
+      "http://blog.obdii365.com/2024/11/11/program-gm-2021-2024-all-keys-lost-with-autel-im508-im608/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "GMC",
+    "model": "Sierra HD",
+    "yearStart": 2014,
+    "yearEnd": 2024,
+    "onboard": "Transponder trims (2014-2018 B119-PT): same 1-working-key add sequence or 30-min 3-cycle AKL as Sierra 1500 same era. Smart key trims (2019+): no on-board; scan tool required.",
+    "addKey": "Transponder (2014-2018): insert working key ON until THEFT light off, OFF, within 10 sec insert new key ON until off, OFF. Smart key (2019-2021 HYQ1EA/HYQ1ES): scan tool with CAN FD adapter. Smart key (2022-2024 YG0G21TB2): scan tool with CAN FD adapter (IM608 Pro or OBDSTAR).",
+    "allKeysLost": "Transponder (2014-2018) AKL: 30-min on-board 3-cycle relearn. Smart key (2019-2021) AKL: scan tool with CAN FD adapter, 24-digit codes, 12-min door-cycle. Smart key (2022-2024) AKL: scan tool with CAN FD GM adapter, same CAN FD flow.",
+    "pinRequired": false,
+    "pinSource": "OBD read (smart key only) via compatible tool",
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "Transponder: 10 min x3 (30 min) AKL on-board; Smart key: 12 min door-cycle during scan tool AKL",
+    "specialTool": "Scan tool with CAN FD adapter required for smart key trims (2019+); transponder (2014-2018) supports on-board",
+    "sources": [
+      "https://keyless2go.com/blogs/program-instructions/2024-gmc-sierra-hd-keyless-entry-remote-fob-smart-key-programming-instructions",
+      "https://automotivelocksmiths.com/gm-keys-onboard-key-programming/",
+      "http://blog.obdii365.com/2024/11/11/program-gm-2021-2024-all-keys-lost-with-autel-im508-im608/"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "GMC",
+    "model": "Canyon",
+    "yearStart": 2015,
+    "yearEnd": 2022,
+    "onboard": "Transponder (B119-PT) add-key with 1 working key: insert working key ON until THEFT light off, OFF, within 10 sec insert new key ON until off, OFF. AKL: 30-min 3-cycle on-board relearn. Remote head (M3N-32337100): scan tool required.",
+    "addKey": "Transponder on-board with 1 working key. Remote head: scan tool (Autel IM508/IM608) via OBD.",
+    "allKeysLost": "Transponder AKL: 30-min on-board 3-cycle relearn. Remote head AKL: scan tool via OBD.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "10 min x3 (30 min) for transponder AKL on-board",
+    "specialTool": "Scan tool required for remote head key only; transponder supports on-board",
+    "sources": [
+      "https://automotivelocksmiths.com/gm-keys-onboard-key-programming/",
+      "https://www.amazon.com/M3N-32337100-Chevrolet-Silverado-2014-2018-2015-2021/dp/B0FS7GB9SF"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "GMC",
+    "model": "Canyon",
+    "yearStart": 2023,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "Scan tool required (VIP/CAN FD). Connect Autel IM608 Pro or OBDSTAR X300 DP Plus with CAN FD adapter, select add-key for 2023-2024 Canyon (YG0G21TB2/ID49).",
+    "allKeysLost": "Scan tool required. Same CAN FD AKL as Sierra 2022-2024 / Colorado 2023+. 24-digit rolling codes or OBDSTAR/Xtool internal bypass. 12-min door-cycle. Minimum 2 keys.",
+    "pinRequired": false,
+    "pinSource": "OBD read via compatible tool or third-party rolling code calculator",
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "12 min door-cycling during scan tool AKL",
+    "specialTool": "Scan tool with CAN FD adapter (Autel IM608 Pro, OBDSTAR X300 DP Plus, Xtool)",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2023-2024-gmc-canyon-sierra-4-button-smart-key-pn-13530574-yg0g21tb2-oem",
+      "http://blog.obdii365.com/2024/11/11/program-gm-2021-2024-all-keys-lost-with-autel-im508-im608/"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "GMC",
+    "model": "Yukon / Yukon XL",
+    "yearStart": 2007,
+    "yearEnd": 2014,
+    "onboard": "Same Pass-Key III+ on-board procedure as Silverado/Sierra 2007-2013. All-keys-lost (30 min): insert new cut B111-PT key, ON until THEFT light off (10 min) x3, all prior keys erased. Adding with 1 working key: working key ON until light off, OFF, within 10 sec new key ON until off, OFF.",
+    "addKey": "Insert working key, turn to ON until THEFT light extinguishes, turn to OFF, remove. Within 10 sec insert new cut B111-PT key, turn to ON, wait for security light off, turn to OFF.",
+    "allKeysLost": "30-min on-board 3-cycle relearn. Scan tool also viable via OBD.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "10 min x3 (30 min) for AKL; ~5-10 sec per key when adding with working key",
+    "specialTool": null,
+    "sources": [
+      "https://automotivelocksmiths.com/gm-keys-onboard-key-programming/",
+      "https://moduleexperts.com/gm-security-relearn-procedure/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "GMC",
+    "model": "Yukon / Yukon XL",
+    "yearStart": 2015,
+    "yearEnd": 2020,
+    "onboard": "Same DIC on-board method as Tahoe/Suburban 2015-2020 (HYQ1AA, identical key system). Emergency blade 5-turn unlock in driver door, 2 working keys in cup holder, new key in center console transmitter pocket (open storage area, remove tray for Cadillac; front cup holder for GMC/Chevy/Buick), press ENGINE START/STOP. AKL: 3x 10-min wait cycles after 5-turn entry. Hold START/STOP 5-12 sec to exit.",
+    "addKey": "DIC on-board with 2 working smart keys: blade 5-turn unlock, 2 working keys in cup holder, new key in front cup holder transmitter spot, press START/STOP. See onboard field.",
+    "allKeysLost": "On-board 30-35 min DIC method (same as Tahoe/Suburban 2015-2020): 5-turn blade unlock, DIC 'REMOTE LEARN PENDING, PLEASE WAIT', 3x 10-min wait cycles with START/STOP press, all prior keys erased, program new keys. Not available in Canada.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "10 min x3 (30-35 min) for AKL on-board",
+    "specialTool": "Scan tool optional; on-board DIC method supported",
+    "sources": [
+      "https://www.carandtruckremotes.com/blogs/program-instructions/2017-gmc-yukon-keyless-entry-remote-fob-smart-key-programming-instructions",
+      "https://www.locksmithkeyless.com/products/2015-2019-gmc-yukon-smart-key-6b-fcc-hyq1aa"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "GMC",
+    "model": "Yukon / Yukon XL",
+    "yearStart": 2021,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "Scan tool required (BCM2/CAN FD). Connect Autel IM508/IM608 with CAN FD adapter or OBDSTAR X300 DP Plus with CAN FD GM adapter to OBD port. Select add-key for 2021-2024 Yukon (YG0G21TB2/ID49). OBDSTAR/Xtool can bypass security codes internally.",
+    "allKeysLost": "Scan tool required. OBDSTAR X300 DP Plus with CAN FD GM adapter (recommended by multiple sources for no-PIN-code path): Navigate IMMO → GM → Yukon → Proximity → 2021 → Without Pin Code → All Keys Lost. Erase existing keys. Open/close driver door or press push-start every 10 sec during mandatory 10-min wait. Program new keys when prompted. Alternatively Autel IM608 Pro with CAN FD adapter (requires third-party 24-digit rolling codes) or GM SPS2.",
+    "pinRequired": false,
+    "pinSource": "OBD read via compatible tool (OBDSTAR/Xtool bypass internally; Autel requires third-party calculator)",
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "10 min mandatory wait during AKL + door/button cycling",
+    "specialTool": "Scan tool with CAN FD adapter (OBDSTAR X300 DP Plus + CAN FD GM adapter preferred; Autel IM508/IM608 + CAN FD adapter; Xtool; GM SPS2)",
+    "sources": [
+      "https://abkeys.com/blogs/news/how-to-program-gmc-yukon-2021-smart-key-all-keys-lost-by-the-obdstar-x300-dp-plus-can-fd-adapter",
+      "https://www.key-programmer.com/2024/11/22/autel-im508-program-gm-2021-2024-all-smart-keys-lost-guide/",
+      "http://blog.obdii365.com/2021/06/25/obdstar-program-2021-gmc-yukon-prox-all-keys-lost/"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "GMC",
+    "model": "Acadia",
+    "yearStart": 2007,
+    "yearEnd": 2016,
+    "onboard": "Same Pass-Key III+ on-board procedure as Silverado/Tahoe 2007-2013 era. All-keys-lost (30 min): insert new cut B111-PT key, ON until THEFT light off (10 min) x3, all prior keys erased. Adding with 1 working key: working key ON until light off, OFF, within 10 sec new key ON until off, OFF.",
+    "addKey": "Insert working key, turn to ON until THEFT light extinguishes, turn to OFF, remove. Within 10 sec insert new cut B111-PT key, turn to ON, wait for security light off, turn to OFF.",
+    "allKeysLost": "30-min on-board 3-cycle relearn. Scan tool also viable via OBD.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "10 min x3 (30 min) for AKL; ~5-10 sec per key when adding with working key",
+    "specialTool": null,
+    "sources": [
+      "https://automotivelocksmiths.com/gm-keys-onboard-key-programming/",
+      "https://www.locksmithkeyless.com/products/2005-2017-gm-transponder-key-id46-chip-circle-z-keyway-b111-pt-1"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "GMC",
+    "model": "Acadia",
+    "yearStart": 2017,
+    "yearEnd": 2020,
+    "onboard": null,
+    "addKey": "Scan tool required (HYQ1EA, BCM2, no on-board DIC procedure confirmed for 2017-2020 Acadia). Connect Autel IM508/IM608 with CAN FD adapter to OBD port, select add-key for Acadia HYQ1EA.",
+    "allKeysLost": "Scan tool required. Connect Autel IM508/IM608 with CAN FD adapter, select all-keys-lost for Acadia 2017-2020 HYQ1EA. 24-digit rolling codes or compatible tool bypass. Program minimum 2 keys.",
+    "pinRequired": false,
+    "pinSource": "OBD read via compatible tool",
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "12 min door-cycling during scan tool AKL",
+    "specialTool": "Scan tool with CAN FD adapter (Autel IM508/IM608)",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2017-2020-gmc-acadia-smart-key-5b-fcc-hyq1ea-433-mhz",
+      "https://www.key-programmer.com/2024/11/22/autel-im508-program-gm-2021-2024-all-smart-keys-lost-guide/"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "GMC",
+    "model": "Acadia",
+    "yearStart": 2021,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "Scan tool required (HYQ1ES, BCM2). Connect Autel IM508/IM608 with CAN FD adapter to OBD port, select add-key for Acadia 2021-2024 HYQ1ES.",
+    "allKeysLost": "Scan tool required. Same CAN FD AKL flow as other HYQ1ES vehicles. 24-digit rolling codes or OBDSTAR/Xtool internal bypass. 12-min door-cycle. Minimum 2 keys.",
+    "pinRequired": false,
+    "pinSource": "OBD read via compatible tool or third-party rolling code calculator",
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "12 min door-cycling during scan tool AKL",
+    "specialTool": "Scan tool with CAN FD adapter (Autel IM508/IM608)",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2021-2023-gmc-smart-key-5b-fcc-hyq1es-434-mhz",
+      "https://www.key-programmer.com/2024/11/22/autel-im508-program-gm-2021-2024-all-smart-keys-lost-guide/"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "GMC",
+    "model": "Terrain",
+    "yearStart": 2010,
+    "yearEnd": 2017,
+    "onboard": "Add key with 1 working key: insert working programmed key into ignition, start the engine, turn off and remove key. Within 10 sec insert new cut B119-PT key, turn to ON (do not start). Security/THEFT light will illuminate then extinguish when programmed. Turn to OFF. Key is now programmed. Note: only adds key, does not erase others. AKL: 30-min 3-cycle security-light relearn.",
+    "addKey": "Insert working key, start engine, turn off and remove. Within 10 sec insert new B119-PT key (HU100 keyway), turn to ON (do not start). Wait for security light to go off (~5-10 sec). Turn to OFF. Key programmed.",
+    "allKeysLost": "30-min on-board 3-cycle relearn: insert new cut key, ON (THEFT light on, wait ~10 min until off), OFF, ON (wait 10 min), OFF, ON (wait 10 min until off), OFF. All prior keys erased. Scan tool also viable via OBD.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "10 min x3 (30 min) for AKL; ~5-10 sec per key when adding with working key",
+    "specialTool": null,
+    "sources": [
+      "https://www.carandtruckremotes.com/blogs/program-instructions/2011-gmc-terrain-keyless-entry-remote-fob-smart-key-programming-instructions",
+      "https://www.locksmithkeyless.com/products/2010-2020-strattec-transponder-key-for-gmc-id46-gm-ext-b119-pt-5935765"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "GMC",
+    "model": "Terrain",
+    "yearStart": 2018,
+    "yearEnd": 2021,
+    "onboard": null,
+    "addKey": "Scan tool required (HYQ1EA, BCM2, no on-board DIC procedure confirmed for 2018-2021 Terrain). Connect Autel IM508/IM608 with CAN FD adapter to OBD port, select add-key for Terrain HYQ1EA.",
+    "allKeysLost": "Scan tool required. Connect Autel IM508/IM608 with CAN FD adapter, select all-keys-lost for Terrain 2018-2021 HYQ1EA. 24-digit codes or compatible tool bypass. Program minimum 2 keys.",
+    "pinRequired": false,
+    "pinSource": "OBD read via compatible tool",
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "12 min door-cycling during scan tool AKL",
+    "specialTool": "Scan tool with CAN FD adapter (Autel IM508/IM608)",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2017-2019-gmc-smart-key-3b-fcc-hyq1ea",
+      "https://fccid.io/HYQ1EA"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "GMC",
+    "model": "Terrain",
+    "yearStart": 2022,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "Scan tool required (HYQ1ES, BCM2). Connect Autel IM508/IM608 with CAN FD adapter to OBD port, select add-key for Terrain 2022-2024 HYQ1ES.",
+    "allKeysLost": "Scan tool required. Same CAN FD AKL as Acadia 2021-2024 HYQ1ES. 24-digit rolling codes or OBDSTAR/Xtool internal bypass. 12-min door-cycle. Minimum 2 keys.",
+    "pinRequired": false,
+    "pinSource": "OBD read via compatible tool or third-party rolling code calculator",
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "12 min door-cycling during scan tool AKL",
+    "specialTool": "Scan tool with CAN FD adapter (Autel IM508/IM608)",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2021-2023-gmc-smart-key-5b-fcc-hyq1es-434-mhz",
+      "https://fccid.io/HYQ1ES"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Cadillac",
+    "model": "Escalade",
+    "yearStart": 2007,
+    "yearEnd": 2014,
+    "onboard": "Same Pass-Key III+ on-board procedure as Silverado/Tahoe 2007-2013. All-keys-lost (30 min): insert new cut B111-PT key, ON until THEFT light off (10 min) x3, all prior keys erased. Adding with 1 working key: working key ON until light off, OFF, within 10 sec new key ON until off, OFF.",
+    "addKey": "Insert working key, turn to ON until THEFT light extinguishes, turn to OFF, remove. Within 10 sec insert new cut B111-PT key, turn to ON, wait for security light off, turn to OFF.",
+    "allKeysLost": "30-min on-board 3-cycle relearn. Scan tool also viable via OBD.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "10 min x3 (30 min) for AKL; ~5-10 sec per key when adding with working key",
+    "specialTool": null,
+    "sources": [
+      "https://automotivelocksmiths.com/gm-keys-onboard-key-programming/",
+      "https://www.locksmithkeyless.com/products/2005-2017-gm-transponder-key-id46-chip-circle-z-keyway-b111-pt-1"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Cadillac",
+    "model": "Escalade",
+    "yearStart": 2015,
+    "yearEnd": 2020,
+    "onboard": "Adding with 2 working smart keys (DIC method, HYQ2AB/HYQ2EB): remove emergency blade from working key. Place 2 working keys in front cup holder (Chevrolet/GMC/Buick) OR center console transmitter pocket area. Insert blade into driver door lock, turn counterclockwise to unlock 5 times within 10 sec. DIC shows 'READY TO LEARN ELECTRONIC KEY #2, 3, ETC.' Place new smart key into center console transmitter pocket (open storage area, remove storage tray). Press ENGINE START/STOP. DIC confirms; remove and press LOCK or UNLOCK. Hold ENGINE START/STOP ~5 sec to exit. AKL (30-35 min): same 5-turn blade entry, DIC shows 'REMOTE LEARN PENDING', wait 10 min x3 with START/STOP press between each, all prior keys erased, then program new keys in transmitter pocket.",
+    "addKey": "DIC on-board with 2 working smart keys: blade 5-turn unlock, 2 working keys in cup holder, new key in center console transmitter pocket, press START/STOP. See onboard field for full steps.",
+    "allKeysLost": "On-board 30-35 min DIC method: blade 5-turn unlock, 'REMOTE LEARN PENDING' on DIC, 3x 10-min wait cycles with START/STOP press (2015 Tahoe source confirms identical procedure for HYQ1AA; Escalade uses same architecture HYQ2AB/HYQ2EB). All prior keys erased after 3rd cycle. Program new keys in center console transmitter pocket.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "10 min x3 (30-35 min) for AKL on-board",
+    "specialTool": "Scan tool optional (Autel IM508/IM608); on-board DIC method supported",
+    "sources": [
+      "https://www.carandtruckremotes.com/blogs/program-instructions/2015-chevrolet-tahoe-keyless-entry-remote-fob-smart-key-programming-instructions",
+      "https://www.locksmithkeyless.com/products/2015-2018-cadillac-escalade-smart-key-6b-fcc-hyq2ab",
+      "https://guide.carkeysexpress.com/hc/en-us/articles/360060923112-2015-2016-cadillac-escalade-remote-programming-instructions"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Cadillac",
+    "model": "Escalade",
+    "yearStart": 2021,
+    "yearEnd": 2024,
+    "onboard": null,
+    "addKey": "Scan tool required (YG0G20TB1/ID49, BCM2/CAN FD). Connect Autel IM608 Pro or OBDSTAR with CAN FD adapter to OBD port, select add-key for 2021-2024 Escalade. Must match original remote frequency (315 MHz PN 13538866 vs 433 MHz PN 13538864/13541571).",
+    "allKeysLost": "Scan tool required. Autel IM608 Pro with CAN FD adapter (requires third-party 24-digit ECM+BCM rolling codes) or OBDSTAR/Xtool with CAN FD adapter (can bypass codes internally). Open/close driver door every 3-4 sec during 12-min timer. Program minimum 2 keys. Alternatively GM SPS2 J2534.",
+    "pinRequired": false,
+    "pinSource": "OBD read via compatible tool (OBDSTAR/Xtool bypass internally; Autel requires third-party rolling code calculator)",
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "12 min door-cycling during scan tool AKL",
+    "specialTool": "Scan tool with CAN FD adapter (Autel IM608 Pro, OBDSTAR, Xtool). Confirm original remote frequency before ordering replacement.",
+    "sources": [
+      "https://www.key-programmer.com/2024/11/22/autel-im508-program-gm-2021-2024-all-smart-keys-lost-guide/",
+      "http://blog.obdii365.com/2022/01/07/2021-cadillac-escalade-add-key-with-obdstar-or-autel-im608/",
+      "https://www.uhs-hardware.com/products/2021-2024-cadillac-escalade-6-button-smart-key-pn-13538866-yg0g20tb1-315-mhz-oem"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Cadillac",
+    "model": "XT5",
+    "yearStart": 2017,
+    "yearEnd": 2019,
+    "onboard": "Adding with 2 working smart keys (DIC method, HYQ2EB): remove emergency blade from working key, place 2 working keys in front cup holder. Insert blade into driver door lock, turn counterclockwise to unlock 5 times within 10 sec. DIC shows 'READY FOR REMOTE #2, 3, ETC.' Place new smart key in center console transmitter pocket (remove storage tray). Press ENGINE START/STOP to program. Remove, press LOCK or UNLOCK. Hold START/STOP ~12 sec to exit. AKL: 3x 10-min wait cycles after 5-turn blade entry (same DIC flow as Tahoe/Yukon platform). Note: some 2017-2019 XT5 forum reports say SPS required; DIC method confirmed by carandtruckremotes source for 2023 XT5 (HYQ2ES). 2017-2019 HYQ2EB may follow same architecture — treat as single-source for on-board.",
+    "addKey": "DIC on-board with 2 working smart keys (if supported): blade 5-turn unlock, 2 working keys in cup holder, new key in center console transmitter pocket, press START/STOP. Otherwise scan tool (Autel IM508/IM608) via OBD.",
+    "allKeysLost": "On-board 30-min DIC method may be available (see onboard note). If not supported: scan tool required (Autel IM508/IM608), access BCM IMMO, select AKL for XT5 2017-2019 HYQ2EB, program minimum 2 keys.",
+    "pinRequired": false,
+    "pinSource": "OBD read via scan tool (if on-board AKL not available)",
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "10 min x3 (30 min) if on-board AKL used",
+    "specialTool": "Scan tool (Autel IM508/IM608) for AKL if on-board not supported; add-key may be on-board with 2 working keys",
+    "sources": [
+      "https://www.carandtruckremotes.com/blogs/program-instructions/2023-cadillac-xt5-keyless-entry-remote-fob-smart-key-programming-instructions",
+      "https://www.locksmithkeyless.com/products/2017-2019-cadillac-smart-key-5b-fcc-hyq2eb",
+      "https://www.uhs-hardware.com/products/2017-2020-cadillac-xt5-5-button-smart-key-pn-13598527-hyq2eb-oem"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Cadillac",
+    "model": "XT5",
+    "yearStart": 2020,
+    "yearEnd": 2024,
+    "onboard": "Adding with 2 working smart keys (DIC method, HYQ2ES): remove emergency blade from working key, place 2 working keys in front cup holder. Insert blade into driver door lock, turn counterclockwise to unlock 5 times within 10 sec. DIC shows 'READY FOR REMOTE #2, 3, ETC.' Place new smart key in center console transmitter pocket (open storage area, remove tray). Press ENGINE START/STOP. Remove, press LOCK or UNLOCK. Repeat for additional keys (up to 8). Hold START/STOP ~12 sec to exit. AKL (30 min): same 5-turn blade entry, 3x 10-min wait cycles with START/STOP press between each, all prior keys erased, then program new keys.",
+    "addKey": "On-board DIC with 2 working smart keys: blade 5-turn unlock, new key in center console transmitter pocket, press START/STOP. See onboard field.",
+    "allKeysLost": "On-board 30-min DIC method (confirmed for 2023 XT5 HYQ2ES): blade 5-turn unlock, DIC 'REMOTE LEARN PENDING', 3x 10-min wait cycles, all prior keys erased. Program new keys in transmitter pocket. Not available in Canada. Scan tool also viable.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "10 min x3 (30 min) for AKL on-board",
+    "specialTool": "Scan tool optional (Autel IM508/IM608); on-board DIC method supported",
+    "sources": [
+      "https://www.carandtruckremotes.com/blogs/program-instructions/2023-cadillac-xt5-keyless-entry-remote-fob-smart-key-programming-instructions",
+      "https://www.locksmithkeyless.com/products/2020-2024-cadillac-xt4-xt5-xt6-smart-key-5b-w-hatch-remote-start-hyq2es-13522879"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Cadillac",
+    "model": "XT4",
+    "yearStart": 2019,
+    "yearEnd": 2019,
+    "onboard": "Same platform as XT5 2017-2019 (HYQ2EB). Adding with 2 working smart keys may use DIC method: blade 5-turn unlock in driver door, new key in center console transmitter pocket, press START/STOP. Treat as single-source — scan tool recommended to verify.",
+    "addKey": "DIC on-board with 2 working smart keys (if supported, same as XT5 2017-2019 HYQ2EB): blade 5-turn unlock, new key in transmitter pocket, press START/STOP. Otherwise scan tool (Autel IM508/IM608) via OBD.",
+    "allKeysLost": "Scan tool recommended (Autel IM508/IM608); on-board 30-min DIC AKL may be available per XT5 2017-2019 notes. Select AKL for XT4 2019 HYQ2EB, program minimum 2 keys.",
+    "pinRequired": false,
+    "pinSource": "OBD read via scan tool if on-board AKL not supported",
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "10 min x3 (30 min) if on-board AKL used",
+    "specialTool": "Scan tool (Autel IM508/IM608) for AKL; add-key may be on-board with 2 working keys",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2017-2019-cadillac-smart-key-5b-fcc-hyq2eb",
+      "https://abkeys.com/products/cadillac-xt4-xt5-xts-smart-key-5b-433mhz-hyq2eb-13598516-13510245-4351"
+    ],
+    "confidence": "single-source",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Cadillac",
+    "model": "XT4",
+    "yearStart": 2020,
+    "yearEnd": 2024,
+    "onboard": "Same DIC on-board method as XT5 2020-2024 (HYQ2ES, identical key system). Emergency blade 5-turn unlock in driver door, 2 working keys in cup holder, new key in center console transmitter pocket, press ENGINE START/STOP. AKL: 3x 10-min wait cycles. Hold START/STOP ~12 sec to exit.",
+    "addKey": "On-board DIC with 2 working smart keys (same as XT5 2020-2024). Blade 5-turn unlock, new key in center console transmitter pocket, press START/STOP.",
+    "allKeysLost": "On-board 30-min DIC method (same as XT5 2020-2024 HYQ2ES): blade 5-turn unlock, 3x 10-min wait cycles, all prior keys erased, program new keys. Scan tool also viable.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "10 min x3 (30 min) for AKL on-board",
+    "specialTool": "Scan tool optional; on-board DIC method supported",
+    "sources": [
+      "https://www.carandtruckremotes.com/blogs/program-instructions/2023-cadillac-xt5-keyless-entry-remote-fob-smart-key-programming-instructions",
+      "https://www.locksmithkeyless.com/products/2020-2024-cadillac-xt4-xt5-xt6-smart-key-5b-w-hatch-remote-start-hyq2es-13522879"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Cadillac",
+    "model": "XT6",
+    "yearStart": 2020,
+    "yearEnd": 2024,
+    "onboard": "Same DIC on-board method as XT5 2020-2024 (HYQ2ES for most; HYQ2EB for early 2020). Emergency blade 5-turn unlock in driver door, 2 working keys in cup holder, new key in center console transmitter pocket, press ENGINE START/STOP. AKL: 3x 10-min wait cycles. Verify FCC ID on door sticker before ordering.",
+    "addKey": "On-board DIC with 2 working smart keys (same as XT4/XT5 2020-2024). Blade 5-turn unlock, new key in transmitter pocket, press START/STOP.",
+    "allKeysLost": "On-board 30-min DIC method (same HYQ2ES AKL as XT4/XT5 2020+): 5-turn blade unlock, 3x 10-min wait cycles, all prior keys erased, program new keys. Scan tool also viable.",
+    "pinRequired": false,
+    "pinSource": null,
+    "obdPort": "Under dashboard, driver side, near steering column",
+    "securityWait": "10 min x3 (30 min) for AKL on-board",
+    "specialTool": "Scan tool optional; on-board DIC method supported",
+    "sources": [
+      "https://www.carandtruckremotes.com/blogs/program-instructions/2023-cadillac-xt5-keyless-entry-remote-fob-smart-key-programming-instructions",
+      "https://www.locksmithkeyless.com/products/2020-2024-cadillac-xt4-xt5-xt6-smart-key-5b-w-hatch-remote-start-hyq2es-13522879"
+    ],
+    "confidence": "verified",
+    "lastVerified": "2026-06-13"
+  }
+]

@@ -1,4 +1,4 @@
-export type TabId = 'calendar' | 'jobs' | 'messages' | 'calls' | 'clients' | 'analytics' | 'accounting' | 'inventory' | 'brain' | 'settings';
+export type TabId = 'calendar' | 'jobs' | 'messages' | 'calls' | 'clients' | 'analytics' | 'accounting' | 'autokey' | 'inventory' | 'brain' | 'settings';
 
 export type Role = 'owner' | 'manager' | 'technician' | 'accountant';
 export type TechStatus = 'available' | 'onJob' | 'offDuty';
@@ -221,3 +221,48 @@ export const STATUS_COLORS: Record<JobStatus, string> = {
   completed: '#10B981',   // Green
   cancelled: '#64748B'    // Slate
 };
+
+// ── Авто-Ключ: vehicle key reference ─────────────────────────────────────────
+// Given a car (VIN or make/model/year) the app shows everything to make/program
+// a key: keyway/blade, transponder chip, FCC/remote, immobilizer, how to program.
+export type KeyType = 'Mechanical' | 'Transponder' | 'RemoteHead' | 'Flip' | 'Smart';
+export type ChipClonable = 'yes' | 'no' | 'token';
+
+// Trust tier shown on every row so the tech always knows what to believe.
+// verified  = cross-checked against 2+ live catalogs (✅)
+// single-source / unverified / ai = weaker or AI-drafted — verify on the fob (⚠️/🤖)
+// owner     = Sultan confirmed it from a real job (highest trust)
+export type KeyConfidence = 'verified' | 'single-source' | 'unverified' | 'ai' | 'owner';
+
+export interface KeyVariant {
+  keyType: KeyType;
+  trimDependent?: boolean;     // this variant only on some trims
+  keyway?: string;             // e.g. 'HU101'
+  bladeIlco?: string;
+  bladeSilca?: string;
+  bladeJma?: string;
+  transponderChip?: string;    // e.g. '128-bit Hitag-Pro (NXP PCF7939)'
+  chipClonable?: ChipClonable;
+  fccId?: string;
+  partNumber?: string;
+  frequency?: string;          // '315' | '433' | '868' | '313.8'
+}
+
+export interface VehicleKeyProfile {
+  id?: string;                 // set for field-added rows
+  make: string;
+  model: string;
+  yearStart: number;
+  yearEnd: number | null;      // null = present
+  region?: string;             // 'US'
+  variants: KeyVariant[];
+  immobilizer?: string;
+  pinRequired?: boolean;
+  programming?: string;        // plain-English method
+  programmerHint?: string[];   // every compatible programmer
+  notes?: string;
+  confidence: KeyConfidence;
+  sources?: string[];
+  dataSource?: string;         // provenance label
+  lastVerified?: string;       // ISO date
+}

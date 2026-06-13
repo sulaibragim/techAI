@@ -26,6 +26,7 @@ import { translateCallSummary } from '../translateService';
 import { geocodeAddress } from '../geocoding';
 import { haversineMiles, approxEtaMinutes, formatMiles, LatLng } from '../geoUtils';
 import { getDriveEta, getRouteInfo, getWeather, buildOnMyWayMessage } from '../dispatchMessage';
+import { AutoKeyPanel } from './AutoKeyPanel';
 
 const STATUS_OPTIONS: { id: JobStatus; label: string }[] = [
   { id: 'scheduled', label: 'Scheduled' },
@@ -1483,6 +1484,16 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                     <input className="w-full bg-transparent text-xs font-bold text-white uppercase outline-none" value={localJob.lockDetails.hardwareFinish || ''} onChange={e => handleLockDetailsChange({ hardwareFinish: e.target.value })} placeholder="E.G. BRUSHED NICKEL" />
                   </div>
                 </div>
+
+                {localJob.lockDetails.type === 'Automotive' && (
+                  <div className="mt-4">
+                    <AutoKeyPanel
+                      make={localJob.lockDetails.brand}
+                      modelOrYear={localJob.lockDetails.modelOrYear}
+                      onAddToInvoice={(items) => handleLocalChange({ lineItems: [...localJob.lineItems, ...items.map(it => ({ id: Math.random().toString(36).slice(2, 9), type: it.type, description: it.description, quantity: 1, unitPrice: it.unitPrice }))] })}
+                    />
+                  </div>
+                )}
               </section>
 
               {/* MESSAGE HISTORY - MOVED TO SIDEBAR */}
