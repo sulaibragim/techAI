@@ -175,13 +175,21 @@ openphoneRouter.post('/messages/send', requireAuth, async (req, res) => {
   try {
     const { to, content, phoneNumberId } = req.body;
     const toAddr = toE164(to); // OpenPhone rejects non-E.164 numbers — coerce first
+    // Sender identity comes from SERVER env, not the browser. Prefer the OpenPhone number
+    // (from), exactly like the proven sendSMS() helper; fall back to the server's own
+    // phoneNumberId; only then the client-supplied one. Never let a hardcoded browser
+    // fallback decide which number we send from.
+    const envFrom = process.env.OPENPHONE_PHONE_NUMBER ? toE164(process.env.OPENPHONE_PHONE_NUMBER) : '';
+    const sender = envFrom
+      ? { from: envFrom }
+      : { phoneNumberId: process.env.OPENPHONE_PHONE_NUMBER_ID || phoneNumberId };
     const response = await fetch('https://api.openphone.com/v1/messages', {
       method: 'POST',
       headers: {
         Authorization: process.env.OPENPHONE_API_KEY,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ to: [toAddr], content, phoneNumberId }),
+      body: JSON.stringify({ ...sender, to: [toAddr], content }),
     });
     const data = await response.json();
     if (!response.ok) {
