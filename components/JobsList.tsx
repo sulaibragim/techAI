@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Job, JobStatus, STATUS_COLORS } from '../types';
-import { MapPin, Clock, ArrowRight, Calendar, X, Hash, CheckCircle2, Activity, Trash2, AlertCircle, Wrench, Search } from 'lucide-react';
+import { MapPin, Clock, ArrowRight, Calendar, X, Hash, CheckCircle2, Activity, Trash2, AlertCircle, Wrench, Search, User } from 'lucide-react';
 import { useAppStore } from '../store';
-import { useCurrentUser, can } from '../authStore';
+import { useCurrentUser, can, useAuthStore } from '../authStore';
 
 interface JobsListProps {
   jobs: Job[];
@@ -20,6 +20,7 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
   const [tempDate, setTempDate] = useState(new Date().toISOString().split('T')[0]);
   const { updateJobStatus, updateJob, removeJob } = useAppStore();
   const currentUser = useCurrentUser();
+  const users = useAuthStore(s => s.users);
   const canCancel = currentUser ? can.deleteJob(currentUser.role) || currentUser.role === 'manager' : false;
   const canDelete = currentUser ? can.deleteJob(currentUser.role) : false;
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -167,6 +168,7 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filteredJobs.map((job) => {
             const btn = getButtonConfig(job.status);
+            const tech = job.assignedTo ? users.find(u => u.id === job.assignedTo) : null;
             return (
               <div
                 key={job.id}
@@ -202,6 +204,12 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
                    <div className="flex items-start text-slate-400 text-xs">
                      <MapPin size={13} className="mr-2 text-blue-400 mt-0.5 shrink-0" />
                      <span className="font-medium leading-tight truncate">{job.client.address}</span>
+                   </div>
+                   <div className="flex items-center text-xs">
+                     <User size={13} className={`mr-2 shrink-0 ${tech ? 'text-blue-400' : 'text-amber-400'}`} />
+                     {tech
+                       ? <span className="font-semibold text-blue-300 truncate">{tech.name}</span>
+                       : <span className="font-semibold text-amber-400">Unassigned</span>}
                    </div>
                 </div>
 

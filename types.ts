@@ -33,14 +33,68 @@ export interface AuditEntry {
 export interface Part {
   id: string;
   name: string;
-  sku: string;
+  sku: string;              // our internal code, we choose it
   category: 'Key Blanks' | 'Remotes' | 'Cylinders' | 'Hardware' | 'Tools';
   stock: number;
   reorderPoint: number;
-  price: number;
+  price: number;            // sell price charged to the client
+  cost?: number;            // weighted-average purchase cost (себестоимость) — drives margin + valuation
+  brand?: string;           // Schlage / Ilco / Kwikset …
+  mpn?: string;             // manufacturer part number (артикул завода)
+  upc?: string;             // barcode (штрихкод) — scannable, universal
+  photo?: string;           // small base64 thumbnail so techs recognise it on the phone
+  location?: string;        // where this stock lives — 'shop' for now; per-van is the Wave 3 hook
 }
 
-export type JobStatus = 
+// Every change to stock is a recorded movement. Current stock = sum of movements.
+// No one edits the number by hand — it's derived, and the log is the audit trail.
+export type StockMovementType =
+  | 'receive'   // purchase / приход (+)
+  | 'sale'      // sold on a job / расход (−)
+  | 'return'    // came back from a job / возврат (+)
+  | 'adjust'    // stocktake correction / инвентаризация (±)
+  | 'loss';     // broken, lost, miscut / брак-потеря (−)
+
+export const MOVEMENT_META: Record<StockMovementType, { label: string; tone: 'in' | 'out' | 'neutral' }> = {
+  receive: { label: 'Received',   tone: 'in' },
+  sale:    { label: 'Sold',       tone: 'out' },
+  return:  { label: 'Returned',   tone: 'in' },
+  adjust:  { label: 'Adjusted',   tone: 'neutral' },
+  loss:    { label: 'Loss',       tone: 'out' },
+};
+
+export interface StockMovement {
+  id: string;
+  partId: string;
+  partName: string;       // denormalised so the log still reads if a part is renamed/deleted
+  type: StockMovementType;
+  qty: number;            // signed: + into stock, − out of stock
+  unitCost?: number;      // cost basis at the time (receive/sale) for valuation
+  location?: string;      // van/shop the movement happened at
+  jobId?: string;         // set for sale/return
+  supplierName?: string;  // set for receive (formal Supplier records come in Wave 2)
+  note?: string;
+  userId?: string;
+  userName?: string;
+  timestamp: string;      // ISO
+}
+
+// Rate card / price book — our standard service prices (seeded from trustkeyaz.com).
+// Tapping one on an invoice fills the description + price so the team bills consistently.
+export const SERVICE_CATEGORIES = ['Lockout', 'Rekey & Install', 'Smart Locks', 'Car Keys', 'Safes', 'Bundles'] as const;
+export type ServiceCategory = typeof SERVICE_CATEGORIES[number];
+
+export interface ServiceRate {
+  id: string;
+  name: string;
+  category: ServiceCategory;
+  price: number;            // daytime / base "from" price
+  nightPrice?: number;      // after-hours price when it differs
+  type: 'part' | 'labor' | 'service_call' | 'maintenance' | 'installation'; // invoice line type it maps to
+  note?: string;            // e.g. "+$49 each additional door", "all-in with Schlage"
+}
+
+export type JobStatus =
   | 'scheduled' 
   | 'enRoute' 
   | 'onSite'
@@ -136,8 +190,9 @@ export interface LineItem {
   type: 'part' | 'labor' | 'service_call' | 'maintenance' | 'installation';
   description: string;
   quantity: number;
-  unitPrice: number;
+  unitPrice: number;   // price charged to the client
   partId?: string;
+  unitCost?: number;   // cost basis snapshot from inventory at sale time (для COGS / прибыли)
 }
 
 export interface Job {

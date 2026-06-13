@@ -43,10 +43,11 @@ const STATUS_OPTIONS: { id: JobStatus; label: string }[] = [
 const TERM_TYPES = ['1', '10', '15', '20', '30'];
 
 export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (job: Job) => void }> = ({ job: initialJob, onClose, onOpenJob }) => {
-  const { jobs, updateJob, removeJob, inventory, updateInventoryItem } = useAppStore();
+  const { jobs, updateJob, removeJob, inventory, consumePart, returnPart } = useAppStore();
   const { companyName, technicianName, companyAddress, companyCity, companyPhone, companyEmail, licenseNumber } = useSettingsStore();
   const clientProfiles = useSettingsStore(s => s.clientProfiles);
   const upsertClientProfile = useSettingsStore(s => s.upsertClientProfile);
+  const priceBook = useSettingsStore(s => s.priceBook);
   const currentUser = useCurrentUser();
   const users = useAuthStore(s => s.users);
   const logAudit = useAuthStore(s => s.logAudit);
@@ -112,13 +113,14 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
       callQualityRu: { strengths: t.strengths, improvements: t.improvements, missedInfo: t.missedInfo },
     };
     setLocalJob(updated);
-    updateJob(updated);
+    commitJob(updated);
   };
 
   // Billing Prompt State
-  const [billingPrompt, setBillingPrompt] = useState<{ open: boolean, type: LineItem['type'] | null, desc: string, price: string, extra?: string, partId?: string }>({
-    open: false, type: null, desc: '', price: ''
+  const [billingPrompt, setBillingPrompt] = useState<{ open: boolean, type: LineItem['type'] | null, desc: string, price: string, extra?: string, partId?: string, qty?: string, unitCost?: number }>({
+    open: false, type: null, desc: '', price: '', qty: '1'
   });
+  const [showRates, setShowRates] = useState(false);
 
   // Payment Settlement States
   const [paymentStep, setPaymentStep] = useState<'idle' | 'split' | 'method' | 'sign'>('idle');
@@ -149,7 +151,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
     
     const updatedJob = { ...localJob, messages: [...(localJob.messages || []), newMessage] };
     setLocalJob(updatedJob);
-    updateJob(updatedJob);
+    commitJob(updatedJob);
     setDraftMessage('');
   };
 
@@ -176,7 +178,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
       acceptedAt: localJob.acceptanceStatus === 'pending' ? new Date().toISOString() : localJob.acceptedAt,
     };
     setLocalJob(enRouteJob);
-    updateJob(enRouteJob);
+    commitJob(enRouteJob);
     setIsModified(false);
     logAudit({ action: 'job.enroute', detail: `On the way to #${enRouteJob.jobNumber} (${enRouteJob.client.firstName} ${enRouteJob.client.lastName})`, jobId: enRouteJob.id });
 
@@ -201,7 +203,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
       const smsMsg: Message = { id: Math.random().toString(36).slice(2), sender: 'technician', content: text, timestamp: new Date().toISOString(), method: 'sms' };
       const withMsg: Job = { ...enRouteJob, messages: [...(enRouteJob.messages || []), smsMsg] };
       setLocalJob(withMsg);
-      updateJob(withMsg);
+      commitJob(withMsg);
       setOtwState('sent');
     } else {
       setOtwState('error');
@@ -219,7 +221,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
       acceptedAt: isSelf ? new Date().toISOString() : undefined,
     };
     setLocalJob(updated);
-    updateJob(updated);
+    commitJob(updated);
     setIsModified(false);
     const techName = technicians.find(t => t.id === assignedTo)?.name || 'Unassigned';
     logAudit({ action: 'job.assign', detail: `Assigned #${updated.jobNumber} to ${techName}`, jobId: updated.id });
@@ -230,7 +232,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
     // separate step (the On My Way button) so it fires when the tech actually departs.
     const updated: Job = { ...localJob, acceptanceStatus: 'accepted', acceptedAt: new Date().toISOString(), status: 'enRoute' };
     setLocalJob(updated);
-    updateJob(updated);
+    commitJob(updated);
     setIsModified(false);
     logAudit({ action: 'job.accept', detail: `Accepted job #${updated.jobNumber} — moved to En Route`, jobId: updated.id });
   };
@@ -239,7 +241,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
     // Sending it back to dispatch: clear the assignee so a manager can reassign.
     const updated: Job = { ...localJob, acceptanceStatus: 'declined', assignedTo: undefined };
     setLocalJob(updated);
-    updateJob(updated);
+    commitJob(updated);
     setIsModified(false);
     logAudit({ action: 'job.decline', detail: `Declined job #${updated.jobNumber}`, jobId: updated.id });
   };
@@ -266,7 +268,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
 
   // Opening a website lead marks it handled — drops it from the "new leads" banner/column.
   useEffect(() => {
-    if (initialJob.isNewLead) updateJob({ ...initialJob, isNewLead: false });
+    if (initialJob.isNewLead) commitJob({ ...initialJob, isNewLead: false });
   }, [initialJob.id]);
 
   // When the schedule sheet opens, jump the calendar to the selected date's month.
@@ -364,6 +366,26 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
     setIsModified(true);
   };
 
+  // Persist a job AND reconcile inventory against what was previously saved: for each
+  // stocked part, apply only the net quantity change (sold → consume, removed → return).
+  // This is what makes the shelf track the *saved* invoice, never mid-edit churn.
+  const commitJob = (job: Job) => {
+    const prev = jobs.find(j => j.id === job.id);
+    const tally = (j?: Job) => {
+      const m = new Map<string, number>();
+      j?.lineItems.forEach(li => { if (li.partId) m.set(li.partId, (m.get(li.partId) || 0) + li.quantity); });
+      return m;
+    };
+    const before = tally(prev);
+    const after = tally(job);
+    new Set([...before.keys(), ...after.keys()]).forEach(partId => {
+      const delta = (after.get(partId) || 0) - (before.get(partId) || 0);
+      if (delta > 0) consumePart(partId, delta, job.id);
+      else if (delta < 0) returnPart(partId, -delta, job.id);
+    });
+    updateJob(job);
+  };
+
   const handleLockDetailsChange = (updates: Partial<LockDetails>) => {
     handleLocalChange({ lockDetails: { ...localJob.lockDetails, ...updates } });
   };
@@ -386,35 +408,25 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
       finalDesc = `${finalDesc} (Diag: ${billingPrompt.extra})`;
     }
 
+    const qty = Math.max(1, parseInt(billingPrompt.qty || '1', 10) || 1);
     const newItem: LineItem = {
       id: Math.random().toString(36).substr(2, 9),
       type: billingPrompt.type,
       description: finalDesc,
-      quantity: 1,
+      quantity: qty,
       unitPrice: parseFloat(billingPrompt.price),
-      partId: billingPrompt.partId
+      partId: billingPrompt.partId,
+      unitCost: billingPrompt.unitCost,
     };
-    
-    // Decrement stock if part is selected
-    if (newItem.partId) {
-      const part = inventory.find(p => p.id === newItem.partId);
-      if (part) {
-        updateInventoryItem({ ...part, stock: Math.max(0, part.stock - newItem.quantity) });
-      }
-    }
 
+    // Stock isn't touched yet — it's reconciled against the saved invoice in commitJob,
+    // so adding then cancelling without saving never drifts the shelf count.
     handleLocalChange({ lineItems: [...localJob.lineItems, newItem] });
-    setBillingPrompt({ open: false, type: null, desc: '', price: '', partId: undefined });
+    setBillingPrompt({ open: false, type: null, desc: '', price: '', qty: '1', partId: undefined, unitCost: undefined });
   };
 
   const handleRemoveLineItem = (itemId: string) => {
-    const item = localJob.lineItems.find(li => li.id === itemId);
-    if (item && item.partId) {
-      const part = inventory.find(p => p.id === item.partId);
-      if (part) {
-        updateInventoryItem({ ...part, stock: part.stock + item.quantity });
-      }
-    }
+    // Local-only; the shelf is reconciled on save (commitJob).
     handleLocalChange({ lineItems: localJob.lineItems.filter(li => li.id !== itemId) });
   };
 
@@ -717,22 +729,49 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
             <div className="space-y-6">
               <div className="bg-white/5 p-4 rounded-2xl border border-white/10 relative">
                 <label className="text-xs font-bold text-slate-400 uppercase block mb-1">
-                  {billingPrompt.type === 'labor' ? 'Labor Name' : billingPrompt.type === 'part' ? 'Part Name (Search Inventory)' : 'Description'}
+                  {billingPrompt.type === 'part' ? 'Part Name (Search Inventory)' : 'Service / Name (Search Rates)'}
                 </label>
-                <input 
-                  className="w-full bg-transparent text-white font-bold outline-none text-sm" 
-                  value={billingPrompt.desc} 
+                <input
+                  className="w-full bg-transparent text-white font-bold outline-none text-sm"
+                  value={billingPrompt.desc}
+                  onFocus={() => setShowRates(true)}
+                  onBlur={() => setShowRates(false)}
                   onChange={e => {
-                    setBillingPrompt({ ...billingPrompt, desc: e.target.value, partId: undefined }); // Clear partId if they type manually
+                    setBillingPrompt({ ...billingPrompt, desc: e.target.value, partId: undefined, unitCost: undefined }); // Clear part link if they type manually
                   }}
-                  placeholder="Enter name..."
+                  placeholder={billingPrompt.type === 'part' ? 'Search inventory…' : 'Type or pick a rate…'}
                 />
+                {billingPrompt.type !== 'part' && showRates && (() => {
+                  const q = (billingPrompt.desc || '').toLowerCase();
+                  const matches = priceBook.filter(r => !q || r.name.toLowerCase().includes(q) || r.category.toLowerCase().includes(q));
+                  if (matches.length === 0) return null;
+                  return (
+                    <div onMouseDown={e => e.preventDefault()} className="absolute top-full left-0 right-0 mt-2 bg-slate-800 border border-white/10 rounded-xl shadow-2xl z-50 max-h-52 overflow-y-auto">
+                      {matches.map(rate => (
+                        <button
+                          key={rate.id}
+                          onClick={() => { setBillingPrompt({ ...billingPrompt, type: rate.type, desc: rate.name, price: String(rate.price), partId: undefined, unitCost: undefined }); setShowRates(false); }}
+                          className="w-full text-left px-4 py-2 hover:bg-white/5 text-sm transition-colors border-b border-white/5 last:border-0 flex justify-between items-center gap-3"
+                        >
+                          <div className="min-w-0">
+                            <p className="font-bold text-white truncate">{rate.name}</p>
+                            <p className="text-[11px] text-slate-400 truncate">{rate.category}{rate.note ? ` · ${rate.note}` : ''}</p>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className="font-bold text-green-400">${rate.price}</p>
+                            {rate.nightPrice != null && <p className="text-[10px] text-slate-500">night ${rate.nightPrice}</p>}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  );
+                })()}
                 {billingPrompt.type === 'part' && billingPrompt.desc && !billingPrompt.partId && (
                   <div className="absolute top-full left-0 right-0 mt-2 bg-slate-800 border border-white/10 rounded-xl shadow-2xl z-50 max-h-40 overflow-y-auto">
                     {inventory.filter(p => p.name.toLowerCase().includes(billingPrompt.desc.toLowerCase()) || p.sku.toLowerCase().includes(billingPrompt.desc.toLowerCase())).map(part => (
                       <button 
                         key={part.id}
-                        onClick={() => setBillingPrompt({ ...billingPrompt, desc: part.name, price: part.price.toString(), partId: part.id })}
+                        onClick={() => setBillingPrompt({ ...billingPrompt, desc: part.name, price: part.price.toString(), partId: part.id, unitCost: part.cost })}
                         className="w-full text-left px-4 py-2 hover:bg-white/5 text-sm transition-colors border-b border-white/5 last:border-0 flex justify-between items-center"
                       >
                         <div>
@@ -761,19 +800,48 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                 </div>
               )}
 
-              <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
-                <label className="text-xs font-bold text-slate-400 uppercase block mb-1">Cost ($)</label>
-                <input 
-                  type="number"
-                  className="w-full bg-transparent text-white font-bold outline-none text-sm" 
-                  value={billingPrompt.price} 
-                  onChange={e => setBillingPrompt({ ...billingPrompt, price: e.target.value })}
-                  placeholder="0.00"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
+                  <label className="text-xs font-bold text-slate-400 uppercase block mb-2">Quantity</label>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => setBillingPrompt(bp => ({ ...bp, qty: String(Math.max(1, (parseInt(bp.qty || '1', 10) || 1) - 1)) }))} className="w-9 h-9 shrink-0 rounded-lg bg-white/5 border border-white/10 text-white flex items-center justify-center active:scale-90"><Minus size={14} /></button>
+                    <input
+                      type="number" min="1"
+                      className="w-full bg-transparent text-white font-bold outline-none text-sm text-center"
+                      value={billingPrompt.qty || '1'}
+                      onChange={e => setBillingPrompt({ ...billingPrompt, qty: e.target.value })}
+                    />
+                    <button onClick={() => setBillingPrompt(bp => ({ ...bp, qty: String((parseInt(bp.qty || '1', 10) || 1) + 1) }))} className="w-9 h-9 shrink-0 rounded-lg bg-white/5 border border-white/10 text-white flex items-center justify-center active:scale-90"><Plus size={14} /></button>
+                  </div>
+                </div>
+                <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
+                  <label className="text-xs font-bold text-slate-400 uppercase block mb-1">Unit Price ($)</label>
+                  <input
+                    type="number"
+                    className="w-full bg-transparent text-white font-bold outline-none text-sm"
+                    value={billingPrompt.price}
+                    onChange={e => setBillingPrompt({ ...billingPrompt, price: e.target.value })}
+                    placeholder="0.00"
+                  />
+                </div>
               </div>
+
+              {billingPrompt.partId && (() => {
+                const part = inventory.find(p => p.id === billingPrompt.partId);
+                if (!part) return null;
+                const qty = Math.max(1, parseInt(billingPrompt.qty || '1', 10) || 1);
+                const price = parseFloat(billingPrompt.price) || 0;
+                const margin = part.cost != null ? price - part.cost : null;
+                return (
+                  <div className="flex items-center justify-between text-xs bg-white/5 border border-white/10 rounded-xl px-4 py-2.5">
+                    <span className={part.stock < qty ? 'text-amber-400 font-bold' : 'text-slate-400'}>In stock: {part.stock}{part.stock < qty ? ' — over!' : ''}</span>
+                    {margin != null && <span className="text-slate-400">Margin: <span className={margin >= 0 ? 'text-green-400 font-bold' : 'text-red-400 font-bold'}>${margin.toFixed(2)}</span> / ea</span>}
+                  </div>
+                );
+              })()}
             </div>
 
-            <button onClick={handleAddLineItem} className="w-full bg-blue-600 text-white py-6 rounded-2xl font-bold text-sm uppercase tracking-widest active:scale-95 shadow-2xl">Add to Invoice</button>
+            <button onClick={handleAddLineItem} className="w-full bg-blue-600 text-white py-6 rounded-2xl font-bold text-sm uppercase tracking-widest active:scale-95 shadow-2xl">Add to Invoice · ${((parseFloat(billingPrompt.price) || 0) * Math.max(1, parseInt(billingPrompt.qty || '1', 10) || 1)).toFixed(2)}</button>
           </div>
         </div>
       )}
@@ -936,7 +1004,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                     paymentStatus: fullyPaid ? 'paid' : 'partial',
                   };
                   setLocalJob(settled);
-                  updateJob(settled);
+                  commitJob(settled);
                   setIsModified(false);
                   logAudit({ action: 'payment.collect', detail: `Collected $${collectingAmount.toFixed(2)} (${paymentMethod}) on #${settled.jobNumber} — ${fullyPaid ? 'paid in full' : `balance $${(subtotal - newPaid).toFixed(2)}`}`, jobId: settled.id });
                   setPaymentStep('idle');
@@ -966,7 +1034,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                   <button onClick={() => setShowDeleteConfirm(true)} aria-label="Delete job" className="p-2.5 rounded-xl bg-red-500/10 text-red-500 border border-red-500/20 active:scale-95 transition-all"><Trash2 size={16} /></button>
                 )}
                 <button
-                  onClick={() => { updateJob(localJob); setIsModified(false); logAudit({ action: 'job.update', detail: `Updated job #${localJob.jobNumber}`, jobId: localJob.id }); }}
+                  onClick={() => { commitJob(localJob); setIsModified(false); logAudit({ action: 'job.update', detail: `Updated job #${localJob.jobNumber}`, jobId: localJob.id }); }}
                   aria-label={isModified ? 'Save changes' : 'Saved'}
                   className={`p-2.5 rounded-xl transition-all active:scale-95 ${isModified ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40' : 'bg-white/5 text-emerald-400/80'}`}
                 >
@@ -1028,7 +1096,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                 <Trash2 size={16} className="mr-2 inline" /> Delete
               </button>
             )}
-            <button onClick={() => { updateJob(localJob); setIsModified(false); logAudit({ action: 'job.update', detail: `Updated job #${localJob.jobNumber}`, jobId: localJob.id }); }} className={`px-9 py-3.5 rounded-2xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 ${isModified ? 'bg-blue-600 text-white shadow-xl' : 'bg-white/5 text-slate-500'}`}>
+            <button onClick={() => { commitJob(localJob); setIsModified(false); logAudit({ action: 'job.update', detail: `Updated job #${localJob.jobNumber}`, jobId: localJob.id }); }} className={`px-9 py-3.5 rounded-2xl text-xs font-bold uppercase tracking-widest transition-all active:scale-95 ${isModified ? 'bg-blue-600 text-white shadow-xl' : 'bg-white/5 text-slate-500'}`}>
               {isModified ? <><Save size={16} className="mr-2.5 inline" /> Save Changes</> : <><CheckCircle2 size={16} className="mr-2.5 inline" /> Up to Date</>}
             </button>
           </div>
@@ -1552,7 +1620,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                     { id: 'maintenance',  label: 'Other',      icon: Wrench,   color: 'text-indigo-400' },
                   ] as { id: LineItem['type']; label: string; icon: any; color: string }[]).map(btn => (
                     <button key={btn.id}
-                      onClick={() => setBillingPrompt({ open: true, type: btn.id, desc: '', price: '' })}
+                      onClick={() => setBillingPrompt({ open: true, type: btn.id, desc: '', price: '', qty: '1' })}
                       className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-bold transition-all active:scale-95">
                       <Plus size={11} className={btn.color} />
                       <span className="text-slate-300 uppercase tracking-wide">{btn.label}</span>

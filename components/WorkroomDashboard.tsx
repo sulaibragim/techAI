@@ -4,9 +4,10 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   DollarSign, Clock, Target,
   AlertCircle, Activity, Plus, ChevronLeft, ChevronRight,
-  ArrowLeft, Zap, Shield, Bell, Phone, MapPin, Globe
+  ArrowLeft, Zap, Shield, Bell, Phone, MapPin, Globe, User
 } from 'lucide-react';
 import { useAppStore, useVisibleJobs } from '../store';
+import { useAuthStore } from '../authStore';
 import { useSettingsStore } from '../settingsStore';
 import { Job, JobStatus, STATUS_COLORS } from '../types';
 import { calculateFinancialMetrics } from '../financialUtils';
@@ -122,7 +123,9 @@ const DailyGoalTracker: React.FC<{ current: number; target: number }> = ({ curre
   );
 };
 
-const KanbanCard: React.FC<{ job: Job; onSelect: () => void; onDragStart: (e: React.DragEvent, job: Job) => void }> = ({ job, onSelect, onDragStart }) => (
+const KanbanCard: React.FC<{ job: Job; onSelect: () => void; onDragStart: (e: React.DragEvent, job: Job) => void }> = ({ job, onSelect, onDragStart }) => {
+  const tech = useAuthStore(s => (job.assignedTo ? s.users.find(u => u.id === job.assignedTo) : null));
+  return (
   <motion.div
     layout
     initial={{ opacity: 0, scale: 0.9 }}
@@ -152,6 +155,18 @@ const KanbanCard: React.FC<{ job: Job; onSelect: () => void; onDragStart: (e: Re
     </div>
     <p className="text-xs font-medium text-slate-300 mb-3 truncate">{job.isNewLead ? (job.complaint || 'New website lead') : `${job.lockDetails.type} — ${job.lockDetails.brand || 'Elite'}`}</p>
 
+    <div className="mb-3">
+      {tech ? (
+        <span className="inline-flex items-center gap-1 bg-blue-500/10 text-blue-300 px-2 py-0.5 rounded-md text-[10px] font-bold max-w-full truncate" title={`Assigned to ${tech.name}`}>
+          <User size={10} className="shrink-0" /> {tech.name}
+        </span>
+      ) : (
+        <span className="inline-flex items-center gap-1 bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded-md text-[10px] font-bold" title="No technician assigned yet">
+          <User size={10} className="shrink-0" /> Unassigned
+        </span>
+      )}
+    </div>
+
     <div className="flex items-center justify-between pt-3 border-t border-white/10">
       <span className="text-sm font-bold text-blue-400">${job.totalAmount > 0 ? job.totalAmount.toLocaleString() : 'TBD'}</span>
       <div className="flex items-center space-x-1.5">
@@ -160,7 +175,8 @@ const KanbanCard: React.FC<{ job: Job; onSelect: () => void; onDragStart: (e: Re
       </div>
     </div>
   </motion.div>
-);
+  );
+};
 
 export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAddJob: () => void }> = ({ onJobSelect, onAddJob }) => {
   const { updateJobStatus, updateJob } = useAppStore();

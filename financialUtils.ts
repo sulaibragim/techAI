@@ -80,8 +80,10 @@ export function calculatePeriodMetrics(
   const closeRate = opportunities > 0 ? (jobsSold / opportunities) * 100 : 0;
   const averageTicket = jobsSold > 0 ? totalRevenue / jobsSold : 0;
 
+  // COGS — what the parts actually cost us (unitCost snapshot), not their retail price.
+  // Legacy line items without a recorded cost contribute 0.
   const partsCost = completed.reduce(
-    (s, j) => s + j.lineItems.filter(i => i.type === 'part').reduce((ss, i) => ss + i.unitPrice * i.quantity, 0),
+    (s, j) => s + j.lineItems.filter(i => i.type === 'part').reduce((ss, i) => ss + (i.unitCost ?? 0) * i.quantity, 0),
     0
   );
   const margin = totalRevenue - partsCost;
@@ -558,7 +560,7 @@ export function accountingSummary(jobs: Job[], year: number, month: number, taxR
   const collected = inMonth.reduce((s, j) => s + collectedAmount(j), 0);
   const outstanding = inMonth.reduce((s, j) => s + outstandingAmount(j), 0);
   const partsCost = inMonth.reduce(
-    (s, j) => s + j.lineItems.filter(i => i.type === 'part').reduce((ss, i) => ss + i.unitPrice * i.quantity, 0),
+    (s, j) => s + j.lineItems.filter(i => i.type === 'part').reduce((ss, i) => ss + (i.unitCost ?? 0) * i.quantity, 0),
     0
   );
   return {
@@ -645,7 +647,7 @@ export function jobsToCSV(list: Job[]): string {
   const rows = list.map(j => {
     const partsCost = j.lineItems
       .filter(i => i.type === 'part')
-      .reduce((s, i) => s + i.unitPrice * i.quantity, 0);
+      .reduce((s, i) => s + (i.unitCost ?? 0) * i.quantity, 0);
     return [
       j.scheduledDate,
       j.jobNumber,
