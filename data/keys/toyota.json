@@ -42,7 +42,7 @@
     "variants": [
       {
         "keyType": "Transponder",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "TR47",
         "bladeIlco": "TOY44D-PT",
         "bladeSilca": "TOY43",
@@ -52,17 +52,32 @@
         "fccId": null,
         "partNumber": "89785-60160",
         "frequency": null
+      },
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": true,
+        "keyway": "TR47",
+        "bladeIlco": "TOY44D-PT",
+        "bladeSilca": "TOY43",
+        "bladeJma": "TP30TOYO-15.P",
+        "transponderChip": "Texas 4D67",
+        "chipClonable": "token",
+        "fccId": "HYQ12BBY",
+        "partNumber": "89070-06231",
+        "frequency": "315"
       }
     ],
     "immobilizer": "Toyota Engine Immobiliser (4D67)",
     "pinRequired": false,
     "programming": "On-board (D-chip): cycle master key, door open/close sequence; or OBDII programmer",
     "programmerHint": ["T-Code", "Autel IM608", "AutoProPad", "Toyota G/H OBDII dongle"],
-    "notes": "2003-2010 Camry use 4D67 chip (D chip). Strattec ref 5910834.",
+    "notes": "2003-2010 Camry use 4D67 chip (D chip). Strattec ref 5910834. Base CE/LE trims use plain transponder; upper LE/SE/XLE trims (2007-2010) use integrated remote head key HYQ12BBY (PN 89070-06231 / 89070-06232) at 315 MHz.",
     "confidence": "verified",
     "sources": [
       "https://www.locksmithkeyless.com/products/2003-2011-toyota-scion-transponder-key-4d67-chip-toy44d-pt-25-pack",
-      "https://www.uhs-hardware.com/products/2003-2013-toyota-toy44d-transponder-key-texas-id-4d-67-chip"
+      "https://www.uhs-hardware.com/products/2003-2013-toyota-toy44d-transponder-key-texas-id-4d-67-chip",
+      "https://www.uhs-hardware.com/products/2007-2010-toyota-camry-corolla-4-button-remote-head-key-89070-06231-hyq12bby-4d67-chip-rk-toy-401",
+      "https://abkeys.com/products/toyota-camry-remote-key-4buttons-315mhz-hyq12bby-89070-06231-06232-248"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"
@@ -76,7 +91,7 @@
     "variants": [
       {
         "keyType": "Transponder",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "TR47",
         "bladeIlco": "TOY44G-PT",
         "bladeSilca": "TOY43",
@@ -86,17 +101,32 @@
         "fccId": null,
         "partNumber": "89785-08040",
         "frequency": null
+      },
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": true,
+        "keyway": "TR47",
+        "bladeIlco": "TOY44G-PT",
+        "bladeSilca": "TOY43",
+        "bladeJma": null,
+        "transponderChip": "Texas 4D72 (G chip / DST40)",
+        "chipClonable": "token",
+        "fccId": "HYQ12BDM",
+        "partNumber": "89070-06420",
+        "frequency": "315"
       }
     ],
     "immobilizer": "Toyota Engine Immobiliser (G chip / DST80)",
     "pinRequired": false,
     "programming": "On-board (G-chip): master key cycle 5x, door 6x, insert new key, wait 60s; or OBDII dongle",
     "programmerHint": ["Toyota G/H OBDII dongle", "Autel IM608", "T-Code"],
-    "notes": "2011-2014 Camry use G chip (4D72/DST40). Split year for 2015: verify chip with original key.",
+    "notes": "2011-2014 Camry use G chip (4D72/DST40). Split year for 2015: verify chip with original key. Upper trims (LE/SE/XLE 2012-2014) received integrated remote head key HYQ12BDM (PN 89070-06420) at 315 MHz; base L trim used plain transponder.",
     "confidence": "verified",
     "sources": [
       "https://www.locksmithkeyless.com/products/2010-2019-toyota-scion-transponder-key-4d72-gchip-toy44g-pt",
-      "https://www.uhs-hardware.com/products/2009-2019-toyota-toy44g-transponder-key-texas-id-4d-72-g-chip-chip"
+      "https://www.uhs-hardware.com/products/2009-2019-toyota-toy44g-transponder-key-texas-id-4d-72-g-chip-chip",
+      "https://www.locksmithkeyless.com/products/2012-2014-toyota-camry-remote-head-key-4b-fcc-hyq12bdm",
+      "https://www.uhs-hardware.com/products/2012-2014-toyota-camry-4-button-remote-head-key-pn-89070-06420-hyq12bdm-g-chip-oem"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"
@@ -340,7 +370,7 @@
     "variants": [
       {
         "keyType": "Transponder",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "TR47",
         "bladeIlco": "TOY44D-PT",
         "bladeSilca": "TOY43",
@@ -350,17 +380,32 @@
         "fccId": null,
         "partNumber": "89785-60160",
         "frequency": null
+      },
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": true,
+        "keyway": "TR47",
+        "bladeIlco": "TOY44D-PT",
+        "bladeSilca": "TOY43",
+        "bladeJma": "TP30TOYO-15.P",
+        "transponderChip": "Texas 4D67",
+        "chipClonable": "token",
+        "fccId": "HYQ12BBY",
+        "partNumber": "89070-42660",
+        "frequency": "315"
       }
     ],
     "immobilizer": "Toyota Engine Immobiliser (4D67)",
     "pinRequired": false,
     "programming": "On-board D-chip sequence or OBDII programmer",
     "programmerHint": ["T-Code", "Autel IM608", "AutoProPad"],
-    "notes": "2008 RAV4 key fob (remote only) uses FCC# HYQ12BBY with 4D67 chip at 315 MHz.",
+    "notes": "Base trims (2003-2012) use plain transponder. Upper trims (Sport/Limited 2006-2012) use integrated remote head key HYQ12BBY (PN 89070-42660 / 89070-42670) with 4D67 chip at 315 MHz.",
     "confidence": "verified",
     "sources": [
       "https://www.locksmithkeyless.com/products/2003-2011-toyota-scion-transponder-key-4d67-chip-toy44d-pt-25-pack",
-      "https://www.uhs-hardware.com/products/2003-2013-toyota-toy44d-transponder-key-texas-id-4d-67-chip"
+      "https://www.uhs-hardware.com/products/2003-2013-toyota-toy44d-transponder-key-texas-id-4d-67-chip",
+      "https://www.uhs-hardware.com/products/2006-2013-toyota-3-button-remote-head-key-pn-89070-42660-hyq12bby-aftermarket",
+      "https://abkeys.com/products/toyota-rav4-remote-key-3buttons-toy43-315mhz-hyq12bby-89070-42670-471"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"
@@ -373,8 +418,21 @@
     "region": "US",
     "variants": [
       {
+        "keyType": "RemoteHead",
+        "trimDependent": true,
+        "keyway": "TR47",
+        "bladeIlco": "TOY44H-PT",
+        "bladeSilca": "TOY43",
+        "bladeJma": null,
+        "transponderChip": "Texas 4D74 (H chip / DST80)",
+        "chipClonable": "no",
+        "fccId": "GQ4-52T",
+        "partNumber": "89071-0R040",
+        "frequency": "315"
+      },
+      {
         "keyType": "Smart",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "TOY48",
         "bladeIlco": "LXP90",
         "bladeSilca": null,
@@ -390,11 +448,13 @@
     "pinRequired": true,
     "programming": "No on-board programming. Professional OBDII programmer required.",
     "programmerHint": ["Toyota G/H OBDII dongle", "Autel IM608", "Lonsdor K518"],
-    "notes": "Board 0020 (G-board). 2013-2018 RAV4 push-to-start models use HYQ14FBA. Verify push-to-start vs. turn-key ignition.",
+    "notes": "US-built LE/XLE turn-key ignition trims use remote head key GQ4-52T (H chip, TR47, PN 89071-0R040 / 89070-0R120) at 315 MHz. Japan-built turn-key trims use HYQ12BDM (H chip) — VIN starts with J. Push-to-start trims (XLE Premium/Limited) use smart key HYQ14FBA (board 0020). Verify VIN origin and ignition type before ordering.",
     "confidence": "verified",
     "sources": [
       "https://www.uhs-hardware.com/products/2013-2018-toyota-rav4-4-button-smart-key-hyq14fba-g-board-0020-rsk-toy-0020h",
-      "https://www.locksmithkeyless.com/products/2013-2018-toyota-rav4-smart-prox-remote-key-4b-fcc-hyq14fba-board-0020"
+      "https://www.locksmithkeyless.com/products/2013-2018-toyota-rav4-smart-prox-remote-key-4b-fcc-hyq14fba-board-0020",
+      "https://www.uhs-hardware.com/products/2013-2019-toyota-rav4-highlander-4-button-remote-head-key-gq4-52t-h-chip-rhk-toy-52th-4",
+      "https://www.locksmithkeyless.com/products/2014-2019-toyota-remote-head-key-4b-fcc-gq4-52t"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"
@@ -637,8 +697,21 @@
     "region": "US",
     "variants": [
       {
+        "keyType": "RemoteHead",
+        "trimDependent": true,
+        "keyway": "TR47",
+        "bladeIlco": "TOY44H-PT",
+        "bladeSilca": "TOY43",
+        "bladeJma": null,
+        "transponderChip": "Texas 4D74 (H chip / DST80)",
+        "chipClonable": "no",
+        "fccId": "GQ4-52T",
+        "partNumber": "89071-0R040",
+        "frequency": "315"
+      },
+      {
         "keyType": "Smart",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "TOY48",
         "bladeIlco": "LXP90",
         "bladeSilca": null,
@@ -654,11 +727,13 @@
     "pinRequired": true,
     "programming": "No on-board programming. OBDII professional programmer required.",
     "programmerHint": ["Autel IM608 Pro", "Lonsdor K518 + ADP adapter", "Launch X431"],
-    "notes": "Emergency blade K-TOY-EM36. Test key TOY51.",
+    "notes": "SR and SR5 trims with turn-key ignition use remote head key GQ4-52T (H chip, TR47, PN 89071-0R040 / 89070-0C050) at 315 MHz. Limited, Platinum, TRD Pro, and 1794 trims with push-to-start use smart key HYQ14FBB (board 0010). Emergency blade for smart key: K-TOY-EM36. Test key TOY51.",
     "confidence": "verified",
     "sources": [
       "https://www.uhs-hardware.com/products/2015-2022-toyota-4runner-tundra-tacoma-3-button-smart-key-pn-89904-35060-hyq14fbb-0010-oem",
-      "https://www.locksmithkeyless.com/products/2021-toyota-tundra-smart-key-3-buttons-fcc-hyq14fbb-0010"
+      "https://www.locksmithkeyless.com/products/2021-toyota-tundra-smart-key-3-buttons-fcc-hyq14fbb-0010",
+      "https://www.locksmithkeyless.com/products/2021-toyota-tundra-key-fob-for-3-buttons-fcc-gq4-52t-315-mhz",
+      "https://www.locksmithkeyless.com/products/2019-toyota-tundra-key-fob-for-3-buttons-fcc-gq4-52t-315-mhz"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"
@@ -706,7 +781,7 @@
     "variants": [
       {
         "keyType": "Transponder",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "TR47",
         "bladeIlco": "TOY44G-PT",
         "bladeSilca": "TOY43",
@@ -716,17 +791,32 @@
         "fccId": null,
         "partNumber": "89785-08040",
         "frequency": null
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "TOY48",
+        "bladeIlco": "LXP90",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 4D67",
+        "chipClonable": "token",
+        "fccId": "HYQ14AAB",
+        "partNumber": "89904-48110",
+        "frequency": "315"
       }
     ],
-    "immobilizer": "Toyota Engine Immobiliser (G chip / DST80)",
-    "pinRequired": false,
-    "programming": "On-board G-chip sequence or OBDII dongle",
+    "immobilizer": "Toyota Smart Key System (4D67)",
+    "pinRequired": true,
+    "programming": "G chip: on-board sequence or OBDII dongle. Smart key HYQ14AAB: OBDII required, no on-board programming.",
     "programmerHint": ["Toyota G/H OBDII dongle", "Autel IM608"],
-    "notes": "2011-2013 Highlander uses G chip per UHS Hardware.",
+    "notes": "Base and non-Limited trims use G-chip transponder key. Highlander Limited and Hybrid Limited (2008-2013) use smart key HYQ14AAB (board 271451-0140, 4D67 chip, 315 MHz, PN 89904-48110) with push-to-start. 2011-2013 Highlander G-chip confirmed per UHS Hardware.",
     "confidence": "verified",
     "sources": [
       "https://www.uhs-hardware.com/products/2009-2019-toyota-toy44g-transponder-key-texas-id-4d-72-g-chip-chip",
-      "https://www.locksmithkeyless.com/products/2010-2019-toyota-scion-transponder-key-4d72-gchip-toy44g-pt"
+      "https://www.locksmithkeyless.com/products/2010-2019-toyota-scion-transponder-key-4d72-gchip-toy44g-pt",
+      "https://www.uhs-hardware.com/products/2007-2014-toyota-highlander-4-button-smart-key-pn-89904-48110-hyq14aab-0140-board-oem",
+      "https://www.locksmithkeyless.com/products/2007-2014-toyota-highlander-smart-prox-key-4b-fcc-hyq14aab"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"
@@ -1370,7 +1460,7 @@
     "variants": [
       {
         "keyType": "Transponder",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "TR47",
         "bladeIlco": "TOY44D-PT",
         "bladeSilca": "TOY43",
@@ -1380,17 +1470,47 @@
         "fccId": null,
         "partNumber": "89785-60160",
         "frequency": null
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "TOY48",
+        "bladeIlco": "LXP90",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 4D67",
+        "chipClonable": "token",
+        "fccId": "HYQ14AAF",
+        "partNumber": "89904-07030",
+        "frequency": "315"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "TOY48",
+        "bladeIlco": "LXP90",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 4D67",
+        "chipClonable": "token",
+        "fccId": "HYQ14AAB",
+        "partNumber": "89904-06041",
+        "frequency": "315"
       }
     ],
-    "immobilizer": "Toyota Engine Immobiliser (4D67)",
-    "pinRequired": false,
-    "programming": "On-board D-chip sequence or OBDII",
+    "immobilizer": "Toyota Smart Key System (4D67)",
+    "pinRequired": true,
+    "programming": "On-board D-chip sequence (transponder) or OBDII. Smart key: OBDII required, no on-board programming.",
     "programmerHint": ["T-Code", "Autel IM608"],
-    "notes": null,
+    "notes": "Lower trims use plain 4D67 transponder. XLS and Limited push-to-start trims: 2005-2007 use HYQ14AAF (PN 89904-07030, 315 MHz, 4D67 chip); 2007-2012 use HYQ14AAB (PN 89904-06041 board 0140 / PN 89904-06130 board 3370, 315 MHz, 4D67 chip). Both HYQ14AAB boards (0140 and 3370) are NOT interchangeable — verify original board number.",
     "confidence": "verified",
     "sources": [
       "https://www.locksmithkeyless.com/products/2003-2011-toyota-scion-transponder-key-4d67-chip-toy44d-pt-25-pack",
-      "https://www.uhs-hardware.com/products/2003-2013-toyota-toy44d-transponder-key-texas-id-4d-67-chip"
+      "https://www.uhs-hardware.com/products/2003-2013-toyota-toy44d-transponder-key-texas-id-4d-67-chip",
+      "https://www.uhs-hardware.com/products/2005-2007-toyota-avalon-4-button-smart-key-pn-89904-07030-hyq14aaf-oem-1",
+      "https://www.locksmithkeyless.com/products/2005-2007-toyota-avalon-smart-key-4b-fcc-hyq14aaf",
+      "https://www.uhs-hardware.com/products/2007-2010-toyota-avalon-camry-4-button-smart-key-pn-89904-06041-0140-board-hyq14aab-oem",
+      "https://www.locksmithkeyless.com/products/2007-2010-toyota-smart-prox-key-4b-fcc-hyq14aab"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"
@@ -1472,7 +1592,7 @@
     "variants": [
       {
         "keyType": "Transponder",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "TOY48",
         "bladeIlco": "TOY48H-PT",
         "bladeSilca": null,
@@ -1482,17 +1602,32 @@
         "fccId": null,
         "partNumber": "89785-02410",
         "frequency": null
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "TOY48",
+        "bladeIlco": "LXP90",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 8A (H chip / DST-AES)",
+        "chipClonable": "no",
+        "fccId": "MOZBR1ET",
+        "partNumber": "89904-F4020",
+        "frequency": "315"
       }
     ],
     "immobilizer": "Toyota Engine Immobiliser (H chip / DST80)",
     "pinRequired": false,
-    "programming": "OBDII required; no on-board programming for H chip",
+    "programming": "OBDII required; no on-board programming for H chip or 8A smart key",
     "programmerHint": ["Autel IM608", "Lonsdor K518", "Toyota G/H OBDII dongle"],
-    "notes": "C-HR uses TOY48 keyway (not TR47) with H chip transponder key. ILCO part: TOY48H-PT.",
+    "notes": "C-HR uses TOY48 keyway (not TR47). Base turn-key trims use H chip transponder (TOY48H-PT, PN 89785-02410). Push-to-start trims use smart key MOZBR1ET (IC: 2584A-BR1ET, board 0010, 315 MHz, PN 89904-F4020 / 89904-10050). 2018: XLE Premium and above; 2019+: XLE and Limited have push-to-start standard.",
     "confidence": "verified",
     "sources": [
       "https://www.uhs-hardware.com/products/2016-2020-toyota-toy48h-pt-transponder-key-texas-id-4d-h",
-      "https://www.amazon.com/Transponder-Compatible-Corolla-2017-2026-TOY48H-P/dp/B0H2XNDLH3"
+      "https://www.amazon.com/Transponder-Compatible-Corolla-2017-2026-TOY48H-P/dp/B0H2XNDLH3",
+      "https://www.uhs-hardware.com/products/2018-2019-toyota-c-hr-3-button-smart-key-pn-89904-f4020-mozbr1et-oem",
+      "https://abkeys.com/products/toyota-c-hr-smart-key-3b-89904-f4020-315mhz-mozbr1et-915"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"

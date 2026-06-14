@@ -141,7 +141,7 @@
     "variants": [
       {
         "keyType": "Smart",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "HU100 (emergency blade)",
         "bladeIlco": null,
         "bladeSilca": null,
@@ -151,18 +151,34 @@
         "fccId": "HYQ1ES",
         "partNumber": "13522854",
         "frequency": "433"
+      },
+      {
+        "keyType": "Transponder",
+        "trimDependent": true,
+        "keyway": "HU100",
+        "bladeIlco": "B119-PT",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM Ext PCF7937E",
+        "chipClonable": "yes",
+        "fccId": null,
+        "partNumber": "23209427 / 22984996 / 23286589 / 23286588 / 23326748",
+        "frequency": null
       }
     ],
     "immobilizer": "BCM2 immobilizer",
     "pinRequired": false,
     "programming": "Scan tool required; no on-board self-program. Professional locksmith or dealer only.",
     "programmerHint": ["AUTEL IM508", "AUTEL IM608", "Lonsdor K518"],
-    "notes": "HYQ1ES at 433.92 MHz (FCC-confirmed; some aftermarket listings erroneously state 434 MHz). 5-button with tailgate function. Upgrade from HYQ1EA generation. yearEnd corrected to 2021 — 2022+ mid-year shifted to YG0G21TB2/ID49.",
+    "notes": "HYQ1ES at 433.92 MHz (FCC-confirmed; some aftermarket listings erroneously state 434 MHz). 5-button with tailgate function. Upgrade from HYQ1EA generation. yearEnd corrected to 2021 — 2022+ mid-year shifted to YG0G21TB2/ID49. TRIM-DEPENDENT: push-button-start trims (LT, LTZ, RST, High Country, Trail Boss) use Smart/HYQ1ES; WT, Custom, and Custom Trail Boss use traditional key ignition (B119-PT transponder, no push button start). Starting with 2022 refresh, push-button start became standard on all 1500 trims.",
     "confidence": "verified",
     "sources": [
       "https://www.locksmithkeyless.com/products/2021-2022-chevrolet-silverado-smart-key-5-buttons-w-remote-start-tailgate-fcc-hyq1es",
       "https://www.bestkeysolution.com/products/chevrolet-silverado-gmc-sierra-2019-2020-smart-key-5b-tailgate-starter-fcc-id-hyq1ea-433-mhz-key2u-copy",
-      "https://fccid.io/HYQ1ES"
+      "https://fccid.io/HYQ1ES",
+      "https://gmauthority.com/blog/2021/11/refreshed-2022-chevy-silverado-gets-standard-push-button-start/",
+      "https://oemcarkeymall.com/products/2021-chevrolet-silverado-transponder-key-blank-b119-pt",
+      "https://www.carandtruckremotes.com/2021-chevrolet-silverado-ignition-transponder-key.html"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"
@@ -268,16 +284,33 @@
         "fccId": "HYQ1EA (2019-2020) / HYQ1ES (2021) / YG0G21TB2 (2022+)",
         "partNumber": null,
         "frequency": "433"
+      },
+      {
+        "keyType": "Transponder",
+        "trimDependent": true,
+        "keyway": "HU100",
+        "bladeIlco": "B119-PT",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM Ext PCF7937E",
+        "chipClonable": "yes",
+        "fccId": null,
+        "partNumber": "23209427 / 22984996 / 23286589 / 23286588 / 23326748",
+        "frequency": null
       }
     ],
     "immobilizer": "BCM2 immobilizer",
     "pinRequired": false,
     "programming": "Scan tool required; professional locksmith or dealer only.",
     "programmerHint": ["AUTEL IM508", "AUTEL IM608 Pro"],
-    "notes": "HD follows same FCC ID progression as 1500. All HYQ1EA/HYQ1ES/YG0G21TB2 operate at 433 MHz (FCC-confirmed). Confirm FCC ID from door sticker before ordering.",
+    "notes": "HD follows same FCC ID progression as 1500. All HYQ1EA/HYQ1ES/YG0G21TB2 operate at 433 MHz (FCC-confirmed). Confirm FCC ID from door sticker before ordering. TRIM-DEPENDENT: 2019-2023 all trims used key-start ignition only (keyless start was not available on any 2500/3500 HD trim through 2023); use B119-PT transponder for those years. Starting with the 2024 redesign, push-button start became standard across all HD trims — use Smart key for 2024+.",
     "confidence": "single-source",
     "sources": [
-      "https://keyless2go.com/blogs/program-instructions/2024-gmc-sierra-hd-keyless-entry-remote-fob-smart-key-programming-instructions"
+      "https://keyless2go.com/blogs/program-instructions/2024-gmc-sierra-hd-keyless-entry-remote-fob-smart-key-programming-instructions",
+      "https://carbuzz.com/cars/chevrolet/silverado-2500hd/2023/specs-and-trims/",
+      "https://carbuzz.com/cars/chevrolet/silverado-2500hd/2024/specs-and-trims/",
+      "https://oemcarkeymall.com/products/2021-chevrolet-silverado-transponder-key-blank-b119-pt",
+      "https://www.17volt.solutions/products/2017-chevrolet-silverado-2500-3500-4500-5500-plug-play-remote-start-kit-key-start"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"
@@ -846,7 +879,7 @@
     "variants": [
       {
         "keyType": "Smart",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "HU100 (emergency blade)",
         "bladeIlco": null,
         "bladeSilca": null,
@@ -856,17 +889,32 @@
         "fccId": "HYQ1ES",
         "partNumber": "13522904",
         "frequency": "433"
+      },
+      {
+        "keyType": "Transponder",
+        "trimDependent": true,
+        "keyway": "HU100",
+        "bladeIlco": "B119-PT",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM Ext PCF7937E",
+        "chipClonable": "yes",
+        "fccId": null,
+        "partNumber": "23209427 / 22984996 / 23286589 / 23286588 / 23326748",
+        "frequency": null
       }
     ],
     "immobilizer": "BCM2 immobilizer",
     "pinRequired": false,
     "programming": "Scan tool required; no on-board programming.",
     "programmerHint": ["AUTEL IM508", "AUTEL IM608"],
-    "notes": "Upgraded to HYQ1ES/433 MHz for 2021 (FCC-confirmed; some aftermarket lists 434 MHz in error).",
+    "notes": "Upgraded to HYQ1ES/433 MHz for 2021 (FCC-confirmed; some aftermarket lists 434 MHz in error). TRIM-DEPENDENT: push-button-start trims (SLT, AT4, Denali) use Smart/HYQ1ES; base Regular and SLE trims with traditional key ignition use B119-PT transponder. Starting with 2022, push-button start became available across all Sierra 1500 trims.",
     "confidence": "verified",
     "sources": [
       "https://www.bestkeysolution.com/products/chevrolet-silverado-gmc-sierra-for-2021-2022-smart-key-5-button-fcc-hyq1es-434mhz-pn-13522854-13522904",
-      "https://fccid.io/HYQ1ES"
+      "https://fccid.io/HYQ1ES",
+      "https://www.carandtruckremotes.com/2021-gmc-sierra-ignition-transponder-key.html",
+      "https://oemcarkeymall.com/products/2021-gmc-sierra-transponder-key-blank-b119-pt"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"
@@ -924,17 +972,32 @@
         "fccId": "M3N-32337100 (2014-2018) / HYQ1EA (2019-2020) / HYQ1ES (2021) / YG0G21TB2 (2022+)",
         "partNumber": null,
         "frequency": "315 (2014-2018) / 433 (2019+)"
+      },
+      {
+        "keyType": "Transponder",
+        "trimDependent": true,
+        "keyway": "HU100",
+        "bladeIlco": "B119-PT",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM Ext PCF7937E",
+        "chipClonable": "yes",
+        "fccId": null,
+        "partNumber": "23209427 / 22984996 / 7013237 / 23286589 / 23286588 / 23326748",
+        "frequency": null
       }
     ],
     "immobilizer": "BCM/BCM2 immobilizer",
     "pinRequired": false,
     "programming": "Scan tool required for remote/smart variants; transponder on-board with 2 existing keys.",
     "programmerHint": ["AUTEL IM608 Pro", "Lonsdor K518 Pro"],
-    "notes": "HD follows same FCC progression as 1500 across all generations. All post-2019 FCCs confirmed at 433 MHz by FCC database.",
+    "notes": "HD follows same FCC progression as 1500 across all generations. All post-2019 FCCs confirmed at 433 MHz by FCC database. TRIM-DEPENDENT: 2014-2023 Sierra HD all trims used key-start ignition (keyless start was not available on any HD trim through 2023) — use B119-PT transponder. The Smart/remote-head key column documents the M3N-32337100 remote-head key available on 2014-2018 higher trims alongside the plain transponder. Starting with 2024 redesign, push-button start became standard across all HD trims.",
     "confidence": "verified",
     "sources": [
       "https://keyless2go.com/blogs/program-instructions/2024-gmc-sierra-hd-keyless-entry-remote-fob-smart-key-programming-instructions",
-      "https://abkeys.com/products/gmc-yukon-sierra-tahoe-transponder-key-hu100-pcf7937e-7013237-3415"
+      "https://abkeys.com/products/gmc-yukon-sierra-tahoe-transponder-key-hu100-pcf7937e-7013237-3415",
+      "https://carbuzz.com/cars/chevrolet/silverado-2500hd/2023/specs-and-trims/",
+      "https://carbuzz.com/cars/chevrolet/silverado-2500hd/2024/specs-and-trims/"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"
@@ -1165,7 +1228,7 @@
     "variants": [
       {
         "keyType": "Smart",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "HU100 (emergency blade)",
         "bladeIlco": null,
         "bladeSilca": null,
@@ -1175,18 +1238,33 @@
         "fccId": "HYQ1EA",
         "partNumber": "13508276 / 5944136",
         "frequency": "433"
+      },
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": true,
+        "keyway": "HU100",
+        "bladeIlco": "B119-PT (folding, laser-cut)",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM Ext",
+        "chipClonable": "yes",
+        "fccId": "OHT01060512",
+        "partNumber": "13504259 / 13501514 / 5912548",
+        "frequency": "315"
       }
     ],
     "immobilizer": "BCM2 immobilizer",
     "pinRequired": false,
     "programming": "Scan tool required; no on-board self-program.",
     "programmerHint": ["AUTEL IM508", "AUTEL IM608"],
-    "notes": "Redesigned 2017 Acadia uses HYQ1EA at 433 MHz (FCC-confirmed 433.92 MHz). Without hands-free trim uses 3-button variant.",
+    "notes": "TRIM-DEPENDENT (2017-2019): PEPS trims use Smart/HYQ1EA proximity key (433 MHz); non-PEPS base trims (SL/SLE without keyless package) use OHT01060512 remote-head flip key (315 MHz). OHT01060512 compatibility confirmed for 2017-2019 only — 2020 Acadia is smart-key only across all trims. Redesigned 2017 Acadia uses HYQ1EA at 433 MHz (FCC-confirmed 433.92 MHz). Without hands-free trim uses 3-button variant.",
     "confidence": "verified",
     "sources": [
       "https://www.locksmithkeyless.com/products/2017-2020-gmc-acadia-smart-key-5b-fcc-hyq1ea-433-mhz",
       "https://www.amazon.com/Replacement-Proximity-Keyless-Control-13508275/dp/B0FMKRHMXD",
-      "https://fccid.io/HYQ1EA"
+      "https://fccid.io/HYQ1EA",
+      "https://keyinnovations.com/gm-5-button-remote-flip-key-20979468-oht01060512-non-peps-182243/",
+      "https://www.keylessentryremotefob.com/gmc-acadia-oem-5-button-key-fob-oht01060512/"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"
@@ -1245,17 +1323,32 @@
         "fccId": null,
         "partNumber": "7013237",
         "frequency": null
+      },
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": "B119-PT (folding, laser-cut)",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM Ext",
+        "chipClonable": "yes",
+        "fccId": "OHT01060512",
+        "partNumber": "20835400 / 13501513 / 13504258 / 13504199",
+        "frequency": "315"
       }
     ],
     "immobilizer": "BCM immobilizer (ID46 HU100 generation)",
     "pinRequired": false,
     "programming": "On-board with 2 existing keys; all-keys-lost needs scan tool.",
     "programmerHint": ["AUTEL IM508"],
-    "notes": "Terrain 2010-2017 uses B119-PT HU100 transponder.",
+    "notes": "Terrain 2010-2017 uses B119-PT HU100 transponder. The OHT01060512 remote-head flip key (integrating transponder + remote in one unit) was the standard OEM factory-issued key across all 2010-2017 trims; a standalone B119-PT transponder blade can also be programmed as an alternative. No push-button start (PEPS) on any 2010-2017 Terrain trim.",
     "confidence": "verified",
     "sources": [
       "https://abkeys.com/products/gmc-yukon-sierra-tahoe-transponder-key-hu100-pcf7937e-7013237-3415",
-      "https://www.locksmithkeyless.com/products/2010-2020-strattec-transponder-key-for-gmc-id46-gm-ext-b119-pt-5935765"
+      "https://www.locksmithkeyless.com/products/2010-2020-strattec-transponder-key-for-gmc-id46-gm-ext-b119-pt-5935765",
+      "https://www.uhs-hardware.com/products/2010-2017-gmc-terrain-4-button-flip-key-pn-20835400-oht01060512-oem",
+      "https://www.locksmithkeyless.com/products/2010-gmc-terrain-flip-key-fob-5b-fcc-oht01060512-5913397"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"
@@ -1269,7 +1362,7 @@
     "variants": [
       {
         "keyType": "Smart",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "HU100 (emergency blade)",
         "bladeIlco": null,
         "bladeSilca": null,
@@ -1279,18 +1372,33 @@
         "fccId": "HYQ1EA",
         "partNumber": "13508276",
         "frequency": "433"
+      },
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": true,
+        "keyway": "HU100",
+        "bladeIlco": "B119-PT (folding, laser-cut)",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM Ext",
+        "chipClonable": "yes",
+        "fccId": "OHT01060512",
+        "partNumber": "13501513 / 13504258",
+        "frequency": "315"
       }
     ],
     "immobilizer": "BCM2 immobilizer",
     "pinRequired": false,
     "programming": "Scan tool required; no on-board programming.",
     "programmerHint": ["AUTEL IM508", "AUTEL IM608"],
-    "notes": "Redesigned 2018 Terrain uses HYQ1EA at 433 MHz (FCC-confirmed 433.92 MHz). Shares FCC with Acadia 2017-2020.",
+    "notes": "Redesigned 2018 Terrain uses HYQ1EA at 433 MHz (FCC-confirmed 433.92 MHz). Shares FCC with Acadia 2017-2020. TRIM-DEPENDENT: PEPS (keyless-entry) trims use Smart/HYQ1EA proximity key; non-PEPS base trims continue using the OHT01060512 remote-head flip key (315 MHz, same as 2010-2017 generation). The OHT01060512 flip key compatibility extends to 2022 on some Terrain trims.",
     "confidence": "verified",
     "sources": [
       "https://www.locksmithkeyless.com/products/2017-2019-gmc-smart-key-3b-fcc-hyq1ea",
       "https://www.uhs-hardware.com/products/2017-2023-gmc-acadia-3-button-smart-key-pn-13508276-hyq1ea-oem-refurb",
-      "https://fccid.io/HYQ1EA"
+      "https://fccid.io/HYQ1EA",
+      "https://www.uhs-hardware.com/products/2010-2022-gmc-terrain-4-button-remote-flip-key-pn-13504258-oht01060512-oem-refurbnon-peps",
+      "https://www.locksmithkeyless.com/products/2018-gmc-terrain-flip-key-fob-5b-fcc-oht01060512-5913397"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"

@@ -79,8 +79,21 @@
     "region": "US",
     "variants": [
       {
+        "keyType": "Fobik",
+        "trimDependent": true,
+        "keyway": "Y171",
+        "bladeIlco": "Y171-IYZ",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7941 / PCF7341 (ID46)",
+        "chipClonable": "yes",
+        "fccId": "M3N5WY783X",
+        "partNumber": "68044908AA",
+        "frequency": "433"
+      },
+      {
         "keyType": "Smart",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": null,
         "bladeIlco": null,
         "bladeSilca": null,
@@ -96,16 +109,18 @@
     "pinRequired": true,
     "programming": "Requires OBD2 programmer + PIN. No onboard self-programming. SGW bypass needed on 2018 models.",
     "programmerHint": ["Autel IM608 Pro", "AutoProPad G2", "Lonsdor K518ISE", "Smart Pro"],
-    "notes": "2011-2018 Charger uses Hitag2/ID46 smart proximity key (PCF7945A/PCF7953A), NOT Hitag AES. FCC M3N-40821302 confirmed by abkeys genuine listing (PCF7945A, 433MHz). The Hitag AES (PCF7953M) appears only from 2019+ with FCC M3M-40821302. 2018 models have FCA Security Gateway Module (SGW) requiring 12+8 bypass adapter for OBD2 programming.",
+    "notes": "2011-2018 Charger is trim-dependent: 2011-2012 base/SXT trims with turn-key ignition use the M3N5WY783X fobik (Y171 emergency insert blade, ID46, 433 MHz; confirmed by UHS Hardware 4-btn listing 2008-2012 Charger and multiple Amazon aftermarket listings). Upper trims (R/T, SRT, Daytona) and all 2013-2018 trims use M3N-40821302 smart proximity key (Hitag2/ID46, PCF7945A/PCF7953A, 433 MHz, NOT Hitag AES). FCC M3N-40821302 confirmed by abkeys genuine listing. Hitag AES (PCF7953M) appears only from 2019+ (M3M-40821302). 2018 models have SGW requiring 12+8 bypass adapter.",
     "confidence": "verified",
     "sources": [
+      "https://www.uhs-hardware.com/products/2008-2013-chrysler-dodge-4-button-fobik-key-m3n5wy783x-rk-chy-fbk-5",
+      "https://www.amazon.com/Compatible-SaverRemotes-Replacement-M3N5WY783X-IYZ-C01C/dp/B07MCNX5MB",
       "https://abkeys.com/products/dodge-charger-challenger-dart-smart-key-4buttons-433mhz-m3n-40821302-4805",
       "https://www.americankeysupply.com/product/dodge-2011-2018-5-btn-smart-key-m3n-40821302-hitag-oem-refurb-mint-20137",
       "https://www.locksmithkeyless.com/products/2013-dodge-charger-smart-key-4b-fob-fcc-m3n-40821302-aftermarket",
       "https://northcoastkeyless.com/product/dodge-charger-4-button-smart-key-fob-remote-fcc-m3n-40821302-pn-68051387/"
     ],
     "dataSource": "live web",
-    "lastVerified": "2026-06-13"
+    "lastVerified": "2026-06-14"
   },
   {
     "make": "Dodge",
@@ -622,8 +637,21 @@
     "region": "US",
     "variants": [
       {
+        "keyType": "Fobik",
+        "trimDependent": true,
+        "keyway": "Y171",
+        "bladeIlco": "Y171-IYZ",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7941 / PCF7341 (ID46)",
+        "chipClonable": "yes",
+        "fccId": "M3N5WY783X",
+        "partNumber": "05026334AC",
+        "frequency": "433"
+      },
+      {
         "keyType": "Smart",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": null,
         "bladeIlco": null,
         "bladeSilca": null,
@@ -639,16 +667,19 @@
     "pinRequired": true,
     "programming": "Professional OBD2 + PIN. 2018+ SGW 12+8 bypass required. AlfaOBD viable for locksmiths.",
     "programmerHint": ["Autel IM608 Pro", "AutoProPad G2", "Lonsdor K518ISE", "AlfaOBD + OBDLink"],
-    "notes": "2011-2018 Chrysler 300 uses M3N-40821302 with Hitag2/ID46 chip (PCF7945A/PCF7953A). NOT Hitag AES. 2019+ switches to M3M-40821302 with Hitag AES (PCF7953M). Part 56046759AA (5-btn). 2018 needs SGW bypass.",
+    "notes": "2011-2018 Chrysler 300 is trim-dependent: 2011 base/300 Limited trims with turn-key ignition use the M3N5WY783X fobik (Y171 emergency insert blade, ID46, 433 MHz; confirmed by Walmart listing '2008-2011 Chrysler 300 Fobik Key M3N5WY783X' and UHS Hardware product page, abkeys OEM listing PN 05026334AC). Upper trims (300C, 300S) and all 2012-2018 use M3N-40821302 smart proximity key (Hitag2/ID46, PCF7945A/PCF7953A, NOT Hitag AES). 2019+ switches to M3M-40821302 with Hitag AES. 2018 needs SGW bypass.",
     "confidence": "verified",
     "sources": [
+      "https://www.walmart.com/ip/New-Chrysler-300-2008-2009-2010-2011-Fobik-Key-M3N5WY783X-IYZ-C01C-A-VLS/105717972",
+      "https://www.uhs-hardware.com/products/2008-2013-chrysler-dodge-5-button-fobik-key-m3n5wy783x-rk-chy-fbk-9",
+      "https://abkeys.com/products/chrysler-300-fobik-remote-key-5buttons-433mhz-m3n5wy783x-05026334ac-452",
       "https://abkeys.com/products/chrysler-300-smart-key-5b-433mhz-m3n-40821302-56046759aa-56046759af-2172",
       "https://www.americankeysupply.com/product/chrysler-300-2011-2018-4-btn-sk-m3n-40821302-hitag2-oem-4476",
       "https://www.locksmithkeyless.com/products/2011-2018-chrysler-300-smart-key-4b-fcc-m3n-40821302",
       "https://www.transpondery.com/transponder_catalog/chrysler_transponder_catalog.html"
     ],
     "dataSource": "live web",
-    "lastVerified": "2026-06-13"
+    "lastVerified": "2026-06-14"
   },
   {
     "make": "Chrysler",

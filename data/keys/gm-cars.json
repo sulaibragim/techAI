@@ -8,7 +8,7 @@
     "variants": [
       {
         "keyType": "Transponder",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "HU100",
         "bladeIlco": "B116-PT",
         "bladeSilca": null,
@@ -18,6 +18,19 @@
         "fccId": null,
         "partNumber": "22984996 / 13523903 / 23326748",
         "frequency": null
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HU100",
+        "bladeIlco": "B116-PT",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7937E (Philips ID46 GM EXT)",
+        "chipClonable": "token",
+        "fccId": "OHT01060512",
+        "partNumber": "5913396 / 5913397 / 13504200 / 13504199 / 20873621 / 5913598",
+        "frequency": "315"
       }
     ],
     "immobilizer": "GM BCM-based Hitag2 immobilizer",
@@ -28,12 +41,15 @@
       "OBDSTAR X300 PRO3",
       "Xhorse VVDI2"
     ],
-    "notes": "B111 (Z-keyway / PCF7936 circle+) used on pre-2010 Equinox. 2010+ moved to HU100 high-security blade with PCF7937E extended chip.",
+    "notes": "B111 (Z-keyway / PCF7936 circle+) used on pre-2010 Equinox. 2010+ moved to HU100 high-security blade with PCF7937E extended chip. Base LS trim received transponder-only key; LT/LTZ trims received OHT01060512 flip key with integrated remote. OHT01060512 flip key confirmed 2010-2017 via locksmithkeyless.com (multiple year-specific listings) and northcoastkeyless.com.",
     "confidence": "verified",
     "sources": [
       "https://www.transpondery.com/transponder_catalog/chevrolet_transponder_catalog.html",
       "https://www.locksmithkeyless.com/products/2015-2020-chevrolet-transponder-key-id-46-gm-ext-chip-b116-pt",
-      "https://www.uhs-hardware.com/products/2010-2020-gm-b116-pt-transponder-key-46-gm-chip-jma"
+      "https://www.uhs-hardware.com/products/2010-2020-gm-b116-pt-transponder-key-46-gm-chip-jma",
+      "https://www.locksmithkeyless.com/products/2013-chevrolet-equinox-flip-key-fob-4b-fcc-oht01060512-5913396",
+      "https://www.locksmithkeyless.com/products/2017-chevrolet-equinox-flip-key-fob-5b-fcc-oht01060512-5913397",
+      "https://northcoastkeyless.com/product/2010-2016-chevrolet-equinox-keyless-entry-remote-flip-key-fob-fcc-id-oht01060512-pn-13504199-13500221/"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"
@@ -408,6 +424,32 @@
         "fccId": "HYQ4AA",
         "partNumber": "13529663",
         "frequency": "315"
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HU100",
+        "bladeIlco": "B116-PT",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NCF296xE (Philips ID46 GM EXT)",
+        "chipClonable": "token",
+        "fccId": "LXP-T003",
+        "partNumber": "13588758 / 13588756",
+        "frequency": "315"
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HU100",
+        "bladeIlco": "B116-PT",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM EXT",
+        "chipClonable": "token",
+        "fccId": "LXP-T004",
+        "partNumber": "13514134",
+        "frequency": "434"
       }
     ],
     "immobilizer": "GM BCM-based PEPS immobilizer",
@@ -418,12 +460,15 @@
       "OBDSTAR X300 PRO3",
       "Xhorse VVDI2"
     ],
-    "notes": "2nd-gen Cruze (J400). HYQ4EA (433 MHz) for most trims; HYQ4AA (315 MHz) for some base/RS trims. Both use HU100 emergency blade.",
+    "notes": "2nd-gen Cruze (J400). HYQ4EA (433 MHz) for most push-button-start trims; HYQ4AA (315 MHz) for some base/RS push-button-start trims. Both use HU100 emergency blade. Key-start trims use flip key: LXP-T003 (XL7 system, 315 MHz, PN 13588758/13588756) or LXP-T004 (XL8 system, 434 MHz, PN 13514134). Check SPID label in trunk for RPO XL7 or XL8 to confirm flip key variant.",
     "confidence": "verified",
     "sources": [
       "https://www.bestkeysolution.com/products/smart-remote-key-fob-433mhz-id46-chip-5-button-for-chevrolet-camaro-cruze-malibu-2016-2017-2018-2019-fccid-hyq4ea-p-n-13508771-433mhz",
       "https://www.americankeysupply.com/product/chevrolet-cruze-2016-2018-4-button-smart-key-w-trunk-hyq4aa-oem-8111",
-      "https://www.transpondery.com/transponder_catalog/chevrolet_transponder_catalog.html"
+      "https://www.transpondery.com/transponder_catalog/chevrolet_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/2016-chevrolet-cruze-remote-flip-key-4b-fcc-lxp-t003-only-xl-7",
+      "https://www.locksmithkeyless.com/products/2017-chevrolet-cruze-flip-key-fob-3b-fcc-lxp-t004-only-xl-8",
+      "https://www.locksmithkeyless.com/products/2016-chevrolet-cruze-flip-key-fob-4b-fcc-lxp-t003"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"
@@ -756,7 +801,7 @@
     "variants": [
       {
         "keyType": "Transponder",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "HU100",
         "bladeIlco": "B116-PT",
         "bladeSilca": null,
@@ -766,6 +811,19 @@
         "fccId": null,
         "partNumber": null,
         "frequency": null
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HU100",
+        "bladeIlco": "B116-PT",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7937E (Philips ID46 GM EXT)",
+        "chipClonable": "token",
+        "fccId": "OHT01060512",
+        "partNumber": "5913397 / 13504200 / 13504199 / 20835406 / 5913598",
+        "frequency": "315"
       }
     ],
     "immobilizer": "GM BCM-based Hitag2 immobilizer",
@@ -775,12 +833,15 @@
       "Autel IM608",
       "OBDSTAR X300 PRO3"
     ],
-    "notes": "1st-gen Sonic (T300). Transpondery lists PCF7937E. OEM flip key FCC# KR55WK50073 (PN 13584829/13579221) is separate product — not listed here as partNumber. HU100/B116-PT confirmed via UHS/locksmithkeyless.",
+    "notes": "1st-gen Sonic (T300). Transpondery lists PCF7937E. Base LS trim uses transponder-only key (B116-PT); LT/LTZ/RS trims use OHT01060512 flip key with integrated transponder and remote. OHT01060512 flip key for Sonic 2012-2017 confirmed by locksmithkeyless.com and oemcarkeymall.com.",
     "confidence": "verified",
     "sources": [
       "https://www.transpondery.com/transponder_catalog/chevrolet_transponder_catalog.html",
       "https://www.uhs-hardware.com/products/2010-2020-gm-b116-pt-transponder-key-46-gm-chip-jma",
-      "https://remotesandkeys.com/products/2014-chevrolet-sonic-transponder-key"
+      "https://remotesandkeys.com/products/2014-chevrolet-sonic-transponder-key",
+      "https://www.locksmithkeyless.com/products/2013-chevrolet-sonic-flip-key-fob-4b-fcc-oht01060512-1",
+      "https://www.locksmithkeyless.com/products/2015-chevrolet-sonic-flip-key-fob-5b-fcc-oht01060512-5913397",
+      "https://oemcarkeymall.com/products/2016-chevrolet-sonic-remote-flip-key-fob-3b-fcc-oht01060512-pn-20835406"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"
@@ -794,7 +855,7 @@
     "variants": [
       {
         "keyType": "Smart",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "HU100",
         "bladeIlco": "B119-PT (emergency blade)",
         "bladeSilca": null,
@@ -803,6 +864,19 @@
         "chipClonable": "token",
         "fccId": "HYQ4AA",
         "partNumber": "13529664",
+        "frequency": "315"
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HU100",
+        "bladeIlco": "B116-PT",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7937E (Philips ID46 GM EXT)",
+        "chipClonable": "token",
+        "fccId": "KR55WK50073",
+        "partNumber": "13575177 / 13584829 / 13579216",
         "frequency": "315"
       }
     ],
@@ -814,12 +888,15 @@
       "OBDSTAR X300 PRO3",
       "Xhorse VVDI2"
     ],
-    "notes": "Transpondery lists PCF7952E for this generation. HYQ4AA confirmed at 315 MHz via bestkeysolution (part 13529664).",
+    "notes": "Transpondery lists PCF7952E for this generation. HYQ4AA smart key at 315 MHz for push-button-start trims (13529664). Key-start trims use KR55WK50073 flip key (non-PEPS, 315 MHz) confirmed by uhs-hardware.com OEM recase (PN 13584829), locksmithkeyless.com (2013-2020 listing), and yourcarkeyguys.com (explicitly labelled non-PEPS).",
     "confidence": "verified",
     "sources": [
       "https://www.transpondery.com/transponder_catalog/chevrolet_transponder_catalog.html",
       "https://www.bestkeysolution.com/products/chevrolet-smart-key-fob-bolt-equinox-trax-2016-2022-fccid-hyq4a-p-n-13508769433mhz",
-      "https://www.americankeysupply.com/product/chevrolet-cruze-xl7-sonic-2016-2020-5-button-smart-key-hyq4aa-oem-new-16596"
+      "https://www.americankeysupply.com/product/chevrolet-cruze-xl7-sonic-2016-2020-5-button-smart-key-hyq4aa-oem-new-16596",
+      "https://www.uhs-hardware.com/products/2012-2019-chevrolet-sonic-4-button-remote-flip-key-pn-13584829-kr55wk50073-oem-recase",
+      "https://www.locksmithkeyless.com/products/2013-2018-chevrolet-remote-flip-key-peps-4b-fcc-kr55wk50073",
+      "https://yourcarkeyguys.com/products/2012-2020-chevrolet-sonic-flip-key-4b-remote-start-non-peps-kr55wk50073"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"

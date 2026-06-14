@@ -99,7 +99,7 @@
     "variants": [
       {
         "keyType": "Smart",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "HY22",
         "bladeIlco": null,
         "bladeSilca": null,
@@ -109,22 +109,37 @@
         "fccId": "CQOFD00120",
         "partNumber": "95440-F2000",
         "frequency": "434"
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HYN14R",
+        "bladeIlco": "HYN14R-PT",
+        "bladeSilca": "LXP90",
+        "bladeJma": null,
+        "transponderChip": null,
+        "chipClonable": "no",
+        "fccId": "OKA-NO38",
+        "partNumber": "95430-F2001",
+        "frequency": "434"
       }
     ],
-    "immobilizer": "Texas AES 128-bit (ID8A)",
+    "immobilizer": "Texas AES 128-bit (ID8A) on push-button trims; non-transponder flip key on turn-key trims",
     "pinRequired": false,
-    "programming": "OBD programmer required. No on-board procedure.",
+    "programming": "OBD programmer required for Smart key. Flip key: program via OBD (remote only, no transponder).",
     "programmerHint": [
       "Autel IM608",
       "Lonsdor K518",
       "OBDSTAR X300 DP"
     ],
-    "notes": "2016-2020 Sedan uses FCC CQOFD00120 with 8A chip at 434 MHz. PN 95440-F2000 (2016-18) / 95440-F2002 (2019-20). Elantra GT Sport 2018-2020 uses FCC NYOSYEC4FOB1608. Emergency key uses HY22 blade. yearStart corrected from 2017→2016 (UHS Hardware OEM listing confirms 2016-2018 coverage for this FCC/PN).",
+    "notes": "TWO key types by trim: push-button-start trims (Sport/Value/SE w/PKG) use Smart key FCC CQOFD00120 (8A chip, 434 MHz, PN 95440-F2000 for 2016-18 / 95440-F2002 for 2019-20); standard-ignition SE trims (2016-2018) use Flip key FCC OKA-NO38 (non-transponder, 434 MHz, PN 95430-F2001). Elantra GT Sport 2018-2020 uses FCC NYOSYEC4FOB1608. Emergency key uses HY22 blade on smart variant; HYN14R/LXP90 is the flip blade.",
     "confidence": "verified",
     "sources": [
       "https://www.uhs-hardware.com/products/2016-2018-hyundai-elantra-4-button-smart-key-pn-95440-f2000-cqofd00120-oem",
-      "https://www.locksmithkeyless.com/products/2017-hyundai-elantra-smart-key-4b-fob-fcc-cqofd00120",
-      "https://www.locksmithkeyless.com/products/2019-2020-elantra-sedan-smart-key-4b-fcc-cqofd00120"
+      "https://www.locksmithkeyless.com/products/2017-hyundai-elantra-flip-key-fob-4b-fcc-oka-no38-oem-new",
+      "https://www.uhs-hardware.com/products/2017-2018-hyundai-elantra-4-button-flip-key-pn-95430-f2001-oka-no38-oem",
+      "https://abkeys.com/products/hyundai-elantra-remote-key-4b-433mhz-oka-no38-2017up-95430-f2000-2717",
+      "https://northcoastkeyless.com/product/hyundai-elantra-4-button-flip-key-fob-remote-fcc-oka-no38-p-n-95430-f2001/"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"
@@ -254,7 +269,7 @@
     "variants": [
       {
         "keyType": "Smart",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "HY22",
         "bladeIlco": null,
         "bladeSilca": null,
@@ -264,21 +279,50 @@
         "fccId": "CQOFD00120",
         "partNumber": "95440-C1000",
         "frequency": "434"
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "KK10",
+        "bladeIlco": null,
+        "bladeSilca": "LXP90",
+        "bladeJma": null,
+        "transponderChip": null,
+        "chipClonable": "no",
+        "fccId": "TQ8-RKE-4F16",
+        "partNumber": "95430-C1010",
+        "frequency": "433"
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HYN14R",
+        "bladeIlco": "HYN14R-PT",
+        "bladeSilca": "LXP90",
+        "bladeJma": null,
+        "transponderChip": null,
+        "chipClonable": "no",
+        "fccId": "TQ8-RKE-4F25",
+        "partNumber": "95430-C1210",
+        "frequency": "433"
       }
     ],
-    "immobilizer": "Texas AES 128-bit (ID8A)",
+    "immobilizer": "Texas AES 128-bit (ID8A) on push-button trims; non-transponder on turn-key trims",
     "pinRequired": false,
-    "programming": "OBD programmer required. No on-board procedure.",
+    "programming": "OBD programmer required for Smart key. Flip key: remote programming only, no transponder chip.",
     "programmerHint": [
       "Autel IM608",
       "Lonsdor K518",
       "OBDSTAR X300 DP"
     ],
-    "notes": "2015-2019 Sonata uses Texas 8A AES chip (not DST80 as previously listed). FCC CQOFD00120, 434 MHz. PNs 95440-C1000/C1001 (2015-17), 95440-C1500/C2500 (2018-19). HY22 emergency blade. PIN-by-VIN no longer required for this key type.",
+    "notes": "TWO key types by trim: push-button-start trims (SE/Sport/Limited) use Smart key FCC CQOFD00120 (8A chip, 434 MHz, PNs 95440-C1000/C1001 for 2015-17, 95440-C1500/C2500 for 2018-19); standard-ignition trims use a non-transponder Flip key — FCC TQ8-RKE-4F16 (PN 95430-C1010, 433 MHz, KK10 blade, 2015-2017) or FCC TQ8-RKE-4F25 (PN 95430-C1210/C2210, 433 MHz, LXP90 blade, 2017-2019). Verify by VIN/FCC on fob.",
     "confidence": "verified",
     "sources": [
       "https://www.locksmithkeyless.com/products/2015-2017-hyundai-sonata-smart-key-4b-fcc-cqofd00120",
-      "https://www.uhs-hardware.com/products/2015-2017-hyundai-sonata-4-button-smart-key-pn-95440-c1001-cqofd00120-oem"
+      "https://www.uhs-hardware.com/products/2015-2017-hyundai-sonata-4-button-smart-key-pn-95440-c1001-cqofd00120-oem",
+      "https://www.locksmithkeyless.com/products/2015-2017-hyundai-sonata-flip-key-4b-fcc-tq8-rke-4f16",
+      "https://www.uhs-hardware.com/products/2015-2017-hyundai-sonata-4-button-flip-key-pn-95430-c1010-tq8-rke-4f16-oem-refurb",
+      "https://www.uhs-hardware.com/products/2017-2020-hyundai-sonata-4-button-remote-flip-key-pn-95430-c1210-tq8-rke-4f25-lf-4bt-rfk-hy-sn25"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"
@@ -433,7 +477,7 @@
     "variants": [
       {
         "keyType": "Smart",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "HY22",
         "bladeIlco": null,
         "bladeSilca": null,
@@ -446,7 +490,7 @@
       },
       {
         "keyType": "Smart",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "HY22",
         "bladeIlco": null,
         "bladeSilca": null,
@@ -456,22 +500,37 @@
         "fccId": "TQ8-FOB-4F11",
         "partNumber": "95440-D3110",
         "frequency": "433"
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "KK10",
+        "bladeIlco": null,
+        "bladeSilca": "LXP90",
+        "bladeJma": null,
+        "transponderChip": null,
+        "chipClonable": "no",
+        "fccId": "TQ8-RKE-4F25",
+        "partNumber": "95430-D3010",
+        "frequency": "433"
       }
     ],
-    "immobilizer": "HITAG3 / ID47",
+    "immobilizer": "HITAG3 / ID47 on push-button trims; non-transponder on turn-key trims",
     "pinRequired": false,
-    "programming": "OBD programmer required.",
+    "programming": "OBD programmer required for Smart key. Flip key: remote programming only, no transponder chip.",
     "programmerHint": [
       "Autel IM608",
       "Lonsdor K518",
       "OBDSTAR X300 DP"
     ],
-    "notes": "3rd gen Tucson 2016-2020 uses ID47 HITAG3 at 433 MHz — NOT Texas DST80 as previously listed. FCC TQ8-FOB-4F07 (PN 95440-D3100, 2016-2018); FCC TQ8-FOB-4F11 (PN 95440-D3110, 2018-2020). Also has non-transponder flip remote PN 95430-D3010 / FCC TQ8-RKE-4F25 for non-push-start trims. HY22 emergency blade. Chip corrected from DST80→ID47 HITAG3 per multiple live sources.",
+    "notes": "TWO key types by trim: push-button-start trims use Smart key — FCC TQ8-FOB-4F07 (PN 95440-D3100, 2016-2018) or FCC TQ8-FOB-4F11 (PN 95440-D3110, 2018-2020), ID47 HITAG3 at 433 MHz; standard-ignition trims use Flip key FCC TQ8-RKE-4F25 (PN 95430-D3010/D3000, 433 MHz, KK10/LXP90 blade, non-transponder, 2015-2021 US). HY22 emergency blade on smart variants. Chip corrected from DST80→ID47 HITAG3 per multiple live sources.",
     "confidence": "verified",
     "sources": [
       "https://abkeys.com/products/hyundai-tucson-smart-key-4buttons-433mhz-tq8-fob-4f11-95440-d3100nna-4960",
       "https://abkeys.com/products/hyundai-tucson-smart-key-4buttons-433mhz-tq8-fob-4f11-95440-d3110-4817",
-      "https://www.amazon.com/Keymall-Keyless-Control-Replacement-Hyundai/dp/B09MT3BPHF"
+      "https://www.locksmithkeyless.com/products/2016-2019-hyundai-tucson-remote-flip-key-4b-fcc-tq8-rke-4f25",
+      "https://www.uhs-hardware.com/products/2015-2019-hyundai-tucson-4-button-remote-flip-key-pn-95430-d3010-tq8-rke-4f25-oem",
+      "https://northcoastkeyless.com/product/hyundai-tucson-keyless-entry-remote-flip-key-fob-fcc-id-tq8-rke-4f25-pn-95430-d3010/"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"
@@ -561,7 +620,7 @@
     "variants": [
       {
         "keyType": "Smart",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "HY22",
         "bladeIlco": null,
         "bladeSilca": null,
@@ -571,21 +630,51 @@
         "fccId": "SY5HMFNA04",
         "partNumber": "95440-3V021",
         "frequency": "315"
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HY18R",
+        "bladeIlco": "HY18R-PT",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": null,
+        "chipClonable": "no",
+        "fccId": "TQ8-RKE-3F04",
+        "partNumber": "95430-4Z101",
+        "frequency": "315"
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HY18R",
+        "bladeIlco": "HY18R-PT",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": null,
+        "chipClonable": "no",
+        "fccId": "TQ8-RKE-4F31",
+        "partNumber": "95430-2W110",
+        "frequency": "433"
       }
     ],
-    "immobilizer": "PCF7952A / Hitag2",
+    "immobilizer": "PCF7952A / Hitag2 on push-button trims; non-transponder on turn-key trims",
     "pinRequired": true,
-    "programming": "PIN required (2006-2016). PIN-by-VIN. OBD programmer.",
+    "programming": "PIN required for Smart key (2006-2016 era, PIN-by-VIN). OBD programmer. Flip key: remote programming only, no transponder.",
     "programmerHint": [
       "DiagCode VIN-to-PIN",
       "Autel IM608",
       "Lonsdor K518"
     ],
-    "notes": "2013-2018 Santa Fe uses PCF7952A. FCC SY5HMFNA04 at 315 MHz. OEM PN 95440-3V021. Later 2016+ units may have HiTag3.",
+    "notes": "TWO key types by trim: push-button-start trims use Smart key FCC SY5HMFNA04 (PCF7952A, 315 MHz, PN 95440-3V021); standard-ignition trims use Flip key — FCC TQ8-RKE-3F04 (PN 95430-4Z101/4Z100, 315 MHz, HY18R blade, non-transponder, 2013-2016) or FCC TQ8-RKE-4F31 (PN 95430-2W110, 433 MHz, HY18R blade, non-transponder, 2017-2018). Later 2016+ units may have HiTag3 on Smart variant.",
     "confidence": "verified",
     "sources": [
       "https://www.transpondery.com/transponder_catalog/hyundai_transponder_catalog.html",
-      "https://www.bestkeysolution.com/products/key2u-hyundai-kia-smart-key-fob-fcc-id-sy5hmfna04-315-mhz"
+      "https://www.bestkeysolution.com/products/key2u-hyundai-kia-smart-key-fob-fcc-id-sy5hmfna04-315-mhz",
+      "https://www.locksmithkeyless.com/products/2013-2016-hyundai-santa-fe-remote-flip-key-4b-fcc-id-tq8-rke-3f04",
+      "https://www.uhs-hardware.com/products/2013-2016-hyundai-santa-fe-4-button-flip-key-remote-tq8-rke-3f04-rfk-hy-snt",
+      "https://www.locksmithkeyless.com/products/2016-2019-hyundai-santa-fe-remote-flip-key-4b-fcc-tq8-rke-4f31",
+      "https://www.uhs-hardware.com/products/2017-2018-hyundai-santa-fe-4-button-flip-key-remote-pn-95430-2w110-tq8-rke-4f31-oem"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"
@@ -1219,7 +1308,7 @@
     "variants": [
       {
         "keyType": "Smart",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "KK12",
         "bladeIlco": null,
         "bladeSilca": null,
@@ -1229,19 +1318,66 @@
         "fccId": null,
         "partNumber": null,
         "frequency": null
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HY15",
+        "bladeIlco": "HY15-P",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": null,
+        "chipClonable": "no",
+        "fccId": "OSLOKA-870T",
+        "partNumber": "95430-A7400",
+        "frequency": "315"
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HY15",
+        "bladeIlco": "HY15-P",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": null,
+        "chipClonable": "no",
+        "fccId": "OSLOKA-875T",
+        "partNumber": "95430-A7200",
+        "frequency": "433"
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "KK12",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": null,
+        "chipClonable": "no",
+        "fccId": "CQOTD00660",
+        "partNumber": "95430-M6400",
+        "frequency": "434"
       }
     ],
-    "immobilizer": "Texas DST80",
+    "immobilizer": "Texas DST80 on push-button trims; non-transponder on turn-key trims",
     "pinRequired": false,
-    "programming": "OBD programmer required.",
+    "programming": "OBD programmer required for Smart key. Flip key: remote programming only, no transponder chip.",
     "programmerHint": [
       "Autel IM608",
       "Lonsdor K518"
     ],
-    "notes": "2014-2020 Forte (Cerato) uses DST80 chip. KK12 blade.",
-    "confidence": "single-source",
+    "notes": "TWO key types by trim: push-button-start trims (EX/SX) use Smart key with DST80 chip, KK12 blade; standard-ignition trims (LX/FE) use a non-transponder Flip key — FCC OSLOKA-870T (PN 95430-A7400, 315 MHz, HY15 blade, 2014-2016), FCC OSLOKA-875T (PN 95430-A7200, 433 MHz, HY15 blade, 2017-2018), or FCC CQOTD00660 (PN 95430-M6400/M6000, 434 MHz, KK12 blade, 2019-2020). Covers Forte, Forte5, Forte Koup.",
+    "confidence": "verified",
     "sources": [
-      "https://www.transpondery.com/transponder_catalog/kia_transponder_catalog.html"
+      "https://www.transpondery.com/transponder_catalog/kia_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/2014-2016-kia-forte-remote-flip-key-4b-fcc-osloka-870t",
+      "https://www.uhs-hardware.com/products/2014-2016-kia-forte-4-button-flip-key-pn-95430-a7400-osloka-oka870t-yd-oem",
+      "https://northcoastkeyless.com/product/2014-2016-kia-forte-keyless-entry-remote-flip-key-fob-fcc-id-osloka-870t-ta-yd/",
+      "https://www.locksmithkeyless.com/products/2017-2018-kia-forte-remote-flip-key-4b-fcc-osloka-875t-yd",
+      "https://www.uhs-hardware.com/products/2017-2018-kia-forte-4-button-flip-key-pn-95430-a7200-osloka-875t-yd-oem-refurb",
+      "https://www.locksmithkeyless.com/products/2019-2021-kia-forte-flip-key-fob-4b-w-trunk-fcc-cqotd00660-non-chip-95430-m6400",
+      "https://www.uhs-hardware.com/products/2019-2020-kia-forte-4-button-remote-flip-key-pn-95430-m6100-cqotd00660-oem",
+      "https://northcoastkeyless.com/product/2019-2020-kia-forte-4-button-flip-key-fob-remote-fcc-cqotd00660-p-n-95430-m6000/"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"
@@ -1659,7 +1795,7 @@
     "variants": [
       {
         "keyType": "Smart",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "KK12",
         "bladeIlco": null,
         "bladeSilca": null,
@@ -1669,20 +1805,36 @@
         "fccId": "TQ8-FOB-4F08",
         "partNumber": "95440-D9500",
         "frequency": "433"
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "KK10",
+        "bladeIlco": null,
+        "bladeSilca": "LXP90",
+        "bladeJma": null,
+        "transponderChip": null,
+        "chipClonable": "no",
+        "fccId": "TQ8-RKE-4F27",
+        "partNumber": "95430-D9100",
+        "frequency": "434"
       }
     ],
-    "immobilizer": "HITAG3 / ID47",
+    "immobilizer": "HITAG3 / ID47 on push-button trims; non-transponder on turn-key trims",
     "pinRequired": false,
-    "programming": "OBD programmer required.",
+    "programming": "OBD programmer required for Smart key. Flip key: remote programming only, no transponder chip.",
     "programmerHint": [
       "Autel IM608",
       "Lonsdor K518"
     ],
-    "notes": "2017-2021 Sportage (QL gen). ID47 HITAG3. FCC TQ8-FOB-4F08. OEM PN 95440-D9500. KK12 blade.",
+    "notes": "TWO key types by trim: push-button-start trims (EX/SX/SX Turbo) use Smart key FCC TQ8-FOB-4F08 (ID47 HITAG3, 433 MHz, PN 95440-D9500, KK12 blade); standard-ignition trims (LX/LX Turbo) use Flip key FCC TQ8-RKE-4F27 (non-transponder, 434 MHz, PN 95430-D9100/D9000, KK10 blade, 2016-2020). US market only — Canadian Sportage flip key requires transponder chip (different PN).",
     "confidence": "verified",
     "sources": [
       "https://www.transpondery.com/transponder_catalog/kia_transponder_catalog.html",
-      "https://www.go-parts.com/garage/keyless-entry-transmitter-kia-sportage-2016-2021"
+      "https://www.go-parts.com/garage/keyless-entry-transmitter-kia-sportage-2016-2021",
+      "https://www.locksmithkeyless.com/products/2017-2019-kia-sportage-remote-flip-key-4b-fcc-tq8-rke-4f27",
+      "https://www.uhs-hardware.com/products/2016-2020-kia-sportage-4-button-flip-key-pn-95430-d9100-tq8-rke-4f27-oem",
+      "https://northcoastkeyless.com/product/2016-2020-kia-sportage-4-button-flip-key-fob-remote-fcc-tq8-rke-4f27-p-n-95430-d9000-95430-d9100/"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"
@@ -1871,7 +2023,7 @@
     "variants": [
       {
         "keyType": "Smart",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "KK10",
         "bladeIlco": null,
         "bladeSilca": null,
@@ -1881,20 +2033,51 @@
         "fccId": "SVI-MDFEU03",
         "partNumber": null,
         "frequency": "433"
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "KK10",
+        "bladeIlco": "KK10-PT",
+        "bladeSilca": "LXP90",
+        "bladeJma": null,
+        "transponderChip": null,
+        "chipClonable": "no",
+        "fccId": "TQ8-RKE-3F02",
+        "partNumber": "95430-1W021",
+        "frequency": "315"
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "KK10",
+        "bladeIlco": "KK10-PT",
+        "bladeSilca": "LXP90",
+        "bladeJma": null,
+        "transponderChip": null,
+        "chipClonable": "no",
+        "fccId": "TQ8-RKE-3F05",
+        "partNumber": "95430-1W023",
+        "frequency": "315"
       }
     ],
-    "immobilizer": "PCF7952 / Hitag2",
+    "immobilizer": "PCF7952 / Hitag2 on SX push-button trims; non-transponder on LX/EX turn-key trims",
     "pinRequired": false,
-    "programming": "OBD programmer required.",
+    "programming": "OBD programmer required for Smart key. Flip key: remote programming only, no transponder chip.",
     "programmerHint": [
       "Autel IM608",
       "Lonsdor K518"
     ],
-    "notes": "2012-2017 Rio. FCC SVI-MDFEU03 at 433 MHz uses PCF7952 MCU (Philips Hitag2) — not DST80 as previously listed. Confirmed by transpondery key description page. OEM PN 95430-H8600.",
+    "notes": "TWO key types by trim: SX (push-button-start) uses Smart key FCC SVI-MDFEU03 (PCF7952 Hitag2, 433 MHz, PN 95430-H8600); LX/EX (standard ignition) use Flip key — FCC TQ8-RKE-3F02 (PN 95430-1W020/1W021, 315 MHz, KK10/LXP90 blade, non-transponder, 2012-2013) or FCC TQ8-RKE-3F05 (PN 95430-1W023/1W003, 315 MHz, LXP90 blade, non-transponder, 2014-2017). SX push-button-start was Premium Package option 2012-2015, standard on SX from 2016.",
     "confidence": "verified",
     "sources": [
       "https://www.transpondery.com/keys/kia/svi-mdfeu03_kia_smart_key.html",
-      "https://www.transpondery.com/transponder_catalog/kia_transponder_catalog.html"
+      "https://www.transpondery.com/transponder_catalog/kia_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/2012-2013-kia-rio-remote-flip-key-3b-fcc-tq8-rke-3f02-ub",
+      "https://northcoastkeyless.com/product/2012-2013-kia-rio-3-button-flip-key-fob-remote-fcc-tq8-rke-3f02-p-n-95430-1w020-95430-1w021-95430-1w022-trans-assy-ub-315-no/",
+      "https://www.uhs-hardware.com/products/2012-2013-kia-rio-3-button-flip-key-pn-95430-1w020-tq8-rke-3f02-aftermarket",
+      "https://www.locksmithkeyless.com/products/2014-2017-kia-rio-remote-flip-key-4b-fcc-tq8-rke-3f05-ub14my",
+      "https://northcoastkeyless.com/product/2012-2013-kia-rio5-3-button-flip-key-fob-remote-fcc-tq8-rke-3f02-p-n-95430-1w020-95430-1w021-95430-1w022-trans-assy-ub-315-no/"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"

@@ -91,7 +91,7 @@
     "variants": [
       {
         "keyType": "RemoteHead",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "B110",
         "bladeIlco": null,
         "bladeSilca": null,
@@ -101,20 +101,50 @@
         "fccId": "CWTWB1U811",
         "partNumber": "57497-FJ230",
         "frequency": "315"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "B110",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 4D60 80-bit (G chip)",
+        "chipClonable": "no",
+        "fccId": "HYQ14AHC",
+        "partNumber": "88835-AL04A",
+        "frequency": "315"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "B110",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 8A (H chip) 128-bit AES",
+        "chipClonable": "token",
+        "fccId": "HYQ14AHK",
+        "partNumber": "88835-FL03A",
+        "frequency": "434"
       }
     ],
     "immobilizer": "Subaru Immobilizer (Denso)",
     "pinRequired": false,
     "programming": "Requires professional programming; no onboard programming available",
     "programmerHint": ["Advanced Diagnostics Smart Pro ADS2255", "Autel IM608", "Lonsdor K518"],
-    "notes": "2015-2019 Outback transitions from DAT17 to B110 blade. FCC CWTWB1U811 spans a wide model range at 315MHz. Proximity/smart key option also available on higher trims.",
+    "notes": "2015-2019 Outback is trim-dependent. Base/Premium/Limited 2.5i use RemoteHead CWTWB1U811 (B110, G chip, 315MHz). Upper trims with push-button start: 2015-2017 Outback uses Smart HYQ14AHC (315MHz, G chip 4D60); 2018-2019 Outback Touring uses Smart HYQ14AHK (434MHz, H chip 8A). Verify by FCC ID on original key.",
     "confidence": "verified",
     "sources": [
       "https://www.locksmithkeyless.com/products/2011-2019-subaru-remote-head-key-4b-fcc-cwtwb1u811",
-      "https://www.uhs-hardware.com/products/2012-2019-subaru-4-button-remote-head-key-cwtwb1u811-b110-g-chip-80-bit-rhk-sub-1110"
+      "https://www.locksmithkeyless.com/products/2015-2019-subaru-smart-key-4b-fcc-hyq14ahc",
+      "https://www.uhs-hardware.com/products/2014-2020-subaru-4-button-smart-key-pn-88835-al04a-hyq14ahc-oem",
+      "https://northcoastkeyless.com/product/2015-2017-subaru-outback-keyless-entry-remote-fcc-cwtwb1u811-p-n-57497al00a/",
+      "https://oemcarkeymall.com/products/2018-subaru-outback-smart-key-proximity-4button-hyq14ahk",
+      "https://oemcarkeymall.com/products/2019-subaru-outback-smart-key-proximity-4button-hyq14ahk"
     ],
     "dataSource": "live web",
-    "lastVerified": "2026-06-13"
+    "lastVerified": "2026-06-14"
   },
   {
     "make": "Subaru",
@@ -125,7 +155,7 @@
     "variants": [
       {
         "keyType": "Smart",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "B110",
         "bladeIlco": null,
         "bladeSilca": null,
@@ -148,21 +178,36 @@
         "fccId": null,
         "partNumber": "57497-FL08A",
         "frequency": null
+      },
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": true,
+        "keyway": "B110",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 8A (H chip) 128-bit AES",
+        "chipClonable": "token",
+        "fccId": "CWTB1G077",
+        "partNumber": "57497-AN00A",
+        "frequency": "434"
       }
     ],
     "immobilizer": "Subaru Immobilizer (Denso)",
     "pinRequired": false,
     "programming": "No onboard programming; requires dealer or locksmith with advanced programmer",
     "programmerHint": ["Autel IM608 Pro", "Lonsdor K518", "ABRITES AVDI with SB002/SB003"],
-    "notes": "2020+ Outback uses 8A/H chip DST-AES equivalent. Smart key (push-to-start) standard; bladed transponder on base trims. Emergency blade B110 included in smart key. HYQ14AHK confirmed at 434MHz.",
+    "notes": "2020+ Outback uses 8A/H chip DST-AES equivalent. Smart key (push-to-start) HYQ14AHK on upper trims; base 2.5i trims use RemoteHead CWTB1G077 (434MHz, H chip, B110, blue pod OEM). Emergency blade B110 included in smart key. HYQ14AHK confirmed at 434MHz.",
     "confidence": "verified",
     "sources": [
       "https://www.locksmithkeyless.com/products/2017-2022-subaru-smart-key-4b-fcc-hyq14ahk",
       "https://www.uhs-hardware.com/products/2017-2023-subaru-4-button-smart-key-pn-88835-fl03a-hyq14ahk-aftermarket",
-      "https://yourcarkeyguys.com/products/2017-2024-subaru-b110-h-chip-transponder-key"
+      "https://yourcarkeyguys.com/products/2017-2024-subaru-b110-h-chip-transponder-key",
+      "https://www.uhs-hardware.com/products/2020-2022-subaru-outback-4-button-remote-head-key-pn-57497-an00a-cwtb1g077-h-chip-w-blue-interior-board-shell-oem",
+      "https://www.bestkeysupply.com/products/subaru-4btn-rhk-cwtb1g077-oem1399"
     ],
     "dataSource": "live web",
-    "lastVerified": "2026-06-13"
+    "lastVerified": "2026-06-14"
   },
   {
     "make": "Subaru",
@@ -207,7 +252,7 @@
     "variants": [
       {
         "keyType": "RemoteHead",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "B110",
         "bladeIlco": null,
         "bladeSilca": null,
@@ -217,20 +262,35 @@
         "fccId": "CWTWB1U811",
         "partNumber": "57497-FJ021",
         "frequency": "315"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "B110",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 4D60 80-bit (G chip)",
+        "chipClonable": "no",
+        "fccId": "HYQ14AHC",
+        "partNumber": "88835-AL04A",
+        "frequency": "315"
       }
     ],
     "immobilizer": "Subaru Immobilizer (Denso)",
     "pinRequired": false,
     "programming": "Requires professional programming with compatible tool",
     "programmerHint": ["Advanced Diagnostics Smart Pro ADS2255", "Autel IM608"],
-    "notes": "2012-2018 Forester uses B110 blade with G/4D60 80-bit chip at 315MHz. 2014-2018 specifically confirmed on multiple sources.",
+    "notes": "2012-2018 Forester is trim-dependent from 2016 onward. Base/Premium/Sport/Limited 2014-2018 use RemoteHead CWTWB1U811 (B110, G chip, 315MHz). 2016-2018 Forester Touring adds Smart key HYQ14AHC (315MHz, G chip 4D60, 88835-AL04A) for push-button-start trims. Verify by original FCC ID.",
     "confidence": "verified",
     "sources": [
       "https://www.locksmithkeyless.com/products/2011-2019-subaru-remote-head-key-4b-fcc-cwtwb1u811",
-      "https://www.uhs-hardware.com/products/2012-2019-subaru-4-button-remote-head-key-cwtwb1u811-b110-g-chip-80-bit-rhk-sub-1110"
+      "https://www.uhs-hardware.com/products/2012-2019-subaru-4-button-remote-head-key-cwtwb1u811-b110-g-chip-80-bit-rhk-sub-1110",
+      "https://www.locksmithkeyless.com/products/2015-2019-subaru-smart-key-4b-fcc-hyq14ahc",
+      "https://www.uhs-hardware.com/products/2014-2020-subaru-4-button-smart-key-pn-88835-al04a-hyq14ahc-oem"
     ],
     "dataSource": "live web",
-    "lastVerified": "2026-06-13"
+    "lastVerified": "2026-06-14"
   },
   {
     "make": "Subaru",
@@ -241,7 +301,7 @@
     "variants": [
       {
         "keyType": "Smart",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "B110",
         "bladeIlco": null,
         "bladeSilca": null,
@@ -270,7 +330,7 @@
     "pinRequired": false,
     "programming": "No onboard programming; requires dealer or advanced locksmith programmer",
     "programmerHint": ["Autel IM608 Pro", "Lonsdor K518", "ABRITES AVDI SB002/SB003"],
-    "notes": "2019+ Forester uses 8A H chip DST-AES. Smart key standard on most trims. B110 emergency blade included in smart key. HYQ14AHK confirmed at 434MHz.",
+    "notes": "2019+ Forester uses 8A H chip DST-AES. Smart key HYQ14AHK (434MHz) standard on Touring trim only; base/Premium/Sport/Limited use bladed transponder 57497-FL08A (H chip, B110, no remote buttons). B110 emergency blade included in smart key. HYQ14AHK confirmed at 434MHz.",
     "confidence": "verified",
     "sources": [
       "https://www.locksmithkeyless.com/products/2017-2022-subaru-smart-key-4b-fcc-hyq14ahk",
@@ -289,7 +349,7 @@
     "variants": [
       {
         "keyType": "RemoteHead",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "B110",
         "bladeIlco": null,
         "bladeSilca": null,
@@ -299,20 +359,35 @@
         "fccId": "CWTWB1U811",
         "partNumber": "57497-FJ230",
         "frequency": "315"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "B110",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 4D60 80-bit (G chip)",
+        "chipClonable": "no",
+        "fccId": "HYQ14AHC",
+        "partNumber": "88835-AL04A",
+        "frequency": "315"
       }
     ],
     "immobilizer": "Subaru Immobilizer (Denso)",
     "pinRequired": false,
     "programming": "Requires professional programming; no onboard procedure",
     "programmerHint": ["Advanced Diagnostics Smart Pro ADS2255", "Autel IM608"],
-    "notes": "XV Crosstrek (2013-2017) and Crosstrek (2018) use B110 blade with G/4D60 chip at 315MHz. Confirmed 2013-2017 range.",
+    "notes": "XV Crosstrek (2013-2017) and Crosstrek (2018) are trim-dependent from 2015 onward. Base/Premium use RemoteHead CWTWB1U811 (B110, G chip, 315MHz). 2015-2017 upper trims with push-button-start use Smart HYQ14AHC (315MHz, G chip 4D60, 88835-AL04A). Verify by original FCC ID on key.",
     "confidence": "verified",
     "sources": [
       "https://www.locksmithkeyless.com/products/2011-2019-subaru-remote-head-key-4b-fcc-cwtwb1u811",
-      "https://www.uhs-hardware.com/products/2012-2019-subaru-4-button-remote-head-key-cwtwb1u811-b110-g-chip-80-bit-rhk-sub-1110"
+      "https://www.uhs-hardware.com/products/2012-2019-subaru-4-button-remote-head-key-cwtwb1u811-b110-g-chip-80-bit-rhk-sub-1110",
+      "https://www.locksmithkeyless.com/products/2015-2019-subaru-smart-key-4b-fcc-hyq14ahc",
+      "https://www.uhs-hardware.com/products/2014-2020-subaru-4-button-smart-key-pn-88835-al04a-hyq14ahc-oem"
     ],
     "dataSource": "live web",
-    "lastVerified": "2026-06-13"
+    "lastVerified": "2026-06-14"
   },
   {
     "make": "Subaru",
@@ -323,7 +398,7 @@
     "variants": [
       {
         "keyType": "Smart",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "B110",
         "bladeIlco": null,
         "bladeSilca": null,
@@ -439,7 +514,7 @@
     "variants": [
       {
         "keyType": "Smart",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "B110",
         "bladeIlco": null,
         "bladeSilca": null,
@@ -555,7 +630,7 @@
     "variants": [
       {
         "keyType": "RemoteHead",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "B110",
         "bladeIlco": null,
         "bladeSilca": null,
@@ -565,20 +640,49 @@
         "fccId": "CWTWB1U811",
         "partNumber": "57497-FJ230",
         "frequency": "315"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "B110",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 4D60 80-bit (G chip)",
+        "chipClonable": "no",
+        "fccId": "HYQ14AHC",
+        "partNumber": "88835-AL04A",
+        "frequency": "315"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "B110",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 8A (H chip) 128-bit AES",
+        "chipClonable": "token",
+        "fccId": "HYQ14AHK",
+        "partNumber": "88835-FL03A",
+        "frequency": "434"
       }
     ],
     "immobilizer": "Subaru Immobilizer (Denso)",
     "pinRequired": false,
     "programming": "Requires professional programming; no onboard procedure",
     "programmerHint": ["Advanced Diagnostics Smart Pro ADS2255", "Autel IM608"],
-    "notes": "2015-2019 Legacy moves to B110 blade with G chip at 315MHz. Smart key available on higher trims.",
+    "notes": "2015-2019 Legacy is trim-dependent. Base/2.5i use RemoteHead CWTWB1U811 (B110, G chip, 315MHz). Upper trims with push-button start: 2015-2017 Legacy uses Smart HYQ14AHC (315MHz, G chip 4D60); 2018-2019 Legacy upper trims use Smart HYQ14AHK (434MHz, H chip 8A). Verify by FCC ID on original key.",
     "confidence": "verified",
     "sources": [
       "https://www.locksmithkeyless.com/products/2011-2019-subaru-remote-head-key-4b-fcc-cwtwb1u811",
-      "https://www.uhs-hardware.com/products/2012-2019-subaru-4-button-remote-head-key-cwtwb1u811-b110-g-chip-80-bit-rhk-sub-1110"
+      "https://www.uhs-hardware.com/products/2012-2019-subaru-4-button-remote-head-key-cwtwb1u811-b110-g-chip-80-bit-rhk-sub-1110",
+      "https://www.locksmithkeyless.com/products/2015-2019-subaru-smart-key-4b-fcc-hyq14ahc",
+      "https://www.uhs-hardware.com/products/2014-2020-subaru-4-button-smart-key-pn-88835-al04a-hyq14ahc-oem",
+      "https://www.key4.com/smart-remote-key-subaru-hyq14ahk-88835fl03a-4button"
     ],
     "dataSource": "live web",
-    "lastVerified": "2026-06-13"
+    "lastVerified": "2026-06-14"
   },
   {
     "make": "Subaru",
@@ -589,7 +693,7 @@
     "variants": [
       {
         "keyType": "Smart",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "B110",
         "bladeIlco": null,
         "bladeSilca": null,
@@ -599,21 +703,36 @@
         "fccId": "HYQ14AHK",
         "partNumber": "88835-AN00A",
         "frequency": "434"
+      },
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": true,
+        "keyway": "B110",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 8A (H chip) 128-bit AES",
+        "chipClonable": "token",
+        "fccId": "CWTB1G077",
+        "partNumber": "57497-AN00A",
+        "frequency": "434"
       }
     ],
     "immobilizer": "Subaru Immobilizer (Denso)",
     "pinRequired": false,
     "programming": "No onboard programming; requires dealer or advanced programmer",
     "programmerHint": ["Autel IM608 Pro", "Lonsdor K518", "ABRITES AVDI SB002/SB003"],
-    "notes": "2020+ Legacy uses 8A H chip. Push-to-start standard. B110 emergency blade in smart key. OEM PN 88835-AN00A confirmed by UHS-Hardware.",
+    "notes": "2020+ Legacy is trim-dependent. Push-to-start trims use Smart HYQ14AHK (88835-AN00A, 434MHz, H chip). Base 2.5i trims use RemoteHead CWTB1G077 (57497-AN00A, 434MHz, H chip, B110, blue pod). OEM PN 88835-AN00A confirmed by UHS-Hardware for smart key.",
     "confidence": "verified",
     "sources": [
       "https://www.locksmithkeyless.com/products/2017-2022-subaru-smart-key-4b-fcc-hyq14ahk",
       "https://www.uhs-hardware.com/products/2020-2022-subaru-legacy-4-button-smart-key-pn-88835-an00a-hyq14ahk-oem",
-      "https://yourcarkeyguys.com/products/2017-2024-subaru-b110-h-chip-transponder-key"
+      "https://yourcarkeyguys.com/products/2017-2024-subaru-b110-h-chip-transponder-key",
+      "https://www.uhs-hardware.com/products/2020-2022-subaru-outback-4-button-remote-head-key-pn-57497-an00a-cwtb1g077-h-chip-w-blue-interior-board-shell-oem",
+      "https://www.carandtruckremotes.com/products/2020-subaru-legacy-remote-key-fob"
     ],
     "dataSource": "live web",
-    "lastVerified": "2026-06-13"
+    "lastVerified": "2026-06-14"
   },
   {
     "make": "Subaru",
@@ -706,7 +825,7 @@
     "variants": [
       {
         "keyType": "RemoteHead",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "B110",
         "bladeIlco": null,
         "bladeSilca": null,
@@ -716,20 +835,48 @@
         "fccId": "CWTWB1U811",
         "partNumber": "57497-FJ230",
         "frequency": "315"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "B110",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 4D60 80-bit (G chip)",
+        "chipClonable": "no",
+        "fccId": "HYQ14AHC",
+        "partNumber": "88835-AL04A",
+        "frequency": "315"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "B110",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 8A (H chip) 128-bit AES",
+        "chipClonable": "token",
+        "fccId": "HYQ14AHK",
+        "partNumber": "88835-FL03A",
+        "frequency": "434"
       }
     ],
     "immobilizer": "Subaru Immobilizer (Denso)",
     "pinRequired": false,
     "programming": "Requires professional programming",
     "programmerHint": ["Advanced Diagnostics Smart Pro ADS2255", "Autel IM608"],
-    "notes": "2015-2021 WRX/STI uses B110 blade with G chip at 315MHz. Remote head key standard on WRX.",
+    "notes": "2015-2021 WRX/STI is trim-dependent. Base WRX uses RemoteHead CWTWB1U811 (B110, G chip, 315MHz). WRX with push-button start packages: 2016-2017 uses Smart HYQ14AHC (315MHz, G chip); 2018-2021 with push-button start uses Smart HYQ14AHK (434MHz, H chip 8A). Verify by FCC ID on original key.",
     "confidence": "verified",
     "sources": [
       "https://www.locksmithkeyless.com/products/2011-2019-subaru-remote-head-key-4b-fcc-cwtwb1u811",
-      "https://www.uhs-hardware.com/products/2012-2019-subaru-4-button-remote-head-key-cwtwb1u811-b110-g-chip-80-bit-rhk-sub-1110"
+      "https://www.uhs-hardware.com/products/2012-2019-subaru-4-button-remote-head-key-cwtwb1u811-b110-g-chip-80-bit-rhk-sub-1110",
+      "https://www.locksmithkeyless.com/products/2015-2019-subaru-smart-key-4b-fcc-hyq14ahc",
+      "https://www.uhs-hardware.com/products/2014-2020-subaru-4-button-smart-key-pn-88835-al04a-hyq14ahc-oem"
     ],
     "dataSource": "live web",
-    "lastVerified": "2026-06-13"
+    "lastVerified": "2026-06-14"
   },
   {
     "make": "Subaru",
@@ -775,7 +922,7 @@
     "variants": [
       {
         "keyType": "RemoteHead",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "TR47",
         "bladeIlco": null,
         "bladeSilca": null,
@@ -785,21 +932,36 @@
         "fccId": "HYQ12BBY",
         "partNumber": "57497-CA110",
         "frequency": "315"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "B110",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 4D60 80-bit (G chip)",
+        "chipClonable": "no",
+        "fccId": "HYQ14AHC",
+        "partNumber": "88835-AL04A",
+        "frequency": "315"
       }
     ],
     "immobilizer": "Subaru Immobilizer (Denso)",
     "pinRequired": false,
     "programming": "Requires professional programming; no onboard procedure",
     "programmerHint": ["Advanced Diagnostics Smart Pro", "Autel IM608"],
-    "notes": "BRZ gen 1 (2013-2020) uses TR47 blade (also known as TOY43/X217; different from most Subaru B110/DAT17). G chip 4D60 80-bit at 315MHz. Shared platform with Toyota 86/Scion FR-S. All sources confirm HYQ12BBY coverage ends at 2020.",
+    "notes": "BRZ gen 1 (2013-2020) is trim-dependent. Premium trim uses RemoteHead HYQ12BBY (TR47 blade, G chip 4D60 80-bit, 315MHz). Limited trim adds push-button start with Smart HYQ14AHC (B110 blade, G chip 4D60 80-bit, 315MHz, 88835-AL04A). Shared platform with Toyota 86/Scion FR-S.",
     "confidence": "verified",
     "sources": [
       "https://www.locksmithkeyless.com/products/2013-2020-subaru-brz-remote-head-key-4b-fcc-hyq12bby",
       "https://www.uhs-hardware.com/products/2013-2020-subaru-brz-scion-fr-s-4-button-remote-head-key-pn-57497-ca110-hyq12bby-g-chip-rk-toy-bf86",
-      "https://northcoastkeyless.com/product/2013-2019-subaru-brz-4-button-g-chip-remote-head-key-fob-fcc-hyq12bby-p-n-57497-ca110-57497-ca310/"
+      "https://northcoastkeyless.com/product/2013-2019-subaru-brz-4-button-g-chip-remote-head-key-fob-fcc-hyq12bby-p-n-57497-ca110-57497-ca310/",
+      "https://www.uhs-hardware.com/products/2014-2020-subaru-4-button-smart-key-pn-88835-al04a-hyq14ahc-oem",
+      "https://royalkeysupply.com/products/subaru-new-oem-2014-2020-brz-forester-outback-impreza-legacy-wrx-smart-key-4b-trunk-fccid-hyq14ahc-pn-88835-al04a"
     ],
     "dataSource": "live web",
-    "lastVerified": "2026-06-13"
+    "lastVerified": "2026-06-14"
   },
   {
     "make": "Subaru",
@@ -908,7 +1070,7 @@
     "pinRequired": false,
     "programming": "No onboard programming; requires Mazda VCM II or equivalent advanced programmer",
     "programmerHint": ["Autel IM608", "Lonsdor K518", "Advanced Diagnostics Smart Pro"],
-    "notes": "2014+ Mazda3 push-to-start. Hitag Pro ID49 chip (NOT ID47; ID47 is Hyundai/Kia). Emergency MAZ24 blade included in smart key. WAZSKE13D01 confirmed across multiple sources.",
+    "notes": "2014+ Mazda3 push-to-start standard across ALL trims including base i SV. Hitag Pro ID49 chip (NOT ID47; ID47 is Hyundai/Kia). Emergency MAZ24 blade included in smart key. WAZSKE13D01 confirmed across multiple sources.",
     "confidence": "verified",
     "sources": [
       "https://www.locksmithkeyless.com/products/2014-2019-mazda-smart-prox-key-4b-fcc-wazske13d01-wazske13d02",

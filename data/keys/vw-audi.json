@@ -161,8 +161,21 @@
     "region": "US",
     "variants": [
       {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HU162T",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Megamos Crypto AES (MQB ID88)",
+        "chipClonable": "token",
+        "fccId": "NBGFS125C1",
+        "partNumber": "5G6959752BM",
+        "frequency": "315"
+      },
+      {
         "keyType": "Smart",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "HU66",
         "bladeIlco": null,
         "bladeSilca": "ID88",
@@ -178,15 +191,19 @@
     "pinRequired": false,
     "programming": "Professional locksmith required; diagnostic OBD tool required",
     "programmerHint": ["Autel IM608 Pro", "VVDI2", "Abrites AVDI VN009", "Smart Pro"],
-    "notes": "A7 Jetta (MQB). KR5FS14T at 315 MHz confirmed on locksmithkeyless. Part 5G6959752CT confirmed as 2021 Jetta OEM part on parts.vw.com. 3G0959752T confirmed on carandtruckremotes for 2019 Jetta. Previous entry listed 5G6959752BL which is unconfirmed; replaced with verified part numbers.",
+    "notes": "A7 Jetta (MQB). S trim (turn-key ignition, no push-to-start) uses NBGFS125C1 flip key with HU162T blade at 315 MHz — confirmed carandtruckremotes (2019 and 2020 Jetta listings), locksmithkeyless, UHS Hardware, Royal Key Supply. SE/SEL/R-Line trims with KESSY push-to-start use KR5FS14T smart key at 315 MHz, confirmed locksmithkeyless and parts.vw.com (2021 Jetta). Both share Megamos AES chip.",
     "confidence": "verified",
     "sources": [
       "https://www.locksmithkeyless.com/products/2018-2023-volkswagen-smart-key-5b-fcc-kr5fs14-t-3g0-959-752-bq",
       "https://www.carandtruckremotes.com/products/2019-volkswagen-jetta-smart-remote-key-fob",
-      "https://parts.vw.com/p/Volkswagen_2021_Jetta/Keyless-Entry-Transmitter/95897774/5G6959752CTAIF.html"
+      "https://parts.vw.com/p/Volkswagen_2021_Jetta/Keyless-Entry-Transmitter/95897774/5G6959752CTAIF.html",
+      "https://www.carandtruckremotes.com/2019-volkswagen-jetta-remote-5g6959752bm.html",
+      "https://www.locksmithkeyless.com/products/2018-2020-volkswagen-remote-flip-key-with-comfort-access-4b-fcc-nbgfs125c1-hu162-t",
+      "https://www.uhs-hardware.com/products/2018-2020-volkswagen-4-button-flip-key-pn-5g6-959-752-bm-nbgfs125c1-hu162t-kessy-315-mhz-oem",
+      "https://royalkeysupply.com/products/volkswagen-new-oem-2018-2020-atlas-jetta-golf-remote-flip-key-hu162-t-w-comfort-access-4b-trunk-fccid-nbgfs125c1-pn-5g6-959-752-bm"
     ],
     "dataSource": "live web",
-    "lastVerified": "2026-06-13"
+    "lastVerified": "2026-06-14"
   },
   {
     "make": "Volkswagen",
@@ -354,7 +371,7 @@
     "variants": [
       {
         "keyType": "Transponder",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "HU66",
         "bladeIlco": "HU66T88",
         "bladeSilca": "ID88",
@@ -364,6 +381,19 @@
         "fccId": null,
         "partNumber": "5G6959752BQ / 5G6959752AP",
         "frequency": null
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HU162T",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Megamos Crypto AES (MQB ID88)",
+        "chipClonable": "token",
+        "fccId": "NBGFS125C1",
+        "partNumber": "5G6959752BM",
+        "frequency": "315"
       },
       {
         "keyType": "Smart",
@@ -383,14 +413,18 @@
     "pinRequired": false,
     "programming": "Professional locksmith required; OBD diagnostic tool",
     "programmerHint": ["Autel IM608 Pro", "VVDI2", "Abrites AVDI VN009"],
-    "notes": "Second gen Tiguan (AD1, MQB). Smart key KR5FS14T at 315 MHz confirmed on locksmithkeyless (2018-2023). HU66 blade confirmed for 2018+ Tiguan smart key. 2018-2019 models may vary — verify original before ordering.",
+    "notes": "Second gen Tiguan (AD1, MQB). S trim (turn-key ignition, no push-to-start) uses NBGFS125C1 flip key with HU162T blade at 315 MHz — confirmed abkeys.com (Golf, Tiguan 2018+), Amazon/Yewong (Golf Jetta GTI Tiguan 2018-2021), UHS Hardware, locksmithkeyless. SE trim and above with KESSY push-to-start use KR5FS14T smart key at 315 MHz (locksmithkeyless 2018-2023). Plain HU66T88 transponder is a key-blank for IMMO work (locksmithkeyless). 2018-2019 models may vary — verify original before ordering.",
     "confidence": "verified",
     "sources": [
       "https://www.locksmithkeyless.com/products/2015-2020-volkswagen-transponder-key-megamos-aes-chip-hu66t88-10-pack",
-      "https://www.locksmithkeyless.com/products/2018-2023-volkswagen-smart-key-5b-fcc-kr5fs14-t-3g0-959-752-bq"
+      "https://www.locksmithkeyless.com/products/2018-2023-volkswagen-smart-key-5b-fcc-kr5fs14-t-3g0-959-752-bq",
+      "https://abkeys.com/products/volkswagen-golf-smart-key-4b-315mhz-mqb49-nbgfs125c1-5g6-959-752-bm-2464",
+      "https://www.amazon.com/Yewong-Keyless-Volkswagen-FCC-ID/dp/B0CW9LM7NF",
+      "https://www.uhs-hardware.com/products/2018-2020-volkswagen-4-button-flip-key-pn-5g6-959-752-bm-nbgfs125c1-hu162t-kessy-315-mhz-oem",
+      "https://www.locksmithkeyless.com/products/2018-2020-volkswagen-remote-flip-key-with-comfort-access-4b-fcc-nbgfs125c1-hu162-t"
     ],
     "dataSource": "live web",
-    "lastVerified": "2026-06-13"
+    "lastVerified": "2026-06-14"
   },
   {
     "make": "Volkswagen",
@@ -400,8 +434,21 @@
     "region": "US",
     "variants": [
       {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HU162T",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Megamos Crypto AES (MQB ID88)",
+        "chipClonable": "token",
+        "fccId": "NBGFS125C1",
+        "partNumber": "5G6959752BM",
+        "frequency": "315"
+      },
+      {
         "keyType": "Smart",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "HU162T",
         "bladeIlco": null,
         "bladeSilca": null,
@@ -430,15 +477,18 @@
     "pinRequired": false,
     "programming": "Professional locksmith required; OBD diagnostic tool",
     "programmerHint": ["Autel IM608 Pro", "VVDI2", "Abrites AVDI VN009"],
-    "notes": "Atlas uses MQB platform throughout. 2018-2020: KR5FS14-US (HU162T, 315 MHz) confirmed UHS Hardware OEM. 2021-2023: KR5FS14T (HU162T, 315 MHz) confirmed eBay OEM listing 3G0959752BBR. CORRECTED: previous entry listed variant 2 with HU66 keyway and mixed part numbers (5G6959752BF / 3G0959752S); multiple sources confirm HU162T for all Atlas. 5G6959752BF is a Jetta/Golf part number, removed.",
+    "notes": "Atlas uses MQB platform throughout. S trim (turn-key ignition, no push-to-start) uses NBGFS125C1 flip key with HU162T at 315 MHz — confirmed CarandTruckRemotes (2018 Atlas), UHS Hardware OEM, locksmithkeyless, Royal Key Supply (4+ sources). Push-to-start is standard on SE and above, optional on S. 2018-2020 KESSY smart key: KR5FS14-US (HU162T, 315 MHz) confirmed UHS Hardware OEM. 2021-2023 KESSY smart key: KR5FS14T (HU162T, 315 MHz) confirmed eBay OEM listing 3G0959752BBR. All Atlas variants use HU162T keyway.",
     "confidence": "verified",
     "sources": [
       "https://www.uhs-hardware.com/products/2018-2020-volkswagen-atlas-passat-4-button-smart-key-pn-3g0-959-752s-kr5fs14-us-hu162t-kessy-315-mhz-oem",
       "https://www.locksmithkeyless.com/products/2018-2023-volkswagen-smart-key-5b-fcc-kr5fs14-t-3g0-959-752-bq",
-      "https://www.transpondery.com/transponder_catalog/volkswagen_transponder_catalog.html"
+      "https://www.transpondery.com/transponder_catalog/volkswagen_transponder_catalog.html",
+      "https://www.carandtruckremotes.com/products/2018-volkswagen-atlas-remote-key-fob",
+      "https://www.uhs-hardware.com/products/2018-2020-volkswagen-4-button-flip-key-pn-5g6-959-752-bm-nbgfs125c1-hu162t-kessy-315-mhz-oem",
+      "https://royalkeysupply.com/products/volkswagen-new-oem-2018-2020-atlas-jetta-golf-remote-flip-key-hu162-t-w-comfort-access-4b-trunk-fccid-nbgfs125c1-pn-5g6-959-752-bm"
     ],
     "dataSource": "live web",
-    "lastVerified": "2026-06-13"
+    "lastVerified": "2026-06-14"
   },
   {
     "make": "Volkswagen",

@@ -198,7 +198,7 @@
     "variants": [
       {
         "keyType": "Smart",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "NSN14",
         "bladeIlco": "X237",
         "bladeSilca": "NSN14",
@@ -208,18 +208,34 @@
         "fccId": "CWTWB1U815",
         "partNumber": "285E3-3AA0A",
         "frequency": "315"
+      },
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": true,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7952 / Philips Crypto 2 / HiTag 2 / ID46",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U751",
+        "partNumber": "H0561-3AA0B",
+        "frequency": "315"
       }
     ],
     "immobilizer": "NATS 20-digit BCM PIN",
     "pinRequired": true,
     "programming": "Diagnostic tool required. No OBP.",
     "programmerHint": ["Autel IM608", "Lonsdor K518", "OBDSTAR X300 DP"],
-    "notes": "Smart proximity key (push-to-start equipped trims). Emergency blade DA34 included. CWTWB1U815 used on units built before 5/2013; CWTWB1U840 (PN 285E3-3SG0D) used on units built after 5/2013 — both 315 MHz ID46. Shared FCC with Versa 2013-2018 and Leaf 2016.",
+    "notes": "Smart proximity key (SV/SR/SL trims, push-to-start). CWTWB1U815 used before 5/2013; CWTWB1U840 (PN 285E3-3SG0D) after 5/2013 — both 315 MHz ID46. S base trim uses non-prox remote head key CWTWB1U751 (PN H0561-3AA0B, 315 MHz, ID46). Emergency blade DA34.",
     "confidence": "verified",
     "sources": [
       "https://www.uhs-hardware.com/products/2013-nissan-sentra-4-button-smart-key-pn-285e3-3aa0a-cwtwb1u815-oem",
       "https://www.locksmithkeyless.com/products/2017-nissan-sentra-smart-key-4-buttons-fob-fcc-cwtwb1u815-aftermarket",
-      "https://abkeys.com/products/nissan-sentra-smart-key-4buttons-315mhz-cwtwb1u815-285e3-3aa0a-4722"
+      "https://abkeys.com/products/nissan-sentra-smart-key-4buttons-315mhz-cwtwb1u815-285e3-3aa0a-4722",
+      "https://www.locksmithkeyless.com/products/remote-head-key-for-nissan-sentra-2016-4b-fcc-cwtwb1u751",
+      "https://www.locksmithkeyless.com/products/remote-head-key-for-nissan-sentra-2017-4b-fcc-cwtwb1u751",
+      "https://www.uhs-hardware.com/products/2003-2019-nissan-4-button-remote-head-key-pn-h0561-3aa0b-cwtwb1u751-oem"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"
@@ -338,7 +354,7 @@
     "variants": [
       {
         "keyType": "Smart",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "NSN14",
         "bladeIlco": "X237",
         "bladeSilca": "NSN14",
@@ -348,18 +364,34 @@
         "fccId": "KR5S180144106",
         "partNumber": "285E3-4CB1A",
         "frequency": "433"
+      },
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": true,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7961M / HiTag AES / ID4A",
+        "chipClonable": "token",
+        "fccId": "CWTWB1G767",
+        "partNumber": "H0561-4BA1A",
+        "frequency": "433"
       }
     ],
     "immobilizer": "NATS 20-digit BCM PIN",
     "pinRequired": true,
     "programming": "Diagnostic tool required. 20-digit NATS PIN decode. No OBP.",
     "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518"],
-    "notes": "T32 generation. HiTag AES chip from launch. Multiple PN variants: 4CB1A (3-btn), 4CB6C (4-btn), 6FL2B (4-btn 2017-2018), 6FL7B (5-btn). Emergency blade DA34.",
+    "notes": "T32 generation. Smart key (KR5S180144106) on SV/SL/higher trims; remote flip key (CWTWB1G767) on S trim only. HiTag AES chip on both types. Smart key PN variants: 4CB1A (3-btn), 4CB6C (4-btn), 6FL2B (4-btn 2017-2018), 6FL7B (5-btn). Flip key also PN H0561-4BA1B. Emergency blade DA34.",
     "confidence": "verified",
     "sources": [
       "https://abkeys.com/products/nissan-rogue-smart-key-3b-433mhz-kr5s180144106-285e3-4cb1a-285e3-4cb1c-4665",
       "https://abkeys.com/products/nissan-rogue-smart-key-4buttons-kr5s180144106-285e3-6fl2b-285e3-6fl2a-4065",
-      "https://www.locksmithkeyless.com/products/2017-2018-nissan-rogue-smart-key-5b-fcc-kr5s180144106"
+      "https://www.locksmithkeyless.com/products/2017-2018-nissan-rogue-smart-key-5b-fcc-kr5s180144106",
+      "https://www.uhs-hardware.com/products/2014-2018-nissan-rogue-s-3-button-new-style-flip-key-pn-h0561-4ba1a-cwtwb1g767-oem",
+      "https://www.locksmithkeyless.com/products/2014-2018-nissan-rogue-remote-flip-key-3b-fcc-cwtwb1g767",
+      "https://abkeys.com/products/nissan-rogue-remote-key-3buttons-433mhz-cwtwb1g767-2014up-h0561-4ba1b-4731"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"
@@ -548,7 +580,7 @@
     "variants": [
       {
         "keyType": "Smart",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "NSN14",
         "bladeIlco": "X237",
         "bladeSilca": "NSN14",
@@ -558,18 +590,34 @@
         "fccId": "CWTWB1U815",
         "partNumber": "285E3-3SG0D",
         "frequency": "315"
+      },
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": true,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7952 / Philips Crypto 2 / HiTag 2 / ID46",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U751",
+        "partNumber": "H0561-3AA0B",
+        "frequency": "315"
       }
     ],
     "immobilizer": "NATS 20-digit BCM PIN",
     "pinRequired": true,
     "programming": "Diagnostic tool required. No OBP.",
     "programmerHint": ["Autel IM608", "Lonsdor K518"],
-    "notes": "N17 Versa. Smart key on SR/SV trims. Shared FCC with Sentra 2013-2019. Some units use CWTWB1U840 (PN 285E3-3SG0D), same 315 MHz ID46.",
+    "notes": "N17 Versa. Smart key (CWTWB1U815/CWTWB1U840) on SV/SL/SR trims (push-to-start). S base trim uses non-prox remote head key CWTWB1U751 (PN H0561-3AA0B, 315 MHz, ID46). Shared smart key FCC with Sentra 2013-2019.",
     "confidence": "verified",
     "sources": [
       "https://www.locksmithkeyless.com/products/2017-nissan-versa-smart-key-4-buttons-fob-fcc-cwtwb1u815-aftermarket",
       "https://abkeys.com/products/nissan-sentra-versa-smart-key-285e3-3sg0d-315mhz-cwtwbu1u840-1548-off5",
-      "https://www.transpondery.com/transponder_catalog/nissan_transponder_catalog.html"
+      "https://www.transpondery.com/transponder_catalog/nissan_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/remote-head-key-for-nissan-versa-2013-3b-fcc-cwtwb1u751",
+      "https://www.locksmithkeyless.com/products/2012-2017-nissan-versa-remote-head-key-3b-fcc-id-cwtwb1u751-2-pack",
+      "https://www.uhs-hardware.com/products/2003-2019-nissan-4-button-remote-head-key-pn-h0561-3aa0b-cwtwb1u751-oem"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"
@@ -1217,7 +1265,7 @@
     "variants": [
       {
         "keyType": "Smart",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "NSN14",
         "bladeIlco": "X237",
         "bladeSilca": "NSN14",
@@ -1225,7 +1273,20 @@
         "transponderChip": "PCF7952 / Philips Crypto 2 / HiTag 2 / ID46",
         "chipClonable": "no",
         "fccId": "CWTWBU624",
-        "partNumber": null,
+        "partNumber": "285E3-ZQ31A",
+        "frequency": "315"
+      },
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": true,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7952 / Philips Crypto 2 / HiTag 2 / ID46",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U751",
+        "partNumber": "H0561-C993A",
         "frequency": "315"
       }
     ],
@@ -1233,14 +1294,17 @@
     "pinRequired": true,
     "programming": "Diagnostic tool required. No OBP.",
     "programmerHint": ["Autel IM608", "Lonsdor K518"],
-    "notes": "TA60 Armada. Smart hatch key CWTWBU624 315MHz. Emergency blade DA34.",
-    "confidence": "single-source",
+    "notes": "TA60 Armada. Two trim-dependent key types: LE trim = smart proximity key CWTWBU624 (4-btn with hatch, 315 MHz, ID46, PN 285E3-ZQ30A/285E3-ZQ31A); SE trim = remote head key CWTWB1U751 (3-btn, 315 MHz, ID46, PN H0561-C993A). SE did not have proximity sensing / push-button start. Emergency blade DA34. Both use NATS ID46.",
+    "confidence": "verified",
     "sources": [
       "https://www.locksmithkeyless.com/products/2008-2015-nissan-armada-prox-key-4b-fcc-cwtwbu624",
-      "https://www.transpondery.com/transponder_catalog/nissan_transponder_catalog.html"
+      "https://northcoastkeyless.com/product/nissan-armada-smart-key-keyless-entry-remote-fcc-id-cwtwbu624-pn-285e3-zq30a/",
+      "https://www.locksmithkeyless.com/products/remote-head-key-for-nissan-armada-2010-3b-fcc-cwtwb1u751",
+      "https://www.locksmithkeyless.com/products/remote-head-key-for-nissan-armada-2012-3b-fcc-cwtwb1u751",
+      "https://www.uhs-hardware.com/products/2003-2019-nissan-4-button-remote-head-key-pn-h0561-3aa0b-cwtwb1u751-oem"
     ],
     "dataSource": "live web",
-    "lastVerified": "2026-06-13"
+    "lastVerified": "2026-06-14"
   },
   {
     "make": "Nissan",

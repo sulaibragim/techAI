@@ -1053,7 +1053,7 @@
     "variants": [
       {
         "keyType": "Transponder",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "MIT3",
         "bladeIlco": "MIT17A-PT(A)",
         "bladeSilca": "MIT11R",
@@ -1066,7 +1066,7 @@
       },
       {
         "keyType": "RemoteHead",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "MIT3",
         "bladeIlco": "MIT17A-PT(A)",
         "bladeSilca": "MIT11R",
@@ -1074,7 +1074,20 @@
         "transponderChip": "PCF7941AT / ID46",
         "chipClonable": "no",
         "fccId": "OUCJ166N",
-        "partNumber": "6370A159",
+        "partNumber": "6370B944",
+        "frequency": "315"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "MIT3",
+        "bladeIlco": null,
+        "bladeSilca": "MIT11R",
+        "bladeJma": null,
+        "transponderChip": "PCF7952A / ID46 (Hitag2)",
+        "chipClonable": "no",
+        "fccId": "OUC644M-KEY-N",
+        "partNumber": "8637A817",
         "frequency": "315"
       }
     ],
@@ -1082,15 +1095,17 @@
     "pinRequired": false,
     "programming": "OBD with supported programmer. Some models allow owner self-programming via door lock cycle sequence.",
     "programmerHint": ["Autel IM608", "Xhorse VVDI Key Tool Plus", "OBDSTAR X300 DP"],
-    "notes": "2007-2018 Outlander uses MIT3/MIT11R keyway with ID46 (Philips Hitag2). Ilco MIT17A-PT(A), JMA TP12MIT-8D.P2, OEM part MN141124. Remote 315 MHz confirmed by locksmithkeyless.com and abkeys.com.",
+    "notes": "2007-2018 Outlander uses MIT3/MIT11R keyway with ID46 (Philips Hitag2). Trim split confirmed: ES trim uses RemoteHead key (OUCJ166N / 6370B944, turn-key ignition); SE/LE/GT/SEL trims use Smart proximity key (OUC644M-KEY-N / 8637A817, push-to-start). Smart key is 4-button (Lock/Unlock/Hatch/Panic) at 315 MHz. Transponder-only variant (no remote) also exists for base non-keyless-entry configurations (2007-early). RemoteHead part number corrected to 6370B944 (OEM confirmed by UHS Hardware and northcoastkeyless.com; 6370A159 is an earlier-generation part). Trim split sourced from southsuburbanmitsubishi.com 2018 Outlander ES vs SE comparison and northcoastkeyless.com product listings.",
     "confidence": "verified",
     "sources": [
       "https://www.locksmithkeyless.com/products/2007-2019-mitsubishi-transponder-key-id46-chip-letter-a-mit3-mit17a-pta",
       "https://www.transpondery.com/transponder_catalog/mitsubishi_transponder_catalog.html",
-      "https://abkeys.com/products/mitsubishi-outlander-lancer-remote-key-315mhz-oucg8d-625m-a-6370a148-831"
+      "https://northcoastkeyless.com/product/mitsubishi-outlander-4-button-smart-key-fob-remote-fcc-ouc644m-key-n-p-n-8637a817/",
+      "https://www.uhs-hardware.com/products/2010-2019-mitsubishi-outlander-lancer-3-button-remote-head-key-w-shoulder-pn-6370b944-oucj166n-oem",
+      "https://abkeys.com/products/mitsubishi-outlander-smart-key-4buttons-315mhz-ouc644m-key-n-8637a817-1402"
     ],
     "dataSource": "live web",
-    "lastVerified": "2026-06-13"
+    "lastVerified": "2026-06-14"
   },
   {
     "make": "Mitsubishi",
@@ -1101,7 +1116,7 @@
     "variants": [
       {
         "keyType": "Transponder",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "MIT3",
         "bladeIlco": "MIT17A-PT(A)",
         "bladeSilca": "MIT11R",
@@ -1114,7 +1129,7 @@
       },
       {
         "keyType": "RemoteHead",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "MIT3",
         "bladeIlco": "MIT17A-PT(A)",
         "bladeSilca": "MIT11R",
@@ -1122,7 +1137,20 @@
         "transponderChip": "PCF7941AT / ID46",
         "chipClonable": "no",
         "fccId": "OUCJ166N",
-        "partNumber": "8637C803",
+        "partNumber": "6370B944",
+        "frequency": "315"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "MIT3",
+        "bladeIlco": null,
+        "bladeSilca": "MIT11R",
+        "bladeJma": null,
+        "transponderChip": "PCF7941AT / ID46 (Hitag2)",
+        "chipClonable": "no",
+        "fccId": "OUC644M-KEY-N",
+        "partNumber": "8637A316",
         "frequency": "315"
       }
     ],
@@ -1130,14 +1158,17 @@
     "pinRequired": false,
     "programming": "OBD with supported programmer. Some trims allow owner self-programming.",
     "programmerHint": ["Autel IM608", "Xhorse VVDI Key Tool Plus", "OBDSTAR X300 DP"],
-    "notes": "Outlander Sport uses same MIT3 keyway and ID46 chip as Outlander. Remote 315 MHz confirmed by locksmithkeyless.com and transpondery.com.",
+    "notes": "Outlander Sport uses same MIT3 keyway and ID46 chip as Outlander. Trim split confirmed: ES trim uses RemoteHead key (OUCJ166N / 6370B944, turn-key ignition, push-button start NOT included); SE/SE+/GT trims use Smart proximity key (OUC644M-KEY-N / 8637A316, push-to-start standard). Confirmed by 2016 Outlander Sport feature breakdown (SE adds push-button start over ES) and multiple OEM key vendor listings showing both OUCJ166N (2016-2022 Outlander Sport) and OUC644M-KEY-N (2014-2021 Outlander Sport) as simultaneous fitments for different trims. Remote head key part number corrected to 6370B944 (confirmed OEM by UHS Hardware and northcoastkeyless.com). Smart key is 3-button (Lock/Unlock/Panic) at 315 MHz.",
     "confidence": "verified",
     "sources": [
+      "https://northcoastkeyless.com/product/mitsubishi-outlander-sport-3-button-smart-key-fob-remote-fcc-ouc644m-key-n-p-n-8637a316/",
+      "https://northcoastkeyless.com/product/2016-2019-mitsubishi-outlander-sport-3-button-remote-head-key-fob-fcc-oucj166n-p-n-6370b944/",
+      "https://www.uhs-hardware.com/products/2010-2019-mitsubishi-outlander-lancer-3-button-remote-head-key-w-shoulder-pn-6370b944-oucj166n-oem",
       "https://www.locksmithkeyless.com/products/2007-2019-mitsubishi-transponder-key-id46-chip-letter-a-mit3-mit17a-pta",
       "https://www.transpondery.com/transponder_catalog/mitsubishi_transponder_catalog.html"
     ],
     "dataSource": "live web",
-    "lastVerified": "2026-06-13"
+    "lastVerified": "2026-06-14"
   },
   {
     "make": "Mitsubishi",
@@ -1148,7 +1179,7 @@
     "variants": [
       {
         "keyType": "Transponder",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "MIT3",
         "bladeIlco": "MIT17A-PT(A)",
         "bladeSilca": "MIT11R",
@@ -1161,7 +1192,7 @@
       },
       {
         "keyType": "RemoteHead",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "MIT3",
         "bladeIlco": "MIT17A-PT(A)",
         "bladeSilca": "MIT11R",
@@ -1169,22 +1200,38 @@
         "transponderChip": "PCF7941AT / ID46",
         "chipClonable": "no",
         "fccId": "OUCJ166N",
-        "partNumber": "6370B707",
+        "partNumber": "6370B904",
+        "frequency": "315"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "MIT3",
+        "bladeIlco": null,
+        "bladeSilca": "MIT11R",
+        "bladeJma": null,
+        "transponderChip": "NCF29A1M / ID47 (Philips Crypto 3 / Hitag3)",
+        "chipClonable": "no",
+        "fccId": "OUC003M",
+        "partNumber": "8637B153",
         "frequency": "315"
       }
     ],
-    "immobilizer": "Mitsubishi IMMO (ID46 era)",
+    "immobilizer": "Mitsubishi IMMO (ID46 era for DE/base; ID47 for ES+ smart key trims)",
     "pinRequired": false,
-    "programming": "OBD with supported programmer.",
-    "programmerHint": ["Autel IM608", "Xhorse VVDI Key Tool Plus"],
-    "notes": "Mirage uses same MIT3/ID46 as Outlander. Ilco MIT17A-PT(A), OEM remote part 6370B707. Remote 315 MHz confirmed on locksmithkeyless.com and transpondery.com.",
+    "programming": "OBD with supported programmer. ID47 (Hitag3) smart key requires ID47-capable tool (Lonsdor, OBDSTAR, Autel IM608, Xhorse).",
+    "programmerHint": ["Autel IM608", "Lonsdor K518", "OBDSTAR X300 DP Plus", "Xhorse VVDI Key Tool Plus"],
+    "notes": "Mirage trim split confirmed: DE (base) trim uses turn-key ignition with RemoteHead key (OUCJ166N / 6370B904, ID46 chip); ES and higher trims use Smart proximity key with push-to-start (OUC003M / 8637B153, ID47/Hitag3 chip). CRITICAL: smart key uses ID47 (Hitag3), NOT ID46 — confirmed by locksmithkeyless.com listing OUC003M with Philips ID47/HITAG3 chip and autorescuetools.com listing OUCG8D-625M-A-HF (earlier 2014-2015 DE remote head key, PCF7961A/ID46). Transponder-only key exists for base non-keyless-entry variant. RemoteHead part corrected to 6370B904 (confirmed OEM by UHS Hardware and locksmithkeyless.com for 2013-2020 Mirage; prior 6370B707 was incorrect). DE vs ES trim push-button start split confirmed by MirageForum.com thread (2015 ES has push-start; DE does not) and search results indicating ES adds keyless push-button ignition over DE.",
     "confidence": "verified",
     "sources": [
-      "https://www.locksmithkeyless.com/products/2007-2019-mitsubishi-transponder-key-id46-chip-letter-a-mit3-mit17a-pta",
-      "https://www.transpondery.com/transponder_catalog/mitsubishi_transponder_catalog.html"
+      "https://www.locksmithkeyless.com/products/2015-mitsubishi-mirage-smart-key-3b-fcc-ouc003m",
+      "https://www.uhs-hardware.com/products/2013-2020-mitsubishi-mirage-3-button-remote-head-key-pn-6370b904-oucj166n-oem-recase",
+      "https://www.locksmithkeyless.com/products/2013-2019-mitsubishi-mirage-remote-head-key-3b-fcc-oucj166n",
+      "https://mirageforum.com/forum/showthread.php/5064-Push-button-start-on-DE",
+      "https://autorescuetools.com/products/mitsubishi-mirage-2014-2017-oucg8d-625m-a-hf"
     ],
     "dataSource": "live web",
-    "lastVerified": "2026-06-13"
+    "lastVerified": "2026-06-14"
   },
   {
     "make": "Mitsubishi",

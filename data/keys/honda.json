@@ -89,17 +89,33 @@
         "fccId": "MLBHLIK6-1T",
         "partNumber": "35118-T2A-A20",
         "frequency": "313.8"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HON66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "HITAG3 NCF2952X / ID47",
+        "chipClonable": "token",
+        "fccId": "ACJ932HK1210A",
+        "partNumber": "72147-T2A-A01",
+        "frequency": "313.8"
       }
     ],
     "immobilizer": "Philips Crypto 3 / Hitag3",
     "pinRequired": false,
     "programming": "Professional locksmith or dealer required; no onboard DIY procedure",
     "programmerHint": ["AUTEL IM608", "Xhorse VVDI2", "Advanced Diagnostics Smart Pro"],
-    "notes": "4-button remote head key (turn-key start only, not push-button). IC: 2500A-HLIK61T. Also compatible Honda Civic 2014-2015.",
+    "notes": "Remote head key (MLBHLIK6-1T) for LX/Sport turn-key trims; proximity smart key (ACJ932HK1210A) for EX/EX-L/Touring push-button-start trims. IC for smart key: 216J-HK1210A. Part numbers: 72147-T2A-A01 (no mem), 72147-T2A-A11 (D1), 72147-T2A-A21 (D2). Also compatible Honda Civic 2014-2015.",
     "confidence": "verified",
     "sources": [
       "https://abkeys.com/products/honda-accord-civic-remote-key-4b-314mhz-mlbhlik6-1t-35118-t2a-a20-2794",
       "https://www.locksmithkeyless.com/products/2013-2015-honda-remote-head-key-4b-fcc-mlbhlik6-1t",
+      "https://www.locksmithkeyless.com/products/2015-honda-accord-ex-touring-models-smart-key-fob-4-buttons-fcc-acj932hk1210a",
+      "https://www.uhs-hardware.com/products/2013-2015-honda-accord-civic-4-button-smart-key-pn-72147-t2a-a01-acj932hk1210a-oem",
+      "https://www.bestkeysolution.com/products/honda-accord-civic-2013-2015-smart-keyless-entry-remote-key-fob-fcc-id-acj932hk1210a-oem-refurbished",
       "https://www.transpondery.com/transponder_catalog/honda_transponder_catalog.html"
     ],
     "dataSource": "live web",
@@ -124,18 +140,34 @@
         "fccId": "MLBHLIK6-1TA",
         "partNumber": "35118-T2A-A60",
         "frequency": "433"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HON66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "HITAG3 NCF2952X / ID47",
+        "chipClonable": "token",
+        "fccId": "ACJ932HK1310A",
+        "partNumber": "72147-T2G-A31",
+        "frequency": "433"
       }
     ],
     "immobilizer": "Philips Crypto 3 / Hitag3",
     "pinRequired": false,
     "programming": "Professional locksmith or dealer required; no onboard DIY procedure",
     "programmerHint": ["AUTEL IM608", "Xhorse VVDI2"],
-    "notes": "4-button remote head key for LX/LXS/Sport trims. Also fits Civic LX 2016-2020. IC: 2500A-HLIK61TA.",
+    "notes": "Remote head key (MLBHLIK6-1TA) for LX/LXS/Sport turn-key trims. Proximity smart key (ACJ932HK1310A) for EX/EX-L/Touring push-button-start trims. Smart key IC: 216J-HK1310A; part numbers: 72147-T2G-A31 (no mem), 72147-T2G-A41 (D1), 72147-T2G-A51 (D2). Also fits Civic LX 2016-2020 (remote head key only).",
     "confidence": "verified",
     "sources": [
       "https://www.uhs-hardware.com/products/2016-2020-honda-accord-civic-4-button-remote-head-key-pn-35118-t2a-a60-mlbhlik6-1ta-433-mhz-oem",
       "https://www.locksmithkeyless.com/products/2016-2019-honda-remote-key-4b-fcc-mlbhlik6-1ta",
-      "https://abkeys.com/products/honda-accord-civic-remote-key-35118-t2a-a60-433mhz-mlbhlik6-1ta-2432"
+      "https://abkeys.com/products/honda-accord-civic-remote-key-35118-t2a-a60-433mhz-mlbhlik6-1ta-2432",
+      "https://www.locksmithkeyless.com/products/2016-2017-honda-accord-smart-key-5b-fcc-acj932hk1310a",
+      "https://www.uhs-hardware.com/products/2016-2017-honda-accord-5-button-smart-key-pn-72147-t2g-a41-acj932hk1310a-driver-1-oem",
+      "https://abkeys.com/products/honda-accord-smart-key-5b-2016up-434mhz-72147-t2g-a31-2457"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"
@@ -384,7 +416,7 @@
     "variants": [
       {
         "keyType": "Transponder",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "HON66",
         "bladeIlco": "HO03",
         "bladeSilca": "HON58R",
@@ -394,17 +426,32 @@
         "fccId": null,
         "partNumber": "ILCO-HO03-PT / 35118-SDA-A01",
         "frequency": null
+      },
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": true,
+        "keyway": "HON66",
+        "bladeIlco": "HO01-SVC",
+        "bladeSilca": "HON58R",
+        "bladeJma": "TP12HOND-31.P",
+        "transponderChip": "Philips ID46 PCF7936",
+        "chipClonable": "yes",
+        "fccId": "MLBHLIK-1T",
+        "partNumber": "35111-SWA-306",
+        "frequency": "313.8"
       }
     ],
     "immobilizer": "Philips Crypto 2 / Hitag2",
     "pinRequired": false,
     "programming": "Professional locksmith or dealer required",
     "programmerHint": ["AUTEL IM608", "Xhorse VVDI2"],
-    "notes": "Standalone transponder key. Remote sold separately. Some trims have remote head key variant using OUCG8D-380H-A at 315 MHz.",
+    "notes": "Transponder-only key (HO03-PT) for LX trim; 3-button remote head key (MLBHLIK-1T, 35111-SWA-306) for EX/EX-L trims. IC for remote head key: 2500A-HLIK1T.",
     "confidence": "verified",
     "sources": [
       "https://www.uhs-hardware.com/products/2006-2017-honda-acura-ho03-transponder-key-philips-id-46-chip",
       "https://www.locksmithkeyless.com/products/2003-2016-honda-transponder-key-id46-chip-v-ho03-pt",
+      "https://www.locksmithkeyless.com/products/2007-2014-honda-remote-head-key-3b-fcc-mlbhlik-1t",
+      "https://www.bestkeysolution.com/products/acura-honda-accord-crv-fit-2008-2013-remote-head-key-fob-fcc-id-mlbhlik-1t-4-button-key2u-copy",
       "https://www.transpondery.com/transponder_catalog/honda_transponder_catalog.html"
     ],
     "dataSource": "live web",
@@ -733,7 +780,7 @@
     "variants": [
       {
         "keyType": "RemoteHead",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "HON66",
         "bladeIlco": "HO03",
         "bladeSilca": "HON58R",
@@ -743,17 +790,33 @@
         "fccId": "OUCG8D-380H-A",
         "partNumber": "35111-SHJ-305",
         "frequency": "313.8"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HON66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47 / HITAG3 PCF7920",
+        "chipClonable": "token",
+        "fccId": "KR5V1X",
+        "partNumber": "72147-TK8-A51",
+        "frequency": "313.8"
       }
     ],
-    "immobilizer": "Philips Crypto 2 / Hitag2",
+    "immobilizer": "Philips Crypto 2 / Hitag2 (2011-2013); Philips Crypto 3 / Hitag3 (2014-2017 EX+)",
     "pinRequired": false,
     "programming": "Professional locksmith or dealer required",
     "programmerHint": ["AUTEL IM608", "Xhorse VVDI2"],
-    "notes": "3-button remote head key. Per UHS Hardware product compatibility list.",
+    "notes": "3-button remote head key (OUCG8D-380H-A) for all trims 2011-2013 and LX trim 2014-2017. 5- or 6-button proximity smart key (KR5V1X) for EX/EX-L/SE/Touring trims 2014-2017 with push-button start. Smart key part numbers: 72147-TK8-A51 (no mem), 72147-TK8-A61 (D1), 72147-TK8-A81 (D2). Emergency blade HON66 included on smart key.",
     "confidence": "verified",
     "sources": [
       "https://www.uhs-hardware.com/products/2005-2014-honda-3-button-remote-head-key-pn-35111-shj-305-oucg8d-380h-a-oem",
-      "https://www.uhs-hardware.com/products/2006-2017-honda-acura-ho03-transponder-key-philips-id-46-chip"
+      "https://www.locksmithkeyless.com/products/2014-2017-honda-odyssey-smart-key-5b-w-power-doors-fcc-kr5v1x",
+      "https://www.locksmithkeyless.com/products/2014-2017-honda-odyssey-smart-key-6b-fcc-kr5v1x",
+      "https://www.americankeysupply.com/product/honda-civic-odyssey-2006-2017-3-btn-remote-head-key-n5f-s0084a-oem-new-583",
+      "https://www.amazon.com/Honda-Odyssey-Keyless-Remote-KR5V1X/dp/B07KFK48CW"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"
@@ -846,17 +909,33 @@
         "fccId": "KR5V1X",
         "partNumber": "72147-T7S-A01",
         "frequency": "313.8"
+      },
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": true,
+        "keyway": "HON66",
+        "bladeIlco": "HO03",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47 / Honda G Chip",
+        "chipClonable": "token",
+        "fccId": "MLBHLIK6-1T",
+        "partNumber": "35118-T7S-A00",
+        "frequency": "313.8"
       }
     ],
     "immobilizer": "Philips Crypto 3 / Hitag3",
     "pinRequired": false,
     "programming": "Professional locksmith or dealer required; no onboard DIY procedure",
     "programmerHint": ["AUTEL IM608", "Xhorse VVDI2"],
-    "notes": "4-button smart key (EX trims and above). Emergency blade included. IC: 7812D-V1X. Fit EX 2018-2020 also uses this key.",
+    "notes": "4-button proximity smart key (KR5V1X) for EX and above trims. 4-button remote head key (MLBHLIK6-1T, 35118-T7S-A00) for LX trim. Smart key IC: 7812D-V1X. Fit EX 2018-2020 also uses KR5V1X smart key.",
     "confidence": "verified",
     "sources": [
       "https://www.locksmithkeyless.com/products/2016-2019-honda-smart-key-4b-fcc-kr5v1x",
-      "https://www.amazon.com/TG-Auto-A2C80084900-Proximity-2015-2020/dp/B089SBXP1P"
+      "https://www.locksmithkeyless.com/products/2020-honda-hr-v-lx-key-fob-4-buttons-fcc-mlbhlik6-1t",
+      "https://www.locksmithkeyless.com/products/2021-honda-hr-v-lx-key-fob-4-buttons-fcc-mlbhlik6-1t",
+      "https://www.uhs-hardware.com/products/2014-2019-honda-cr-v-hr-v-4-button-remote-head-key-w-hatch-mlbhlik6-1t-rhk-hon-hcr",
+      "https://northcoastkeyless.com/product/honda-hr-v-4-button-remote-head-key-fob-fcc-mlbhlik6-1t-p-n-35118-t0a-a30/"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"
@@ -1157,17 +1236,34 @@
         "fccId": "KR5V1X",
         "partNumber": "72147-T5A-A01",
         "frequency": "313.8"
+      },
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": true,
+        "keyway": "HON66",
+        "bladeIlco": "HO01-SVC",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID47 / Honda G Chip",
+        "chipClonable": "token",
+        "fccId": "MLBHLIK6-1T",
+        "partNumber": "35118-TY4-A00",
+        "frequency": "313.8"
       }
     ],
     "immobilizer": "Philips Crypto 3 / Hitag3",
     "pinRequired": false,
     "programming": "Professional locksmith or dealer required",
     "programmerHint": ["AUTEL IM608", "Xhorse VVDI2"],
-    "notes": "3- or 4-button smart key depending on trim. IC: A2C80084900. Emergency blade included. EX trims only; LX may be transponder only.",
+    "notes": "3- or 4-button proximity smart key (KR5V1X) for EX/EX-L/EX-LN trims with push-button start. 3-button remote head key (MLBHLIK6-1T, 35118-TY4-A00) for LX trim with turn-key ignition. Smart key IC: A2C80084900. Emergency blade included on smart key.",
     "confidence": "verified",
     "sources": [
       "https://www.amazon.com/TG-Auto-313-8Mhz-Proximity-2015-2017/dp/B09CTX5J3V",
-      "https://www.amazon.com/Smart-Honda-2014-2017-YIKEBALOG-Replacement/dp/B0DXCWPT63"
+      "https://www.amazon.com/Smart-Honda-2014-2017-YIKEBALOG-Replacement/dp/B0DXCWPT63",
+      "https://www.locksmithkeyless.com/products/2018-honda-fit-ex-smart-key-4-buttons-fcc-kr5v1x",
+      "https://oemcarkeymall.com/products/2018-honda-fit-remote-head-key-fob-3b-mlbhlik6-1t",
+      "https://oemcarkeymall.com/products/2020-honda-fit-remote-head-key-fob-3b-mlbhlik6-1t",
+      "https://royalkeysupply.com/products/honda-aftermarket-2015-2020-fit-remote-head-key-3b-fccid-mlbhlik6-1t-pn-35118-ty4-a00"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"

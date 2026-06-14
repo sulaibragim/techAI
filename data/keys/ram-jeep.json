@@ -128,7 +128,7 @@
     "variants": [
       {
         "keyType": "Smart",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "Y157",
         "bladeIlco": "Y157 (emergency insert)",
         "bladeSilca": null,
@@ -151,21 +151,38 @@
         "fccId": "GQ4-53T",
         "partNumber": "56046955AC",
         "frequency": "433"
+      },
+      {
+        "keyType": "Transponder",
+        "trimDependent": true,
+        "keyway": "Y170",
+        "bladeIlco": "Y170-PT (IAX00003732P)",
+        "bladeSilca": null,
+        "bladeJma": "TP12CHR-15-P1",
+        "transponderChip": "Philips ID46 CHR (PCF7941 / Hitag2)",
+        "chipClonable": "token",
+        "fccId": null,
+        "partNumber": "68033740AA",
+        "frequency": null
       }
     ],
     "immobilizer": "SKIM + SGW on 2018",
     "pinRequired": false,
     "programming": "Professional locksmith required; no onboard DIY programming. 2018 has FCA Secure Gateway — requires SGW bypass adapter for OBDII access.",
     "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518", "AlfaOBD + SGW bypass (2018)"],
-    "notes": "GQ4-54T = Smart proximity key. Chip is NXP PCF7953A (ID46/Hitag2) — NOT PCF7953M (Hitag AES); confirmed by abkeys OEM listing (PCF7945A-PCF7953A ID46) and americankeysupply (GQ4-54T HITAG2). GQ4-53T FOBIK flip key uses PCF7961 ID46 confirmed by abkeys OEM. Both chips are ID46/Hitag2 and require token cloning, not outright clonable without specialist equipment. Frequency 433 MHz confirmed by abkeys OEM. Classic body style (DS/DJ) continued through 2020 using same GQ4-53T FOBIK. FCA SGW introduced mid-2018.",
+    "notes": "Three key types by trim/equipment. GQ4-54T = Smart proximity key (Laramie/Longhorn/Limited/upper trims with Keyless-Go). GQ4-53T FOBIK flip key (Tradesman/Express with keyless entry but no Keyless-Go push-button start). Y170-PT transponder key (bare Tradesman without any keyless entry — no antenna harness) — OEM PN 68033740AA, Strattec 5909874, Philips ID46 Hitag2, confirmed by locksmithkeyless.com (2013-2018 RAM listed) and carandtruckremotes OEM listing. Chip is NXP PCF7953A (ID46/Hitag2) on smart key — NOT PCF7953M (Hitag AES); confirmed by abkeys OEM listing. GQ4-53T FOBIK uses PCF7961 ID46 confirmed by abkeys OEM. Classic body style (DS/DJ) continued through 2020 using same GQ4-53T FOBIK. FCA SGW introduced mid-2018.",
     "confidence": "verified",
     "sources": [
       "https://abkeys.com/products/dodge-ram-smart-key-5buttons-433mhz-pcf7953a-gq4-54t-68159657ag-2107",
       "https://abkeys.com/products/dodge-ram-fobik-remote-key-3buttons-433mhz-pcf7961-gq4-53t-56046638aa-2897",
-      "https://www.transpondery.com/transponder_catalog/dodge_transponder_catalog.html"
+      "https://www.transpondery.com/transponder_catalog/dodge_transponder_catalog.html",
+      "https://www.locksmithkeyless.com/products/2008-2019-chrysler-jeep-dodge-vw-transponder-key-id46-chip-pod-eco-y170-pt",
+      "https://www.carandtruckremotes.com/products/2013-dodge-ram-truck-transponder-key-blank-aftermarket",
+      "https://www.uhs-hardware.com/products/2008-2019-chrysler-dodge-jeep-y170-transponder-key-philips-id-46-chr-chip",
+      "https://oemcarkeymall.com/products/2018-dodge-ram-transponder-key-blank-y170pt"
     ],
     "dataSource": "live web",
-    "lastVerified": "2026-06-13"
+    "lastVerified": "2026-06-14"
   },
   {
     "make": "RAM",
@@ -701,7 +718,7 @@
     "variants": [
       {
         "keyType": "Smart",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "Y157",
         "bladeIlco": "PRX-JEEP-4B1 (AX00011550)",
         "bladeSilca": null,
@@ -711,22 +728,39 @@
         "fccId": "GQ4-54T",
         "partNumber": "68105078AB",
         "frequency": "433"
+      },
+      {
+        "keyType": "Transponder",
+        "trimDependent": true,
+        "keyway": "Y199",
+        "bladeIlco": "Y199 (cross-ref Y173-PT / CY24)",
+        "bladeSilca": "CY24",
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG AES PCF7939MA (ID4A / 4A)",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": null,
+        "frequency": null
       }
     ],
     "immobilizer": "SGW on 2018+",
     "pinRequired": false,
     "programming": "Professional locksmith required; 2018+ requires FCA SGW bypass. AlfaOBD supports FOBIK programming.",
     "programmerHint": ["Autel IM608 Pro", "Xhorse VVDI2", "AlfaOBD + SGW bypass (2018+)", "Lonsdor K518"],
-    "notes": "KL Cherokee. GQ4-54T proximity smart key. Note: Jeep Cherokee (KL) uses PCF7953M (Hitag AES ID4A) confirmed by Amazon aftermarket (Keymall listing explicitly states 4A PCF7953M for Cherokee GQ4-54T). This differs from Dodge RAM 1500 which uses PCF7953A (Hitag2 ID46) with the same GQ4-54T FCC. IC 1470A-35T. Y157 emergency insert. Different vehicle from Grand Cherokee. 2018+ SGW.",
+    "notes": "KL Cherokee — two key types by trim. GQ4-54T proximity smart key (Trailhawk/Limited/Overland/Altitude trims with push-button-start). Y199 pod transponder key (Sport/Latitude trims WITHOUT push-button-start) — confirmed across multiple sources: uhs-hardware.com (2014-2019 Cherokee Y199 AES chip), carandtruckremotes.com (2014-2021 Cherokee Y199/Y173-PT), bestkeysupply.com (2014-2019 Cherokee Y199/Y173), and sslkeypro.com (2014-2023 Cherokee Y199 NXP AES 4A). Chip is PCF7939MA Hitag AES ID4A (non-clonable), same chip family as JL Wrangler. Y199 blade cross-refs as Y173-PT / CY24 (Y159 test key). Note on smart key: KL uses PCF7953M (Hitag AES ID4A) — differs from RAM 1500 which uses PCF7953A (Hitag2 ID46) with same GQ4-54T FCC. IC 1470A-35T. 2018+ SGW.",
     "confidence": "verified",
     "sources": [
       "https://abkeys.com/products/jeep-cherokee-smart-key-4buttons-433mhz-gq4-54t-2014up-68159222ag-2553",
       "https://www.amazon.com/Keymall-Replacement-PCF7953M-Cherokee-2013-2019/dp/B088LWWY4Z",
       "https://www.locksmithkeyless.com/products/2014-2019-jeep-cherokee-smart-key-4b-fcc-gq4-54t",
-      "https://www.transpondery.com/transponder_catalog/jeep_transponder_catalog.html"
+      "https://www.transpondery.com/transponder_catalog/jeep_transponder_catalog.html",
+      "https://www.uhs-hardware.com/products/2014-2019-jeep-cherokee-y199-pod-transponder-key-fobik-replacement-aes-chip-k-y199",
+      "https://www.carandtruckremotes.com/products/2016-jeep-cherokee-transponder-key-blank-aftermarket",
+      "https://www.bestkeysupply.com/products/jeep-cherokee-transponderkey-y199-bks794",
+      "https://sslkeypro.com/products/14-23-jeep-suv-y199-pod-transponder-key-aes-4a-chip-sku-k-y199-aftermarket"
     ],
     "dataSource": "live web",
-    "lastVerified": "2026-06-13"
+    "lastVerified": "2026-06-14"
   },
   {
     "make": "Jeep",

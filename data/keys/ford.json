@@ -668,7 +668,7 @@
     "variants": [
       {
         "keyType": "Smart",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "HU101",
         "bladeIlco": "H128-PT",
         "bladeSilca": null,
@@ -678,17 +678,32 @@
         "fccId": "M3N-A2C931426",
         "partNumber": "164-R8198",
         "frequency": "902"
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HU101",
+        "bladeIlco": "FLIP-FORD-3B1HS",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "N5F-A08TAA",
+        "partNumber": "164-R8269",
+        "frequency": "315"
       }
     ],
-    "immobilizer": "SecuriLock PEPS",
+    "immobilizer": "SecuriLock PATS / PEPS",
     "pinRequired": false,
-    "programming": "No onboard programming. Requires professional IDS/FDRS or Autel.",
+    "programming": "Smart (push-button): no onboard programming, requires professional IDS/FDRS or Autel. Flip (keyed ignition): professional tool required.",
     "programmerHint": ["IDS/FDRS", "Autel IM608", "Snap-on Zeus"],
-    "notes": "Redesigned Escape 2020. All trims push-button start. FCC M3N-A2C931426 confirmed via locksmithkeyless.com.",
+    "notes": "Redesigned Escape 2020. S base trim has keyed ignition (Keyless Start: Not Available per carbuzz.com specs) and uses flip key N5F-A08TAA (164-R8269); SE/SEL/Titanium trims have Intelligent Access push-button start and use smart key M3N-A2C931426 (164-R8198). Carbuzz 2020 Escape S specs and edmunds trim comparison both confirm push-button start not standard on S. Flip key confirmed on locksmithkeyless.com 2020 Escape listing.",
     "confidence": "verified",
     "sources": [
       "https://www.locksmithkeyless.com/products/2020-ford-escape-smart-key-4-buttons-fcc-m3n-a2c931426",
-      "https://www.locksmithkeyless.com/products/2024-ford-escape-smart-key-5b-fcc-m3n-a2c931426"
+      "https://www.locksmithkeyless.com/products/2024-ford-escape-smart-key-5b-fcc-m3n-a2c931426",
+      "https://www.locksmithkeyless.com/products/2020-ford-escape-flip-key-fob-3b-fcc-n5f-a08taa",
+      "https://carbuzz.com/cars/ford/escape/2020/specs-and-trims/"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"
@@ -783,7 +798,7 @@
     "variants": [
       {
         "keyType": "Smart",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "HU101",
         "bladeIlco": "H128-PT",
         "bladeSilca": null,
@@ -793,17 +808,32 @@
         "fccId": "M3N-A2C31243300",
         "partNumber": "164-R8117",
         "frequency": "902"
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HU101",
+        "bladeIlco": "FLIP-FORD-3B1HS",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "N5F-A08TAA",
+        "partNumber": "164-R8130",
+        "frequency": "315"
       }
     ],
-    "immobilizer": "SecuriLock PEPS",
+    "immobilizer": "SecuriLock PATS / PEPS",
     "pinRequired": false,
-    "programming": "No onboard programming. Professional IDS/FDRS or Autel.",
+    "programming": "Smart (push-button): no onboard programming, professional IDS/FDRS or Autel. Flip (keyed ignition): onboard if 2 existing keys.",
     "programmerHint": ["IDS/FDRS", "Autel IM608"],
-    "notes": "Explorer switched to HiTAG Pro / HU101 blade 2016. Transpondery: Explorer 2016+ Philips Crypto 3.",
+    "notes": "Explorer switched to HiTAG Pro / HU101 blade 2016. Transpondery: Explorer 2016+ Philips Crypto 3. Smart key (M3N-A2C31243300) on XLT+ push-button-start trims; flip key (N5F-A08TAA/164-R8130) on base trim with keyed ignition. Forum posts confirm base Explorer 2016 had keyed ignition while XLT and above had push-button start. Flip key confirmed on locksmithkeyless.com and northcoastkeyless.com for 2016-2022 Explorer.",
     "confidence": "verified",
     "sources": [
       "https://www.transpondery.com/transponder_catalog/ford_transponder_catalog.html",
-      "https://www.bestkeysolution.com/products/ford-5-button-smart-key-model-m3n-a2c31243300-164-r7989-operating-at-902-mhz-key2u"
+      "https://www.bestkeysolution.com/products/ford-5-button-smart-key-model-m3n-a2c31243300-164-r7989-operating-at-902-mhz-key2u",
+      "https://www.locksmithkeyless.com/products/2016-ford-explorer-flip-key-fob-3b-fcc-n5f-a08taa",
+      "https://northcoastkeyless.com/product/ford-explorer-keyless-entry-remote-flip-key-fob-fcc-id-n5f-ao8taa-pn-164-r8130/"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"
@@ -817,7 +847,7 @@
     "variants": [
       {
         "keyType": "Smart",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "HU101",
         "bladeIlco": "H128-PT",
         "bladeSilca": null,
@@ -827,18 +857,33 @@
         "fccId": "M3N-A2C931426",
         "partNumber": "164-R8198",
         "frequency": "902"
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HU101",
+        "bladeIlco": "FLIP-FORD-3B1HS",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "N5F-A08TAA",
+        "partNumber": "164-R8269",
+        "frequency": "315"
       }
     ],
-    "immobilizer": "SecuriLock PEPS",
+    "immobilizer": "SecuriLock PATS / PEPS",
     "pinRequired": false,
-    "programming": "No onboard programming. Requires IDS/FDRS or Autel.",
+    "programming": "Smart (push-button): no onboard programming, requires IDS/FDRS or Autel. Flip (keyed ignition): professional tool required.",
     "programmerHint": ["IDS/FDRS", "Autel IM608", "Snap-on Zeus"],
-    "notes": "Redesigned 2020; key spec unchanged 2018-2024. FCC corrected from M3N-A2C93142600 to M3N-A2C931426 — the OEM-stamped FCC on 164-R8198 is M3N-A2C931426 (confirmed bestkeysolution, northcoastkeyless, remotesandkeys). M3N-A2C93142600 is the long-form variant used on F-series trucks (164-R8166).",
+    "notes": "Redesigned 2020; key spec unchanged 2018-2024. FCC corrected from M3N-A2C93142600 to M3N-A2C931426 — the OEM-stamped FCC on 164-R8198 is M3N-A2C931426 (confirmed bestkeysolution, northcoastkeyless, remotesandkeys). M3N-A2C93142600 is the long-form variant used on F-series trucks (164-R8166). Flip key N5F-A08TAA (164-R8269) confirmed for 2018-2022 Explorer base trim with keyed ignition on locksmithkeyless.com (2018, 2019, 2020 Explorer listings).",
     "confidence": "verified",
     "sources": [
       "https://www.bestkeysolution.com/products/key2u-new-smart-proximity-keyless-entry-exact-match-to-oem-car-key-fob-replacement-for-ford-expedition-explorer-escape-with-m3n-a2c931426-164-r8198",
       "https://northcoastkeyless.com/product/ford-explorer-5-button-smart-key-fob-remote-fcc-m3n-a2c931426-p-n-164-r8198/",
-      "https://remotesandkeys.com/products/2018-ford-explorer-smart-key-fob-pn-164-r8198-5933985"
+      "https://remotesandkeys.com/products/2018-ford-explorer-smart-key-fob-pn-164-r8198-5933985",
+      "https://www.locksmithkeyless.com/products/2018-ford-explorer-flip-key-fob-3b-fcc-n5f-a08taa",
+      "https://www.locksmithkeyless.com/products/2020-ford-explorer-flip-key-fob-3b-fcc-n5f-a08taa"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"
@@ -1080,7 +1125,7 @@
     "variants": [
       {
         "keyType": "Smart",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "HU101",
         "bladeIlco": "H128-PT",
         "bladeSilca": null,
@@ -1090,18 +1135,33 @@
         "fccId": "M3N-A2C931426",
         "partNumber": "164-R8198",
         "frequency": "902"
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "HU101",
+        "bladeIlco": "FLIP-FORD-3B1HS",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG PRO ID49 128-bit",
+        "chipClonable": "token",
+        "fccId": "N5F-A08TAA",
+        "partNumber": "164-R8269",
+        "frequency": "315"
       }
     ],
-    "immobilizer": "SecuriLock PEPS",
+    "immobilizer": "SecuriLock PATS / PEPS",
     "pinRequired": false,
-    "programming": "No onboard programming. IDS/FDRS or Autel required.",
+    "programming": "Smart (push-button PEPS): no onboard programming, IDS/FDRS or Autel required. Flip (keyed ignition): professional tool required.",
     "programmerHint": ["IDS/FDRS", "Autel IM608", "Snap-on Zeus"],
-    "notes": "Transpondery: Expedition 2018+ Philips Crypto 3/HiTAG Pro. FCC corrected from M3N-A2C93142600 to M3N-A2C931426 — OEM-stamped FCC on 164-R8198 confirmed via northcoastkeyless and bestkeysolution Expedition listings.",
+    "notes": "Transpondery: Expedition 2018+ Philips Crypto 3/HiTAG Pro. FCC corrected from M3N-A2C93142600 to M3N-A2C931426 — OEM-stamped FCC on 164-R8198 confirmed via northcoastkeyless and bestkeysolution Expedition listings. Flip key N5F-A08TAA (164-R8269) on XLT base without 202A PEPS package (keyed ignition); smart key M3N-A2C931426 on XLT with PEPS option and Limited/Platinum. auto123.com specs confirm PEPS is optional on XLT. Flip key confirmed on locksmithkeyless.com 2019 Expedition listing.",
     "confidence": "verified",
     "sources": [
       "https://www.transpondery.com/transponder_catalog/ford_transponder_catalog.html",
       "https://northcoastkeyless.com/product/ford-expedition-5-button-smart-key-fob-remote-fcc-m3n-a2c931426-p-n-164-r8198/",
-      "https://www.bestkeysolution.com/products/key2u-new-smart-proximity-keyless-entry-exact-match-to-oem-car-key-fob-replacement-for-ford-expedition-explorer-escape-with-m3n-a2c931426-164-r8198"
+      "https://www.bestkeysolution.com/products/key2u-new-smart-proximity-keyless-entry-exact-match-to-oem-car-key-fob-replacement-for-ford-expedition-explorer-escape-with-m3n-a2c931426-164-r8198",
+      "https://www.locksmithkeyless.com/products/2019-ford-expedition-flip-key-fob-3b-fcc-n5f-a08taa",
+      "https://www.auto123.com/en/new-cars/technical-specs/ford/expedition/2018/base/xlt/"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"
@@ -1163,7 +1223,7 @@
     "variants": [
       {
         "keyType": "RemoteHead",
-        "trimDependent": false,
+        "trimDependent": true,
         "keyway": "HU101",
         "bladeIlco": "RHK-FORD-4B1HS",
         "bladeSilca": null,
@@ -1173,17 +1233,32 @@
         "fccId": "OUCD6000022",
         "partNumber": "164-R8046",
         "frequency": "315"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "HU101",
+        "bladeIlco": "PRX-FORD-3B1",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 4D63 80-bit / DST80",
+        "chipClonable": "no",
+        "fccId": "KR55WK48801",
+        "partNumber": "164-R8048",
+        "frequency": "434"
       }
     ],
-    "immobilizer": "SecuriLock PATS",
+    "immobilizer": "SecuriLock PATS / PEPS",
     "pinRequired": false,
-    "programming": "Onboard capable on some trims.",
+    "programming": "RemoteHead (OUCD6000022): onboard capable on some trims. Smart (KR55WK48801): professional tool required.",
     "programmerHint": ["IDS/FDRS", "Autel IM608"],
-    "notes": "Transpondery: Focus 2011-2015 Texas Crypto 2/Tiris DST80. HU101 blade introduced on Focus 2011.",
+    "notes": "Transpondery: Focus 2011-2015 Texas Crypto 2/Tiris DST80. HU101 blade introduced on Focus 2011. Remote head key (OUCD6000022) on S/SE/SEL 2011-2014 (keyed ignition). Smart PEPS key (KR55WK48801, 434 MHz, 164-R8048) on Titanium 2012-2014 with automatic transmission push-button start. Two sources confirm KR55WK48801 covers 2012-2018 Focus Titanium: locksmithkeyless.com and uhs-hardware.com (PEPS-designated listing).",
     "confidence": "verified",
     "sources": [
       "https://www.transpondery.com/transponder_catalog/ford_transponder_catalog.html",
-      "https://www.locksmithkeyless.com/products/2012-2019-ford-remote-key-4b-fcc-ouc6000022-hu101"
+      "https://www.locksmithkeyless.com/products/2012-2019-ford-remote-key-4b-fcc-ouc6000022-hu101",
+      "https://www.locksmithkeyless.com/products/2014-ford-focus-smart-key-3b-fcc-kr55wk48801",
+      "https://www.uhs-hardware.com/products/2011-2019-ford-3-button-smart-key-peps-kr55wk48801-rsk-fd-8801"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"
