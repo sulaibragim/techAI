@@ -10,6 +10,7 @@ import { useVehicleKeyStore, COMMON_PROGRAMMERS, profileKey } from '../vehicleKe
 import { ProcedureBlock } from './ProcedureBlock';
 import { VinScanner } from './VinScanner';
 import { GatedCodesBlock } from './GatedCodesBlock';
+import { ComboPicker } from './ComboPicker';
 import {
   decodeVin, findKeyProfiles, reverseLookup, KNOWN_MAKES, modelsForMake, stockForKeyway,
   type DecodedVin,
@@ -322,12 +323,26 @@ export const AutoKey: React.FC = () => {
         )}
         {mode === 'manual' && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            <input list="ak-makes" value={make} onChange={(e) => { setMake(e.target.value); setModel(''); }} placeholder="Make"
-              className="bg-slate-900 border border-white/10 rounded-xl px-3 py-3 text-sm text-white placeholder:text-slate-500 focus:border-blue-500 outline-none" />
-            <datalist id="ak-makes">{KNOWN_MAKES.map((m) => <option key={m} value={m} />)}</datalist>
-            <input list="ak-models" value={model} onChange={(e) => setModel(e.target.value)} placeholder="Model"
-              className="bg-slate-900 border border-white/10 rounded-xl px-3 py-3 text-sm text-white placeholder:text-slate-500 focus:border-blue-500 outline-none" />
-            <datalist id="ak-models">{modelOptions.map((m) => <option key={m} value={m} />)}</datalist>
+            <ComboPicker
+              value={make}
+              onChange={(v) => { setMake(v); setModel(''); }}
+              options={KNOWN_MAKES}
+              placeholder="Make"
+              title="Pick a make"
+              searchPlaceholder="Search makes…"
+              leading={<Car size={16} />}
+            />
+            <ComboPicker
+              value={model}
+              onChange={setModel}
+              options={modelOptions}
+              placeholder={make ? 'Model' : 'Pick a make first'}
+              title={make ? `${make} models` : 'Model'}
+              searchPlaceholder="Search models…"
+              disabled={!make}
+              allowCustom
+              emptyHint={make ? `No models for ${make} in the base yet — type to use your own.` : 'Pick a make first.'}
+            />
             <input value={year} onChange={(e) => setYear(e.target.value.replace(/\D/g, '').slice(0, 4))} onKeyDown={(e) => e.key === 'Enter' && runManual()}
               placeholder="Year" inputMode="numeric"
               className="bg-slate-900 border border-white/10 rounded-xl px-3 py-3 text-sm text-white placeholder:text-slate-500 focus:border-blue-500 outline-none" />
