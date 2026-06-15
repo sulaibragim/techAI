@@ -65,7 +65,9 @@ export const InstallHint: React.FC = () => {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 140, opacity: 0 }}
           transition={{ type: 'spring', stiffness: 260, damping: 26 }}
-          className="fixed inset-x-0 bottom-0 z-[9999] px-3 pt-3 pb-[calc(env(safe-area-inset-bottom)+12px)] pointer-events-none"
+          // Lifted clear of the fixed bottom nav (h-14 + padding ≈ 68px) so the card
+          // never overlaps — and can never intercept — the nav buttons beneath it.
+          className="fixed inset-x-0 bottom-0 z-[9999] px-3 pt-3 pb-[calc(env(safe-area-inset-bottom)+88px)] pointer-events-none"
         >
           <div className="pointer-events-auto mx-auto flex max-w-md items-start gap-3 rounded-2xl border border-blue-500/30 bg-slate-900/95 p-4 shadow-2xl shadow-black/50 backdrop-blur-xl">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-500/15 text-blue-400">
