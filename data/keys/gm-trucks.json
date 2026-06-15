@@ -269,25 +269,12 @@
     "make": "Chevrolet",
     "model": "Silverado 2500/3500 HD",
     "yearStart": 2019,
-    "yearEnd": 2024,
+    "yearEnd": 2023,
     "region": "US",
     "variants": [
       {
-        "keyType": "Smart",
-        "trimDependent": true,
-        "keyway": "HU100 (emergency blade)",
-        "bladeIlco": null,
-        "bladeSilca": null,
-        "bladeJma": null,
-        "transponderChip": "Philips ID46 GM EXT (2019-2021) / NXP HITAG PRO ID49 (2022+)",
-        "chipClonable": "token",
-        "fccId": "HYQ1EA (2019-2020) / HYQ1ES (2021) / YG0G21TB2 (2022+)",
-        "partNumber": null,
-        "frequency": "433"
-      },
-      {
         "keyType": "Transponder",
-        "trimDependent": true,
+        "trimDependent": false,
         "keyway": "HU100",
         "bladeIlco": "B119-PT",
         "bladeSilca": null,
@@ -301,16 +288,46 @@
     ],
     "immobilizer": "BCM2 immobilizer",
     "pinRequired": false,
-    "programming": "Scan tool required; professional locksmith or dealer only.",
-    "programmerHint": ["AUTEL IM508", "AUTEL IM608 Pro"],
-    "notes": "HD follows same FCC ID progression as 1500. All HYQ1EA/HYQ1ES/YG0G21TB2 operate at 433 MHz (FCC-confirmed). Confirm FCC ID from door sticker before ordering. TRIM-DEPENDENT: 2019-2023 all trims used key-start ignition only (keyless start was not available on any 2500/3500 HD trim through 2023); use B119-PT transponder for those years. Starting with the 2024 redesign, push-button start became standard across all HD trims — use Smart key for 2024+.",
-    "confidence": "single-source",
+    "programming": "Transponder: on-board with 2 existing keys. All-keys-lost: scan tool required.",
+    "programmerHint": ["AUTEL IM508", "AUTEL IM608"],
+    "notes": "Silverado 2500/3500 HD 2019-2023: push-button / keyless start was NOT available on any HD trim — all trims used key-start ignition. Use B119-PT transponder only. Do NOT order HYQ1EA/HYQ1ES smart key fobs for these years — those FCCs are for 1500 trucks. 2024+ standard push-button — see next entry.",
+    "confidence": "verified",
     "sources": [
-      "https://keyless2go.com/blogs/program-instructions/2024-gmc-sierra-hd-keyless-entry-remote-fob-smart-key-programming-instructions",
       "https://carbuzz.com/cars/chevrolet/silverado-2500hd/2023/specs-and-trims/",
-      "https://carbuzz.com/cars/chevrolet/silverado-2500hd/2024/specs-and-trims/",
-      "https://oemcarkeymall.com/products/2021-chevrolet-silverado-transponder-key-blank-b119-pt",
-      "https://www.17volt.solutions/products/2017-chevrolet-silverado-2500-3500-4500-5500-plug-play-remote-start-kit-key-start"
+      "https://oemcarkeymall.com/products/2021-chevrolet-silverado-transponder-key-blank-b119-pt"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Silverado 2500/3500 HD",
+    "yearStart": 2024,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100 (emergency blade)",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG PRO ID49 128-bit",
+        "chipClonable": "no",
+        "fccId": "YG0G21TB2",
+        "partNumber": null,
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "BCM2 / VIP architecture",
+    "pinRequired": false,
+    "programming": "Scan tool required; professional only. VIP architecture — AUTEL IM608 Pro or equivalent.",
+    "programmerHint": ["AUTEL IM608 Pro", "Lonsdor K518 Pro"],
+    "notes": "2024 Silverado HD redesign brought standard push-button start across all trims. YG0G21TB2 at 433 MHz, HITAG PRO ID49 chip. Same FCC as Sierra HD 2024+ and Silverado 1500 2022+.",
+    "confidence": "verified",
+    "sources": [
+      "https://carbuzz.com/cars/chevrolet/silverado-2500hd/2024/specs-and-trims/"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"
@@ -607,7 +624,7 @@
     "make": "Chevrolet",
     "model": "Traverse",
     "yearStart": 2018,
-    "yearEnd": 2020,
+    "yearEnd": 2019,
     "region": "US",
     "variants": [
       {
@@ -628,7 +645,7 @@
     "pinRequired": false,
     "programming": "Scan tool required; no on-board programming.",
     "programmerHint": ["AUTEL IM508", "AUTEL IM608"],
-    "notes": "New-gen Traverse (2018+) uses HYQ4EA at 433.92 MHz (FCC-confirmed). Shared with Blazer 2019-2020.",
+    "notes": "New-gen Traverse (2018-2019) uses HYQ4EA at 433.92 MHz (FCC-confirmed). Shared with Blazer 2019-2020. Some early 2020 production may still carry HYQ4EA — check door sticker. 2020+ switched to HYQ4ES.",
     "confidence": "verified",
     "sources": [
       "https://transponderisland.com/shop/tik-chv-95-2018-2020-chevrolet-traverse-blazer-smart-key-5b-hatch-remote-start-hyq4ea-13529636-4341",
@@ -957,25 +974,12 @@
     "make": "GMC",
     "model": "Sierra HD",
     "yearStart": 2014,
-    "yearEnd": 2024,
+    "yearEnd": 2018,
     "region": "US",
     "variants": [
       {
-        "keyType": "Smart",
-        "trimDependent": true,
-        "keyway": "HU100 (emergency blade)",
-        "bladeIlco": "B119-PT (for transponder-only trims)",
-        "bladeSilca": null,
-        "bladeJma": null,
-        "transponderChip": "Philips 46E (2014-2021) / NXP HITAG PRO ID49 (2022+)",
-        "chipClonable": "token",
-        "fccId": "M3N-32337100 (2014-2018) / HYQ1EA (2019-2020) / HYQ1ES (2021) / YG0G21TB2 (2022+)",
-        "partNumber": null,
-        "frequency": "315 (2014-2018) / 433 (2019+)"
-      },
-      {
         "keyType": "Transponder",
-        "trimDependent": true,
+        "trimDependent": false,
         "keyway": "HU100",
         "bladeIlco": "B119-PT",
         "bladeSilca": null,
@@ -983,20 +987,97 @@
         "transponderChip": "Philips ID46 GM Ext PCF7937E",
         "chipClonable": "yes",
         "fccId": null,
-        "partNumber": "23209427 / 22984996 / 7013237 / 23286589 / 23286588 / 23326748",
+        "partNumber": "7013237 / 22984996",
+        "frequency": null
+      },
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": true,
+        "keyway": "HU100",
+        "bladeIlco": "B119-PT",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM Ext PCF7937E",
+        "chipClonable": "yes",
+        "fccId": "M3N-32337100",
+        "partNumber": "22881480",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "BCM immobilizer (ID46 HU100 generation)",
+    "pinRequired": false,
+    "programming": "Remote: scan tool required. Transponder: on-board with 2 existing keys.",
+    "programmerHint": ["AUTEL IM508", "AUTEL IM608"],
+    "notes": "Sierra HD 2014-2018 shares key system with Silverado 1500 / Sierra 1500 of this era. M3N-32337100 RemoteHead (315 MHz) on higher trims; base trims transponder-only (B119-PT). 2019+ changed — see next entry.",
+    "confidence": "verified",
+    "sources": [
+      "https://abkeys.com/products/gmc-yukon-sierra-tahoe-transponder-key-hu100-pcf7937e-7013237-3415"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "GMC",
+    "model": "Sierra HD",
+    "yearStart": 2019,
+    "yearEnd": 2023,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": false,
+        "keyway": "HU100",
+        "bladeIlco": "B119-PT",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM Ext PCF7937E",
+        "chipClonable": "yes",
+        "fccId": null,
+        "partNumber": "23209427 / 22984996 / 23286589 / 23286588 / 23326748",
         "frequency": null
       }
     ],
-    "immobilizer": "BCM/BCM2 immobilizer",
+    "immobilizer": "BCM2 immobilizer",
     "pinRequired": false,
-    "programming": "Scan tool required for remote/smart variants; transponder on-board with 2 existing keys.",
+    "programming": "Transponder: on-board with 2 existing keys. All-keys-lost: scan tool required.",
+    "programmerHint": ["AUTEL IM508", "AUTEL IM608"],
+    "notes": "Sierra HD 2019-2023: push-button / keyless start was NOT available on any HD trim — all trims used key-start ignition. Use B119-PT transponder only. Do NOT order a smart key fob for these years. 2024+ standard push-button — see next entry.",
+    "confidence": "verified",
+    "sources": [
+      "https://carbuzz.com/cars/chevrolet/silverado-2500hd/2023/specs-and-trims/"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "GMC",
+    "model": "Sierra HD",
+    "yearStart": 2024,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100 (emergency blade)",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "NXP HITAG PRO ID49 128-bit",
+        "chipClonable": "no",
+        "fccId": "YG0G21TB2",
+        "partNumber": null,
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "BCM2 / VIP architecture",
+    "pinRequired": false,
+    "programming": "Scan tool required; professional only. VIP architecture — AUTEL IM608 Pro or equivalent.",
     "programmerHint": ["AUTEL IM608 Pro", "Lonsdor K518 Pro"],
-    "notes": "HD follows same FCC progression as 1500 across all generations. All post-2019 FCCs confirmed at 433 MHz by FCC database. TRIM-DEPENDENT: 2014-2023 Sierra HD all trims used key-start ignition (keyless start was not available on any HD trim through 2023) — use B119-PT transponder. The Smart/remote-head key column documents the M3N-32337100 remote-head key available on 2014-2018 higher trims alongside the plain transponder. Starting with 2024 redesign, push-button start became standard across all HD trims.",
+    "notes": "2024 Sierra HD redesign brought standard push-button start across all trims. YG0G21TB2 at 433 MHz, HITAG PRO ID49 chip. Same FCC as Canyon 2023+ and Silverado 1500 2022+.",
     "confidence": "verified",
     "sources": [
       "https://keyless2go.com/blogs/program-instructions/2024-gmc-sierra-hd-keyless-entry-remote-fob-smart-key-programming-instructions",
-      "https://abkeys.com/products/gmc-yukon-sierra-tahoe-transponder-key-hu100-pcf7937e-7013237-3415",
-      "https://carbuzz.com/cars/chevrolet/silverado-2500hd/2023/specs-and-trims/",
       "https://carbuzz.com/cars/chevrolet/silverado-2500hd/2024/specs-and-trims/"
     ],
     "dataSource": "live web",

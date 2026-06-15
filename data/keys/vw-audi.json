@@ -914,7 +914,7 @@
     "make": "Audi",
     "model": "A4",
     "yearStart": 2017,
-    "yearEnd": null,
+    "yearEnd": 2018,
     "region": "US",
     "variants": [
       {
@@ -929,29 +929,48 @@
         "fccId": "IYZAK01",
         "partNumber": "8S0959754BA",
         "frequency": "315"
-      },
+      }
+    ],
+    "immobilizer": "IMMO5 / MLB Megamos AES",
+    "pinRequired": false,
+    "programming": "Professional only; MLB platform tools required.",
+    "programmerHint": ["KYDZ MLB Tool", "Lonsdor K518 Pro", "Autel IM608 Pro", "Abrites AVDI"],
+    "notes": "B9 A4 (MLB platform) 2017-2018. IYZAK01 at 315 MHz confirmed on UHS Hardware OEM (8S0959754BA). 2019+ switched to IYZ-AK2 at 434 MHz — see next entry.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2017-2018-audi-4-button-smart-key-pn-8s0-959-754-ba-iyzak01-oem"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Audi",
+    "model": "A4",
+    "yearStart": 2019,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
       {
         "keyType": "Smart",
-        "trimDependent": true,
+        "trimDependent": false,
         "keyway": "HU66",
         "bladeIlco": null,
         "bladeSilca": null,
         "bladeJma": null,
-        "transponderChip": "Megamos Crypto AES (MLB)",
+        "transponderChip": "Megamos Crypto AES (MLB-Evo)",
         "chipClonable": "token",
         "fccId": "IYZ-AK2",
         "partNumber": "4N0959754AM",
         "frequency": "434"
       }
     ],
-    "immobilizer": "IMMO5 / MLB Megamos AES (component protection on MLB-Evo 2019+)",
+    "immobilizer": "IMMO5 / MLB-Evo Megamos AES (component protection)",
     "pinRequired": false,
-    "programming": "Professional only; MLB platform tools required. 2019+ may require online token for component protection.",
+    "programming": "Professional only; MLB-Evo platform tools required. Component protection requires online authorization token.",
     "programmerHint": ["KYDZ MLB Tool", "Lonsdor K518 Pro", "Autel IM608 Pro", "Abrites AVDI"],
-    "notes": "B9 A4 (MLB platform). IYZAK01 (315 MHz) for 2017-2018 confirmed on UHS Hardware OEM (8S0959754BA). IYZ-AK2 (434 MHz) for 2019+ confirmed on locksmithkeyless and yourcarkeyguys (MLB 434 MHz). MLB-Evo 2019+ has component protection requiring online authorization token.",
+    "notes": "B9 A4 (MLB-Evo platform) 2019+. IYZ-AK2 at 434 MHz confirmed on locksmithkeyless and yourcarkeyguys. MLB-Evo has component protection requiring online token. WARNING: ordering the wrong frequency (315 vs 434) will result in non-functional fob.",
     "confidence": "verified",
     "sources": [
-      "https://www.uhs-hardware.com/products/2017-2018-audi-4-button-smart-key-pn-8s0-959-754-ba-iyzak01-oem",
       "https://www.locksmithkeyless.com/products/2019-2022-audi-smart-key-4b-fcc-iyz-ak2"
     ],
     "dataSource": "live web",
@@ -1009,7 +1028,7 @@
     "make": "Audi",
     "model": "A5",
     "yearStart": 2017,
-    "yearEnd": null,
+    "yearEnd": 2018,
     "region": "US",
     "variants": [
       {
@@ -1024,29 +1043,48 @@
         "fccId": "IYZAK01",
         "partNumber": "8S0959754BA",
         "frequency": "315"
-      },
+      }
+    ],
+    "immobilizer": "IMMO5 / MLB Megamos AES",
+    "pinRequired": false,
+    "programming": "Professional only; MLB platform tools required.",
+    "programmerHint": ["KYDZ MLB Tool", "Lonsdor K518 Pro", "Autel IM608 Pro", "Abrites AVDI"],
+    "notes": "F5 A5 (MLB platform, shares MLB with B9 A4) 2017-2018. IYZAK01 at 315 MHz, same part number as B9 A4 (8S0959754BA). 2019+ switched to IYZ-AK2 at 434 MHz — see next entry.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2017-2018-audi-4-button-smart-key-pn-8s0-959-754-ba-iyzak01-oem"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Audi",
+    "model": "A5",
+    "yearStart": 2019,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
       {
         "keyType": "Smart",
-        "trimDependent": true,
+        "trimDependent": false,
         "keyway": "HU66",
         "bladeIlco": null,
         "bladeSilca": null,
         "bladeJma": null,
-        "transponderChip": "Megamos Crypto AES (MLB)",
+        "transponderChip": "Megamos Crypto AES (MLB-Evo)",
         "chipClonable": "token",
         "fccId": "IYZ-AK2",
         "partNumber": "4N0959754AM",
         "frequency": "434"
       }
     ],
-    "immobilizer": "IMMO5 / MLB Megamos AES",
+    "immobilizer": "IMMO5 / MLB-Evo Megamos AES (component protection)",
     "pinRequired": false,
-    "programming": "Professional only; MLB platform tools required",
+    "programming": "Professional only; MLB-Evo platform tools required. Component protection requires online authorization token.",
     "programmerHint": ["KYDZ MLB Tool", "Lonsdor K518 Pro", "Autel IM608 Pro", "Abrites AVDI"],
-    "notes": "F5 A5 (MLB platform, shares MLB with B9 A4). IYZAK01 for 2017-2018 at 315 MHz confirmed. IYZ-AK2 for 2019+ at 434 MHz confirmed.",
+    "notes": "F5 A5 (MLB-Evo platform) 2019+. IYZ-AK2 at 434 MHz, same as B9 A4 2019+ (4N0959754AM). Component protection on MLB-Evo requires online token. WARNING: 315 MHz fob from 2017-2018 will not work.",
     "confidence": "verified",
     "sources": [
-      "https://www.uhs-hardware.com/products/2017-2018-audi-4-button-smart-key-pn-8s0-959-754-ba-iyzak01-oem",
       "https://www.transpondery.com/transponder_catalog/audi_transponder_catalog.html"
     ],
     "dataSource": "live web",
@@ -1346,7 +1384,7 @@
     "make": "Audi",
     "model": "Q7",
     "yearStart": 2016,
-    "yearEnd": null,
+    "yearEnd": 2018,
     "region": "US",
     "variants": [
       {
@@ -1361,29 +1399,48 @@
         "fccId": "IYZAK01",
         "partNumber": "4M0959754AJ",
         "frequency": "315"
-      },
+      }
+    ],
+    "immobilizer": "IMMO5 / MLB Megamos AES",
+    "pinRequired": false,
+    "programming": "Professional only; MLB platform tools required.",
+    "programmerHint": ["KYDZ MLB Tool", "Lonsdor K518 Pro", "Autel IM608 Pro", "Abrites AVDI"],
+    "notes": "4M Q7 (2nd gen, MLB) 2016-2018. IYZAK01 at 315 MHz confirmed on UHS Hardware (4M0959754AJ). 2019+ switched to IYZ-AK2 at 434 MHz (MLB-Evo) — see next entry.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.uhs-hardware.com/products/2017-2018-audi-4-button-smart-key-pn-8s0-959-754-ba-iyzak01-oem"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Audi",
+    "model": "Q7",
+    "yearStart": 2019,
+    "yearEnd": null,
+    "region": "US",
+    "variants": [
       {
         "keyType": "Smart",
-        "trimDependent": true,
+        "trimDependent": false,
         "keyway": "HU66",
         "bladeIlco": null,
         "bladeSilca": null,
         "bladeJma": null,
-        "transponderChip": "Megamos Crypto AES / MLB 5M",
+        "transponderChip": "Megamos Crypto AES / MLB 5M (MLB-Evo)",
         "chipClonable": "token",
         "fccId": "IYZ-AK2",
         "partNumber": "4N0959754EG / 4N0959754AM",
         "frequency": "434"
       }
     ],
-    "immobilizer": "IMMO5 / MLB Megamos AES (component protection on MLB-Evo 2019+)",
+    "immobilizer": "IMMO5 / MLB-Evo Megamos AES (component protection)",
     "pinRequired": false,
-    "programming": "Professional only; MLB tools. 2019+ requires online token for component protection.",
+    "programming": "Professional only; MLB-Evo tools required. Component protection requires online authorization token.",
     "programmerHint": ["KYDZ MLB Tool", "Lonsdor K518 Pro", "Autel IM608 Pro", "Abrites AVDI"],
-    "notes": "4M Q7 (2nd gen, MLB). 2016-2018 uses IYZAK01 (315 MHz) confirmed on UHS Hardware. 2019+ uses IYZ-AK2 (434 MHz) confirmed on locksmithkeyless. MLB-Evo has component protection.",
+    "notes": "4M Q7 (MLB-Evo) 2019+. IYZ-AK2 at 434 MHz confirmed on locksmithkeyless. Component protection on MLB-Evo requires online token. WARNING: 315 MHz fob from 2016-2018 will not pair.",
     "confidence": "verified",
     "sources": [
-      "https://www.uhs-hardware.com/products/2017-2018-audi-4-button-smart-key-pn-8s0-959-754-ba-iyzak01-oem",
       "https://www.locksmithkeyless.com/products/2019-2022-audi-smart-key-4b-fcc-iyz-ak2"
     ],
     "dataSource": "live web",

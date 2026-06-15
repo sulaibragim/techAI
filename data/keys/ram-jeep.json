@@ -258,7 +258,7 @@
     "make": "RAM",
     "model": "2500/3500",
     "yearStart": 2006,
-    "yearEnd": 2018,
+    "yearEnd": 2012,
     "region": "US",
     "variants": [
       {
@@ -273,7 +273,28 @@
         "fccId": null,
         "partNumber": "05134937AA",
         "frequency": null
-      },
+      }
+    ],
+    "immobilizer": "SKIM (Sentry Key Immobilizer Module)",
+    "pinRequired": false,
+    "programming": "SKIM PIN required; professional tool needed.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518"],
+    "notes": "RAM 2500/3500 2006-2012 classic body. Y164-PT transponder (Y159/Y164 keyway), ID46/PCF7941 chip. 2013+ switched to smart key (GQ4-54T, Y157 keyway) — see next entry.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2004-2019-chrysler-dodge-jeep-mitsubishi-transponder-key-id46-chip-s-y164-pt-10-pack",
+      "https://www.transpondery.com/transponder_catalog/dodge_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "RAM",
+    "model": "2500/3500",
+    "yearStart": 2013,
+    "yearEnd": 2018,
+    "region": "US",
+    "variants": [
       {
         "keyType": "Smart",
         "trimDependent": true,
@@ -281,7 +302,7 @@
         "bladeIlco": "Y157 (emergency insert)",
         "bladeSilca": null,
         "bladeJma": null,
-        "transponderChip": "NXP PCF7953A (ID46 / Hitag2) — 2013+",
+        "transponderChip": "NXP PCF7953A (ID46 / Hitag2)",
         "chipClonable": "token",
         "fccId": "GQ4-54T",
         "partNumber": "56046954AJ",
@@ -292,10 +313,9 @@
     "pinRequired": false,
     "programming": "Professional locksmith required. 2018 models require FCA SGW bypass.",
     "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518", "SGW bypass (2018)"],
-    "notes": "2006-2012: Y164 transponder (ID46 Hitag2). 2013-2018: GQ4-54T smart key (NXP PCF7953A ID46/Hitag2, 433 MHz) — chip is PCF7953A NOT PCF7953M (Hitag AES). GQ4-53T FOBIK also used on some trims (PCF7961 ID46). 2018 SGW applies.",
+    "notes": "RAM 2500/3500 2013-2018 new body. GQ4-54T smart key at 433 MHz, Y157 keyway, NXP PCF7953A (ID46/Hitag2) — chip is PCF7953A NOT PCF7953M (not HiTag AES). GQ4-53T FOBIK also used on some trims (PCF7961 ID46). 2018 SGW security gateway — requires SGW bypass module. 2019+ platform changes again — see next entry.",
     "confidence": "verified",
     "sources": [
-      "https://www.locksmithkeyless.com/products/2004-2019-chrysler-dodge-jeep-mitsubishi-transponder-key-id46-chip-s-y164-pt-10-pack",
       "https://abkeys.com/products/dodge-ram-smart-key-5buttons-433mhz-pcf7953a-gq4-54t-68159657ag-2107",
       "https://www.transpondery.com/transponder_catalog/dodge_transponder_catalog.html"
     ],

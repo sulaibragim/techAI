@@ -73,7 +73,7 @@
     "make": "Nissan",
     "model": "Altima",
     "yearStart": 2013,
-    "yearEnd": 2018,
+    "yearEnd": 2015,
     "region": "US",
     "variants": [
       {
@@ -83,7 +83,7 @@
         "bladeIlco": "X237",
         "bladeSilca": "NSN14",
         "bladeJma": "DAT16",
-        "transponderChip": "PCF7952X / Philips Crypto 3 / HiTag 3 / ID47",
+        "transponderChip": "PCF7952X / HiTag 3 / ID47",
         "chipClonable": "no",
         "fccId": null,
         "partNumber": null,
@@ -96,7 +96,7 @@
         "bladeIlco": "X237",
         "bladeSilca": "NSN14",
         "bladeJma": "DAT16",
-        "transponderChip": "PCF7952XTT / HiTag 3 / ID47 (2013-2015); PCF7953M / HiTag AES / ID4A (2016-2018)",
+        "transponderChip": "PCF7952XTT / HiTag 3 / ID47",
         "chipClonable": "token",
         "fccId": "KR5S180144014",
         "partNumber": "285E3-9HP4B",
@@ -107,13 +107,58 @@
     "pinRequired": true,
     "programming": "Diagnostic tool required. 20-digit NATS PIN decode required. No OBP.",
     "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518", "Consult III+"],
-    "notes": "Coupe dropped after 2013; sedan only 2013-2018. Smart key uses FCC KR5S180144014 throughout, but chip generation changed mid-production: 2013-2015 units use HITAG3/PCF7952XTT/ID47 (confirmed abkeys.com, mk3.com); 2016-2018 units use HiTag AES/PCF7953M/ID4A (confirmed thelegendweb.com, mk3.com). chipClonable=token applies to both. Emergency blade DA34.",
+    "notes": "Altima 2013-2015 (HiTag3 / ID47 generation). Coupe dropped after 2013; sedan only. Smart key KR5S180144014 at 433 MHz, PCF7952XTT/ID47 chip. 2016+ changed to HiTag AES/ID4A — see next entry. Emergency blade DA34.",
     "confidence": "verified",
     "sources": [
       "https://www.abkeys.com/abk-2687-nissan-altima-smart-key-4buttons-433mhz-hitag3-pcf7952xtt-kr5s180144014-2013up-285e3-3tp0a-285e3-9hp4b",
-      "https://www.mk3.com/nissan-altima-2016-2018-smart-remote-key-4-1-buttons-43392mhz-pcf7953m-hitag-aes-4a-kr5s180144014",
-      "https://www.uhs-hardware.com/products/2016-2018-nissan-maxima-altima-5-button-prox-smart-key-pn-285e3-4ra0b-kr5s180144014-oem",
       "https://www.transpondery.com/transponder_catalog/nissan_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Nissan",
+    "model": "Altima",
+    "yearStart": 2016,
+    "yearEnd": 2018,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": true,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7953M / HiTag AES / ID4A",
+        "chipClonable": "token",
+        "fccId": null,
+        "partNumber": null,
+        "frequency": null
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7953M / HiTag AES / ID4A",
+        "chipClonable": "token",
+        "fccId": "KR5S180144014",
+        "partNumber": "285E3-9HP4B",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. 20-digit NATS PIN decode required. No OBP.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518", "Consult III+"],
+    "notes": "Altima 2016-2018 (HiTag AES / ID4A generation). Same FCC KR5S180144014 at 433 MHz as 2013-2015, but chip upgraded to PCF7953M/HiTag AES/ID4A. chipClonable=token. Emergency blade DA34. 2019+ new platform with different FCC — see next entry.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.mk3.com/nissan-altima-2016-2018-smart-remote-key-4-1-buttons-43392mhz-pcf7953m-hitag-aes-4a-kr5s180144014",
+      "https://www.uhs-hardware.com/products/2016-2018-nissan-maxima-altima-5-button-prox-smart-key-pn-285e3-4ra0b-kr5s180144014-oem"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"
@@ -801,7 +846,7 @@
     "make": "Nissan",
     "model": "Murano",
     "yearStart": 2015,
-    "yearEnd": 2020,
+    "yearEnd": 2018,
     "region": "US",
     "variants": [
       {
@@ -822,7 +867,7 @@
     "pinRequired": true,
     "programming": "Diagnostic tool required. 20-digit NATS PIN decode. No OBP.",
     "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518"],
-    "notes": "Z52 generation. FCC shared with Pathfinder and Titan same era. Emergency blade DA34.",
+    "notes": "Z52 generation pre-refresh (2015-2018). FCC shared with Pathfinder and Titan same era. Emergency blade DA34. 2019+ refresh uses KR5TXN7 — see next entry.",
     "confidence": "verified",
     "sources": [
       "https://www.uhs-hardware.com/products/2015-2020-nissan-murano-pathfinder-titan-4-button-smart-key-pn-285e3-5aa3d-kr5s180144014-aftermarket",
@@ -1660,7 +1705,7 @@
     "make": "Infiniti",
     "model": "QX60",
     "yearStart": 2013,
-    "yearEnd": 2018,
+    "yearEnd": 2015,
     "region": "US",
     "variants": [
       {
@@ -1670,7 +1715,7 @@
         "bladeIlco": "X237",
         "bladeSilca": "NSN14",
         "bladeJma": "DAT16",
-        "transponderChip": "PCF7952XTT / HiTag 3 / ID47 (2013-2015); PCF7953M / HiTag AES / ID4A (2016-2018)",
+        "transponderChip": "PCF7952XTT / HiTag 3 / ID47",
         "chipClonable": "token",
         "fccId": "KR5S180144014",
         "partNumber": "285E3-3JA3A",
@@ -1681,10 +1726,42 @@
     "pinRequired": true,
     "programming": "Diagnostic tool required. No OBP.",
     "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518"],
-    "notes": "L50 QX60 (JX35 pre-2014). Same FCC as Nissan Altima/Maxima/Murano/Pathfinder same era. Chip changed mid-production: 2013-2015 uses PCF7952XTT/ID47/HiTag3 (confirmed abkeys.com); 2016-2018 uses PCF7953M/ID4A/HiTag AES (confirmed keyecu.com). chipClonable=token applies to both. Emergency blade DA34.",
+    "notes": "L50 QX60 (JX35 pre-2014) 2013-2015. KR5S180144014 at 433 MHz, PCF7952XTT/ID47/HiTag3 chip. Same FCC as Nissan Altima/Maxima/Murano/Pathfinder same era. 2016-2018 upgraded to HiTag AES/ID4A — see next entry. Emergency blade DA34.",
     "confidence": "verified",
     "sources": [
-      "https://abkeys.com/products/infiniti-qx60-smart-key-433mhz-kr5s180144014-285e3-3ja3a-285e3-9nb3a-3307",
+      "https://abkeys.com/products/infiniti-qx60-smart-key-433mhz-kr5s180144014-285e3-3ja3a-285e3-9nb3a-3307"
+    ],
+    "dataSource": "verified",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Infiniti",
+    "model": "QX60",
+    "yearStart": 2016,
+    "yearEnd": 2018,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "NSN14",
+        "bladeIlco": "X237",
+        "bladeSilca": "NSN14",
+        "bladeJma": "DAT16",
+        "transponderChip": "PCF7953M / HiTag AES / ID4A",
+        "chipClonable": "token",
+        "fccId": "KR5S180144014",
+        "partNumber": "285E3-3JA3A",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "NATS 20-digit BCM PIN",
+    "pinRequired": true,
+    "programming": "Diagnostic tool required. No OBP.",
+    "programmerHint": ["Autel IM608", "Xhorse VVDI2", "Lonsdor K518"],
+    "notes": "L50 QX60 2016-2018. Same FCC KR5S180144014 at 433 MHz as 2013-2015, but chip upgraded to PCF7953M/ID4A/HiTag AES. Emergency blade DA34. 2019+ refresh uses KR5TXN7 — see next entry.",
+    "confidence": "verified",
+    "sources": [
       "https://www.keyecu.com/smart-car-remote-key-fsk-43392mhz-pcf7953m-4a-chip-fob-for-infiniti-qx60-2016-2017-2018-fccid-kr5s180144014-s180144320-p4041.html",
       "https://www.locksmithkeyless.com/products/2016-2019-infiniti-qx60-smart-key-4b-fcc-kr5s180144014"
     ],

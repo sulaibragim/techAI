@@ -86,7 +86,7 @@
     "make": "Subaru",
     "model": "Outback",
     "yearStart": 2015,
-    "yearEnd": 2019,
+    "yearEnd": 2017,
     "region": "US",
     "variants": [
       {
@@ -114,6 +114,42 @@
         "fccId": "HYQ14AHC",
         "partNumber": "88835-AL04A",
         "frequency": "315"
+      }
+    ],
+    "immobilizer": "Subaru Immobilizer (Denso)",
+    "pinRequired": false,
+    "programming": "Requires professional programming; no onboard programming available.",
+    "programmerHint": ["Advanced Diagnostics Smart Pro ADS2255", "Autel IM608", "Lonsdor K518"],
+    "notes": "Outback 2015-2017 (G chip generation). Base/Premium/Limited use RemoteHead CWTWB1U811 (315 MHz, G chip 4D60). Upper trims with push-button start use Smart HYQ14AHC (315 MHz, G chip). 2018+ switched to H chip / HYQ14AHK at 434 MHz — see next entry.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2011-2019-subaru-remote-head-key-4b-fcc-cwtwb1u811",
+      "https://www.locksmithkeyless.com/products/2015-2019-subaru-smart-key-4b-fcc-hyq14ahc",
+      "https://www.uhs-hardware.com/products/2014-2020-subaru-4-button-smart-key-pn-88835-al04a-hyq14ahc-oem",
+      "https://northcoastkeyless.com/product/2015-2017-subaru-outback-keyless-entry-remote-fcc-cwtwb1u811-p-n-57497al00a/"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-14"
+  },
+  {
+    "make": "Subaru",
+    "model": "Outback",
+    "yearStart": 2018,
+    "yearEnd": 2019,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": true,
+        "keyway": "B110",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 4D60 80-bit (G chip)",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U811",
+        "partNumber": "57497-FJ230",
+        "frequency": "315"
       },
       {
         "keyType": "Smart",
@@ -131,15 +167,11 @@
     ],
     "immobilizer": "Subaru Immobilizer (Denso)",
     "pinRequired": false,
-    "programming": "Requires professional programming; no onboard programming available",
+    "programming": "Requires professional programming; no onboard programming available.",
     "programmerHint": ["Advanced Diagnostics Smart Pro ADS2255", "Autel IM608", "Lonsdor K518"],
-    "notes": "2015-2019 Outback is trim-dependent. Base/Premium/Limited 2.5i use RemoteHead CWTWB1U811 (B110, G chip, 315MHz). Upper trims with push-button start: 2015-2017 Outback uses Smart HYQ14AHC (315MHz, G chip 4D60); 2018-2019 Outback Touring uses Smart HYQ14AHK (434MHz, H chip 8A). Verify by FCC ID on original key.",
+    "notes": "Outback 2018-2019 (H chip generation). Base trims still use RemoteHead CWTWB1U811 (315 MHz, G chip). Touring/push-button trims use Smart HYQ14AHK (434 MHz, H chip 8A 128-bit AES). WARNING: HYQ14AHC from 2015-2017 is wrong frequency for push-button trims — verify FCC ID from original key or door sticker.",
     "confidence": "verified",
     "sources": [
-      "https://www.locksmithkeyless.com/products/2011-2019-subaru-remote-head-key-4b-fcc-cwtwb1u811",
-      "https://www.locksmithkeyless.com/products/2015-2019-subaru-smart-key-4b-fcc-hyq14ahc",
-      "https://www.uhs-hardware.com/products/2014-2020-subaru-4-button-smart-key-pn-88835-al04a-hyq14ahc-oem",
-      "https://northcoastkeyless.com/product/2015-2017-subaru-outback-keyless-entry-remote-fcc-cwtwb1u811-p-n-57497al00a/",
       "https://oemcarkeymall.com/products/2018-subaru-outback-smart-key-proximity-4button-hyq14ahk",
       "https://oemcarkeymall.com/products/2019-subaru-outback-smart-key-proximity-4button-hyq14ahk"
     ],
@@ -625,7 +657,7 @@
     "make": "Subaru",
     "model": "Legacy",
     "yearStart": 2015,
-    "yearEnd": 2019,
+    "yearEnd": 2017,
     "region": "US",
     "variants": [
       {
@@ -653,6 +685,42 @@
         "fccId": "HYQ14AHC",
         "partNumber": "88835-AL04A",
         "frequency": "315"
+      }
+    ],
+    "immobilizer": "Subaru Immobilizer (Denso)",
+    "pinRequired": false,
+    "programming": "Requires professional programming; no onboard procedure.",
+    "programmerHint": ["Advanced Diagnostics Smart Pro ADS2255", "Autel IM608"],
+    "notes": "Legacy 2015-2017 (G chip generation). Base/2.5i use RemoteHead CWTWB1U811 (315 MHz, G chip 4D60). Upper trims with push-button start use Smart HYQ14AHC (315 MHz, G chip). 2018+ switched to H chip / HYQ14AHK at 434 MHz — see next entry.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2011-2019-subaru-remote-head-key-4b-fcc-cwtwb1u811",
+      "https://www.uhs-hardware.com/products/2012-2019-subaru-4-button-remote-head-key-cwtwb1u811-b110-g-chip-80-bit-rhk-sub-1110",
+      "https://www.locksmithkeyless.com/products/2015-2019-subaru-smart-key-4b-fcc-hyq14ahc",
+      "https://www.uhs-hardware.com/products/2014-2020-subaru-4-button-smart-key-pn-88835-al04a-hyq14ahc-oem"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-14"
+  },
+  {
+    "make": "Subaru",
+    "model": "Legacy",
+    "yearStart": 2018,
+    "yearEnd": 2019,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": true,
+        "keyway": "B110",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 4D60 80-bit (G chip)",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U811",
+        "partNumber": "57497-FJ230",
+        "frequency": "315"
       },
       {
         "keyType": "Smart",
@@ -670,15 +738,11 @@
     ],
     "immobilizer": "Subaru Immobilizer (Denso)",
     "pinRequired": false,
-    "programming": "Requires professional programming; no onboard procedure",
+    "programming": "Requires professional programming; no onboard procedure.",
     "programmerHint": ["Advanced Diagnostics Smart Pro ADS2255", "Autel IM608"],
-    "notes": "2015-2019 Legacy is trim-dependent. Base/2.5i use RemoteHead CWTWB1U811 (B110, G chip, 315MHz). Upper trims with push-button start: 2015-2017 Legacy uses Smart HYQ14AHC (315MHz, G chip 4D60); 2018-2019 Legacy upper trims use Smart HYQ14AHK (434MHz, H chip 8A). Verify by FCC ID on original key.",
+    "notes": "Legacy 2018-2019 (H chip generation). Base trims still use RemoteHead CWTWB1U811 (315 MHz, G chip). Upper trims with push-button start use Smart HYQ14AHK (434 MHz, H chip 8A 128-bit AES). WARNING: HYQ14AHC from 2015-2017 is wrong frequency — verify FCC ID from original key.",
     "confidence": "verified",
     "sources": [
-      "https://www.locksmithkeyless.com/products/2011-2019-subaru-remote-head-key-4b-fcc-cwtwb1u811",
-      "https://www.uhs-hardware.com/products/2012-2019-subaru-4-button-remote-head-key-cwtwb1u811-b110-g-chip-80-bit-rhk-sub-1110",
-      "https://www.locksmithkeyless.com/products/2015-2019-subaru-smart-key-4b-fcc-hyq14ahc",
-      "https://www.uhs-hardware.com/products/2014-2020-subaru-4-button-smart-key-pn-88835-al04a-hyq14ahc-oem",
       "https://www.key4.com/smart-remote-key-subaru-hyq14ahk-88835fl03a-4button"
     ],
     "dataSource": "live web",
@@ -820,12 +884,12 @@
     "make": "Subaru",
     "model": "WRX",
     "yearStart": 2015,
-    "yearEnd": 2021,
+    "yearEnd": 2017,
     "region": "US",
     "variants": [
       {
         "keyType": "RemoteHead",
-        "trimDependent": true,
+        "trimDependent": false,
         "keyway": "B110",
         "bladeIlco": null,
         "bladeSilca": null,
@@ -848,6 +912,42 @@
         "fccId": "HYQ14AHC",
         "partNumber": "88835-AL04A",
         "frequency": "315"
+      }
+    ],
+    "immobilizer": "Subaru Immobilizer (Denso)",
+    "pinRequired": false,
+    "programming": "Requires professional programming.",
+    "programmerHint": ["Advanced Diagnostics Smart Pro ADS2255", "Autel IM608"],
+    "notes": "WRX/STI 2015-2017 (G chip generation). Base WRX uses RemoteHead CWTWB1U811 (315 MHz, G chip). WRX with push-button start (2016-2017 Sport-tech package): Smart HYQ14AHC (315 MHz, G chip). 2015 base only had RemoteHead. 2018+ switched to H chip / HYQ14AHK at 434 MHz — see next entry.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2011-2019-subaru-remote-head-key-4b-fcc-cwtwb1u811",
+      "https://www.uhs-hardware.com/products/2012-2019-subaru-4-button-remote-head-key-cwtwb1u811-b110-g-chip-80-bit-rhk-sub-1110",
+      "https://www.locksmithkeyless.com/products/2015-2019-subaru-smart-key-4b-fcc-hyq14ahc",
+      "https://www.uhs-hardware.com/products/2014-2020-subaru-4-button-smart-key-pn-88835-al04a-hyq14ahc-oem"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-14"
+  },
+  {
+    "make": "Subaru",
+    "model": "WRX",
+    "yearStart": 2018,
+    "yearEnd": 2021,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "RemoteHead",
+        "trimDependent": false,
+        "keyway": "B110",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 4D60 80-bit (G chip)",
+        "chipClonable": "no",
+        "fccId": "CWTWB1U811",
+        "partNumber": "57497-FJ230",
+        "frequency": "315"
       },
       {
         "keyType": "Smart",
@@ -865,15 +965,12 @@
     ],
     "immobilizer": "Subaru Immobilizer (Denso)",
     "pinRequired": false,
-    "programming": "Requires professional programming",
+    "programming": "Requires professional programming.",
     "programmerHint": ["Advanced Diagnostics Smart Pro ADS2255", "Autel IM608"],
-    "notes": "2015-2021 WRX/STI is trim-dependent. Base WRX uses RemoteHead CWTWB1U811 (B110, G chip, 315MHz). WRX with push-button start packages: 2016-2017 uses Smart HYQ14AHC (315MHz, G chip); 2018-2021 with push-button start uses Smart HYQ14AHK (434MHz, H chip 8A). Verify by FCC ID on original key.",
+    "notes": "WRX/STI 2018-2021 (H chip generation). Base WRX still uses RemoteHead CWTWB1U811 (315 MHz, G chip). Push-button start trims use Smart HYQ14AHK (434 MHz, H chip 8A 128-bit AES). WARNING: HYQ14AHC from 2015-2017 will NOT pair on 2018+ push-button trims — verify FCC ID from original key or SPID label.",
     "confidence": "verified",
     "sources": [
-      "https://www.locksmithkeyless.com/products/2011-2019-subaru-remote-head-key-4b-fcc-cwtwb1u811",
-      "https://www.uhs-hardware.com/products/2012-2019-subaru-4-button-remote-head-key-cwtwb1u811-b110-g-chip-80-bit-rhk-sub-1110",
-      "https://www.locksmithkeyless.com/products/2015-2019-subaru-smart-key-4b-fcc-hyq14ahc",
-      "https://www.uhs-hardware.com/products/2014-2020-subaru-4-button-smart-key-pn-88835-al04a-hyq14ahc-oem"
+      "https://www.locksmithkeyless.com/products/2011-2019-subaru-remote-head-key-4b-fcc-cwtwb1u811"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-14"

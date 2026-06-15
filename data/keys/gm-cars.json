@@ -306,12 +306,12 @@
     "make": "Chevrolet",
     "model": "Malibu",
     "yearStart": 2016,
-    "yearEnd": 2024,
+    "yearEnd": 2020,
     "region": "US",
     "variants": [
       {
         "keyType": "Smart",
-        "trimDependent": true,
+        "trimDependent": false,
         "keyway": "HU100",
         "bladeIlco": "B119-PT (emergency blade)",
         "bladeSilca": null,
@@ -321,10 +321,35 @@
         "fccId": "HYQ4EA",
         "partNumber": "13508769A / 13529662A",
         "frequency": "433"
-      },
+      }
+    ],
+    "immobilizer": "GM BCM-based PEPS immobilizer",
+    "pinRequired": false,
+    "programming": "Professional OBD programmer required; no onboard DIY procedure.",
+    "programmerHint": [
+      "Autel IM508",
+      "Autel IM608",
+      "Xhorse VVDI2"
+    ],
+    "notes": "8th-gen Malibu 2016-2020. HYQ4EA at 433 MHz, NCF2951E / Hitag2 ID46 chip. 2021+ switched to HYQ4ES at 434 MHz — see next entry. WARNING: ordering HYQ4ES for a 2016-2020 will result in non-functional fob.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.bestkeysolution.com/products/smart-remote-key-fob-433mhz-id46-chip-5-button-for-chevrolet-camaro-cruze-malibu-2016-2017-2018-2019-fccid-hyq4ea-p-n-13508771-433mhz",
+      "https://www.transpondery.com/transponder_catalog/chevrolet_transponder_catalog.html"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Malibu",
+    "yearStart": 2021,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
       {
         "keyType": "Smart",
-        "trimDependent": true,
+        "trimDependent": false,
         "keyway": "HU100",
         "bladeIlco": "B119-PT (emergency blade)",
         "bladeSilca": null,
@@ -338,18 +363,16 @@
     ],
     "immobilizer": "GM BCM-based PEPS immobilizer",
     "pinRequired": false,
-    "programming": "Professional OBD programmer required; no onboard DIY procedure",
+    "programming": "Professional OBD programmer required; no onboard DIY procedure.",
     "programmerHint": [
       "Autel IM508",
       "Autel IM608",
       "Xhorse VVDI2"
     ],
-    "notes": "8th-gen Malibu (2016-2024). 2016-2020: HYQ4EA 433 MHz. 2021-2024: HYQ4ES 434 MHz. Both use HU100 emergency blade. Check SPID label for exact frequency.",
+    "notes": "8th-gen Malibu 2021-2024. HYQ4ES at 434 MHz, Philips ID46 GM EXT chip. Do NOT use HYQ4EA (433 MHz) from 2016-2020 — wrong frequency. Check SPID label if year is uncertain.",
     "confidence": "verified",
     "sources": [
-      "https://www.bestkeysolution.com/products/smart-remote-key-fob-433mhz-id46-chip-5-button-for-chevrolet-camaro-cruze-malibu-2016-2017-2018-2019-fccid-hyq4ea-p-n-13508771-433mhz",
-      "https://www.locksmithkeyless.com/products/2021-2024-chevrolet-smart-key-4b-fob-fcc-hyq4es",
-      "https://www.transpondery.com/transponder_catalog/chevrolet_transponder_catalog.html"
+      "https://www.locksmithkeyless.com/products/2021-2024-chevrolet-smart-key-4b-fob-fcc-hyq4es"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"
@@ -1032,12 +1055,12 @@
     "make": "Buick",
     "model": "Encore GX",
     "yearStart": 2020,
-    "yearEnd": 2024,
+    "yearEnd": 2020,
     "region": "US",
     "variants": [
       {
         "keyType": "Smart",
-        "trimDependent": true,
+        "trimDependent": false,
         "keyway": "HU100",
         "bladeIlco": null,
         "bladeSilca": null,
@@ -1047,10 +1070,35 @@
         "fccId": "HYQ4EA",
         "partNumber": "13506668 / 13521090 / 13532751",
         "frequency": "433"
-      },
+      }
+    ],
+    "immobilizer": "GM BCM-based PEPS immobilizer",
+    "pinRequired": false,
+    "programming": "Professional OBD programmer required.",
+    "programmerHint": [
+      "Autel IM508",
+      "Autel IM608",
+      "Xhorse VVDI2"
+    ],
+    "notes": "Encore GX first model year (2020). Most 2020 units use HYQ4EA at 433 MHz (PN 13506668). Some late 2020 production may already use HYQ4ES at 434 MHz — check SPID label on door jamb before ordering. 2021+ is HYQ4ES standard — see next entry.",
+    "confidence": "verified",
+    "sources": [
+      "https://remotesandkeys.com/products/2020-buick-encore-gx-smart-key-remote-1005",
+      "https://www.uhs-hardware.com/products/2018-2020-buick-regal-enclave-encore-gx-5-button-smart-key-pn-13506668-hyq4ea-rsk-gm-2751"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Buick",
+    "model": "Encore GX",
+    "yearStart": 2021,
+    "yearEnd": 2024,
+    "region": "US",
+    "variants": [
       {
         "keyType": "Smart",
-        "trimDependent": true,
+        "trimDependent": false,
         "keyway": "HU100",
         "bladeIlco": null,
         "bladeSilca": null,
@@ -1064,18 +1112,16 @@
     ],
     "immobilizer": "GM BCM-based PEPS immobilizer",
     "pinRequired": false,
-    "programming": "Professional OBD programmer required",
+    "programming": "Professional OBD programmer required.",
     "programmerHint": [
       "Autel IM508",
       "Autel IM608",
       "Xhorse VVDI2"
     ],
-    "notes": "Encore GX (new model 2020+). 2020 uses HYQ4EA (remotesandkeys PN 13506668); locksmithkeyless also lists HYQ4ES starting 2020. 2021+ HYQ4ES is standard. Check SPID for split year 2020.",
+    "notes": "Encore GX 2021-2024. HYQ4ES at 434 MHz standard. Shares FCC family with Enclave/Camaro of same vintage. Do NOT use HYQ4EA (433 MHz) for these years.",
     "confidence": "verified",
     "sources": [
-      "https://remotesandkeys.com/products/2020-buick-encore-gx-smart-key-remote-1005",
-      "https://www.locksmithkeyless.com/products/2020-2025-buick-encore-gx-envista-smart-key-peps-3b-fob-fcc-hyq4es-13547675",
-      "https://www.uhs-hardware.com/products/2018-2020-buick-regal-enclave-encore-gx-5-button-smart-key-pn-13506668-hyq4ea-rsk-gm-2751"
+      "https://www.locksmithkeyless.com/products/2020-2025-buick-encore-gx-envista-smart-key-peps-3b-fob-fcc-hyq4es-13547675"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"
@@ -1530,7 +1576,7 @@
     "make": "Cadillac",
     "model": "SRX",
     "yearStart": 2010,
-    "yearEnd": 2015,
+    "yearEnd": 2014,
     "region": "US",
     "variants": [
       {
@@ -1554,7 +1600,7 @@
       "Autel IM608",
       "Xhorse VVDI2"
     ],
-    "notes": "2nd-gen SRX (2010-2016). 2010-2015 uses NBG009768T (locksmithkeyless lists 2010-2015; UHS OEM Strattec PN 5931852 confirms same range). Transpondery lists PCF7952E/NCF2951E. Locksmithkeyless and UHS confirm NBG009768T at 315 MHz.",
+    "notes": "2nd-gen SRX (2010-2014). Uses NBG009768T at 315 MHz. Transpondery lists PCF7952E/NCF2951E. Late 2015 production began transitioning to HYQ2AB — see next entry.",
     "confidence": "verified",
     "sources": [
       "https://www.locksmithkeyless.com/products/2010-2015-cadillac-srx-smart-prox-key-fob-5b-fcc-nbg009768t",

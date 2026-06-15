@@ -646,7 +646,7 @@
     "make": "Toyota",
     "model": "Tundra",
     "yearStart": 2011,
-    "yearEnd": 2017,
+    "yearEnd": 2014,
     "region": "US",
     "variants": [
       {
@@ -666,24 +666,69 @@
         "keyType": "Flip",
         "trimDependent": true,
         "keyway": "TR47",
-        "bladeIlco": null,
+        "bladeIlco": "TOY44G-PT",
         "bladeSilca": "TOY43",
         "bladeJma": null,
-        "transponderChip": "Texas 4D72 (G chip) or 4D74 (H chip) depending on year",
+        "transponderChip": "Texas 4D72 (G chip / DST40)",
         "chipClonable": "token",
         "fccId": "GQ43VT20T",
         "partNumber": null,
         "frequency": "315"
       }
     ],
-    "immobilizer": "Toyota Engine Immobiliser (G chip / DST80)",
+    "immobilizer": "Toyota Engine Immobiliser (G chip / DST40)",
     "pinRequired": false,
-    "programming": "G chip: on-board sequence or OBDII; H chip: OBDII only",
+    "programming": "G chip: on-board sequence or OBDII.",
     "programmerHint": ["Toyota G/H OBDII dongle", "Autel IM608"],
-    "notes": "2015+ Tundra flip keys transition to H chip (4D74). GQ43VT20T FCC ID spans both G and H chip variants; verify year.",
+    "notes": "Tundra 2011-2014 (G chip generation). Transponder and Flip key both use 4D72 G chip. 2015-2017 transitioned to H chip (4D74) — see next entry.",
     "confidence": "verified",
     "sources": [
-      "https://www.locksmithkeyless.com/products/2011-2017-toyota-flip-key-4-buttons-fob-fcc-gq43vt20t-g-chip-aftermarket",
+      "https://www.locksmithkeyless.com/products/2011-2017-toyota-flip-key-4-buttons-fob-fcc-gq43vt20t-g-chip-aftermarket"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "Tundra",
+    "yearStart": 2015,
+    "yearEnd": 2017,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": true,
+        "keyway": "TR47",
+        "bladeIlco": "TOY44H-PT",
+        "bladeSilca": "TOY43",
+        "bladeJma": "TP34TOYO-15.P",
+        "transponderChip": "Texas 4D74 (H chip / DST80)",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": "89785-08040",
+        "frequency": null
+      },
+      {
+        "keyType": "Flip",
+        "trimDependent": true,
+        "keyway": "TR47",
+        "bladeIlco": "TOY44H-PT",
+        "bladeSilca": "TOY43",
+        "bladeJma": null,
+        "transponderChip": "Texas 4D74 (H chip / DST80)",
+        "chipClonable": "no",
+        "fccId": "GQ43VT20T",
+        "partNumber": null,
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "Toyota Engine Immobiliser (H chip / DST80)",
+    "pinRequired": false,
+    "programming": "H chip: OBDII only; no on-board procedure.",
+    "programmerHint": ["Toyota G/H OBDII dongle", "Autel IM608"],
+    "notes": "Tundra 2015-2017 (H chip generation). Same GQ43VT20T FCC as 2011-2014 but different chip (4D74 H chip). WARNING: G chip (TOY44G-PT) will NOT work for these years — use TOY44H-PT. H chip requires OBDII programmer (no on-board sequence).",
+    "confidence": "verified",
+    "sources": [
       "https://www.locksmithkeyless.com/products/2017-toyota-tundra-flip-key-4-buttons-fob-fcc-gq43vt20t-h-chip-aftermarket"
     ],
     "dataSource": "live web",
@@ -1225,7 +1270,7 @@
     "make": "Toyota",
     "model": "Sienna",
     "yearStart": 2011,
-    "yearEnd": 2020,
+    "yearEnd": 2014,
     "region": "US",
     "variants": [
       {
@@ -1257,12 +1302,57 @@
     ],
     "immobilizer": "Toyota Smart Key System (8A / DST-AES)",
     "pinRequired": true,
-    "programming": "G chip: on-board; Smart key: OBDII required. 2015 is split year (G or H).",
+    "programming": "G chip transponder: on-board sequence. Smart key: OBDII required.",
     "programmerHint": ["Toyota G/H OBDII dongle", "Autel IM608", "Lonsdor K518"],
-    "notes": "2015 Sienna is confirmed split year—verify original key chip. UHS Hardware note: may require G or H chip.",
+    "notes": "Sienna 2011-2014 (G chip generation for transponder). Base trims use G chip (4D72/TOY44G-PT). Push-button trims use Smart HYQ14FBA (8A, 315 MHz). 2015+ transponder changed to H chip — see next entry.",
     "confidence": "verified",
     "sources": [
-      "https://www.locksmithkeyless.com/products/2010-2019-toyota-scion-transponder-key-4d72-gchip-toy44g-pt",
+      "https://www.locksmithkeyless.com/products/2010-2019-toyota-scion-transponder-key-4d72-gchip-toy44g-pt"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "Sienna",
+    "yearStart": 2015,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Transponder",
+        "trimDependent": true,
+        "keyway": "TR47",
+        "bladeIlco": "TOY44H-PT",
+        "bladeSilca": "TOY43",
+        "bladeJma": "TP34TOYO-15.P",
+        "transponderChip": "Texas 4D74 (H chip / DST80)",
+        "chipClonable": "no",
+        "fccId": null,
+        "partNumber": "89785-08040",
+        "frequency": null
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": true,
+        "keyway": "TOY48",
+        "bladeIlco": "LXP90",
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Texas 8A (H chip / DST80)",
+        "chipClonable": "no",
+        "fccId": "HYQ14FBA",
+        "partNumber": "89904-08020",
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "Toyota Smart Key System (8A / DST-AES)",
+    "pinRequired": true,
+    "programming": "H chip transponder: OBDII only (no on-board). Smart key: OBDII required.",
+    "programmerHint": ["Toyota G/H OBDII dongle", "Autel IM608", "Lonsdor K518"],
+    "notes": "Sienna 2015-2020 (H chip generation). Base trims use H chip transponder (4D74/TOY44H-PT). Push-button trims use Smart HYQ14FBA (8A, 315 MHz) — same FCC as 2011-2014. WARNING: G chip blade (TOY44G-PT) will not clone H chip — use TOY44H-PT. 2021+ all-new platform — see next entry.",
+    "confidence": "verified",
+    "sources": [
       "https://www.uhs-hardware.com/products/2013-2020-toyota-toy44h-transponder-key-h-chip-aftermarket"
     ],
     "dataSource": "live web",
@@ -1340,7 +1430,7 @@
     "make": "Toyota",
     "model": "Sequoia",
     "yearStart": 2008,
-    "yearEnd": 2014,
+    "yearEnd": 2010,
     "region": "US",
     "variants": [
       {
@@ -1359,13 +1449,46 @@
     ],
     "immobilizer": "Toyota Engine Immobiliser (4D67)",
     "pinRequired": false,
-    "programming": "OBDII programmer required",
+    "programming": "OBDII programmer required.",
     "programmerHint": ["T-Code", "Autel IM608"],
-    "notes": "2008-2010 use 4D67 chip; 2011-2014 transition to G chip (4D72) — same GQ43VT20T FCC ID.",
+    "notes": "Sequoia 2008-2010: 4D67 chip (D chip), same GQ43VT20T FCC. 2011-2014 transitioned to G chip (4D72) — see next entry.",
     "confidence": "verified",
     "sources": [
       "https://www.locksmithkeyless.com/products/2008-toyota-sequoia-flip-key-4b-fob-fcc-gq43vt20t-id47-chip-aftermarket",
       "https://www.uhs-hardware.com/products/2004-2010-toyota-4-button-flip-key-new-style-gq43vt20t-67-chip-aftermarket"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Toyota",
+    "model": "Sequoia",
+    "yearStart": 2011,
+    "yearEnd": 2014,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Flip",
+        "trimDependent": false,
+        "keyway": "TR47",
+        "bladeIlco": "TOY44G-PT",
+        "bladeSilca": "TOY43",
+        "bladeJma": null,
+        "transponderChip": "Texas 4D72 (G chip / DST40)",
+        "chipClonable": "token",
+        "fccId": "GQ43VT20T",
+        "partNumber": null,
+        "frequency": "315"
+      }
+    ],
+    "immobilizer": "Toyota Engine Immobiliser (G chip / DST40)",
+    "pinRequired": false,
+    "programming": "OBDII programmer required.",
+    "programmerHint": ["T-Code", "Autel IM608"],
+    "notes": "Sequoia 2011-2014: G chip (4D72/DST40), same GQ43VT20T FCC as 2008-2010 but different chip — verify before programming. 2015+ changed to H chip and added Smart key — see next entry.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2008-toyota-sequoia-flip-key-4b-fob-fcc-gq43vt20t-id47-chip-aftermarket"
     ],
     "dataSource": "live web",
     "lastVerified": "2026-06-13"
