@@ -966,7 +966,7 @@
     "yearStart": 2016,
     "yearEnd": 2022,
     "onboard": null,
-    "addKey": "Connect Autel IM608 (or VVDI2) to OBD port. Navigate IMMO → Acura → Manual selection → ILX → Smart key → Push to start → Keyless system(Honda) → Add key (guided). Present existing working key; follow ignition-cycle prompts. KR5V1X: ID47 PCF7953X (Hitag3); KR580399900: Continental ID47 at 902 MHz — verify trim first. Shared procedure with TLX 2015-2020.",
+    "addKey": "Connect Autel IM608 (or VVDI2) to OBD port. Navigate IMMO → Acura → Manual selection → ILX → Smart key → Push to start → Keyless system(Honda) → Add key (guided). Present existing working key; follow ignition-cycle prompts. Check the fob frequency FIRST: 2016-2018 4-button = KR5V1X 313.8 MHz; 2019-2022 4-button = KR5V21/KR5V2X 433.92 MHz; KR580399900 = 5-button engine-start 902 MHz. All ID47/Hitag3. Wrong-frequency blank will not pair. Shared procedure with TLX 2015-2020.",
     "allKeysLost": "Connect Autel IM608 (or IM508/VVDI2) to OBD. Generate universal key for ILX year. IMMO → Acura → Manual selection → ILX → Smart key → Keyless system(Honda) → All keys lost. Confirm trim/frequency variant. Follow ignition-cycle prompts. No PIN required on Hitag3 AKL.",
     "pinRequired": false,
     "pinSource": "null",
