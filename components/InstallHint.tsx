@@ -2,7 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X } from 'lucide-react';
 
-const DISMISS_KEY = 'tk_install_hint_dismissed';
+// Versioned key (v2) so anyone stuck on the old permanent-dismiss flag gets the
+// hint back. Closing it now only snoozes for a week instead of hiding forever —
+// the nudge returns until the app is actually installed (standalone hides it).
+const SNOOZE_KEY = 'tk_install_hint_snooze_v2';
+const SNOOZE_MS = 7 * 24 * 60 * 60 * 1000;
 
 // iOS-style share glyph (box with an arrow out the top) so users can match it to
 // the Share button in the Safari toolbar.
@@ -43,17 +47,18 @@ export const InstallHint: React.FC = () => {
       window.matchMedia('(display-mode: standalone)').matches ||
       (window.navigator as unknown as { standalone?: boolean }).standalone === true;
 
-    let dismissed = false;
-    try { dismissed = localStorage.getItem(DISMISS_KEY) === '1'; } catch { /* private mode */ }
+    let snoozedUntil = 0;
+    try { snoozedUntil = Number(localStorage.getItem(SNOOZE_KEY)) || 0; } catch { /* private mode */ }
+    const snoozed = Date.now() < snoozedUntil;
 
-    if (isIOS && !isStandalone && !dismissed) {
-      const t = setTimeout(() => setShow(true), 1200);
+    if (isIOS && !isStandalone && !snoozed) {
+      const t = setTimeout(() => setShow(true), 900);
       return () => clearTimeout(t);
     }
   }, []);
 
   const dismiss = () => {
-    try { localStorage.setItem(DISMISS_KEY, '1'); } catch { /* private mode */ }
+    try { localStorage.setItem(SNOOZE_KEY, String(Date.now() + SNOOZE_MS)); } catch { /* private mode */ }
     setShow(false);
   };
 
