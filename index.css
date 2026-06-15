@@ -3,6 +3,14 @@
 @tailwind utilities;
 
 @layer base {
+  /* App-like feel on phones: no pinch/double-tap zoom delay, no pull-to-refresh
+     rubber-band, no grey tap flash. Zoom itself is killed by the viewport meta. */
+  html, body {
+    overscroll-behavior-y: none;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
   body {
     font-family: 'Inter', system-ui, sans-serif;
     background-color: #0F172A;

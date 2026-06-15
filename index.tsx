@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { InstallHint } from './components/InstallHint';
 import './index.css';
 
 const rootElement = document.getElementById('root');
@@ -14,6 +15,7 @@ root.render(
   <React.StrictMode>
     <ErrorBoundary>
       <App />
+      <InstallHint />
     </ErrorBoundary>
   </React.StrictMode>
 );
