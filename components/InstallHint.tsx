@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X } from 'lucide-react';
+import { X, ChevronDown } from 'lucide-react';
 
 // Versioned key (v2) so anyone stuck on the old permanent-dismiss flag gets the
 // hint back. Closing it now only snoozes for a week instead of hiding forever —
@@ -74,29 +74,39 @@ export const InstallHint: React.FC = () => {
           // never overlaps — and can never intercept — the nav buttons beneath it.
           className="fixed inset-x-0 bottom-0 z-[9999] px-3 pt-3 pb-[calc(env(safe-area-inset-bottom)+88px)] pointer-events-none"
         >
-          <div className="pointer-events-auto mx-auto flex max-w-md items-start gap-3 rounded-2xl border border-blue-500/30 bg-slate-900/95 p-4 shadow-2xl shadow-black/50 backdrop-blur-xl">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-500/15 text-blue-400">
-              <ShareIOS />
+          <div className="mx-auto max-w-md">
+            <div className="pointer-events-auto flex items-start gap-3 rounded-2xl border border-blue-500/30 bg-slate-900/95 p-4 shadow-2xl shadow-black/50 backdrop-blur-xl">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-500/15 text-blue-400">
+                <ShareIOS />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-white">Установи как приложение</p>
+                <p className="mt-0.5 text-xs leading-relaxed text-gray-400">
+                  Внизу экрана в Safari нажми{' '}
+                  <span className="inline-flex items-center align-middle text-blue-400">
+                    <ShareIOS size={13} />
+                  </span>{' '}
+                  «Поделиться», затем{' '}
+                  <span className="font-medium text-gray-200">«На экран „Домой“».</span> App Store
+                  не нужен.
+                </p>
+              </div>
+              <button
+                onClick={dismiss}
+                aria-label="Закрыть"
+                className="-mr-1 -mt-1 shrink-0 rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-white/5 hover:text-gray-300"
+              >
+                <X size={16} />
+              </button>
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold text-white">Install TrustKey as an app</p>
-              <p className="mt-0.5 text-xs leading-relaxed text-gray-400">
-                Tap{' '}
-                <span className="inline-flex items-center align-middle text-blue-400">
-                  <ShareIOS size={13} />
-                </span>{' '}
-                Share, then choose{' '}
-                <span className="font-medium text-gray-200">“Add to Home Screen.”</span> No App
-                Store needed.
-              </p>
-            </div>
-            <button
-              onClick={dismiss}
-              aria-label="Dismiss"
-              className="-mr-1 -mt-1 shrink-0 rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-white/5 hover:text-gray-300"
+            <motion.div
+              aria-hidden="true"
+              animate={{ y: [0, 6, 0] }}
+              transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
+              className="mt-1 flex justify-center text-blue-400/70"
             >
-              <X size={16} />
-            </button>
+              <ChevronDown size={22} />
+            </motion.div>
           </div>
         </motion.div>
       )}
