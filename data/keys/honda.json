@@ -1703,8 +1703,21 @@
         "bladeJma": null,
         "transponderChip": "PCF7953X / HITAG3 / ID47",
         "chipClonable": "token",
-        "fccId": "KR5V21 / KR5V2X",
-        "partNumber": "72147-TZ3-A21",
+        "fccId": "KR5V2X",
+        "partNumber": "72147-TZ3-A21 / 72147-TZ3-A22",
+        "frequency": "433.92"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HON66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7953X / HITAG3 / ID47",
+        "chipClonable": "token",
+        "fccId": "KR5V21",
+        "partNumber": "72147-TZ3-A31 / 72147-TZ3-A32",
         "frequency": "433.92"
       },
       {
@@ -1725,7 +1738,7 @@
     "pinRequired": false,
     "programming": "Professional locksmith or dealer required",
     "programmerHint": ["AUTEL IM608", "Xhorse VVDI2"],
-    "notes": "2018 facelift switched the 4-button key to KR5V21 / KR5V2X at 433.92 MHz (IC 7812D-V2X, PN 72147-TZ3-A21/A22/A31/A32) — NOT the pre-2018 KR5V1X 313.8 MHz. Wrong frequency will not pair. Shares the 433.92 MHz key with ILX 2019-2022. KR580399900 = 5-button Advance with engine start (902 MHz, PN 72147-TZ3-A51/A61).",
+    "notes": "2018 facelift: 4-button key is KR5V2X or KR5V21 at 433.92 MHz (same IC 7812D-V2X, different production batches). Do NOT use pre-2018 KR5V1X (313.8 MHz) — wrong frequency. Shares the 433.92 MHz key with ILX 2019-2022. KR580399900 = 5-button Advance with engine start (902 MHz, PN 72147-TZ3-A51/A61).",
     "confidence": "verified",
     "sources": [
       "https://www.locksmithkeyless.com/products/2018-2022-acura-ilx-tlx-smart-key-4b-fcc-kr5v2x-kr5v21",
@@ -1902,8 +1915,21 @@
         "bladeJma": null,
         "transponderChip": "PCF7953X / HITAG3 / ID47",
         "chipClonable": "token",
-        "fccId": "KR5V21 / KR5V2X",
-        "partNumber": "72147-TZ3-A21",
+        "fccId": "KR5V2X",
+        "partNumber": "72147-TZ3-A21 / 72147-TZ3-A22",
+        "frequency": "433.92"
+      },
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HON66",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "PCF7953X / HITAG3 / ID47",
+        "chipClonable": "token",
+        "fccId": "KR5V21",
+        "partNumber": "72147-TZ3-A31 / 72147-TZ3-A32",
         "frequency": "433.92"
       },
       {
@@ -1924,7 +1950,7 @@
     "pinRequired": false,
     "programming": "Professional locksmith or dealer required",
     "programmerHint": ["AUTEL IM608", "Xhorse VVDI2"],
-    "notes": "2019 facelift switched the 4-button key to KR5V21 / KR5V2X at 433.92 MHz (IC 7812D-V2X, PN 72147-TZ3-A21/A22/A31/A32) — NOT the pre-2019 KR5V1X 313.8 MHz. Wrong frequency will not pair. Shares the 433.92 MHz key with TLX 2018-2020. KR580399900 = 5-button Premium/A-Spec with engine start (902 MHz, PN 72147-TZ3-A51/A61), carried over from the earlier ILX.",
+    "notes": "2019 facelift: 4-button key is KR5V2X or KR5V21 at 433.92 MHz (same IC 7812D-V2X, different production batches). Do NOT use pre-2019 KR5V1X (313.8 MHz) — wrong frequency. Shares the 433.92 MHz key with TLX 2018-2020. KR580399900 = 5-button Premium/A-Spec with engine start (902 MHz, PN 72147-TZ3-A51/A61).",
     "confidence": "verified",
     "sources": [
       "https://www.locksmithkeyless.com/products/2018-2022-acura-ilx-tlx-smart-key-4b-fcc-kr5v2x-kr5v21",

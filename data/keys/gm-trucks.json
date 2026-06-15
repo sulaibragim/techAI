@@ -673,14 +673,14 @@
         "chipClonable": "token",
         "fccId": "HYQ4ES",
         "partNumber": "13530713 / 13522885 / 13522890",
-        "frequency": "433"
+        "frequency": "434"
       }
     ],
     "immobilizer": "BCM2 immobilizer",
     "pinRequired": false,
     "programming": "DIY on-board possible with 2 existing keys; all-keys-lost requires scan tool.",
     "programmerHint": ["AUTEL IM508", "AUTEL IM608"],
-    "notes": "HYQ4ES at 433.92 MHz (FCC-confirmed). Shared platform with Blazer and Trailblazer 2021+.",
+    "notes": "HYQ4ES at 434 MHz (433.92 MHz per FCC filing). Shared platform with Blazer and Trailblazer 2021+.",
     "confidence": "verified",
     "sources": [
       "https://keylessbest.com/chevrolet-key-fob-fcc-id-hyq4es-compatibility-and-programming/",
@@ -742,14 +742,14 @@
         "chipClonable": "token",
         "fccId": "HYQ4ES",
         "partNumber": "13530713",
-        "frequency": "433"
+        "frequency": "434"
       }
     ],
     "immobilizer": "BCM2 immobilizer",
     "pinRequired": false,
     "programming": "DIY on-board possible with 2 existing keys; all-keys-lost requires scan tool.",
     "programmerHint": ["AUTEL IM508", "AUTEL IM608"],
-    "notes": "HYQ4ES at 433.92 MHz (FCC-confirmed). Shared platform with Traverse 2020+ and Trailblazer.",
+    "notes": "HYQ4ES at 434 MHz (433.92 MHz per FCC filing). Shared platform with Traverse 2020+ and Trailblazer.",
     "confidence": "verified",
     "sources": [
       "https://keylessbest.com/chevrolet-key-fob-fcc-id-hyq4es-compatibility-and-programming/",
@@ -1795,6 +1795,40 @@
     "make": "Cadillac",
     "model": "XT6",
     "yearStart": 2020,
+    "yearEnd": 2020,
+    "region": "US",
+    "variants": [
+      {
+        "keyType": "Smart",
+        "trimDependent": false,
+        "keyway": "HU100 (emergency blade)",
+        "bladeIlco": null,
+        "bladeSilca": null,
+        "bladeJma": null,
+        "transponderChip": "Philips ID46 GM EXT",
+        "chipClonable": "token",
+        "fccId": "HYQ2EB",
+        "partNumber": "13598516",
+        "frequency": "433"
+      }
+    ],
+    "immobilizer": "BCM2 immobilizer",
+    "pinRequired": false,
+    "programming": "Scan tool required; professional locksmith or dealer.",
+    "programmerHint": ["AUTEL IM508", "AUTEL IM608"],
+    "notes": "XT6 first model year 2020. Most early 2020 units use HYQ2EB at 433 MHz. Some 2020 production may already use HYQ2ES — verify FCC ID on door sticker. 2021+ standardized on HYQ2ES — see next entry.",
+    "confidence": "verified",
+    "sources": [
+      "https://www.locksmithkeyless.com/products/2017-2019-cadillac-smart-key-5b-fcc-hyq2eb",
+      "https://fccid.io/HYQ2EB"
+    ],
+    "dataSource": "live web",
+    "lastVerified": "2026-06-13"
+  },
+  {
+    "make": "Cadillac",
+    "model": "XT6",
+    "yearStart": 2021,
     "yearEnd": 2024,
     "region": "US",
     "variants": [
@@ -1807,8 +1841,8 @@
         "bladeJma": null,
         "transponderChip": "Philips ID46 GM EXT",
         "chipClonable": "token",
-        "fccId": "HYQ2EB (2020) / HYQ2ES (2020+)",
-        "partNumber": "13598516 (HYQ2EB) / 13522879 (HYQ2ES)",
+        "fccId": "HYQ2ES",
+        "partNumber": "13522879",
         "frequency": "433"
       }
     ],
@@ -1816,12 +1850,10 @@
     "pinRequired": false,
     "programming": "Scan tool required; professional locksmith or dealer.",
     "programmerHint": ["AUTEL IM508", "AUTEL IM608"],
-    "notes": "XT6 launched 2020. Early 2020 may use HYQ2EB (433 MHz); refreshed uses HYQ2ES (433 MHz). Both FCC-confirmed at 433.92 MHz. Verify FCC ID on door sticker.",
+    "notes": "XT6 2021-2024. HYQ2ES at 433 MHz (FCC-confirmed 433.92 MHz). Shared with XT4/XT5 2020+. Verify FCC ID on door sticker — some early 2020 units used HYQ2EB (see previous entry).",
     "confidence": "verified",
     "sources": [
-      "https://www.locksmithkeyless.com/products/2017-2019-cadillac-smart-key-5b-fcc-hyq2eb",
       "https://www.locksmithkeyless.com/products/2020-2024-cadillac-xt4-xt5-xt6-smart-key-5b-w-hatch-remote-start-hyq2es-13522879",
-      "https://fccid.io/HYQ2EB",
       "https://fccid.io/HYQ2ES"
     ],
     "dataSource": "live web",
