@@ -7,6 +7,7 @@ import { useAppStore } from '../store';
 import { API_BASE } from '../backendUrl';
 import { authHeaders } from '../apiClient';
 import { Role, TECH_SKILLS, SERVICE_CATEGORIES } from '../types';
+import { PushNotificationsCard } from './PushNotificationsCard';
 
 const VERSION = '0.0.0';
 
@@ -186,6 +187,9 @@ export const Settings: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Notifications — visible to all; techs get assignment pings, dispatch gets message pings */}
+        <PushNotificationsCard />
+
         {/* Profile is visible to all — they can change their own name/photo */}
         <Section icon={User} title="Profile">
           <div className="flex items-center space-x-4 mb-2">

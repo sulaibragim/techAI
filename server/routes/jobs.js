@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { db } from '../db.js';
 import { requireAuth, requireRole } from '../middleware/auth.js';
 import { sendSMS } from '../services/openphone.js';
+import { sendPushToUser } from '../services/push.js';
 
 export const jobsRouter = Router();
 
@@ -11,6 +12,19 @@ const isTech = (req) => req.user.role === 'technician';
 // Skips self-assignment (a tech picking up their own job shouldn't text themselves).
 async function notifyAssignedTech(assigneeId, job, actingUserId) {
   if (!assigneeId || assigneeId === actingUserId) return;
+  const c = job.client || {};
+  const name = [c.firstName, c.lastName].filter(Boolean).join(' ');
+  const when = [job.scheduledDate, job.scheduledTime].filter(Boolean).join(' ');
+
+  // Push to the tech's installed app — fires even if they have no phone on file.
+  sendPushToUser(assigneeId, {
+    title: 'New job assigned to you',
+    body: [name && `Client: ${name}`, c.address, when && `When: ${when}`].filter(Boolean).join(' · ')
+      || 'Open the app to view it.',
+    tag: `job-${job.id || job.jobNumber || assigneeId}`,
+    data: { type: 'assignment', jobId: job.id || null, url: '/' },
+  }).catch(e => console.error('[JOBS] push error:', e));
+
   try {
     const { rows } = await db.query('SELECT name, phone FROM users WHERE id = $1', [assigneeId]);
     const tech = rows[0];
@@ -18,9 +32,6 @@ async function notifyAssignedTech(assigneeId, job, actingUserId) {
       console.warn('[JOBS] assigned tech has no phone — skipping SMS', assigneeId);
       return;
     }
-    const c = job.client || {};
-    const name = [c.firstName, c.lastName].filter(Boolean).join(' ');
-    const when = [job.scheduledDate, job.scheduledTime].filter(Boolean).join(' ');
     const text = [
       'New job assigned to you',
       job.jobNumber && `Job #${job.jobNumber}`,
@@ -139,7 +150,7 @@ jobsRouter.post('/', requireAuth, async (req, res) => {
       [jobId, JSON.stringify(data)]
     );
     if (data.assignedTo) {
-      notifyAssignedTech(data.assignedTo, data, req.user.id).catch(e => console.error('[JOBS] notify error:', e));
+      notifyAssignedTech(data.assignedTo, { ...data, id: jobId }, req.user.id).catch(e => console.error('[JOBS] notify error:', e));
     }
     res.json({ id: jobId, ...data });
   } catch (err) {
@@ -179,7 +190,7 @@ jobsRouter.put('/:id', requireAuth, async (req, res) => {
 
     // Newly assigned (or reassigned) to a different tech → text them.
     if (data.assignedTo && data.assignedTo !== prevAssigned) {
-      notifyAssignedTech(data.assignedTo, data, req.user.id).catch(e => console.error('[JOBS] notify error:', e));
+      notifyAssignedTech(data.assignedTo, { ...data, id: req.params.id }, req.user.id).catch(e => console.error('[JOBS] notify error:', e));
     }
 
     // Tech lifecycle milestones → alert the dispatchers (owner/manager) by SMS. "On My

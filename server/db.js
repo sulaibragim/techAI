@@ -68,6 +68,16 @@ export async function initDB() {
         updated_at TIMESTAMPTZ DEFAULT NOW()
       );
 
+      -- Browser push subscriptions, keyed by unique endpoint, owned by a user.
+      CREATE TABLE IF NOT EXISTS push_subscriptions (
+        endpoint TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        p256dh TEXT NOT NULL,
+        auth TEXT NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS idx_push_subs_user ON push_subscriptions(user_id);
+
       -- Live technician location for proximity-based dispatch (added later; idempotent).
       ALTER TABLE users ADD COLUMN IF NOT EXISTS last_location JSONB;
       -- Technician specialties for smart assignment (idempotent).

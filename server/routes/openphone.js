@@ -3,6 +3,7 @@ import crypto from 'node:crypto';
 import { processTranscriptWithAI } from '../services/gemini.js';
 import { toE164 } from '../services/openphone.js';
 import { requireAuth } from '../middleware/auth.js';
+import { sendPushToRoles } from '../services/push.js';
 import { db } from '../db.js';
 
 export const openphoneRouter = Router();
@@ -154,6 +155,15 @@ openphoneRouter.post('/webhook', async (req, res) => {
       if (recentMessages.length > MAX_STORE) recentMessages.pop();
       dbSaveMessage(msg);
       console.log('[OpenPhone] Incoming SMS from', obj.from, ':', msg.body);
+
+      // Ping the dispatchers' phones so a client reply isn't missed.
+      const who = obj.contact?.name || obj.from || 'a client';
+      sendPushToRoles(['owner', 'manager'], {
+        title: `New message from ${who}`,
+        body: (msg.body || '').slice(0, 140) || 'Open the inbox to read it.',
+        tag: `msg-${obj.from || obj.id}`,
+        data: { type: 'message', from: obj.from || null, url: '/' },
+      }).catch(e => console.error('[OpenPhone] push error', e.message));
     }
   } catch (err) {
     console.error('[OpenPhone webhook error]', err);

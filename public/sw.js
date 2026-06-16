@@ -1,4 +1,4 @@
-const CACHE_NAME = 'trustkey-v3';
+const CACHE_NAME = 'trustkey-v4';
 const PRECACHE_URLS = [
   '/',
   '/manifest.json',
@@ -22,6 +22,40 @@ self.addEventListener('activate', event => {
       ))
       .then(() => self.clients.claim())
   );
+});
+
+// ─── Push notifications ───────────────────────────────────────────────────────
+// The server posts a JSON payload { title, body, tag, data:{ url } }. Show it as a
+// system notification even when the app is closed (works in the installed PWA).
+self.addEventListener('push', event => {
+  let payload = {};
+  try { payload = event.data ? event.data.json() : {}; }
+  catch { payload = { body: event.data ? event.data.text() : '' }; }
+
+  const title = payload.title || 'TrustKey';
+  const options = {
+    body: payload.body || '',
+    icon: '/icons/icon-192.png',
+    badge: '/icons/icon-192.png',
+    tag: payload.tag || undefined,
+    renotify: !!payload.tag,
+    vibrate: [80, 40, 80],
+    data: { url: '/', ...(payload.data || {}) },
+  };
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+// Tapping a notification focuses an open app window (or opens one).
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  const url = (event.notification.data && event.notification.data.url) || '/';
+  event.waitUntil((async () => {
+    const wins = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    for (const c of wins) {
+      if ('focus' in c) { await c.focus(); return; }
+    }
+    if (self.clients.openWindow) await self.clients.openWindow(url);
+  })());
 });
 
 self.addEventListener('fetch', event => {

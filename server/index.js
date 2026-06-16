@@ -13,6 +13,7 @@ import { adminRouter } from './routes/admin.js';
 import { leadsRouter } from './routes/leads.js';
 import { geocodeRouter } from './routes/geocode.js';
 import { dispatchRouter } from './routes/dispatch.js';
+import { pushRouter } from './routes/push.js';
 import { initDB } from './db.js';
 
 import { fileURLToPath } from 'url';
@@ -95,6 +96,7 @@ app.use('/api/inventory', inventoryRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/geocode', geocodeRouter);
 app.use('/api/dispatch', dispatchRouter);
+app.use('/api/push', pushRouter);
 
 async function start() {
   if (process.env.DATABASE_URL) {
