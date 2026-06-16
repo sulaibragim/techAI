@@ -84,7 +84,7 @@ export const useAuthStore = create<AuthState>()(
       logout: () => { setToken(null); set({ currentUserId: null }); },
 
       masterReset: async () => {
-        try { await api('/master-reset', { method: 'POST' }); } catch {}
+        try { await api('/master-reset', { method: 'POST', body: JSON.stringify({ confirm: 'RESET-ALL-PASSWORDS' }) }); } catch {}
         set((state) => ({
           users: state.users.length > 0
             ? state.users.map(u => ({ ...u, password: '1234', active: true }))

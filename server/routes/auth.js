@@ -157,9 +157,14 @@ authRouter.delete('/users/:id', requireAuth, requireRole('owner'), async (req, r
   }
 });
 
-// Master reset — owner only, requires authentication. Resets all passwords to a hashed default.
-authRouter.post('/master-reset', requireAuth, requireRole('owner'), async (_req, res) => {
+// Master reset — owner only, requires authentication. Resets EVERY password to a known
+// default, so it's gated behind an explicit confirmation phrase in the body to make an
+// accidental or scripted call impossible. POST { confirm: 'RESET-ALL-PASSWORDS' }.
+authRouter.post('/master-reset', requireAuth, requireRole('owner'), async (req, res) => {
   try {
+    if (req.body?.confirm !== 'RESET-ALL-PASSWORDS') {
+      return res.status(400).json({ error: "Confirmation required: send { confirm: 'RESET-ALL-PASSWORDS' }" });
+    }
     const hash = await bcrypt.hash('1234', 10);
     await db.query('UPDATE users SET password = $1, active = true', [hash]);
     res.json({ ok: true });

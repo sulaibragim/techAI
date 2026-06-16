@@ -173,7 +173,7 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
               <div
                 key={job.id}
                 onClick={() => onJobSelect(job)}
-                className="bg-slate-900/80 backdrop-blur-3xl p-4 rounded-2xl border border-white/10 hover:border-blue-500/50 transition-colors group cursor-pointer flex flex-col shadow-lg relative overflow-hidden"
+                className="bg-slate-900 p-4 rounded-2xl border border-white/10 hover:border-blue-500/50 transition-colors group cursor-pointer flex flex-col shadow-lg relative overflow-hidden"
               >
                 <div className="absolute top-0 left-0 right-0 h-0.5" style={{ backgroundColor: STATUS_COLORS[job.status] }} />
 

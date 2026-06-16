@@ -53,7 +53,7 @@ const Speedometer: React.FC<{ closeRate: number; target: number }> = ({ closeRat
       initial={{ scale: 0.95, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ delay: 0.2 }}
-      className="bg-slate-900/80 backdrop-blur-xl p-4 rounded-2xl border border-blue-500/10 shadow-[0_0_30px_rgba(0,229,255,0.05)] flex flex-col items-center relative overflow-hidden"
+      className="bg-slate-900 p-4 rounded-2xl border border-blue-500/10 shadow-[0_0_30px_rgba(0,229,255,0.05)] flex flex-col items-center relative overflow-hidden"
     >
       <p className="text-xs font-semibold uppercase text-blue-400 tracking-wider mb-5">Performance</p>
       <div className="relative w-full max-w-[180px]">
@@ -127,15 +127,13 @@ const KanbanCard: React.FC<{ job: Job; onSelect: () => void; onDragStart: (e: Re
   const tech = useAuthStore(s => (job.assignedTo ? s.users.find(u => u.id === job.assignedTo) : null));
   return (
   <motion.div
-    layout
     initial={{ opacity: 0, scale: 0.9 }}
     animate={{ opacity: 1, scale: 1 }}
-    whileHover={{ scale: 1.02 }}
     whileTap={{ scale: 0.98 }}
     draggable
     onDragStart={(e: any) => onDragStart(e, job)}
     onClick={onSelect}
-    className={`bg-slate-900/50 backdrop-blur-xl p-4 rounded-xl border shadow-lg mb-3 cursor-grab active:cursor-grabbing transition-all group shrink-0 w-full ${job.isNewLead ? 'border-amber-500/60 ring-1 ring-amber-500/40 shadow-amber-500/10 hover:border-amber-400' : 'border-white/10 hover:border-blue-500/50'}`}
+    className={`bg-slate-900 p-4 rounded-xl border shadow-lg mb-3 cursor-grab active:cursor-grabbing transition-colors group shrink-0 w-full ${job.isNewLead ? 'border-amber-500/60 ring-1 ring-amber-500/40 shadow-amber-500/10 hover:border-amber-400' : 'border-white/10 hover:border-blue-500/50'}`}
   >
     <div className="flex justify-between items-start mb-3">
       <div className="flex items-center space-x-2">
@@ -349,7 +347,7 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
-              className={`bg-slate-900/80 backdrop-blur-xl p-4 rounded-2xl border border-white/10 min-w-[160px] flex-1 flex flex-col justify-between shadow-lg group hover:border-blue-500/30 transition-all cursor-default relative overflow-hidden`}
+              className={`bg-slate-900 p-4 rounded-2xl border border-white/10 min-w-[160px] flex-1 flex flex-col justify-between shadow-lg group hover:border-blue-500/30 transition-colors cursor-default relative overflow-hidden`}
             >
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-all" />
                <div className={`flex items-center space-x-2 mb-3 text-slate-400 group-hover:text-blue-400 transition-colors`}>
@@ -433,7 +431,7 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
                         onClick={() => day && handleDayClick(day)}
                         onMouseEnter={day ? (e) => handleCellHover(day, e) : undefined}
                         onMouseLeave={day ? handleCellLeave : undefined}
-                        className={`min-h-[80px] p-2 transition-all relative border border-white/10 overflow-hidden ${day ? 'bg-slate-900/50 backdrop-blur-sm hover:border-blue-500/40 cursor-pointer group' : 'bg-transparent'}`}
+                        className={`min-h-[80px] p-2 transition-colors relative border border-white/10 overflow-hidden ${day ? 'bg-slate-900/50 hover:border-blue-500/40 cursor-pointer group' : 'bg-transparent'}`}
                       >
                         {day && (
                           <div className="h-full flex flex-col relative z-10">
@@ -462,7 +460,7 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
         </div>
 
         <div className="lg:col-span-4 flex flex-col gap-5">
-          <div className="bg-slate-900/80 backdrop-blur-xl p-5 rounded-2xl border border-white/10 shadow-[0_0_30px_rgba(0,0,0,0.5)] relative overflow-hidden">
+          <div className="bg-slate-900 p-5 rounded-2xl border border-white/10 shadow-[0_0_30px_rgba(0,0,0,0.5)] relative overflow-hidden">
             <h3 className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-4 flex items-center">
               <Activity size={14} className="mr-2 text-blue-400" /> Today
             </h3>
@@ -613,7 +611,7 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
               key={col.id}
               onDragOver={(e: any) => e.preventDefault()}
               onDrop={(e: any) => handleDrop(e, col.id)}
-              className={`bg-slate-900/50 backdrop-blur-md rounded-2xl border flex flex-col h-[460px] overflow-hidden shadow-2xl ${col.isLeads && colJobs.length > 0 ? 'border-amber-500/40' : 'border-white/10'}`}
+              className={`bg-slate-900/50 rounded-2xl border flex flex-col h-[460px] overflow-hidden shadow-2xl ${col.isLeads && colJobs.length > 0 ? 'border-amber-500/40' : 'border-white/10'}`}
             >
               <div className="p-4 border-b border-white/10 flex items-center justify-between bg-white/[0.01]">
                 <div className="flex items-center space-x-2">

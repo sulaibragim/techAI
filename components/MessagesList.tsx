@@ -159,7 +159,7 @@ export const MessagesList: React.FC<MessagesListProps> = ({ onJobSelect }) => {
 
               return (
                 <div key={msg.id} className="space-y-2">
-                  <div className={`bg-slate-900/80 backdrop-blur-3xl p-4 rounded-2xl border border-white/10 ${isOut ? 'hover:border-blue-500/30' : 'hover:border-green-500/30'} transition-all shadow-xl relative overflow-hidden`}>
+                  <div className={`bg-slate-900 p-4 rounded-2xl border border-white/10 ${isOut ? 'hover:border-blue-500/30' : 'hover:border-green-500/30'} transition-colors shadow-xl relative overflow-hidden`}>
                     <div className={`absolute top-0 left-0 w-1 h-full ${isOut ? 'bg-blue-600/40' : 'bg-green-500/40'}`} />
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-3">
@@ -230,7 +230,7 @@ export const MessagesList: React.FC<MessagesListProps> = ({ onJobSelect }) => {
               <div
                 key={job.id}
                 onClick={() => onJobSelect(job)}
-                className="bg-slate-900/80 backdrop-blur-3xl p-4 rounded-2xl border border-white/10 hover:border-blue-500/30 hover:scale-[1.01] transition-all cursor-pointer flex items-center justify-between group shadow-xl overflow-hidden relative"
+                className="bg-slate-900 p-4 rounded-2xl border border-white/10 hover:border-blue-500/30 transition-colors cursor-pointer flex items-center justify-between group shadow-xl overflow-hidden relative"
               >
                 <div className="absolute top-0 left-0 w-1 h-full bg-blue-600/30 group-hover:bg-blue-600 transition-colors" />
 

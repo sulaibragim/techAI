@@ -1,31 +1,42 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sidebar } from './components/Sidebar';
 import { Navigation } from './components/Navigation';
-import { Dashboard } from './components/Dashboard';
-import { JobsList } from './components/JobsList';
 import { WorkroomDashboard } from './components/WorkroomDashboard';
-import { JobWizard } from './components/JobWizard';
-import { VoiceAssistant } from './components/VoiceAssistant';
-import { AIChat } from './components/AIChat';
-import { JobDetail } from './components/JobDetail';
-import { MessagesList } from './components/MessagesList';
-import { CallsList } from './components/CallsList';
-import { Inventory } from './components/Inventory';
-import { Accounting } from './components/Accounting';
+import { Login } from './components/Login';
 import { useAppStore, useVisibleJobs, hasPendingJobWrite } from './store';
 import { useSettingsStore } from './settingsStore';
 import { useCurrentUser, useAuthStore, visibleTabsFor, ROLE_LABELS } from './authStore';
 import { getToken, authHeaders } from './apiClient';
 import { API_BASE } from './backendUrl';
 import type { Job, TechStatus } from './types';
-import { Settings } from './components/Settings';
-import { ClientsList } from './components/ClientsList';
-import { AutoKey } from './components/AutoKey';
-import { Login } from './components/Login';
-import { OnboardingWizard } from './components/OnboardingWizard';
 import { Bell, AlertCircle, CheckCircle2, X, Menu } from 'lucide-react';
 import type { TabId } from './types';
+
+// Heavy / not-immediately-needed screens are code-split so the first paint (Login +
+// Workroom) ships a much smaller bundle. Each loads its own chunk on demand; the
+// Suspense boundaries below show a light spinner while a chunk streams in.
+const Dashboard = lazy(() => import('./components/Dashboard').then(m => ({ default: m.Dashboard })));
+const JobsList = lazy(() => import('./components/JobsList').then(m => ({ default: m.JobsList })));
+const JobWizard = lazy(() => import('./components/JobWizard').then(m => ({ default: m.JobWizard })));
+const VoiceAssistant = lazy(() => import('./components/VoiceAssistant').then(m => ({ default: m.VoiceAssistant })));
+const AIChat = lazy(() => import('./components/AIChat').then(m => ({ default: m.AIChat })));
+const JobDetail = lazy(() => import('./components/JobDetail').then(m => ({ default: m.JobDetail })));
+const MessagesList = lazy(() => import('./components/MessagesList').then(m => ({ default: m.MessagesList })));
+const CallsList = lazy(() => import('./components/CallsList').then(m => ({ default: m.CallsList })));
+const Inventory = lazy(() => import('./components/Inventory').then(m => ({ default: m.Inventory })));
+const Accounting = lazy(() => import('./components/Accounting').then(m => ({ default: m.Accounting })));
+const Settings = lazy(() => import('./components/Settings').then(m => ({ default: m.Settings })));
+const ClientsList = lazy(() => import('./components/ClientsList').then(m => ({ default: m.ClientsList })));
+const AutoKey = lazy(() => import('./components/AutoKey').then(m => ({ default: m.AutoKey })));
+const OnboardingWizard = lazy(() => import('./components/OnboardingWizard').then(m => ({ default: m.OnboardingWizard })));
+
+// Light, centered spinner shown while a code-split screen streams in.
+const TabLoader: React.FC = () => (
+  <div className="flex items-center justify-center py-24">
+    <div className="w-6 h-6 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+  </div>
+);
 
 const App: React.FC = () => {
   const { addJob, activeTab, setActiveTab } = useAppStore();
@@ -175,7 +186,7 @@ const App: React.FC = () => {
   if (!currentUser || !getToken()) return <Login />;
 
   // Onboarding shows for any owner who hasn't completed it (e.g. fresh install or after a reset).
-  if (!onboardingComplete && currentUser.role === 'owner') return <OnboardingWizard />;
+  if (!onboardingComplete && currentUser.role === 'owner') return <Suspense fallback={<div className="min-h-screen bg-slate-950" />}><OnboardingWizard /></Suspense>;
 
   const renderContent = () => {
     // No AnimatePresence/exit here on purpose: mode="wait" holds the outgoing tab
@@ -190,6 +201,7 @@ const App: React.FC = () => {
           transition={{ duration: 0.18, ease: "easeInOut" }}
           className="h-full"
         >
+          <Suspense fallback={<TabLoader />}>
           {(() => {
             switch (effectiveTab) {
               case 'calendar': return <WorkroomDashboard onJobSelect={(j) => setSelectedJobId(j.id)} onAddJob={() => openWizard()} />;
@@ -206,6 +218,7 @@ const App: React.FC = () => {
               default: return <WorkroomDashboard onJobSelect={(j) => setSelectedJobId(j.id)} onAddJob={() => openWizard()} />;
             }
           })()}
+          </Suspense>
         </motion.div>
     );
   };
@@ -307,17 +320,19 @@ const App: React.FC = () => {
         </main>
       </div>
 
-      <VoiceAssistant />
+      <Suspense fallback={null}>
+        <VoiceAssistant />
 
-      {isWizardOpen && (
-        <JobWizard
-          initialPhone={wizardSeed.phone}
-          initialName={wizardSeed.name}
-          onCancel={() => { setIsWizardOpen(false); setWizardSeed({}); }}
-          onComplete={(job) => { addJob(job); setIsWizardOpen(false); setWizardSeed({}); }}
-        />
-      )}
-      {selectedJob && <JobDetail key={selectedJob.id} job={selectedJob} onClose={() => setSelectedJobId(null)} onOpenJob={(j) => setSelectedJobId(j.id)} />}
+        {isWizardOpen && (
+          <JobWizard
+            initialPhone={wizardSeed.phone}
+            initialName={wizardSeed.name}
+            onCancel={() => { setIsWizardOpen(false); setWizardSeed({}); }}
+            onComplete={(job) => { addJob(job); setIsWizardOpen(false); setWizardSeed({}); }}
+          />
+        )}
+        {selectedJob && <JobDetail key={selectedJob.id} job={selectedJob} onClose={() => setSelectedJobId(null)} onOpenJob={(j) => setSelectedJobId(j.id)} />}
+      </Suspense>
     </div>
   );
 };
