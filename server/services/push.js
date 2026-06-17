@@ -3,9 +3,11 @@ import { db } from '../db.js';
 
 // Web Push (VAPID). Keys live in env so they can be rotated without a code change.
 // Generate a pair with: npx web-push generate-vapid-keys
-const PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY || '';
-const PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || '';
-const SUBJECT = process.env.VAPID_SUBJECT || 'mailto:owner@trustkey.az';
+// .trim() defends against copy-paste whitespace/newlines in the env values — a
+// trailing "\n" makes web-push reject the key and silently disables push.
+const PUBLIC_KEY = (process.env.VAPID_PUBLIC_KEY || '').trim();
+const PRIVATE_KEY = (process.env.VAPID_PRIVATE_KEY || '').trim();
+const SUBJECT = (process.env.VAPID_SUBJECT || 'mailto:owner@trustkey.az').trim();
 
 let configured = false;
 if (PUBLIC_KEY && PRIVATE_KEY) {
