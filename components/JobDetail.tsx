@@ -27,6 +27,7 @@ import { geocodeAddress } from '../geocoding';
 import { haversineMiles, approxEtaMinutes, formatMiles, LatLng } from '../geoUtils';
 import { getDriveEta, getRouteInfo, getWeather, buildOnMyWayMessage } from '../dispatchMessage';
 import { AutoKeyPanel } from './AutoKeyPanel';
+import { useSwipeBack } from '../useSwipeBack';
 
 const STATUS_OPTIONS: { id: JobStatus; label: string }[] = [
   { id: 'scheduled', label: 'Scheduled' },
@@ -57,6 +58,10 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
   const lockedForTech = role === 'technician' && jobIsClosed; // tech cannot reopen a closed job
   const [localJob, setLocalJob] = useState<Job>({ ...initialJob });
   const [isModified, setIsModified] = useState(false);
+
+  // Swipe right anywhere on the card to go back — the top "back" button sits under the
+  // phone's status bar/notch and is awkward to tap, so a big swipe is the reliable way out.
+  const swipeRef = useSwipeBack<HTMLDivElement>(onClose);
 
   // Client reputation for this job's customer (rating, flags, auto-tags, note).
   const clientPhoneKey = normalizePhone(initialJob.client.phone);
@@ -1015,10 +1020,10 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
         </div>
       )}
 
-      <div className="bg-slate-900 w-full max-w-[1600px] h-full max-h-[96vh] md:rounded-2xl border border-white/10 shadow-2xl flex flex-col relative overflow-hidden">
-        
+      <div ref={swipeRef} className="bg-slate-900 w-full max-w-[1600px] h-full max-h-[96vh] md:rounded-2xl border border-white/10 shadow-2xl flex flex-col relative overflow-hidden">
+
         {/* HEADER BAR */}
-        <header className="px-3 py-3 md:px-10 md:py-5 border-b border-white/10 bg-slate-900/80 z-50 shrink-0 md:flex md:items-center md:justify-between md:gap-4">
+        <header className="px-3 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] md:px-10 md:py-5 border-b border-white/10 bg-slate-900/80 z-50 shrink-0 md:flex md:items-center md:justify-between md:gap-4">
           <div className="md:flex md:items-center md:gap-6 space-y-3 md:space-y-0 min-w-0">
 
             {/* Top row: back · identity · (mobile actions) */}

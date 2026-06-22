@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import {
   ChevronRight,
   ChevronLeft,
@@ -31,6 +31,7 @@ import { TechPicker } from './TechPicker';
 import { AutoKeyPanel } from './AutoKeyPanel';
 import { decodeVin } from '../vehicleKeyLookup';
 import { VinScanner } from './VinScanner';
+import { useSwipeBack } from '../useSwipeBack';
 
 interface JobWizardProps {
   onComplete: (job: Job) => void;
@@ -230,6 +231,14 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
   };
   const prevStep = () => { setError(''); setStep(s => s - 1); };
 
+  // Swipe right to go back a step (or close from the first step) — same reason as JobDetail:
+  // the top close button sits under the phone's status bar and is hard to hit.
+  const swipeBack = useCallback(() => {
+    if (step > 0) prevStep();
+    else onCancel();
+  }, [step, onCancel]);
+  const swipeRef = useSwipeBack<HTMLDivElement>(swipeBack, { enabled: !showCamera && !showVinScan });
+
   // VIN → auto-fill make + model/year (free NHTSA decode) for automotive jobs.
   const decodeVinToFields = async (override?: string) => {
     const raw = (override ?? vinInput).trim();
@@ -253,7 +262,7 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
   const labelCls = 'text-xs font-bold text-slate-400 uppercase block mb-1.5';
 
   return (
-    <div className="fixed inset-0 bg-slate-950 z-[200] flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-8">
+    <div ref={swipeRef} className="fixed inset-0 bg-slate-950 z-[200] flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-8">
       {showVinScan && <VinScanner onResult={(v) => { setShowVinScan(false); decodeVinToFields(v); }} onClose={() => setShowVinScan(false)} />}
       {showCamera && (
         <div className="fixed inset-0 bg-black z-[300] flex flex-col items-center justify-center p-6">
@@ -268,7 +277,7 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
         </div>
       )}
 
-      <header className="px-6 py-6 flex items-center justify-between border-b border-white/10 bg-slate-950/90 backdrop-blur-md sticky top-0 z-20">
+      <header className="px-6 pb-6 pt-[max(1.5rem,env(safe-area-inset-top))] flex items-center justify-between border-b border-white/10 bg-slate-950/90 backdrop-blur-md sticky top-0 z-20">
         <button onClick={onCancel} className="p-3 text-slate-400 hover:text-white transition-colors"><X size={28} /></button>
         <div className="flex-1 text-center">
           <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">New Job Intake</h2>
