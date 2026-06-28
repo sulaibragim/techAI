@@ -33,8 +33,10 @@ inventoryRouter.post('/sync', requireAuth, requireRole('owner', 'manager'), asyn
         [id, JSON.stringify(data)]
       );
     }
-    // Remove parts no longer present in the client catalog.
-    if (ids.length > 0) {
+    // Only prune server-side parts when the caller explicitly asks to REPLACE the whole
+    // catalog (?replace=true). Default is merge/upsert — a stale client must not silently
+    // delete parts another device just added. Single-part removal uses DELETE /:id.
+    if (req.query.replace === 'true' && ids.length > 0) {
       await client.query('DELETE FROM inventory WHERE NOT (id = ANY($1))', [ids]);
     }
     await client.query('COMMIT');

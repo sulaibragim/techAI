@@ -70,16 +70,17 @@ export const MessagesList: React.FC<MessagesListProps> = ({ onJobSelect }) => {
     if (!replyText.trim()) return;
     setSending(true);
     try {
-      await fetch(`${API_BASE}/api/openphone/messages/send`, {
+      const res = await fetch(`${API_BASE}/api/openphone/messages/send`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeaders() },
         body: JSON.stringify({ to, content: replyText.trim(), phoneNumberId: PHONE_NUMBER_ID }),
       });
+      if (!res.ok) throw new Error('send rejected');
       setReplyText('');
       setReplyOpen(null);
       await fetchMessages();
     } catch {
-      alert('Send failed — is the backend running?');
+      alert('Send failed — the message was not delivered. Check the number or try again.');
     } finally {
       setSending(false);
     }

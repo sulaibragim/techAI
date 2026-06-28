@@ -166,7 +166,9 @@ authRouter.post('/master-reset', requireAuth, requireRole('owner'), async (req, 
       return res.status(400).json({ error: "Confirmation required: send { confirm: 'RESET-ALL-PASSWORDS' }" });
     }
     const hash = await bcrypt.hash('1234', 10);
-    await db.query('UPDATE users SET password = $1, active = true', [hash]);
+    // Reset passwords ONLY — do not touch `active`, or this silently un-deactivates
+    // (re-hires) anyone the owner has disabled.
+    await db.query('UPDATE users SET password = $1', [hash]);
     res.json({ ok: true });
   } catch (err) {
     console.error('[AUTH] master reset error:', err);

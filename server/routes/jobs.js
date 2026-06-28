@@ -103,10 +103,32 @@ jobsRouter.post('/sync', requireAuth, async (req, res) => {
     // Skip any job the user has deleted elsewhere — tombstones prevent resurrection on sync.
     const { rows: tombs } = await client.query('SELECT id FROM job_tombstones');
     const deleted = new Set(tombs.map(t => t.id));
+
+    // For technicians, load who CURRENTLY owns each incoming job so they can't hijack a
+    // job they don't own by simply setting assignedTo=self in the payload (the old check
+    // only looked at the incoming value). A tech may only write a job whose stored
+    // assignee is already them, or a brand-new job (no stored row).
+    let techOwns = null;
+    if (isTech(req)) {
+      const ids = jobs.map(j => j.id).filter(Boolean);
+      techOwns = new Map();
+      if (ids.length > 0) {
+        const { rows: owners } = await client.query(
+          "SELECT id, data->>'assignedTo' AS assigned FROM jobs WHERE id = ANY($1)",
+          [ids]
+        );
+        for (const o of owners) techOwns.set(o.id, o.assigned || null);
+      }
+    }
+
     for (const job of jobs) {
       const { id, ...data } = job;
       if (!id || deleted.has(id)) continue;
-      if (isTech(req) && data.assignedTo !== req.user.id) continue; // techs cannot write others' jobs
+      if (isTech(req)) {
+        if (data.assignedTo !== req.user.id) continue;        // payload must assign to self
+        const existingOwner = techOwns.get(id);
+        if (existingOwner !== undefined && existingOwner !== req.user.id) continue; // can't seize an existing job owned by someone else
+      }
       await client.query(
         `INSERT INTO jobs (id, data, updated_at) VALUES ($1, $2, NOW())
          ON CONFLICT (id) DO UPDATE SET data = $2, updated_at = NOW()`,

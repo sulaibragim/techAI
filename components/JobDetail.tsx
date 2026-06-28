@@ -139,21 +139,71 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // ── Client signature capture (payment authorization) ───────────────────────
+  const sigCanvasRef = useRef<HTMLCanvasElement>(null);
+  const sigDrawing = useRef(false);
+  const sigDirty = useRef(false);
+  const sigPoint = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    const c = sigCanvasRef.current!;
+    const r = c.getBoundingClientRect();
+    return { x: (e.clientX - r.left) * (c.width / r.width), y: (e.clientY - r.top) * (c.height / r.height) };
+  };
+  const sigStart = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    const c = sigCanvasRef.current; if (!c) return;
+    c.setPointerCapture(e.pointerId);
+    sigDrawing.current = true;
+    const ctx = c.getContext('2d')!;
+    const p = sigPoint(e);
+    ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.strokeStyle = '#0f172a';
+    ctx.beginPath(); ctx.moveTo(p.x, p.y);
+  };
+  const sigMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!sigDrawing.current) return;
+    const ctx = sigCanvasRef.current!.getContext('2d')!;
+    const p = sigPoint(e);
+    ctx.lineTo(p.x, p.y); ctx.stroke();
+    sigDirty.current = true;
+  };
+  const sigEnd = () => { sigDrawing.current = false; };
+  const clearSignature = () => {
+    const c = sigCanvasRef.current; if (!c) return;
+    c.getContext('2d')!.clearRect(0, 0, c.width, c.height);
+    sigDirty.current = false;
+  };
+  const captureSignature = (): string | undefined => {
+    if (!sigDirty.current || !sigCanvasRef.current) return undefined;
+    return sigCanvasRef.current.toDataURL('image/png');
+  };
+
   const [draftMessage, setDraftMessage] = useState('');
   const [otwState, setOtwState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const [clientCoords, setClientCoords] = useState<LatLng | null>(null);
   const [routeToClient, setRouteToClient] = useState<{ miles: number; minutes: number } | null>(null);
 
-  const handleSendMessage = () => {
-    if (!draftMessage.trim()) return;
+  const [msgSending, setMsgSending] = useState(false);
+
+  const handleSendMessage = async () => {
+    const text = draftMessage.trim();
+    if (!text || msgSending) return;
+    const phone = localJob.client?.phone;
+    if (!phone) { alert('No client phone number on this job.'); return; }
+
+    setMsgSending(true);
+    const ok = await sendSms(phone, text);
+    setMsgSending(false);
+
+    if (!ok) {
+      alert('Message failed to send. Check the number or try again.');
+      return;
+    }
+    // Record in the thread only after the client actually got the text.
     const newMessage: Message = {
       id: Math.random().toString(),
       sender: 'technician',
-      content: draftMessage,
+      content: text,
       timestamp: new Date().toISOString(),
       method: 'sms'
     };
-    
     const updatedJob = { ...localJob, messages: [...(localJob.messages || []), newMessage] };
     setLocalJob(updatedJob);
     commitJob(updatedJob);
@@ -642,7 +692,9 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
     <div class="sig-box">
       <div class="sig-label">Client Authorization</div>
       <div class="sig-note">I authorize the work described above and agree to the payment terms.</div>
-      <div class="sig-line"></div>
+      ${localJob.signature
+        ? `<img src="${localJob.signature}" alt="Client signature" style="height:40px;display:block;object-fit:contain;border-bottom:1px solid #1e293b;" />`
+        : `<div class="sig-line"></div>`}
       <div class="sig-sub">Signature &amp; Date</div>
     </div>
   </div>
@@ -993,20 +1045,39 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                   </div>
                 </div>
 
-                <div className="w-full aspect-video bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center text-slate-200 relative overflow-hidden group">
-                   <PenTool size={32} className="mb-4 opacity-10 group-hover:scale-110 transition-transform" />
-                   <p className="text-xs font-bold uppercase tracking-widest">Digital Client Signature</p>
+                <div className="relative w-full aspect-video bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl overflow-hidden">
+                   <canvas
+                     ref={sigCanvasRef}
+                     width={600}
+                     height={338}
+                     className="absolute inset-0 w-full h-full touch-none cursor-crosshair"
+                     onPointerDown={sigStart}
+                     onPointerMove={sigMove}
+                     onPointerUp={sigEnd}
+                     onPointerLeave={sigEnd}
+                   />
+                   <div className="pointer-events-none absolute inset-x-0 bottom-2 flex items-center justify-center gap-2 text-slate-300">
+                     <PenTool size={12} />
+                     <span className="text-[10px] font-bold uppercase tracking-widest">Client signs here</span>
+                   </div>
+                   <button onClick={clearSignature} className="pointer-events-auto absolute top-2 right-2 text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-600 px-2 py-1">Clear</button>
                 </div>
-                
+
                 <button onClick={() => {
                   const alreadyPaid = localJob.amountPaid || 0;
                   const newPaid = Math.round((alreadyPaid + collectingAmount) * 100) / 100;
                   const fullyPaid = newPaid >= subtotal - 0.01;
+                  const sig = captureSignature();
                   const settled: Job = {
                     ...localJob,
                     amountPaid: newPaid,
                     paymentMethod,
                     paymentStatus: fullyPaid ? 'paid' : 'partial',
+                    ...(sig ? { signature: sig } : {}),
+                    // Money collected must count as revenue. If the job hasn't reached a
+                    // revenue status yet (still diagnosed/onSite), mark it sold so the cash
+                    // shows up in revenue, A/R and payroll instead of vanishing from the books.
+                    status: isRevenueJob(localJob) ? localJob.status : 'sold',
                   };
                   setLocalJob(settled);
                   commitJob(settled);
@@ -1594,14 +1665,15 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                 </div>
                 <div className="mt-6 pt-6 border-t border-white/10">
                    <div className="bg-white/5 rounded-2xl p-4 flex items-center">
-                      <input 
-                        className="flex-1 bg-transparent text-sm font-medium text-white outline-none placeholder:text-slate-500" 
-                        placeholder="Type message..." 
+                      <input
+                        className="flex-1 bg-transparent text-sm font-medium text-white outline-none placeholder:text-slate-500 disabled:opacity-50"
+                        placeholder={msgSending ? 'Sending…' : 'Text the client…'}
                         value={draftMessage}
+                        disabled={msgSending}
                         onChange={e => setDraftMessage(e.target.value)}
                         onKeyDown={e => e.key === 'Enter' && handleSendMessage()}
                       />
-                      <button onClick={handleSendMessage} className="p-2 text-blue-500 hover:text-white transition-colors"><Send size={16} /></button>
+                      <button onClick={handleSendMessage} disabled={msgSending || !draftMessage.trim()} className="p-2 text-blue-500 hover:text-white transition-colors disabled:opacity-40"><Send size={16} /></button>
                    </div>
                 </div>
               </section>
@@ -1777,7 +1849,9 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                         <div>
                           <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Client Authorization</p>
                           <p className="text-[9px] text-slate-400 italic mb-2">I authorize the work described above and agree to the terms.</p>
-                          <div className="h-8 border-b border-slate-300" />
+                          {localJob.signature
+                            ? <img src={localJob.signature} alt="Client signature" className="h-8 object-contain object-left border-b border-slate-300" />
+                            : <div className="h-8 border-b border-slate-300" />}
                           <p className="text-[9px] text-slate-400 mt-1">Signature &amp; Date</p>
                         </div>
                       </div>

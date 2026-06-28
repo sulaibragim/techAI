@@ -222,6 +222,7 @@ export interface Job {
   assignedTo?: string; // User id of the technician responsible
   acceptanceStatus?: 'pending' | 'accepted' | 'declined'; // tech's response to the assignment
   acceptedAt?: string; // ISO timestamp when the tech accepted
+  signature?: string; // PNG data URL of the client's on-site authorization signature
   createdBy?: string;  // User id of whoever created the job
   source?: string;     // Where the job came from, e.g. 'web' for website leads
   isNewLead?: boolean; // Unhandled website lead — surfaced in its own column/banner until taken

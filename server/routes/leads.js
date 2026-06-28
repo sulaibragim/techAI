@@ -18,6 +18,8 @@ if (!WEBHOOK_SECRET) {
 // Field names match the website contract: { name, phone, email, service, city, note, source }.
 leadsRouter.post('/', async (req, res) => {
   if (WEBHOOK_SECRET) {
+    // Prefer the header; body `secret` kept for the website's documented contract. Safe
+    // here because the app logs no request bodies — revisit if a body logger is added.
     const provided = req.headers['x-webhook-secret'] || req.body?.secret || '';
     if (provided !== WEBHOOK_SECRET) {
       return res.status(401).json({ error: 'Invalid webhook secret' });

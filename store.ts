@@ -49,27 +49,35 @@ export function hasPendingJobWrite(id: string): boolean {
   return true;
 }
 
+// Re-arm the pending window when the write actually lands. The TTL otherwise counts from
+// when the request STARTED, so a slow PUT/DELETE could expire mid-flight and let the next
+// poll clobber the optimistic update (payment reverts) or resurrect a delete. Re-stamping
+// on resolution keeps the job protected until just after the server confirms.
+function settleJobPending(id: string, p: Promise<unknown>) {
+  p.then(() => markJobPending(id)).catch(() => markJobPending(id));
+}
+
 function pushJobToServer(job: Job) {
   markJobPending(job.id);
-  fetch(`${API_BASE}/api/jobs`, {
+  settleJobPending(job.id, fetch(`${API_BASE}/api/jobs`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify(job),
-  }).catch(() => {});
+  }));
 }
 
 function updateJobOnServer(job: Job) {
   markJobPending(job.id);
-  fetch(`${API_BASE}/api/jobs/${job.id}`, {
+  settleJobPending(job.id, fetch(`${API_BASE}/api/jobs/${job.id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify(job),
-  }).catch(() => {});
+  }));
 }
 
 function deleteJobOnServer(id: string) {
   markJobPending(id);
-  fetch(`${API_BASE}/api/jobs/${id}`, { method: 'DELETE', headers: { ...authHeaders() } }).catch(() => {});
+  settleJobPending(id, fetch(`${API_BASE}/api/jobs/${id}`, { method: 'DELETE', headers: { ...authHeaders() } }));
 }
 
 function upsertPartOnServer(part: Part) {
@@ -134,6 +142,12 @@ export const useAppStore = create<AppState>()(
     const gotPaid = (next.paymentStatus === 'paid' || next.paymentStatus === 'partial') &&
       prev?.paymentStatus !== next.paymentStatus;
     if (gotPaid && !next.paidAt) next.paidAt = new Date().toISOString();
+    // Stamp the completion date when a job first becomes completed — revenue is recognized
+    // by completedAt, so the card-save path must set it just like the Kanban "Done" drop
+    // (updateJobStatus) does. Without this a job finished after its scheduled month lands
+    // its revenue in the wrong month.
+    const justCompleted = next.status === 'completed' && prev?.status !== 'completed';
+    if (justCompleted && !next.completedAt) next.completedAt = new Date().toISOString();
     set((state) => ({ jobs: state.jobs.map(j => j.id === next.id ? next : j) }));
     updateJobOnServer(next);
   },

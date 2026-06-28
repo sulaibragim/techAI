@@ -1,8 +1,28 @@
 import { Router } from 'express';
+import rateLimit from 'express-rate-limit';
 import { GoogleGenAI } from '@google/genai';
 import { requireAuth } from '../middleware/auth.js';
 
 export const aiRouter = Router();
+
+// Per-USER limit (not per-IP) so a single account can't run up the Gemini bill. Runs
+// after requireAuth, so req.user is set; falls back to IP for safety.
+const aiUserLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => req.user?.id || req.ip,
+  message: { error: 'AI rate limit reached, slow down' },
+});
+const voiceUserLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => req.user?.id || req.ip,
+  message: { error: 'Voice session rate limit reached, slow down' },
+});
 
 // Models the text proxy is allowed to call — guards our key against arbitrary use.
 const ALLOWED_MODELS = new Set(['gemini-2.5-flash', 'gemini-2.5-flash-lite']);
@@ -51,7 +71,7 @@ aiRouter.get('/status', requireAuth, (_req, res) => {
 
 // Text-chat relay. The client builds the full request (contents + systemInstruction + tools);
 // the server only injects the key and forwards. Tool execution stays on the client.
-aiRouter.post('/generate', requireAuth, async (req, res) => {
+aiRouter.post('/generate', requireAuth, aiUserLimiter, async (req, res) => {
   const ai = getAI();
   if (!ai) return res.status(503).json({ error: 'AI not configured on server' });
 
@@ -74,7 +94,7 @@ aiRouter.post('/generate', requireAuth, async (req, res) => {
 
 // Mints a short-lived ephemeral token so the browser can open a Live (voice) session
 // WITHOUT ever seeing the real API key.
-aiRouter.post('/live-token', requireAuth, async (_req, res) => {
+aiRouter.post('/live-token', requireAuth, voiceUserLimiter, async (_req, res) => {
   const ai = getLiveAI();
   if (!ai) return res.status(503).json({ error: 'AI not configured on server' });
 

@@ -21,6 +21,21 @@ import path from 'path';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, '../.env.local') });
 
+// In production, refuse to boot with insecure defaults / fail-open webhooks. These all
+// have safe local fallbacks for dev, but if any is missing in prod the app is exploitable
+// (forgeable tokens, unauthenticated webhooks), so crash loudly instead of running open.
+if (process.env.NODE_ENV === 'production') {
+  const required = ['JWT_SECRET', 'OPENPHONE_WEBHOOK_SECRET', 'WEBSITE_WEBHOOK_SECRET'];
+  const missing = required.filter(k => !process.env[k]);
+  if (missing.length > 0) {
+    console.error(`[BOOT] Refusing to start in production — missing required env: ${missing.join(', ')}`);
+    process.exit(1);
+  }
+  if (!process.env.ALLOWED_ORIGINS) {
+    console.warn('[BOOT] ALLOWED_ORIGINS not set in production — CORS reflects all origins. Set it to your frontend domain(s).');
+  }
+}
+
 const app = express();
 const PORT = process.env.PORT || process.env.SERVER_PORT || 3001;
 

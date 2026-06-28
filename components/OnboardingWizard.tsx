@@ -20,7 +20,7 @@ interface NewTech {
 
 export const OnboardingWizard: React.FC = () => {
   const { updateSettings } = useSettingsStore();
-  const { users, updateUser, addUser } = useAuthStore();
+  const { users, updateUser, addUser, removeUser } = useAuthStore();
   const owner = users.find(u => u.role === 'owner');
 
   const [step, setStep] = useState<Step>('company');
@@ -80,13 +80,14 @@ export const OnboardingWizard: React.FC = () => {
       updateUser({ ...owner, name: ownerName, email: ownerEmail, password: ownerPassword || owner.password });
     }
 
-    const existingTechIds = users.filter(u => u.role === 'technician').map(u => u.id);
-    existingTechIds.forEach(id => {
-      const existing = users.find(u => u.id === id);
-      if (existing && existing.name === 'Technician' && existing.email === 'tech@trustkey.az') {
-        // Remove default technician
-      }
-    });
+    // If the owner added real techs, drop the seeded demo technician (weak default
+    // password 1234) so it doesn't linger in the live roster.
+    const addingRealTechs = techs.some(t => t.name.trim());
+    if (addingRealTechs) {
+      users
+        .filter(u => u.role === 'technician' && u.name === 'Technician' && u.email === 'tech@trustkey.az')
+        .forEach(u => removeUser(u.id));
+    }
 
     techs.forEach(t => {
       if (t.name.trim()) {
@@ -287,7 +288,12 @@ export const OnboardingWizard: React.FC = () => {
                 </button>
               ) : (
                 <button
-                  onClick={() => updateSettings({ onboardingComplete: true })}
+                  onClick={() => updateSettings({
+                    onboardingComplete: true,
+                    // Clear the seeded demo company so a skipped setup doesn't print a fake
+                    // "Salem Locksmith / Portland" on every invoice. Owner can fill these in Settings.
+                    companyName: '', companyAddress: '', companyCity: '', companyPhone: '', companyEmail: '',
+                  })}
                   className="text-xs font-semibold text-slate-500 hover:text-slate-300 transition-colors px-4 py-2"
                 >
                   Skip Setup
