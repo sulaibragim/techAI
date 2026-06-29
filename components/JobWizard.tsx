@@ -31,6 +31,7 @@ import { TechPicker } from './TechPicker';
 import { AutoKeyPanel } from './AutoKeyPanel';
 import { decodeVin } from '../vehicleKeyLookup';
 import { VinScanner } from './VinScanner';
+import { AddressAutocomplete } from './AddressAutocomplete';
 import { useSwipeBack } from '../useSwipeBack';
 
 interface JobWizardProps {
@@ -111,6 +112,10 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
       email: c.email || rec.email,
       address: c.address || rec.address,
       zip: c.zip || '',
+      lat: c.lat,
+      lng: c.lng,
+      placeId: c.placeId,
+      geoPrecision: c.geoPrecision,
       unit: c.unit || '',
       gateCode: c.gateCode || '',
       accessNotes: c.accessNotes || '',
@@ -186,6 +191,10 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
       email: client.email || '',
       address: client.address || '',
       zip: client.zip || '',
+      lat: client.lat,
+      lng: client.lng,
+      placeId: client.placeId,
+      geoPrecision: client.geoPrecision,
       unit: client.unit || '',
       gateCode: client.gateCode || '',
       accessNotes: client.accessNotes || '',
@@ -353,17 +362,20 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
                 <input className={fieldCls} value={client.email} onChange={e => setClient({ ...client, email: e.target.value })} placeholder="jane@example.com" inputMode="email" />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className={`md:col-span-2 ${cardCls}`}>
-                  <label className={labelCls}>Service Address *</label>
-                  <textarea className={`${fieldCls} min-h-[64px] resize-none`} value={client.address} onChange={e => setClient({ ...client, address: e.target.value })} placeholder="123 Main St..." />
-                </div>
-                <div className={cardCls}>
-                  <label className={labelCls}>ZIP Code *</label>
-                  <input inputMode="numeric" className={fieldCls} value={client.zip} onChange={e => setClient({ ...client, zip: e.target.value })} placeholder="33139" />
-                  <p className="text-[10px] text-slate-500 mt-1.5 leading-snug">Pins the address for accurate distance.</p>
-                </div>
-              </div>
+              <AddressAutocomplete
+                address={client.address || ''}
+                zip={client.zip || ''}
+                precision={client.geoPrecision}
+                onChange={(v) => setClient(prev => ({
+                  ...prev,
+                  address: v.address,
+                  zip: v.zip,
+                  lat: v.lat,
+                  lng: v.lng,
+                  placeId: v.placeId,
+                  geoPrecision: v.precision,
+                }))}
+              />
 
               {/* Access details for the tech */}
               <div className={cardCls}>

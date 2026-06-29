@@ -204,8 +204,15 @@ async function maybeReplyWithEta(fromPhone, body) {
     const ll = u.rows[0]?.last_location;
     if (ll && typeof ll.lat === 'number' && typeof ll.lng === 'number') techLoc = { lat: ll.lat, lng: ll.lng };
   }
-  const addr = [job.client?.address, job.client?.zip].filter(Boolean).join(', ');
-  const clientLoc = addr ? await geocode(addr) : null;
+  // Prefer the address's verified coordinates (captured at intake) over re-geocoding the
+  // free text — same fix as the in-app ETA, so a fuzzy address doesn't break the reply.
+  let clientLoc = (typeof job.client?.lat === 'number' && typeof job.client?.lng === 'number')
+    ? { lat: job.client.lat, lng: job.client.lng }
+    : null;
+  if (!clientLoc) {
+    const addr = [job.client?.address, job.client?.zip].filter(Boolean).join(', ');
+    clientLoc = addr ? await geocode(addr) : null;
+  }
   const route = (techLoc && clientLoc) ? await drivingRoute(techLoc, clientLoc) : null;
   const tech = techName || 'Your technician';
 

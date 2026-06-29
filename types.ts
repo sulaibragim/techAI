@@ -115,6 +115,10 @@ export interface Client {
   secondaryEmail?: string;
   address: string;
   zip?: string;
+  lat?: number;         // resolved from a verified address pick (Places/geocode)
+  lng?: number;
+  placeId?: string;     // Google place_id of the verified address (exact map pin + cheap re-lookup)
+  geoPrecision?: 'exact' | 'approx' | 'none'; // how trustworthy the pin is — drives the "check address" warning
   unit?: string;        // apartment / suite / unit number
   gateCode?: string;    // gate / callbox / building entry code
   accessNotes?: string; // parking, "buzzer broken", where to meet, etc.

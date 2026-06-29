@@ -12,6 +12,7 @@ import { inventoryRouter } from './routes/inventory.js';
 import { adminRouter } from './routes/admin.js';
 import { leadsRouter } from './routes/leads.js';
 import { geocodeRouter } from './routes/geocode.js';
+import { placesRouter } from './routes/places.js';
 import { dispatchRouter } from './routes/dispatch.js';
 import { pushRouter } from './routes/push.js';
 import { initDB } from './db.js';
@@ -110,6 +111,7 @@ app.use('/api/jobs', jobsRouter);
 app.use('/api/inventory', inventoryRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/geocode', geocodeRouter);
+app.use('/api/places', placesRouter);
 app.use('/api/dispatch', dispatchRouter);
 app.use('/api/push', pushRouter);
 

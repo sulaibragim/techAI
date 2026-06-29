@@ -27,6 +27,7 @@ import { geocodeAddress } from '../geocoding';
 import { haversineMiles, approxEtaMinutes, formatMiles, LatLng } from '../geoUtils';
 import { getDriveEta, getRouteInfo, getWeather, buildOnMyWayMessage } from '../dispatchMessage';
 import { AutoKeyPanel } from './AutoKeyPanel';
+import { AddressAutocomplete } from './AddressAutocomplete';
 import { useSwipeBack } from '../useSwipeBack';
 
 const STATUS_OPTIONS: { id: JobStatus; label: string }[] = [
@@ -42,6 +43,17 @@ const STATUS_OPTIONS: { id: JobStatus; label: string }[] = [
 ];
 
 const TERM_TYPES = ['1', '10', '15', '20', '30'];
+
+// Directions link that opens the EXACT verified pin. A picked address carries coordinates
+// (and a Google place_id), so we send those instead of the raw text — no more "drops in a
+// field/forest" when the typed address is fuzzy. Falls back to text only for legacy jobs.
+function directionsUrl(c: Pick<Client, 'lat' | 'lng' | 'address' | 'zip' | 'placeId'>): string {
+  const dest = (typeof c.lat === 'number' && typeof c.lng === 'number')
+    ? `${c.lat},${c.lng}`
+    : [c.address, c.zip].filter(Boolean).join(', ');
+  const pid = c.placeId && !c.placeId.startsWith('osm:') ? `&destination_place_id=${encodeURIComponent(c.placeId)}` : '';
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(dest)}${pid}`;
+}
 
 export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (job: Job) => void }> = ({ job: initialJob, onClose, onOpenJob }) => {
   const { jobs, updateJob, removeJob, inventory, consumePart, returnPart } = useAppStore();
@@ -391,14 +403,18 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
     if (!isNaN(d.getTime())) setCalMonth(new Date(d.getFullYear(), d.getMonth(), 1));
   }, [showCalendar]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Geocode the client's address (with ZIP for accuracy) to rank techs by distance.
+  // Client coordinates for tech-distance ranking, ETA, and map links. A verified address
+  // already carries exact coords — use them and skip a re-geocode of the free text (which is
+  // what used to drift a fuzzy address onto the wrong pin). Only legacy/typed addresses geocode.
   useEffect(() => {
     let active = true;
+    const { lat, lng } = localJob.client;
+    if (typeof lat === 'number' && typeof lng === 'number') { setClientCoords({ lat, lng }); return; }
     const addr = [localJob.client.address, localJob.client.zip].filter(Boolean).join(', ');
     if (!addr) { setClientCoords(null); return; }
     geocodeAddress(addr).then(c => { if (active) setClientCoords(c); });
     return () => { active = false; };
-  }, [localJob.client.address, localJob.client.zip]);
+  }, [localJob.client.lat, localJob.client.lng, localJob.client.address, localJob.client.zip]);
 
   // How far the technician is from the client — shown next to On My Way so they know the drive.
   useEffect(() => {
@@ -997,14 +1013,19 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                   <label className="text-xs font-bold text-slate-400 uppercase block mb-1">Secondary Email</label>
                   <input className="w-full bg-transparent text-white font-bold outline-none text-sm" value={localJob.client.secondaryEmail || ''} onChange={e => handleClientChange({ secondaryEmail: e.target.value })} />
                 </div>
-                <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
-                  <label className="text-xs font-bold text-slate-400 uppercase block mb-1">Address</label>
-                  <input className="w-full bg-transparent text-white font-bold outline-none text-sm" value={localJob.client.address} onChange={e => handleClientChange({ address: e.target.value })} />
-                </div>
-                <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
-                  <label className="text-xs font-bold text-slate-400 uppercase block mb-1">ZIP Code</label>
-                  <input inputMode="numeric" className="w-full bg-transparent text-white font-bold outline-none text-sm" value={localJob.client.zip || ''} onChange={e => handleClientChange({ zip: e.target.value })} placeholder="33139" />
-                </div>
+                <AddressAutocomplete
+                  address={localJob.client.address || ''}
+                  zip={localJob.client.zip || ''}
+                  precision={localJob.client.geoPrecision}
+                  onChange={(v) => handleClientChange({
+                    address: v.address,
+                    zip: v.zip,
+                    lat: v.lat,
+                    lng: v.lng,
+                    placeId: v.placeId,
+                    geoPrecision: v.precision,
+                  })}
+                />
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
                     <label className="text-xs font-bold text-slate-400 uppercase block mb-1">Unit / Apt</label>
@@ -1499,7 +1520,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                       <MapPin size={13} className="text-blue-500 shrink-0" />
                       <span className="text-xs font-semibold text-white truncate max-w-[170px]">{localJob.client.address}</span>
                     </div>
-                    <button onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent([localJob.client.address, localJob.client.zip].filter(Boolean).join(', '))}`)} title="Get directions" className="p-1.5 bg-blue-600/10 text-blue-400 rounded-lg hover:bg-blue-600 hover:text-white transition-all"><Navigation size={12} /></button>
+                    <button onClick={() => window.open(directionsUrl(localJob.client))} title="Get directions" className="p-1.5 bg-blue-600/10 text-blue-400 rounded-lg hover:bg-blue-600 hover:text-white transition-all"><Navigation size={12} /></button>
                   </div>
                   {(localJob.client.unit || localJob.client.gateCode || localJob.client.accessNotes) && (
                     <div className="pt-2.5 mt-1 border-t border-slate-700/50 space-y-1.5">
