@@ -12,6 +12,7 @@ export interface SettingsState {
   companyCity: string;
   companyPhone: string;
   companyEmail: string;
+  googleReviewUrl: string; // "leave us a review" link (Google Business); empty hides the feature
   licenseNumber: string;
   profilePhoto: string;
   monthlyRevenueTarget: number;
@@ -52,6 +53,7 @@ export const SETTINGS_DEFAULTS = {
   companyCity: 'Portland, OR 97201',
   companyPhone: '(503) 555-0100',
   companyEmail: 'info@salemlocksmith.com',
+  googleReviewUrl: '',
   licenseNumber: 'LK-00000',
   profilePhoto: '',
   monthlyRevenueTarget: 5000,

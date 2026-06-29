@@ -45,7 +45,7 @@ const TERM_TYPES = ['1', '10', '15', '20', '30'];
 
 export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (job: Job) => void }> = ({ job: initialJob, onClose, onOpenJob }) => {
   const { jobs, updateJob, removeJob, inventory, consumePart, returnPart } = useAppStore();
-  const { companyName, technicianName, companyAddress, companyCity, companyPhone, companyEmail, licenseNumber } = useSettingsStore();
+  const { companyName, technicianName, companyAddress, companyCity, companyPhone, companyEmail, licenseNumber, googleReviewUrl } = useSettingsStore();
   const clientProfiles = useSettingsStore(s => s.clientProfiles);
   const upsertClientProfile = useSettingsStore(s => s.upsertClientProfile);
   const priceBook = useSettingsStore(s => s.priceBook);
@@ -177,6 +177,8 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
 
   const [draftMessage, setDraftMessage] = useState('');
   const [otwState, setOtwState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [etaUpdState, setEtaUpdState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [reviewState, setReviewState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const [clientCoords, setClientCoords] = useState<LatLng | null>(null);
   const [routeToClient, setRouteToClient] = useState<{ miles: number; minutes: number } | null>(null);
 
@@ -264,6 +266,62 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
       setOtwState('error');
     }
     setTimeout(() => setOtwState('idle'), 4000);
+  };
+
+  // "Send ETA update": once En Route, text the client a fresh, on-demand ETA without
+  // changing status. One free route lookup per tap — same cheap pattern as the auto-reply.
+  const handleEtaUpdate = async () => {
+    if (etaUpdState === 'sending') return;
+    const phone = (localJob.client.phone || '').trim();
+    if (!phone) { setEtaUpdState('error'); setTimeout(() => setEtaUpdState('idle'), 4000); return; }
+
+    setEtaUpdState('sending');
+    const techName = users.find(u => u.id === localJob.assignedTo)?.name || technicianName;
+    const techLoc = (await getCurrentLocation()) || (currentUser?.lastLocation ? { lat: currentUser.lastLocation.lat, lng: currentUser.lastLocation.lng } : null);
+    let clientLoc = clientCoords;
+    if (!clientLoc) clientLoc = await geocodeAddress([localJob.client.address, localJob.client.zip].filter(Boolean).join(', '));
+
+    const route = (techLoc && clientLoc) ? await getRouteInfo(techLoc, clientLoc) : null;
+    const name = (localJob.client.firstName || '').trim() || 'there';
+    const text = route
+      ? `Hi ${name}, quick update — ${techName} is about ${formatMiles(route.miles)} mi away, ETA ~${route.minutes} min. See you soon!`
+      : `Hi ${name}, quick update — ${techName} is still on the way and will be there as soon as possible. Thanks for your patience!`;
+    const ok = await sendSms(phone, text);
+
+    if (ok) {
+      const smsMsg: Message = { id: Math.random().toString(36).slice(2), sender: 'technician', content: text, timestamp: new Date().toISOString(), method: 'sms' };
+      const withMsg: Job = { ...localJob, messages: [...(localJob.messages || []), smsMsg] };
+      setLocalJob(withMsg);
+      commitJob(withMsg);
+      setEtaUpdState('sent');
+    } else {
+      setEtaUpdState('error');
+    }
+    setTimeout(() => setEtaUpdState('idle'), 4000);
+  };
+
+  // "Ask for a review": on a finished job, text the client a thank-you + the Google review
+  // link. Only shown when a review URL is configured in Settings. Pure SMS — no Maps billing.
+  const handleAskReview = async () => {
+    if (reviewState === 'sending') return;
+    const phone = (localJob.client.phone || '').trim();
+    if (!phone || !googleReviewUrl.trim()) { setReviewState('error'); setTimeout(() => setReviewState('idle'), 4000); return; }
+
+    setReviewState('sending');
+    const name = (localJob.client.firstName || '').trim() || 'there';
+    const text = `Hi ${name}, thanks for choosing ${companyName}! If we did a great job, we'd really appreciate a quick review: ${googleReviewUrl.trim()}`;
+    const ok = await sendSms(phone, text);
+
+    if (ok) {
+      const smsMsg: Message = { id: Math.random().toString(36).slice(2), sender: 'technician', content: text, timestamp: new Date().toISOString(), method: 'sms' };
+      const withMsg: Job = { ...localJob, messages: [...(localJob.messages || []), smsMsg] };
+      setLocalJob(withMsg);
+      commitJob(withMsg);
+      setReviewState('sent');
+    } else {
+      setReviewState('error');
+    }
+    setTimeout(() => setReviewState('idle'), 4000);
   };
 
   const assignTech = (assignedTo: string | undefined) => {
@@ -1441,7 +1499,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                       <MapPin size={13} className="text-blue-500 shrink-0" />
                       <span className="text-xs font-semibold text-white truncate max-w-[170px]">{localJob.client.address}</span>
                     </div>
-                    <button onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([localJob.client.address, localJob.client.zip].filter(Boolean).join(', '))}`)} className="p-1.5 bg-blue-600/10 text-blue-400 rounded-lg hover:bg-blue-600 hover:text-white transition-all"><Navigation size={12} /></button>
+                    <button onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent([localJob.client.address, localJob.client.zip].filter(Boolean).join(', '))}`)} title="Get directions" className="p-1.5 bg-blue-600/10 text-blue-400 rounded-lg hover:bg-blue-600 hover:text-white transition-all"><Navigation size={12} /></button>
                   </div>
                   {(localJob.client.unit || localJob.client.gateCode || localJob.client.accessNotes) && (
                     <div className="pt-2.5 mt-1 border-t border-slate-700/50 space-y-1.5">
@@ -1475,7 +1533,43 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                         : otwState === 'error' ? (<><Car size={16} /> En Route Set · SMS Failed</>)
                         : (<><Car size={16} /> On My Way</>)}
                     </button>
+
+                    {/* Once moving, let the tech text a fresh ETA on demand (also auto-sent if the client texts "where") */}
+                    {(localJob.status === 'enRoute' || localJob.status === 'onSite') && (
+                      <button
+                        onClick={handleEtaUpdate}
+                        disabled={etaUpdState === 'sending'}
+                        className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest transition-all active:scale-95 disabled:cursor-wait border ${
+                          etaUpdState === 'sent' ? 'bg-emerald-600/15 text-emerald-400 border-emerald-500/40'
+                          : etaUpdState === 'error' ? 'bg-amber-500/15 text-amber-400 border-amber-500/40'
+                          : 'bg-slate-700/40 text-slate-200 border-slate-600/60 hover:bg-slate-700'
+                        }`}
+                      >
+                        {etaUpdState === 'sent' ? (<><CheckCircle2 size={14} /> ETA Sent</>)
+                          : etaUpdState === 'sending' ? (<><Navigation size={14} className="animate-pulse" /> Sending ETA…</>)
+                          : etaUpdState === 'error' ? (<><Navigation size={14} /> SMS Failed</>)
+                          : (<><Navigation size={14} /> Send ETA Update</>)}
+                      </button>
+                    )}
                   </div>
+                )}
+
+                {/* ASK FOR A REVIEW — finished jobs only, and only when a review link is set in Settings */}
+                {jobIsClosed && localJob.status === 'completed' && googleReviewUrl.trim() && localJob.client.phone && (
+                  <button
+                    onClick={handleAskReview}
+                    disabled={reviewState === 'sending'}
+                    className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-all active:scale-95 disabled:cursor-wait border ${
+                      reviewState === 'sent' ? 'bg-emerald-600/15 text-emerald-400 border-emerald-500/40'
+                      : reviewState === 'error' ? 'bg-amber-500/15 text-amber-400 border-amber-500/40'
+                      : 'bg-amber-500/10 text-amber-300 border-amber-500/30 hover:bg-amber-500/20'
+                    }`}
+                  >
+                    {reviewState === 'sent' ? (<><CheckCircle2 size={14} /> Review Request Sent</>)
+                      : reviewState === 'sending' ? (<><Star size={14} className="animate-pulse" /> Sending…</>)
+                      : reviewState === 'error' ? (<><Star size={14} /> SMS Failed</>)
+                      : (<><Star size={14} /> Ask for a Review</>)}
+                  </button>
                 )}
 
                 {/* ASSIGNED TECHNICIAN */}

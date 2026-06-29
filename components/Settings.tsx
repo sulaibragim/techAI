@@ -37,6 +37,7 @@ export const Settings: React.FC = () => {
     companyCity: settings.companyCity,
     companyPhone: settings.companyPhone,
     companyEmail: settings.companyEmail,
+    googleReviewUrl: settings.googleReviewUrl,
     licenseNumber: settings.licenseNumber,
     profilePhoto: settings.profilePhoto,
     monthlyRevenueTarget: settings.monthlyRevenueTarget,
@@ -136,6 +137,7 @@ export const Settings: React.FC = () => {
       companyCity: SETTINGS_DEFAULTS.companyCity,
       companyPhone: SETTINGS_DEFAULTS.companyPhone,
       companyEmail: SETTINGS_DEFAULTS.companyEmail,
+      googleReviewUrl: SETTINGS_DEFAULTS.googleReviewUrl,
       licenseNumber: SETTINGS_DEFAULTS.licenseNumber,
       profilePhoto: SETTINGS_DEFAULTS.profilePhoto,
       monthlyRevenueTarget: SETTINGS_DEFAULTS.monthlyRevenueTarget,
@@ -288,6 +290,18 @@ export const Settings: React.FC = () => {
             />
           </div>
           <p className="text-xs text-slate-500 -mt-1">Appears on all printed invoices</p>
+          <div>
+            <label className={labelCls}>Google Review Link</label>
+            <input
+              className={inputCls}
+              type="url"
+              maxLength={300}
+              value={form.googleReviewUrl}
+              onChange={e => setForm(f => ({ ...f, googleReviewUrl: e.target.value }))}
+              placeholder="https://g.page/r/…/review"
+            />
+            <p className="text-xs text-slate-500 mt-1">Enables a one-tap “Ask for a review” text on completed jobs. Leave blank to hide it.</p>
+          </div>
         </Section>}
 
         {currentUser && currentUser.role !== 'technician' && <Section icon={Target} title="Business Targets">

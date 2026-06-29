@@ -7,14 +7,14 @@ import {
   TrendingUp, TrendingDown, Wallet, Target as TargetIcon, BrainCircuit, Activity,
   CheckCircle2, Clock, Briefcase, XCircle, ChevronLeft, ChevronRight, GitCompareArrows,
   Download, Trophy, Coffee, Users, CalendarDays, Sparkles, Flame, AlertTriangle, AlertCircle,
-  Building2, HardHat, PhoneCall
+  Building2, HardHat, PhoneCall, MapPin
 } from 'lucide-react';
 import { useAppStore, useVisibleJobs } from '../store';
 import { useSettingsStore } from '../settingsStore';
 import { useAuthStore } from '../authStore';
 import {
   calculatePeriodMetrics, buildMonthlyTrend, buildYearlyTrend, revenueByJobType,
-  topClients, revenueByDayOfWeek, computeRecords, coffeeAnalysis, availableMonths,
+  topClients, revenueByArea, revenueByDayOfWeek, computeRecords, coffeeAnalysis, availableMonths,
   revenueByTechnician, periodJobsToCSV, yearPlanning, revenueByHourDow, HOUR_SLOT_LABELS,
   callQualityStats, MONTH_FULL, MONTH_LABELS, FinancialMetrics
 } from '../financialUtils';
@@ -122,6 +122,7 @@ export const Dashboard: React.FC = () => {
   const yearly = useMemo(() => buildYearlyTrend(jobs, viewYear), [jobs, viewYear]);
   const byType = useMemo(() => revenueByJobType(jobs, viewYear, viewMonth), [jobs, viewYear, viewMonth]);
   const clients = useMemo(() => topClients(jobs, viewYear, viewMonth), [jobs, viewYear, viewMonth]);
+  const byArea = useMemo(() => revenueByArea(jobs, viewYear, viewMonth), [jobs, viewYear, viewMonth]);
   const dow = useMemo(() => revenueByDayOfWeek(jobs, viewYear, viewMonth), [jobs, viewYear, viewMonth]);
   const records = useMemo(() => computeRecords(jobs), [jobs]);
   const coffee = useMemo(() => coffeeAnalysis(jobs, viewYear, viewMonth), [jobs, viewYear, viewMonth]);
@@ -538,6 +539,32 @@ export const Dashboard: React.FC = () => {
                       <span className="text-sm font-bold text-white">{fmt$(c.revenue)} <span className="text-xs text-slate-500 font-medium">· {c.jobs} job{c.jobs === 1 ? '' : 's'}</span></span>
                     </div>
                   ))}
+                </div>
+              )}
+            </Card>
+
+            <Card title="Revenue by Area" icon={MapPin}>
+              {byArea.length === 0 ? (
+                <p className="text-sm text-slate-500 py-8 text-center">No completed jobs this period.</p>
+              ) : (
+                <div className="space-y-2.5">
+                  {byArea.map((a, i) => {
+                    const pct = byArea[0].revenue > 0 ? (a.revenue / byArea[0].revenue) * 100 : 0;
+                    return (
+                      <div key={a.area + i} className="bg-white/5 px-3 py-2.5 rounded-xl border border-white/10">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="flex items-center gap-2 min-w-0">
+                            <MapPin size={12} className="text-blue-400 shrink-0" />
+                            <span className="text-sm font-semibold text-white truncate">{a.area}</span>
+                          </span>
+                          <span className="text-sm font-bold text-white shrink-0">{fmt$(a.revenue)} <span className="text-xs text-slate-500 font-medium">· {a.count} job{a.count === 1 ? '' : 's'}</span></span>
+                        </div>
+                        <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                          <div className="h-full bg-blue-600 rounded-full transition-all duration-700" style={{ width: `${Math.max(4, pct)}%` }} />
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </Card>

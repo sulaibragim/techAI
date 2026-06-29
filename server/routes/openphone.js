@@ -1,9 +1,10 @@
 import { Router } from 'express';
 import crypto from 'node:crypto';
 import { processTranscriptWithAI } from '../services/gemini.js';
-import { toE164 } from '../services/openphone.js';
+import { toE164, sendSMS } from '../services/openphone.js';
 import { requireAuth } from '../middleware/auth.js';
 import { sendPushToRoles } from '../services/push.js';
+import { geocode, drivingRoute, etaPhrase } from '../services/geo.js';
 import { db } from '../db.js';
 
 export const openphoneRouter = Router();
@@ -164,11 +165,56 @@ openphoneRouter.post('/webhook', async (req, res) => {
         tag: `msg-${obj.from || obj.id}`,
         data: { type: 'message', from: obj.from || null, url: '/' },
       }).catch(e => console.error('[OpenPhone] push error', e.message));
+
+      // "Where's my tech?" — if the client texts a status keyword and they have an active
+      // job, text back a fresh ETA automatically. No app, no timer polling: one reply per
+      // inbound ask, so the cost is a single (free) route lookup. Stays silent otherwise.
+      maybeReplyWithEta(obj.from, msg.body).catch(e => console.error('[OpenPhone] eta auto-reply error', e.message));
     }
   } catch (err) {
     console.error('[OpenPhone webhook error]', err);
   }
 });
+
+// Status keywords that make a client's text count as a "where's my tech?" ask.
+const ETA_KEYWORDS = /\b(where|eta|how long|how far|status|track|coming|on the way|here yet|arriv|when)\b/i;
+const last10 = (p) => String(p || '').replace(/\D/g, '').slice(-10);
+
+// If an inbound text is a status ask AND the sender has an active job, reply once with a
+// fresh ETA. Silent otherwise (no active job, no match) so we never spam or pay to poll.
+async function maybeReplyWithEta(fromPhone, body) {
+  if (!fromPhone || !body || !ETA_KEYWORDS.test(body)) return;
+  const fromKey = last10(fromPhone);
+  if (!fromKey) return;
+
+  // Most recently touched active job for this number (en route or on site).
+  const { rows } = await db.query(
+    "SELECT data FROM jobs WHERE data->>'status' IN ('enRoute','onSite') ORDER BY updated_at DESC LIMIT 50"
+  );
+  const match = rows.find(r => last10(r.data?.client?.phone) === fromKey);
+  if (!match) return; // no active job for this number — stay silent
+  const job = match.data;
+  const firstName = (job.client?.firstName || '').trim() || 'there';
+
+  // Tech's last known GPS + the client's geocoded address → real drive ETA.
+  let techLoc = null, techName = null;
+  if (job.assignedTo) {
+    const u = await db.query('SELECT name, last_location FROM users WHERE id = $1', [job.assignedTo]);
+    techName = u.rows[0]?.name || null;
+    const ll = u.rows[0]?.last_location;
+    if (ll && typeof ll.lat === 'number' && typeof ll.lng === 'number') techLoc = { lat: ll.lat, lng: ll.lng };
+  }
+  const addr = [job.client?.address, job.client?.zip].filter(Boolean).join(', ');
+  const clientLoc = addr ? await geocode(addr) : null;
+  const route = (techLoc && clientLoc) ? await drivingRoute(techLoc, clientLoc) : null;
+  const tech = techName || 'Your technician';
+
+  const reply = route
+    ? `Hi ${firstName}, ${tech} is on the way — ETA ${etaPhrase(route.minutes)} (${route.miles} mi out). See you soon!`
+    : `Hi ${firstName}, ${tech} is on the way and will be there as soon as possible. Thanks for your patience!`;
+  await sendSMS(fromPhone, reply);
+  console.log('[OpenPhone] ETA auto-reply →', fromPhone, route ? `${route.miles}mi/${route.minutes}min` : 'no-route');
+}
 
 // ─── GET recent calls (from webhook store, not REST API) ─────────────────────
 openphoneRouter.get('/calls', requireAuth, (_req, res) => {

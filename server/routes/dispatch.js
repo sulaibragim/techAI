@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { drivingRoute } from '../services/geo.js';
 
 export const dispatchRouter = Router();
 
@@ -6,21 +7,12 @@ export const dispatchRouter = Router();
 dispatchRouter.get('/route', async (req, res) => {
   const { from, to } = req.query;
   if (!from || !to) return res.status(400).json({ error: 'from and to required' });
-  try {
-    const [flat, flng] = String(from).split(',').map(Number);
-    const [tlat, tlng] = String(to).split(',').map(Number);
-    if ([flat, flng, tlat, tlng].some(n => Number.isNaN(n))) return res.status(400).json({ error: 'bad coords' });
-    const url = `https://router.project-osrm.org/route/v1/driving/${flng},${flat};${tlng},${tlat}?overview=false`;
-    const r = await fetch(url, { headers: { 'User-Agent': 'TrustKey-CRM/1.0 (locksmith dispatch)' } });
-    if (!r.ok) throw new Error(String(r.status));
-    const data = await r.json();
-    const route = data.routes && data.routes[0];
-    if (!route) return res.status(404).json({ error: 'no route' });
-    return res.json({ minutes: Math.round(route.duration / 60), miles: +(route.distance / 1609.34).toFixed(1) });
-  } catch (err) {
-    console.error('[dispatch] route failed:', err.message);
-    return res.status(502).json({ error: 'route failed' });
-  }
+  const [flat, flng] = String(from).split(',').map(Number);
+  const [tlat, tlng] = String(to).split(',').map(Number);
+  if ([flat, flng, tlat, tlng].some(n => Number.isNaN(n))) return res.status(400).json({ error: 'bad coords' });
+  const route = await drivingRoute({ lat: flat, lng: flng }, { lat: tlat, lng: tlng });
+  if (!route) return res.status(502).json({ error: 'route failed' });
+  return res.json(route);
 });
 
 // Current weather via free Open-Meteo (no API key). GET /weather?lat=&lng=

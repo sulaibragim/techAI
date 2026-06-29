@@ -171,6 +171,26 @@ export function revenueByJobType(jobs: Job[], year: number, month: number) {
     .sort((a, b) => b.revenue - a.revenue);
 }
 
+/** Revenue & job count grouped by service area (ZIP, falling back to a city guess from the
+ *  address tail). Pure — derived from existing job data, no map/API calls, $0. */
+export function revenueByArea(jobs: Job[], year: number, month: number, limit = 8) {
+  const completed = completedJobsInMonth(jobs, year, month);
+  const map = new Map<string, { area: string; revenue: number; count: number }>();
+  for (const j of completed) {
+    let area = (j.client?.zip || '').trim();
+    if (!area) {
+      const parts = (j.client?.address || '').split(',').map(s => s.trim()).filter(Boolean);
+      area = parts.length ? parts[parts.length - 1] : '';
+    }
+    area = area || 'Unknown';
+    const cur = map.get(area) || { area, revenue: 0, count: 0 };
+    cur.revenue += j.totalAmount;
+    cur.count += 1;
+    map.set(area, cur);
+  }
+  return [...map.values()].sort((a, b) => b.revenue - a.revenue).slice(0, limit);
+}
+
 /** Highest-revenue clients for a period. */
 export function topClients(jobs: Job[], year: number, month: number, limit = 5) {
   const completed = completedJobsInMonth(jobs, year, month);
