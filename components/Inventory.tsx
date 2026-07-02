@@ -3,13 +3,15 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   Package, Search, Plus, AlertCircle, RefreshCw, X, Minus, Trash2,
   Truck, ClipboardList, ChevronDown, Camera, ArrowDownLeft, ArrowUpRight, Pencil, TriangleAlert,
-  ScanLine, Copy, CheckCircle2,
+  ScanLine, Copy, CheckCircle2, ClipboardCheck, PieChart, Barcode,
 } from 'lucide-react';
 import { useAppStore } from '../store';
 import { useSettingsStore } from '../settingsStore';
 import { useCurrentUser, can } from '../authStore';
 import { Part, StockMovement, MOVEMENT_META } from '../types';
 import { InvoiceImportModal, ReviewLine } from './InvoiceImport';
+import { StocktakeModal, InsightsModal } from './StockTools';
+import { BarcodeScanner } from './BarcodeScanner';
 
 const CATEGORIES = ['Key Blanks', 'Remotes', 'Cylinders', 'Hardware', 'Tools'] as const;
 
@@ -77,6 +79,25 @@ export const Inventory: React.FC = () => {
   const [receiveSeed, setReceiveSeed] = useState<{ partId: string; qty: string; cost: string }[] | null>(null);
   const [scanOpen, setScanOpen] = useState(false);
   const [reorderOpen, setReorderOpen] = useState(false);
+  const [stocktakeOpen, setStocktakeOpen] = useState(false);
+  const [insightsOpen, setInsightsOpen] = useState(false);
+  const [barcodeOpen, setBarcodeOpen] = useState(false);
+
+  // Barcode → part. Match by UPC (digits only); found → open its drawer, unknown →
+  // open the New Item editor with the UPC pre-filled so the scan is never wasted.
+  const handleBarcode = (raw: string) => {
+    setBarcodeOpen(false);
+    const digits = raw.replace(/\D/g, '');
+    const hit = inventory.find(p => p.upc && p.upc.replace(/\D/g, '') === digits);
+    if (hit) { setDrawerId(hit.id); return; }
+    if (canEdit) {
+      setShowIds(true);
+      setEditingPart({ name: '', sku: '', category: 'Key Blanks', stock: 0, reorderPoint: 0, price: 0, cost: 0, location: 'shop', upc: raw.trim() });
+      setIsEditing(true);
+    } else {
+      setSearch(raw.trim());
+    }
+  };
 
   // Distinct supplier names seen in past receives — the datalist for the Receive modal.
   const knownSuppliers = useMemo(
@@ -171,11 +192,21 @@ export const Inventory: React.FC = () => {
           <h2 className="text-2xl font-bold tracking-tight">Stock Operations</h2>
           <p className="text-slate-400 text-sm mt-1">Receive purchases, track cost &amp; margin, and watch every movement.</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <button onClick={handleSync} disabled={syncing} className="flex items-center space-x-2 bg-white/5 border border-white/10 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-white/10 transition-colors active:scale-95 disabled:opacity-60">
             <RefreshCw size={16} className={syncing ? 'animate-spin' : ''} />
             <span>{syncing ? 'Syncing…' : 'Sync'}</span>
           </button>
+          <button onClick={() => setInsightsOpen(true)} title="ABC analysis & dead stock" className="flex items-center space-x-2 bg-white/5 border border-white/10 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-white/10 transition-colors active:scale-95">
+            <PieChart size={16} />
+            <span className="hidden lg:inline">Insights</span>
+          </button>
+          {canEdit && (
+            <button onClick={() => setStocktakeOpen(true)} title="Count the shelf" className="flex items-center space-x-2 bg-white/5 border border-white/10 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-white/10 transition-colors active:scale-95">
+              <ClipboardCheck size={16} />
+              <span className="hidden lg:inline">Stocktake</span>
+            </button>
+          )}
           {canEdit && (
             <>
               <button onClick={() => openEditor()} className="flex items-center space-x-2 bg-white/5 border border-white/10 px-4 py-2 rounded-xl text-sm font-bold hover:bg-white/10 transition-colors active:scale-95">
@@ -234,7 +265,11 @@ export const Inventory: React.FC = () => {
           <div className="relative w-full md:w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
             <input type="text" placeholder="Search name, SKU, barcode…" value={search} onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-slate-950 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm font-semibold text-white outline-none focus:border-blue-500/50 transition-colors" />
+              className="w-full bg-slate-950 border border-white/10 rounded-xl pl-10 pr-11 py-2.5 text-sm font-semibold text-white outline-none focus:border-blue-500/50 transition-colors" />
+            <button onClick={() => setBarcodeOpen(true)} title="Scan a product barcode"
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-slate-400 hover:text-emerald-400 hover:bg-white/5 transition-all">
+              <Barcode size={16} />
+            </button>
           </div>
         </div>
 
@@ -265,7 +300,7 @@ export const Inventory: React.FC = () => {
                           : <div className="w-9 h-9 rounded-lg bg-slate-800 border border-white/10 flex items-center justify-center shrink-0"><Package size={15} className="text-slate-500" /></div>}
                         <div className="min-w-0">
                           <p className="font-semibold text-white truncate">{item.name}</p>
-                          <p className="text-[11px] text-slate-500 font-mono truncate">{item.sku}{item.upc ? ` · ${item.upc}` : ''}</p>
+                          <p className="text-[11px] text-slate-500 font-mono truncate">{item.sku}{item.upc ? ` · ${item.upc}` : ''}{item.location && item.location !== 'shop' ? <span className="text-purple-400/80"> · {item.location}</span> : null}</p>
                         </div>
                       </div>
                     </td>
@@ -305,6 +340,27 @@ export const Inventory: React.FC = () => {
             onLoss={(qty, note) => adjustStockTo(drawerPart.id, drawerPart.stock - qty, { type: 'loss', note: note || 'Loss / broken' })}
             onDelete={() => { removeInventoryItem(drawerPart.id); setDrawerId(null); }}
           />
+        )}
+      </AnimatePresence>
+
+      {/* BARCODE SCAN → find part by UPC */}
+      {barcodeOpen && <BarcodeScanner hint="Point at the product barcode (UPC)" onResult={handleBarcode} onClose={() => setBarcodeOpen(false)} />}
+
+      {/* STOCKTAKE */}
+      <AnimatePresence>
+        {stocktakeOpen && (
+          <StocktakeModal
+            inventory={inventory}
+            onClose={() => setStocktakeOpen(false)}
+            onApply={(changes) => changes.forEach(c => adjustStockTo(c.partId, c.actual, { type: 'adjust', note: 'Stocktake' }))}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* INSIGHTS — ABC + dead stock */}
+      <AnimatePresence>
+        {insightsOpen && (
+          <InsightsModal inventory={inventory} movements={movements} onClose={() => setInsightsOpen(false)} />
         )}
       </AnimatePresence>
 
@@ -386,11 +442,22 @@ export const Inventory: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className={labelCls}>Category</label>
-                  <select value={editingPart.category || 'Key Blanks'} onChange={e => setEditingPart({ ...editingPart, category: e.target.value as Part['category'] })} className={`${inputCls} appearance-none`}>
-                    {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className={labelCls}>Category</label>
+                    <select value={editingPart.category || 'Key Blanks'} onChange={e => setEditingPart({ ...editingPart, category: e.target.value as Part['category'] })} className={`${inputCls} appearance-none`}>
+                      {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className={labelCls}>Location</label>
+                    <input type="text" list="stock-locations" value={editingPart.location || ''} onChange={e => setEditingPart({ ...editingPart, location: e.target.value })} className={inputCls} placeholder="shop / van" />
+                    <datalist id="stock-locations">
+                      <option value="shop" />
+                      <option value="van" />
+                      {[...new Set(inventory.map(p => (p.location || '').trim()).filter(Boolean))].map(l => <option key={l} value={l} />)}
+                    </datalist>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-4">
@@ -584,13 +651,24 @@ const ReorderModal: React.FC<{
   onReceive: (rows: { partId: string; qty: string; cost: string }[]) => void;
 }> = ({ inventory, movements, canEdit, onClose, onReceive }) => {
   const [copied, setCopied] = useState(false);
+  // Weekly sales rate per part over the trailing 90 days — the smarter reorder signal.
+  const cutoff = Date.now() - 90 * 86400000;
+  const weeklyRate = new Map<string, number>();
+  for (const m of movements) {
+    if (m.type !== 'sale' || new Date(m.timestamp).getTime() < cutoff) continue;
+    weeklyRate.set(m.partId, (weeklyRate.get(m.partId) || 0) + Math.abs(m.qty));
+  }
+  for (const [id, total] of weeklyRate) weeklyRate.set(id, total / (90 / 7));
+
   const low = inventory
     .filter(p => p.stock <= p.reorderPoint)
     .map(p => {
-      // Order back up to 2× the alert level — enough to stop re-ordering every week.
-      const suggested = Math.max(p.reorderPoint * 2 - p.stock, 1);
+      // Order whichever is larger: back up to 2× the alert level, or 4 weeks of cover
+      // at the part's actual sales pace — fast movers get more than the static floor.
+      const rate = weeklyRate.get(p.id) || 0;
+      const suggested = Math.max(p.reorderPoint * 2 - p.stock, Math.ceil(rate * 4 - p.stock), 1);
       const lastReceive = movements.find(m => m.partId === p.id && m.type === 'receive' && m.supplierName);
-      return { part: p, suggested, lastSupplier: lastReceive?.supplierName || '' };
+      return { part: p, suggested, rate, lastSupplier: lastReceive?.supplierName || '' };
     })
     .sort((a, b) => (a.part.stock - a.part.reorderPoint) - (b.part.stock - b.part.reorderPoint));
 
@@ -614,12 +692,12 @@ const ReorderModal: React.FC<{
         <p className="text-xs text-slate-500 mb-5">Everything at or below its alert level, most urgent first.</p>
 
         <div className="space-y-2">
-          {low.map(({ part, suggested, lastSupplier }) => (
+          {low.map(({ part, suggested, rate, lastSupplier }) => (
             <div key={part.id} className="flex items-center justify-between gap-3 bg-slate-950 border border-white/10 rounded-2xl p-3.5">
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-white truncate">{part.name}</p>
                 <p className="text-[11px] text-slate-500 font-mono">
-                  {part.stock} / {part.reorderPoint} on hand{lastSupplier ? ` · last from ${lastSupplier}` : ''}
+                  {part.stock} / {part.reorderPoint} on hand{rate > 0.1 ? ` · sells ~${rate.toFixed(1)}/wk` : ''}{lastSupplier ? ` · last from ${lastSupplier}` : ''}
                 </p>
               </div>
               <span className="shrink-0 text-sm font-black text-amber-400 tabular-nums">order {suggested}</span>
