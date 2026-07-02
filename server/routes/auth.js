@@ -2,6 +2,7 @@ import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import { db } from '../db.js';
 import { signToken, requireAuth, requireRole } from '../middleware/auth.js';
+import { fulfillEtaRequest } from '../services/etaRequests.js';
 
 export const authRouter = Router();
 
@@ -139,6 +140,13 @@ authRouter.put('/users/:id', requireAuth, async (req, res) => {
     );
     const { rows } = await db.query('SELECT * FROM users WHERE id = $1', [req.params.id]);
     if (rows.length === 0) return res.status(404).json({ error: 'User not found' });
+
+    // A fresh tech location just landed — if a client is waiting on this tech's ETA
+    // (they texted "where are you?"), deliver it now. Fire-and-forget.
+    if (lastLocation && typeof lastLocation.lat === 'number' && typeof lastLocation.lng === 'number') {
+      fulfillEtaRequest(req.params.id, lastLocation).catch(e => console.error('[AUTH] eta fulfill error:', e.message));
+    }
+
     res.json(mapUser(rows[0]));
   } catch (err) {
     if (err.code === '23505') return res.status(409).json({ error: 'Email already in use' });

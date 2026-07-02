@@ -76,6 +76,11 @@ export const MSG = {
   spanishConfirmed: {
     es: () => `¡Perfecto! A partir de ahora recibirá nuestros mensajes en español. 🇲🇽`,
   },
+  // Holding reply while we ping the tech's phone for a fresh live location.
+  etaChecking: {
+    en: ({ name, tech }) => `Hi ${name}, ${tech} is on the way — getting his live location now, I'll text you the ETA in a moment.`,
+    es: ({ name, tech }) => `Hola ${name}, ${tech} va en camino — estoy obteniendo su ubicación en vivo y le enviaré el tiempo estimado en un momento.`,
+  },
 };
 
 // Returns true the FIRST time a (job, kind) SMS is claimed, false if already sent — so a

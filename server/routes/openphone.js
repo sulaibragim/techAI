@@ -6,6 +6,7 @@ import { requireAuth } from '../middleware/auth.js';
 import { sendPushToRoles } from '../services/push.js';
 import { geocode, drivingRoute, etaPhrase } from '../services/geo.js';
 import { getClientLang, setClientLang, isSpanishOptIn, t } from '../services/messages.js';
+import { sendEtaToClient, requestFreshEta } from '../services/etaRequests.js';
 import { db } from '../db.js';
 
 export const openphoneRouter = Router();
@@ -199,8 +200,13 @@ async function handleLangReply(fromPhone, body) {
 }
 
 
-// If an inbound text is a status ask AND the sender has an active job, reply once with a
-// fresh ETA. Silent otherwise (no active job, no match) so we never spam or pay to poll.
+// How recent a tech's shared location must be to answer instantly without pinging them.
+const LOCATION_FRESH_MS = 4 * 60 * 1000;
+
+// If an inbound text is a status ask AND the sender has an active job, reply with an ETA.
+// If the tech's location is fresh, answer instantly; if it's stale/unknown, send a holding
+// note and push the tech to share a fresh location (which then fulfills the ETA). Silent
+// when there's no active job so we never spam.
 async function maybeReplyWithEta(fromPhone, body) {
   if (!fromPhone || !body || !ETA_KEYWORDS.test(body)) return;
   const fromKey = last10(fromPhone);
@@ -208,41 +214,41 @@ async function maybeReplyWithEta(fromPhone, body) {
 
   // Most recently touched active job for this number (en route or on site).
   const { rows } = await db.query(
-    "SELECT data FROM jobs WHERE data->>'status' IN ('enRoute','onSite') ORDER BY updated_at DESC LIMIT 50"
+    "SELECT id, data FROM jobs WHERE data->>'status' IN ('enRoute','onSite') ORDER BY updated_at DESC LIMIT 50"
   );
   const match = rows.find(r => last10(r.data?.client?.phone) === fromKey);
   if (!match) return; // no active job for this number — stay silent
-  const job = match.data;
+  const job = { ...match.data, id: match.id };
   const lang = await getClientLang(fromPhone);
   const firstName = (job.client?.firstName || '').trim() || (lang === 'es' ? 'hola' : 'there');
 
-  // Tech's last known location → real drive ETA. Mobile company: there's no shop to fall
-  // back to, so if the tech hasn't shared a location we say "on the way" without minutes.
-  let techLoc = null, techName = null;
+  // Tech's last shared location + how fresh it is.
+  let techLoc = null, techName = null, freshMs = Infinity;
   if (job.assignedTo) {
     const u = await db.query('SELECT name, last_location FROM users WHERE id = $1', [job.assignedTo]);
     techName = u.rows[0]?.name || null;
     const ll = u.rows[0]?.last_location;
-    if (ll && typeof ll.lat === 'number' && typeof ll.lng === 'number') techLoc = { lat: ll.lat, lng: ll.lng };
+    if (ll && typeof ll.lat === 'number' && typeof ll.lng === 'number') {
+      techLoc = { lat: ll.lat, lng: ll.lng };
+      freshMs = ll.updatedAt ? Date.now() - new Date(ll.updatedAt).getTime() : Infinity;
+    }
   }
 
-  // Prefer the address's verified coordinates (captured at intake) over re-geocoding the
-  // free text — so a fuzzy address doesn't break the reply.
-  let clientLoc = (typeof job.client?.lat === 'number' && typeof job.client?.lng === 'number')
-    ? { lat: job.client.lat, lng: job.client.lng }
-    : null;
-  if (!clientLoc) {
-    const addr = [job.client?.address, job.client?.zip].filter(Boolean).join(', ');
-    clientLoc = addr ? await geocode(addr) : null;
+  // No assigned tech → nothing to locate; answer honestly ("on the way").
+  if (!job.assignedTo) { await sendEtaToClient(fromPhone, job, null, techName, lang); return; }
+
+  // Fresh location → instant accurate ETA.
+  if (techLoc && freshMs < LOCATION_FRESH_MS) {
+    await sendEtaToClient(fromPhone, job, techLoc, techName, lang);
+    console.log('[OpenPhone] ETA (fresh) →', fromPhone, lang);
+    return;
   }
-  const route = (techLoc && clientLoc) ? await drivingRoute(techLoc, clientLoc) : null;
+
+  // Stale/unknown → hold the client and ping the tech's phone for a fresh location.
   const tech = techName || (lang === 'es' ? 'Su técnico' : 'Your technician');
-
-  const reply = route
-    ? t('etaReply', lang, { name: firstName, tech, miles: route.miles, minutes: route.minutes })
-    : t('etaReplyNoLoc', lang, { name: firstName, tech });
-  await sendSMS(fromPhone, reply);
-  console.log('[OpenPhone] ETA auto-reply →', fromPhone, route ? `${route.miles}mi/${route.minutes}min` : 'no-route', lang);
+  await sendSMS(fromPhone, t('etaChecking', lang, { name: firstName, tech }));
+  await requestFreshEta({ techId: job.assignedTo, clientPhone: fromPhone, job, techName, lang });
+  console.log('[OpenPhone] ETA ping → tech', job.assignedTo, 'for client', fromPhone);
 }
 
 // Client SMS language for a phone number — the tech's app reads this before sending

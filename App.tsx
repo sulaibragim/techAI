@@ -201,6 +201,31 @@ const App: React.FC = () => {
     return () => clearInterval(id);
   }, [hasEnRouteJob, currentUser?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // On-demand location: when a client texts "where are you?", the server pushes this tech
+  // a "share your location" ping. Grab a one-off fresh GPS here — on that ping, when the
+  // app returns to the foreground, or when it's opened (e.g. by tapping that push) during
+  // an active job. The fresh location fulfills the waiting client's ETA request server-side.
+  const hasActiveJob = currentUser?.role === 'technician' &&
+    jobs.some(j => j.assignedTo === currentUser.id && (j.status === 'enRoute' || j.status === 'onSite'));
+  useEffect(() => {
+    if (currentUser?.role !== 'technician' || !currentUser) return;
+    if (typeof navigator === 'undefined' || !navigator.geolocation) return;
+    const grab = () => navigator.geolocation.getCurrentPosition(
+      pos => setTechLocation(currentUser.id, { lat: pos.coords.latitude, lng: pos.coords.longitude, updatedAt: new Date().toISOString() }),
+      () => {},
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+    const onSwMessage = (e: MessageEvent) => { if ((e.data as { type?: string })?.type === 'share-location') grab(); };
+    const onVisible = () => { if (document.visibilityState === 'visible' && hasActiveJob) grab(); };
+    navigator.serviceWorker?.addEventListener('message', onSwMessage);
+    document.addEventListener('visibilitychange', onVisible);
+    if (hasActiveJob) grab(); // app just opened while on an active job (e.g. from the ETA ping)
+    return () => {
+      navigator.serviceWorker?.removeEventListener('message', onSwMessage);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, [currentUser?.id, currentUser?.role, hasActiveJob]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const { onboardingComplete } = useSettingsStore();
 
   // Require both an identity and a valid server-issued token. A stale localStorage

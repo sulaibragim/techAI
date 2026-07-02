@@ -42,18 +42,33 @@ self.addEventListener('push', event => {
     vibrate: [80, 40, 80],
     data: { url: '/', ...(payload.data || {}) },
   };
-  event.waitUntil(self.registration.showNotification(title, options));
+  event.waitUntil((async () => {
+    await self.registration.showNotification(title, options);
+    // "Share your location" ping: if the tech's app is already open, tell it to grab GPS
+    // now (no tap needed). If it's closed, the notification above lets them tap to open.
+    if (options.data.type === 'share-location') {
+      const wins = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+      for (const c of wins) c.postMessage({ type: 'share-location' });
+    }
+  })());
 });
 
 // Tapping a notification focuses an open app window (or opens one).
 self.addEventListener('notificationclick', event => {
   event.notification.close();
-  const url = (event.notification.data && event.notification.data.url) || '/';
+  const data = event.notification.data || {};
+  const url = data.url || '/';
   event.waitUntil((async () => {
     const wins = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
     for (const c of wins) {
-      if ('focus' in c) { await c.focus(); return; }
+      if ('focus' in c) {
+        await c.focus();
+        if (data.type === 'share-location') c.postMessage({ type: 'share-location' });
+        return;
+      }
     }
+    // App was closed — open it. On load the tech's app grabs GPS if they're en route,
+    // which fulfills the waiting client's ETA request.
     if (self.clients.openWindow) await self.clients.openWindow(url);
   })());
 });
