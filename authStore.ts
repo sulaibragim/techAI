@@ -105,7 +105,7 @@ export const useAuthStore = create<AuthState>()(
           body: JSON.stringify({
             name: userData.name,
             email: userData.email,
-            password: userData.password || '1234',
+            password: userData.password, // callers always provide one — the server rejects a blank (no silent '1234')
             role: userData.role,
             phone: userData.phone,
             commissionRate: userData.commissionRate,

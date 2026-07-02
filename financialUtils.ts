@@ -519,6 +519,64 @@ export function callQualityStats(jobs: Job[], year: number, month: number): Call
   };
 }
 
+// ── Fraud watch ──────────────────────────────────────────────────────────────
+
+export interface FraudSignal {
+  userId: string;
+  name: string;
+  signals: string[];        // human-readable tripwires
+  severity: 'watch' | 'alert';
+}
+
+/**
+ * Behavioral tripwires per technician for a period. NOT proof of anything — a prompt
+ * for the owner to look closer at specific jobs. Thresholds need a minimum sample so
+ * one slow week doesn't flag anyone:
+ *  • no-sale heavy   — ≥3 coffee walk-aways AND ≥50% of opportunities ended no-sale
+ *  • cash heavy      — ≥80% of collected money is cash AND ≥$300 collected
+ *  • $0 completions  — ≥2 completed jobs with a zero-dollar invoice
+ */
+export function fraudWatch(
+  jobs: Job[],
+  year: number,
+  month: number,
+  users: Pick<User, 'id' | 'name' | 'role' | 'active'>[]
+): FraudSignal[] {
+  const key = monthKey(year, month);
+  const out: FraudSignal[] = [];
+  for (const u of users) {
+    if (u.role !== 'technician' || !u.active) continue;
+    const mine = jobs.filter(j => j.assignedTo === u.id);
+    const completed = mine.filter(j => isRevenueJob(j) && revenueDateStr(j).startsWith(key));
+    const soldCount = completed.filter(isSale).length;
+    const coffeeCount = mine.filter(j => j.status === 'coffee' && j.scheduledDate.startsWith(key)).length;
+    const zeroCompleted = mine.filter(j => j.status === 'completed' && revenueDateStr(j).startsWith(key) && (j.totalAmount || 0) === 0).length;
+
+    let cash = 0, collected = 0;
+    for (const j of completed) {
+      const c = collectedAmount(j);
+      collected += c;
+      if (j.paymentMethod === 'Cash') cash += c;
+    }
+
+    const signals: string[] = [];
+    const opportunities = soldCount + coffeeCount;
+    if (coffeeCount >= 3 && opportunities > 0 && coffeeCount / opportunities >= 0.5) {
+      signals.push(`${coffeeCount} no-sale visits (${Math.round((coffeeCount / opportunities) * 100)}% of opportunities)`);
+    }
+    if (collected >= 300 && cash / collected >= 0.8) {
+      signals.push(`${Math.round((cash / collected) * 100)}% of collected money is cash ($${Math.round(cash).toLocaleString('en-US')})`);
+    }
+    if (zeroCompleted >= 2) {
+      signals.push(`${zeroCompleted} completed jobs with a $0 invoice`);
+    }
+    if (signals.length > 0) {
+      out.push({ userId: u.id, name: u.name, signals, severity: signals.length >= 2 ? 'alert' : 'watch' });
+    }
+  }
+  return out.sort((a, b) => b.signals.length - a.signals.length);
+}
+
 export const HOUR_SLOT_LABELS = ['12a', '3a', '6a', '9a', '12p', '3p', '6p', '9p'];
 
 export interface HourDowCell { revenue: number; count: number; }

@@ -11,12 +11,12 @@ import {
 } from 'lucide-react';
 import { useAppStore, useVisibleJobs } from '../store';
 import { useSettingsStore } from '../settingsStore';
-import { useAuthStore } from '../authStore';
+import { useAuthStore, useCurrentUser } from '../authStore';
 import {
   calculatePeriodMetrics, buildMonthlyTrend, buildYearlyTrend, revenueByJobType,
   topClients, revenueByArea, revenueByDayOfWeek, computeRecords, coffeeAnalysis, availableMonths,
   revenueByTechnician, periodJobsToCSV, yearPlanning, revenueByHourDow, HOUR_SLOT_LABELS,
-  callQualityStats, MONTH_FULL, MONTH_LABELS, FinancialMetrics
+  callQualityStats, MONTH_FULL, MONTH_LABELS, FinancialMetrics, fraudWatch
 } from '../financialUtils';
 import { TechAnalytics } from './TechAnalytics';
 
@@ -99,6 +99,7 @@ const Card: React.FC<{ title?: string; icon?: React.ElementType; className?: str
 export const Dashboard: React.FC = () => {
   const jobs = useVisibleJobs();
   const { monthlyRevenueTarget, monthlyTargets, setMonthlyTarget } = useSettingsStore();
+  const currentUser = useCurrentUser();
 
   const now = new Date();
   const [viewYear, setViewYear] = useState(now.getFullYear());
@@ -220,7 +221,34 @@ export const Dashboard: React.FC = () => {
       </div>
 
       {viewMode === 'team' ? (
-        <TechAnalytics jobs={jobs} users={users} year={viewYear} month={viewMonth} />
+        <>
+          {/* Fraud watch — behavioral tripwires, owner's eyes only. Not accusations:
+              a short list of "look closer at this tech's jobs" prompts. */}
+          {currentUser?.role === 'owner' && (() => {
+            const flags = fraudWatch(jobs, viewYear, viewMonth, users);
+            if (flags.length === 0) return null;
+            return (
+              <div className="bg-red-500/5 border border-red-500/20 rounded-3xl p-5 space-y-3">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle size={16} className="text-red-400" />
+                  <h3 className="text-sm font-bold text-white uppercase tracking-wider">Fraud watch</h3>
+                  <span className="text-[10px] font-semibold text-slate-500 normal-case">visible to owner only · signals, not verdicts</span>
+                </div>
+                {flags.map(f => (
+                  <div key={f.userId} className={`rounded-2xl border p-3.5 ${f.severity === 'alert' ? 'bg-red-500/10 border-red-500/30' : 'bg-amber-500/5 border-amber-500/20'}`}>
+                    <p className="text-sm font-bold text-white">{f.name}</p>
+                    <ul className="mt-1 space-y-0.5">
+                      {f.signals.map((s, i) => (
+                        <li key={i} className={`text-xs font-medium ${f.severity === 'alert' ? 'text-red-300' : 'text-amber-300'}`}>• {s}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
+          <TechAnalytics jobs={jobs} users={users} year={viewYear} month={viewMonth} />
+        </>
       ) : compareMode ? (
         <CompareView
           jobs={jobs} months={months} target={targetGoal}

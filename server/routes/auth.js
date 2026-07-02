@@ -74,11 +74,16 @@ authRouter.post('/users', requireAuth, requireRole('owner'), async (req, res) =>
   try {
     const { name, email, password, role, phone, commissionRate, active, techStatus, skills } = req.body;
     if (!name || !email) return res.status(400).json({ error: 'Name and email required' });
+    // No silent default password — a missing/blank password used to become '1234',
+    // which meant an account could exist with a guessable credential nobody chose.
+    if (typeof password !== 'string' || password.length < 4) {
+      return res.status(400).json({ error: 'Password of at least 4 characters is required' });
+    }
     if (role && !['owner', 'manager', 'technician', 'accountant'].includes(role)) {
       return res.status(400).json({ error: 'Invalid role' });
     }
     const id = `u-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-    const hash = await bcrypt.hash(password || '1234', 10);
+    const hash = await bcrypt.hash(password, 10);
     await db.query(
       `INSERT INTO users (id, name, email, password, role, phone, commission_rate, active, tech_status, skills)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,

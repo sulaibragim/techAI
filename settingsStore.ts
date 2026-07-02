@@ -162,17 +162,17 @@ export const useSettingsStore = create<SettingsState>()(
       addServiceRate: (rate) => {
         const entry: ServiceRate = { ...rate, id: `rate-${Date.now()}-${Math.random().toString(36).slice(2, 7)}` };
         set((state) => ({ priceBook: [...state.priceBook, entry] }));
-        pushToServer({ priceBook: get().priceBook });
+        pushToServer({ priceBook: [entry] });
       },
 
       updateServiceRate: (rate) => {
         set((state) => ({ priceBook: state.priceBook.map(r => r.id === rate.id ? rate : r) }));
-        pushToServer({ priceBook: get().priceBook });
+        pushToServer({ priceBook: [rate] });
       },
 
       removeServiceRate: (id) => {
         set((state) => ({ priceBook: state.priceBook.filter(r => r.id !== id) }));
-        pushToServer({ priceBook: get().priceBook });
+        pushToServer({ removedServiceRateIds: [id] });
       },
 
       upsertClientProfile: (phoneKey, patch) => {

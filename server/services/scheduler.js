@@ -133,12 +133,40 @@ async function runEveningDigest() {
   const bookedTomorrow = jobs.filter(j =>
     j.scheduledDate === tomorrow && !['completed', 'cancelled', 'coffee'].includes(j.status)).length;
 
+  // Fraud tripwires for the current month — same thresholds as the owner's in-app
+  // Fraud Watch card (financialUtils.fraudWatch): heavy no-sale rate, cash-heavy
+  // collections, repeated $0 completions. One short line so the owner looks closer.
+  const monthKey = date.slice(0, 7);
+  const revDate = (j) => (j.completedAt ? j.completedAt.slice(0, 10) : j.scheduledDate || '');
+  const { rows: techRows } = await db.query("SELECT id, name FROM users WHERE role = 'technician' AND active = true");
+  const watchLines = [];
+  for (const t of techRows) {
+    const mine = jobs.filter(j => j.assignedTo === t.id);
+    const completed = mine.filter(j => (j.status === 'completed' || j.status === 'sold') && revDate(j).startsWith(monthKey));
+    const sold = completed.filter(j => (j.totalAmount || 0) > 0).length;
+    const coffee = mine.filter(j => j.status === 'coffee' && (j.scheduledDate || '').startsWith(monthKey)).length;
+    const zero = mine.filter(j => j.status === 'completed' && revDate(j).startsWith(monthKey) && (j.totalAmount || 0) === 0).length;
+    let cash = 0, collected = 0;
+    for (const j of completed) {
+      const c = j.paymentStatus === 'paid' ? (j.totalAmount || 0) : j.paymentStatus === 'partial' ? (j.amountPaid || 0) : 0;
+      collected += c;
+      if (j.paymentMethod === 'Cash') cash += c;
+    }
+    const opp = sold + coffee;
+    const flags = [];
+    if (coffee >= 3 && opp > 0 && coffee / opp >= 0.5) flags.push(`${coffee} no-sale visits`);
+    if (collected >= 300 && cash / collected >= 0.8) flags.push(`${Math.round((cash / collected) * 100)}% cash`);
+    if (zero >= 2) flags.push(`${zero}× $0 completions`);
+    if (flags.length) watchLines.push(`${t.name}: ${flags.join(', ')}`);
+  }
+
   const text = [
     `TrustKey daily wrap — ${date}:`,
     `${money(revenueToday)} from ${doneToday.length} job${doneToday.length === 1 ? '' : 's'} today.`,
     unpaidCount > 0 ? `${unpaidCount} unpaid (${money(outstanding)} outstanding).` : 'No outstanding balances.',
     `${bookedTomorrow} job${bookedTomorrow === 1 ? '' : 's'} booked for tomorrow.`,
-  ].join(' ');
+    watchLines.length ? `⚠ Watch: ${watchLines.join('; ')}.` : '',
+  ].filter(Boolean).join(' ');
 
   const { rows: owners } = await db.query(
     "SELECT phone FROM users WHERE role = 'owner' AND active = true AND phone IS NOT NULL AND phone <> ''"

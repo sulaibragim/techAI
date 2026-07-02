@@ -52,6 +52,16 @@ function unionById(current, incoming, cap) {
 
 const mergeMap = (current, incoming) => ({ ...(current || {}), ...(incoming || {}) });
 
+// Order-preserving union for display lists (price book): keep the current order,
+// swap in updated entries by id, append genuinely new ones at the end.
+function unionKeepOrder(current, incoming) {
+  const byId = new Map((incoming || []).filter(x => x?.id).map(x => [x.id, x]));
+  const out = (current || []).map(x => (x?.id && byId.has(x.id) ? byId.get(x.id) : x));
+  const have = new Set(out.map(x => x?.id));
+  for (const item of incoming || []) if (item?.id && !have.has(item.id)) out.push(item);
+  return out;
+}
+
 // Update settings (merge patch) — owner or manager only.
 settingsRouter.put('/', requireAuth, requireRole('owner', 'manager'), async (req, res) => {
   try {
@@ -68,6 +78,7 @@ settingsRouter.put('/', requireAuth, requireRole('owner', 'manager'), async (req
     if (!patch.replaceLedgers) {
       if (patch.expenses) merged.expenses = unionById(current.expenses, patch.expenses);
       if (patch.stockMovements) merged.stockMovements = unionById(current.stockMovements, patch.stockMovements, 2000);
+      if (patch.priceBook) merged.priceBook = unionKeepOrder(current.priceBook, patch.priceBook);
       if (patch.clientProfiles) merged.clientProfiles = mergeMap(current.clientProfiles, patch.clientProfiles);
       if (patch.monthlyTargets) merged.monthlyTargets = mergeMap(current.monthlyTargets, patch.monthlyTargets);
       if (patch.techTargets) merged.techTargets = mergeMap(current.techTargets, patch.techTargets);
@@ -79,12 +90,17 @@ settingsRouter.put('/', requireAuth, requireRole('owner', 'manager'), async (req
       const gone = new Set(patch.removedExpenseIds);
       merged.expenses = merged.expenses.filter((e) => !gone.has(e?.id));
     }
+    if (Array.isArray(patch.removedServiceRateIds) && merged.priceBook) {
+      const gone = new Set(patch.removedServiceRateIds);
+      merged.priceBook = merged.priceBook.filter((r) => !gone.has(r?.id));
+    }
     if (merged.techTargets && typeof merged.techTargets === 'object') {
       for (const [k, v] of Object.entries(merged.techTargets)) {
         if (!(Number(v) > 0)) delete merged.techTargets[k];
       }
     }
     delete merged.removedExpenseIds; // transport-only keys — never persisted
+    delete merged.removedServiceRateIds;
     delete merged.replaceLedgers;
 
     await db.query(
