@@ -56,6 +56,28 @@ async function userName(id) {
   } catch { return 'A technician'; }
 }
 
+// Company display name from the settings blob (for client-facing texts).
+async function companyName() {
+  try {
+    const { rows } = await db.query("SELECT value FROM settings WHERE key = 'company'");
+    return (rows[0] && JSON.parse(rows[0].value).companyName) || 'your locksmith';
+  } catch { return 'your locksmith'; }
+}
+
+// "Your technician has arrived" — texts the CLIENT when the job first goes On Site.
+// Lives on the server so it fires no matter where the status changed (job card,
+// Kanban drag, tech's phone). Best-effort, never blocks the request.
+async function notifyClientArrived(job, techId) {
+  const phone = (job.client?.phone || '').trim();
+  if (!phone) return;
+  const first = (job.client?.firstName || '').trim() || 'there';
+  const [tech, company] = await Promise.all([
+    techId ? userName(techId) : Promise.resolve('Your technician'),
+    companyName(),
+  ]);
+  await sendSMS(phone, `Hi ${first}, ${tech} from ${company} has arrived at your location. See you in a moment!`);
+}
+
 // Alert the dispatchers (active owners/managers with a phone, plus LEAD_NOTIFY_PHONE)
 // about a tech lifecycle milestone. Best-effort SMS; skips the acting user so nobody
 // texts themselves.
@@ -226,6 +248,11 @@ jobsRouter.put('/:id', requireAuth, async (req, res) => {
     const wentEnRoute = data.status === 'enRoute' && prevStatus !== 'enRoute';
     const justAccepted = data.acceptanceStatus === 'accepted' && prevAcceptance !== 'accepted';
     const justDeclined = data.acceptanceStatus === 'declined' && prevAcceptance !== 'declined';
+
+    // First transition to On Site → text the client their tech has arrived.
+    if (data.status === 'onSite' && prevStatus !== 'onSite') {
+      notifyClientArrived(data, data.assignedTo).catch(e => console.error('[JOBS] arrived notify error:', e));
+    }
     if (wentEnRoute || justAccepted || justDeclined) {
       (async () => {
         const actor = await userName(req.user.id);

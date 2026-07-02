@@ -204,6 +204,7 @@ export interface Job {
   jobNumber: string;
   createdAt?: string;
   updatedAt?: string; // freshness stamp — bulk /sync only overwrites a stored job with a newer one
+  paymentReminders?: string[]; // ISO stamps of unpaid-balance reminder SMS the server has sent (max 2)
   client: Client;
   lockDetails: LockDetails;
   complaint: string;

@@ -16,6 +16,7 @@ import { placesRouter } from './routes/places.js';
 import { dispatchRouter } from './routes/dispatch.js';
 import { pushRouter } from './routes/push.js';
 import { initDB } from './db.js';
+import { startScheduler } from './services/scheduler.js';
 
 import { fileURLToPath } from 'url';
 import path from 'path';
@@ -127,6 +128,7 @@ async function start() {
       await initDB();
       console.log('[DB] Connected to PostgreSQL');
       await hydrateOpenPhoneStores();
+      startScheduler(); // payment reminders + evening digest (needs the DB)
     } catch (err) {
       console.error('[DB] Failed to connect:', err.message);
       console.log('[DB] Running without database — data will be in-memory only');
