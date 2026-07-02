@@ -1,6 +1,7 @@
 import { db } from '../db.js';
 import { sendSMS } from './openphone.js';
 import { sendPushToRoles } from './push.js';
+import { stripeConfigured, createCheckoutSession, publicBase } from './stripe.js';
 
 // Time-based automations that need a clock, not a request:
 //   • payment reminders — completed-but-unpaid jobs get a polite SMS at 3 and 10 days
@@ -74,7 +75,24 @@ async function runPaymentReminders() {
 
     const first = (j.client?.firstName || '').trim() || 'there';
     const call = company.phone ? ` or call us at ${company.phone}` : '';
-    const text = `Hi ${first}, this is ${company.name}. Friendly reminder: job #${j.jobNumber || row.id} has an outstanding balance of ${money(balance)}. Reply here${call} to settle it — thank you!`;
+
+    // With Stripe configured, the nudge carries a tap-to-pay card link — the client can
+    // settle right from the text. Link failure never blocks the reminder itself.
+    let payLine = '';
+    if (stripeConfigured()) {
+      try {
+        const session = await createCheckoutSession({
+          jobId: row.id,
+          jobNumber: j.jobNumber || row.id,
+          amountCents: Math.round(balance * 100),
+          companyName: company.name,
+          base: publicBase(),
+        });
+        payLine = ` Pay securely by card: ${session.url}`;
+      } catch (e) { console.warn('[scheduler] pay-link failed, sending reminder without it:', e.message); }
+    }
+
+    const text = `Hi ${first}, this is ${company.name}. Friendly reminder: job #${j.jobNumber || row.id} has an outstanding balance of ${money(balance)}.${payLine} Reply here${call} with any questions — thank you!`;
     const ok = await sendSMS(phone, text);
     if (!ok) continue; // OpenPhone hiccup — retry next tick, don't stamp
 

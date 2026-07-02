@@ -20,6 +20,8 @@ import { useAuthStore, useCurrentUser, can } from '../authStore';
 import { BRANDS, LOCK_TYPES as LOCK_ICONS } from '../constants';
 import { formatTimestamp, formatDate } from '../dateUtils';
 import { sendSms } from '../smsService';
+import { API_BASE } from '../backendUrl';
+import { authHeaders } from '../apiClient';
 import { normalizePhone, toE164US, formatPhone, buildClients, clientFlags, clientScore, TIER_STYLE } from '../clientUtils';
 import { isRevenueJob } from '../financialUtils';
 import { translateCallSummary } from '../translateService';
@@ -191,6 +193,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
   const [otwState, setOtwState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const [etaUpdState, setEtaUpdState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const [reviewState, setReviewState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [payLinkState, setPayLinkState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const [clientCoords, setClientCoords] = useState<LatLng | null>(null);
   const [routeToClient, setRouteToClient] = useState<{ miles: number; minutes: number } | null>(null);
 
@@ -334,6 +337,38 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
       setReviewState('error');
     }
     setTimeout(() => setReviewState('idle'), 4000);
+  };
+
+  // "Text pay link": server creates a Stripe Checkout session for the outstanding
+  // balance and texts it to the client. The webhook marks the job paid when the card
+  // clears — the payment then shows up here via the normal job poll.
+  const handleSendPayLink = async () => {
+    if (payLinkState === 'sending') return;
+    setPayLinkState('sending');
+    try {
+      const res = await fetch(`${API_BASE}/api/payments/link`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({ jobId: localJob.id, sms: true }),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      const { url, balance } = await res.json();
+      const smsMsg: Message = {
+        id: Math.random().toString(36).slice(2),
+        sender: 'technician',
+        content: `Payment link for $${(balance ?? 0).toFixed(2)} sent: ${url}`,
+        timestamp: new Date().toISOString(),
+        method: 'sms',
+      };
+      const withMsg: Job = { ...localJob, messages: [...(localJob.messages || []), smsMsg] };
+      setLocalJob(withMsg);
+      commitJob(withMsg);
+      logAudit({ action: 'payment.link', detail: `Texted card payment link ($${(balance ?? 0).toFixed(2)}) for #${localJob.jobNumber}`, jobId: localJob.id });
+      setPayLinkState('sent');
+    } catch {
+      setPayLinkState('error');
+    }
+    setTimeout(() => setPayLinkState('idle'), 4000);
   };
 
   const assignTech = (assignedTo: string | undefined) => {
@@ -2045,6 +2080,24 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                     }`}>
                       {localJob.paymentStatus === 'paid' ? <><CheckCircle2 size={15} /> Settled</> : <><CreditCard size={15} /> Payment Pending</>}
                     </div>
+                  )}
+                  {localJob.paymentStatus !== 'paid' && subtotal > 0 && (localJob.client.phone || '').trim() && (
+                    <button
+                      onClick={handleSendPayLink}
+                      disabled={payLinkState === 'sending'}
+                      aria-label="Text card payment link"
+                      title="Text the client a secure card payment link"
+                      className={`shrink-0 h-[46px] px-4 rounded-xl border flex items-center justify-center gap-2 active:scale-95 transition-all ${
+                        payLinkState === 'sent' ? 'bg-emerald-600/15 text-emerald-400 border-emerald-500/40'
+                        : payLinkState === 'error' ? 'bg-amber-500/15 text-amber-400 border-amber-500/40'
+                        : 'bg-white/5 text-slate-300 hover:bg-white/10 border-white/10'
+                      }`}
+                    >
+                      {payLinkState === 'sent' ? <CheckCircle2 size={17} /> : <Send size={17} className={payLinkState === 'sending' ? 'animate-pulse' : ''} />}
+                      <span className="hidden md:inline text-xs font-bold uppercase tracking-wider">
+                        {payLinkState === 'sent' ? 'Link sent' : payLinkState === 'error' ? 'Failed' : payLinkState === 'sending' ? 'Sending…' : 'Pay link'}
+                      </span>
+                    </button>
                   )}
                   <button
                     onClick={handlePrintInvoice}

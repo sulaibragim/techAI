@@ -15,6 +15,7 @@ import { geocodeRouter } from './routes/geocode.js';
 import { placesRouter } from './routes/places.js';
 import { dispatchRouter } from './routes/dispatch.js';
 import { pushRouter } from './routes/push.js';
+import { paymentsRouter, payPagesRouter } from './routes/payments.js';
 import { initDB } from './db.js';
 import { startScheduler } from './services/scheduler.js';
 
@@ -67,6 +68,9 @@ app.use(cors({
   },
 }));
 
+// Stripe webhook needs the EXACT raw bytes for signature verification — mount its raw
+// parser before the global JSON parser (body-parser skips a body that's already read).
+app.use('/api/payments/webhook', express.raw({ type: '*/*' }));
 app.use(express.json({ limit: '5mb' }));
 
 // Global rate limit — generous, just a flood guard.
@@ -121,6 +125,8 @@ app.use('/api/geocode', geocodeRouter);
 app.use('/api/places', placesRouter);
 app.use('/api/dispatch', dispatchRouter);
 app.use('/api/push', pushRouter);
+app.use('/api/payments', paymentsRouter);
+app.use('/pay', payPagesRouter); // client-facing thank-you pages after Stripe checkout
 
 async function start() {
   if (process.env.DATABASE_URL) {

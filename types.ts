@@ -205,6 +205,7 @@ export interface Job {
   createdAt?: string;
   updatedAt?: string; // freshness stamp — bulk /sync only overwrites a stored job with a newer one
   paymentReminders?: string[]; // ISO stamps of unpaid-balance reminder SMS the server has sent (max 2)
+  stripeSessions?: string[];   // processed Stripe checkout session ids (webhook idempotency)
   client: Client;
   lockDetails: LockDetails;
   complaint: string;
