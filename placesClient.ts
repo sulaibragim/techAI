@@ -1,4 +1,5 @@
 import { API_BASE } from './backendUrl';
+import { authHeaders } from './apiClient';
 
 // Address autocomplete + verification via the backend Places proxy (Google when a key is
 // set, free OpenStreetMap otherwise). The browser never sees the Maps key.
@@ -36,7 +37,7 @@ export async function autocompleteAddress(q: string, zip: string, sessiontoken: 
   const params = new URLSearchParams({ q: q.trim(), sessiontoken });
   if (zip.trim()) params.set('zip', zip.trim());
   try {
-    const res = await fetch(`${API_BASE}/api/places/autocomplete?${params}`);
+    const res = await fetch(`${API_BASE}/api/places/autocomplete?${params}`, { headers: { ...authHeaders() } });
     if (!res.ok) return [];
     return (await res.json()) as AddressSuggestion[];
   } catch { return []; }
@@ -46,7 +47,7 @@ export async function resolveAddress(placeId: string, sessiontoken: string): Pro
   if (!placeId) return null;
   const params = new URLSearchParams({ placeId, sessiontoken });
   try {
-    const res = await fetch(`${API_BASE}/api/places/details?${params}`);
+    const res = await fetch(`${API_BASE}/api/places/details?${params}`, { headers: { ...authHeaders() } });
     if (!res.ok) return null;
     return (await res.json()) as ResolvedAddress;
   } catch { return null; }

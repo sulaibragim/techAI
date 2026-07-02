@@ -119,12 +119,15 @@ export const useSettingsStore = create<SettingsState>()(
         if (Object.keys(clean).length > 0) pushToServer(clean);
       },
 
+      // Ledger/map fields push DELTAS (just the changed entry/key). The server unions
+      // them into its copy, so two managers on different devices can no longer silently
+      // erase each other's entries by racing whole-array overwrites.
       setMonthlyTarget: (monthKey, value) => {
+        const v = Math.max(1, value);
         set((state) => ({
-          monthlyTargets: { ...state.monthlyTargets, [monthKey]: Math.max(1, value) },
+          monthlyTargets: { ...state.monthlyTargets, [monthKey]: v },
         }));
-        const updated = get().monthlyTargets;
-        pushToServer({ monthlyTargets: updated });
+        pushToServer({ monthlyTargets: { [monthKey]: v } });
       },
 
       setTechTarget: (userId, value) => {
@@ -134,25 +137,26 @@ export const useSettingsStore = create<SettingsState>()(
           else delete next[userId];
           return { techTargets: next };
         });
-        pushToServer({ techTargets: get().techTargets });
+        // 0 = "clear this goal" — the server drops zeroed keys.
+        pushToServer({ techTargets: { [userId]: value > 0 ? value : 0 } });
       },
 
       addExpense: (expense) => {
         const entry: Expense = { ...expense, id: `exp-${Date.now()}-${Math.random().toString(36).slice(2, 7)}` };
         set((state) => ({ expenses: [entry, ...state.expenses] }));
-        pushToServer({ expenses: get().expenses });
+        pushToServer({ expenses: [entry] });
       },
 
       removeExpense: (id) => {
         set((state) => ({ expenses: state.expenses.filter(e => e.id !== id) }));
-        pushToServer({ expenses: get().expenses });
+        pushToServer({ removedExpenseIds: [id] });
       },
 
       addStockMovement: (movement) => {
         const entry: StockMovement = { ...movement, id: `mov-${Date.now()}-${Math.random().toString(36).slice(2, 7)}` };
         // Newest first; cap the ledger so the synced blob can't grow without bound.
         set((state) => ({ stockMovements: [entry, ...state.stockMovements].slice(0, 2000) }));
-        pushToServer({ stockMovements: get().stockMovements });
+        pushToServer({ stockMovements: [entry] });
       },
 
       addServiceRate: (rate) => {
@@ -185,12 +189,14 @@ export const useSettingsStore = create<SettingsState>()(
           };
           return { clientProfiles: { ...state.clientProfiles, [phoneKey]: next } };
         });
-        pushToServer({ clientProfiles: get().clientProfiles });
+        pushToServer({ clientProfiles: { [phoneKey]: get().clientProfiles[phoneKey] } });
       },
 
       resetSettings: () => {
         set({ ...DEFAULTS });
-        pushToServer(DEFAULTS);
+        // replaceLedgers: a factory reset must actually WIPE the ledgers — without the
+        // flag the server would union the empty arrays into a no-op.
+        pushToServer({ ...DEFAULTS, replaceLedgers: true });
       },
 
       syncSettings: async () => {

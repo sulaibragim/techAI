@@ -251,7 +251,9 @@ export function coffeeAnalysis(jobs: Job[], year: number, month: number) {
   const inMonth = jobs.filter(j => j.scheduledDate.startsWith(key));
   const coffee = inMonth.filter(j => j.status === 'coffee').length;
   const cancelled = inMonth.filter(j => j.status === 'cancelled').length;
-  const completed = inMonth.filter(j => j.status === 'completed');
+  // Average ticket by the revenue-recognition date (completedAt), matching every other
+  // report — a job booked in June but finished in July counts as July here too.
+  const completed = jobs.filter(j => j.status === 'completed' && revenueDateStr(j).startsWith(key));
   const avgTicket = completed.length
     ? completed.reduce((s, j) => s + j.totalAmount, 0) / completed.length
     : 0;

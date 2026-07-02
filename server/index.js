@@ -40,6 +40,12 @@ if (process.env.NODE_ENV === 'production') {
 const app = express();
 const PORT = process.env.PORT || process.env.SERVER_PORT || 3001;
 
+// Railway terminates TLS at a single proxy hop; without this, every request looks like
+// it comes from the proxy's IP, so per-IP rate limits (login brute-force guard, flood
+// caps) share ONE bucket across the whole team — a few wrong passwords would lock
+// everyone out, and a real attacker would never be isolated by their own IP.
+app.set('trust proxy', 1);
+
 app.use(helmet());
 
 // CORS — lock to ALLOWED_ORIGINS if set, otherwise reflect origin (auth is token-based, not cookie-based).

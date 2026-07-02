@@ -1,4 +1,5 @@
 import { API_BASE } from './backendUrl';
+import { authHeaders } from './apiClient';
 import { LatLng } from './geoUtils';
 
 // Free address→coordinates lookup via the backend OpenStreetMap proxy.
@@ -21,7 +22,7 @@ export async function geocodeAddress(address: string): Promise<LatLng | null> {
   if (key in cache) return cache[key]; // cached hit (coords) or miss (null)
 
   try {
-    const res = await fetch(`${API_BASE}/api/geocode?address=${encodeURIComponent(address)}`);
+    const res = await fetch(`${API_BASE}/api/geocode?address=${encodeURIComponent(address)}`, { headers: { ...authHeaders() } });
     if (res.ok) {
       const ll = await res.json() as LatLng;
       cache[key] = ll;

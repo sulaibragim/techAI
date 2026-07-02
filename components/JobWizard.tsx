@@ -234,6 +234,7 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
       if (!client.phone?.trim()) { setError('Phone number is required.'); return; }
       if (!client.firstName?.trim() && !client.lastName?.trim()) { setError('Client name is required.'); return; }
       if (!client.zip?.trim()) { setError('ZIP code is required.'); return; }
+      if (!client.address?.trim()) { setError('Service address is required — the tech has to drive somewhere.'); return; }
     }
     setError('');
     setStep(s => s + 1);
@@ -423,6 +424,7 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
                   <TechPicker
                     technicians={technicians}
                     address={[client.address, client.zip].filter(Boolean).join(', ')}
+                    coords={typeof client.lat === 'number' && typeof client.lng === 'number' ? { lat: client.lat, lng: client.lng } : undefined}
                     value={assignedTo}
                     onChange={id => setAssignedTo(id || '')}
                     jobType={lockDetails.type}

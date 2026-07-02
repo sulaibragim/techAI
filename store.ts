@@ -129,7 +129,8 @@ export const useAppStore = create<AppState>()(
   addJob: (jobData) => {
     const auth = useAuthStore.getState();
     const creator = auth.users.find(u => u.id === auth.currentUserId);
-    const newJob: Job = { ...jobData, id: `job-${makeId()}`, createdAt: new Date().toISOString(), createdBy: creator?.id } as Job;
+    const now = new Date().toISOString();
+    const newJob: Job = { ...jobData, id: `job-${makeId()}`, createdAt: now, updatedAt: now, createdBy: creator?.id } as Job;
     set((state) => ({ jobs: [...state.jobs, newJob] }));
     pushJobToServer(newJob);
     return newJob;
@@ -148,6 +149,7 @@ export const useAppStore = create<AppState>()(
     // its revenue in the wrong month.
     const justCompleted = next.status === 'completed' && prev?.status !== 'completed';
     if (justCompleted && !next.completedAt) next.completedAt = new Date().toISOString();
+    next.updatedAt = new Date().toISOString(); // freshness stamp for the /sync stale-guard
     set((state) => ({ jobs: state.jobs.map(j => j.id === next.id ? next : j) }));
     updateJobOnServer(next);
   },
@@ -158,7 +160,7 @@ export const useAppStore = create<AppState>()(
   updateJobStatus: (id, status) => {
     set((state) => ({ jobs: state.jobs.map(j => {
       if (j.id !== id) return j;
-      const next = { ...j, status };
+      const next = { ...j, status, updatedAt: new Date().toISOString() };
       if (status === 'completed' && !j.completedAt) next.completedAt = new Date().toISOString();
       return next;
     }) }));

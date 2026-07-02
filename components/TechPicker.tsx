@@ -7,6 +7,7 @@ import { haversineMiles, approxEtaMinutes, formatMiles, LatLng } from '../geoUti
 interface TechPickerProps {
   technicians: User[];
   address?: string;
+  coords?: LatLng | null;               // verified pin from address autocomplete — skips the geocode
   value?: string;                       // selected technician id ('' / undefined = unassigned)
   onChange: (id: string | undefined) => void;
   jobType?: string;                     // lock type — drives the specialty match
@@ -32,13 +33,16 @@ const initials = (name: string) => name.split(' ').map(w => w[0] || '').join('')
 
 // Picks a technician for a job, ranked by straight-line distance to the client's
 // (geocoded) address. Shows each tech's status and rough ETA. No map / API key.
-export const TechPicker: React.FC<TechPickerProps> = ({ technicians, address, value, onChange, jobType, favoriteTechId }) => {
+export const TechPicker: React.FC<TechPickerProps> = ({ technicians, address, coords: pinnedCoords, value, onChange, jobType, favoriteTechId }) => {
   const [coords, setCoords] = useState<LatLng | null>(null);
   const [geocoding, setGeocoding] = useState(false);
   const wantSkills = SKILL_FOR_TYPE[jobType || ''] || [];
 
   useEffect(() => {
     let active = true;
+    // A verified address pick already carries exact coordinates — rank straight off
+    // them instead of re-geocoding the text (which can drift to a different pin).
+    if (pinnedCoords) { setCoords(pinnedCoords); setGeocoding(false); return; }
     const addr = (address || '').trim();
     if (!addr) { setCoords(null); setGeocoding(false); return; }
     setGeocoding(true);
@@ -46,7 +50,7 @@ export const TechPicker: React.FC<TechPickerProps> = ({ technicians, address, va
       geocodeAddress(addr).then(c => { if (active) { setCoords(c); setGeocoding(false); } });
     }, 600); // debounce typing
     return () => { active = false; clearTimeout(t); };
-  }, [address]);
+  }, [address, pinnedCoords?.lat, pinnedCoords?.lng]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const ranked = technicians
     .map(t => ({

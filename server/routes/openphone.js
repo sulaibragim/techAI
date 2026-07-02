@@ -14,7 +14,7 @@ export const openphoneRouter = Router();
 export const pendingJobSuggestions = new Map();
 export const recentCalls = [];      // [{id, from, to, direction, status, duration, createdAt, ...}]
 export const recentMessages = [];   // [{id, from, to, body, direction, createdAt, contact}]
-const MAX_STORE = 100;
+const MAX_STORE = 300;
 
 // ─── Durable persistence (write-through to Postgres) ─────────────────────────
 const hasDB = () => !!process.env.DATABASE_URL;
@@ -65,9 +65,9 @@ export async function hydrateOpenPhoneStores() {
       const obj = row.data;
       if (obj?.callId) pendingJobSuggestions.set(obj.callId, obj);
     }
-    const cl = await db.query('SELECT data FROM calls ORDER BY created_at DESC LIMIT 100');
+    const cl = await db.query('SELECT data FROM calls ORDER BY created_at DESC LIMIT 300');
     for (const row of cl.rows) recentCalls.push(row.data);
-    const ms = await db.query('SELECT data FROM messages ORDER BY created_at DESC LIMIT 100');
+    const ms = await db.query('SELECT data FROM messages ORDER BY created_at DESC LIMIT 300');
     for (const row of ms.rows) recentMessages.push(row.data);
     console.log(`[OpenPhone] Hydrated ${pendingJobSuggestions.size} pending, ${recentCalls.length} calls, ${recentMessages.length} messages from DB`);
   } catch (e) {
@@ -102,7 +102,12 @@ openphoneRouter.post('/webhook', async (req, res) => {
   if (!webhookAuthorized(req)) {
     return res.status(401).json({ error: 'Unauthorized webhook' });
   }
-  const event = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+  let event;
+  try {
+    event = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+  } catch {
+    return res.status(400).json({ error: 'Invalid JSON body' });
+  }
   console.log('[OpenPhone webhook]', event?.type, event?.data?.object?.id);
 
   res.sendStatus(200); // always ack immediately before any async work

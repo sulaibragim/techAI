@@ -179,6 +179,28 @@ const App: React.FC = () => {
     return () => { stopped = true; clearInterval(id); };
   }, [currentUser?.id]);
 
+  // While this technician is en route to a job, refresh their GPS every ~2.5 minutes.
+  // Location was previously written ONLY when they toggled themselves Available, so the
+  // "where's my tech?" auto-reply and Send ETA Update were computed from wherever the
+  // tech stood hours ago — not where their van actually is right now.
+  const hasEnRouteJob = currentUser?.role === 'technician' &&
+    jobs.some(j => j.assignedTo === currentUser.id && j.status === 'enRoute');
+  useEffect(() => {
+    if (!hasEnRouteJob || !currentUser) return;
+    if (typeof navigator === 'undefined' || !navigator.geolocation) return;
+    const update = () => {
+      if (document.visibilityState === 'hidden') return;
+      navigator.geolocation.getCurrentPosition(
+        pos => setTechLocation(currentUser.id, { lat: pos.coords.latitude, lng: pos.coords.longitude, updatedAt: new Date().toISOString() }),
+        () => {},
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+      );
+    };
+    update();
+    const id = setInterval(update, 150000);
+    return () => clearInterval(id);
+  }, [hasEnRouteJob, currentUser?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const { onboardingComplete } = useSettingsStore();
 
   // Require both an identity and a valid server-issued token. A stale localStorage
@@ -308,7 +330,9 @@ const App: React.FC = () => {
                   whileHover={{ scale: 1.05, borderColor: "rgba(0, 229, 255, 0.5)" }}
                   className="w-7 h-7 md:w-9 md:h-9 bg-gray-900 border border-white/10 rounded-lg overflow-hidden shadow-md group cursor-pointer transition-all"
                 >
-                    <img src={profilePhoto || "https://i.pravatar.cc/150?u=tech1"} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="Profile" />
+                    {profilePhoto
+                      ? <img src={profilePhoto} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="Profile" />
+                      : <div className="w-full h-full flex items-center justify-center bg-blue-600/20 text-blue-300 text-xs font-bold">{(currentUser.name || 'U').slice(0, 1).toUpperCase()}</div>}
                 </motion.div>
             </div>
           </div>

@@ -158,7 +158,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onTabChange }) => 
         {currentUser && (
           <div className="flex items-center space-x-3 px-2">
             <div className="w-9 h-9 rounded-xl overflow-hidden bg-slate-800 border border-white/10 shrink-0">
-              <img src={currentUser.photo || `https://i.pravatar.cc/150?u=${currentUser.id}`} className="w-full h-full object-cover" alt="" />
+              {currentUser.photo
+                ? <img src={currentUser.photo} className="w-full h-full object-cover" alt="" />
+                : <div className="w-full h-full flex items-center justify-center bg-blue-600/20 text-blue-300 text-xs font-bold">{(currentUser.name || 'U').slice(0, 1).toUpperCase()}</div>}
             </div>
             <div className="min-w-0">
               <p className="text-xs font-semibold text-white truncate">{currentUser.name}</p>

@@ -104,30 +104,35 @@ jobsRouter.post('/sync', requireAuth, async (req, res) => {
     const { rows: tombs } = await client.query('SELECT id FROM job_tombstones');
     const deleted = new Set(tombs.map(t => t.id));
 
-    // For technicians, load who CURRENTLY owns each incoming job so they can't hijack a
-    // job they don't own by simply setting assignedTo=self in the payload (the old check
-    // only looked at the incoming value). A tech may only write a job whose stored
-    // assignee is already them, or a brand-new job (no stored row).
-    let techOwns = null;
-    if (isTech(req)) {
-      const ids = jobs.map(j => j.id).filter(Boolean);
-      techOwns = new Map();
-      if (ids.length > 0) {
-        const { rows: owners } = await client.query(
-          "SELECT id, data->>'assignedTo' AS assigned FROM jobs WHERE id = ANY($1)",
-          [ids]
-        );
-        for (const o of owners) techOwns.set(o.id, o.assigned || null);
-      }
+    // Load the stored owner + freshness stamp for every incoming id in one query.
+    // Owner gates a technician's writes (can't hijack a job by claiming assignedTo=self);
+    // updatedAt gates EVERYONE's bulk sync — a device that sat offline for a week logs
+    // in and pushes its whole local list, and without this check those stale copies
+    // would overwrite every fresher edit a teammate made on the server since.
+    const ids = jobs.map(j => j.id).filter(Boolean);
+    const existing = new Map();
+    if (ids.length > 0) {
+      const { rows: existingRows } = await client.query(
+        "SELECT id, data->>'assignedTo' AS assigned, data->>'updatedAt' AS updated FROM jobs WHERE id = ANY($1)",
+        [ids]
+      );
+      for (const r of existingRows) existing.set(r.id, r);
     }
 
     for (const job of jobs) {
       const { id, ...data } = job;
       if (!id || deleted.has(id)) continue;
+      const ex = existing.get(id);
       if (isTech(req)) {
         if (data.assignedTo !== req.user.id) continue;        // payload must assign to self
-        const existingOwner = techOwns.get(id);
-        if (existingOwner !== undefined && existingOwner !== req.user.id) continue; // can't seize an existing job owned by someone else
+        if (ex && (ex.assigned || null) !== req.user.id) continue; // can't seize an existing job owned by someone else
+      }
+      if (ex) {
+        // Bulk sync may only move a stored row FORWARD in time. An unstamped payload
+        // can't prove freshness; an older/equal stamp means the server copy is newer
+        // (or identical). Deliberate single edits go through PUT /:id, not here.
+        if (!data.updatedAt) continue;
+        if (ex.updated && data.updatedAt <= ex.updated) continue;
       }
       await client.query(
         `INSERT INTO jobs (id, data, updated_at) VALUES ($1, $2, NOW())

@@ -203,6 +203,7 @@ export interface Job {
   id: string;
   jobNumber: string;
   createdAt?: string;
+  updatedAt?: string; // freshness stamp — bulk /sync only overwrites a stored job with a newer one
   client: Client;
   lockDetails: LockDetails;
   complaint: string;

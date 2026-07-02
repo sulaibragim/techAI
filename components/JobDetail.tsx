@@ -1428,7 +1428,9 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
 
                 <div className="flex items-center space-x-4 py-4 border-y border-slate-700">
                   <div className="w-12 h-12 bg-slate-800 rounded-xl overflow-hidden border border-slate-600 shrink-0">
-                    <img src={localJob.client.photo || `https://i.pravatar.cc/150?u=${localJob.client.lastName}`} className="w-full h-full object-cover" alt="Client" />
+                    {localJob.client.photo
+                      ? <img src={localJob.client.photo} className="w-full h-full object-cover" alt="Client" />
+                      : <div className="w-full h-full flex items-center justify-center bg-blue-600/20 text-blue-300 text-sm font-bold">{((localJob.client.firstName || localJob.client.lastName || 'C').slice(0, 1)).toUpperCase()}</div>}
                   </div>
                   <div className="min-w-0">
                     <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Job #{localJob.jobNumber}</p>

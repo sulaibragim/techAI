@@ -1,4 +1,5 @@
 import { API_BASE } from './backendUrl';
+import { authHeaders } from './apiClient';
 import { LatLng, haversineMiles, approxEtaMinutes } from './geoUtils';
 
 export interface Weather { tempF?: number; code?: number; precipitation?: number; }
@@ -7,7 +8,7 @@ export interface Weather { tempF?: number; code?: number; precipitation?: number
 // straight-line estimate so we always have something to tell the client.
 export async function getDriveEta(from: LatLng, to: LatLng): Promise<number | null> {
   try {
-    const res = await fetch(`${API_BASE}/api/dispatch/route?from=${from.lat},${from.lng}&to=${to.lat},${to.lng}`);
+    const res = await fetch(`${API_BASE}/api/dispatch/route?from=${from.lat},${from.lng}&to=${to.lat},${to.lng}`, { headers: { ...authHeaders() } });
     if (res.ok) {
       const d = await res.json();
       if (typeof d.minutes === 'number') return d.minutes;
@@ -19,7 +20,7 @@ export async function getDriveEta(from: LatLng, to: LatLng): Promise<number | nu
 // Driving distance + time (real road via OSRM, falling back to straight-line).
 export async function getRouteInfo(from: LatLng, to: LatLng): Promise<{ minutes: number; miles: number } | null> {
   try {
-    const res = await fetch(`${API_BASE}/api/dispatch/route?from=${from.lat},${from.lng}&to=${to.lat},${to.lng}`);
+    const res = await fetch(`${API_BASE}/api/dispatch/route?from=${from.lat},${from.lng}&to=${to.lat},${to.lng}`, { headers: { ...authHeaders() } });
     if (res.ok) {
       const d = await res.json();
       if (typeof d.minutes === 'number' && typeof d.miles === 'number') return { minutes: d.minutes, miles: d.miles };
@@ -30,7 +31,7 @@ export async function getRouteInfo(from: LatLng, to: LatLng): Promise<{ minutes:
 
 export async function getWeather(at: LatLng): Promise<Weather | null> {
   try {
-    const res = await fetch(`${API_BASE}/api/dispatch/weather?lat=${at.lat}&lng=${at.lng}`);
+    const res = await fetch(`${API_BASE}/api/dispatch/weather?lat=${at.lat}&lng=${at.lng}`, { headers: { ...authHeaders() } });
     if (res.ok) return await res.json();
   } catch { /* no weather — tip falls back to mild */ }
   return null;

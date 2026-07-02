@@ -1,9 +1,14 @@
 import { Router } from 'express';
 import { drivingRoute } from '../services/geo.js';
+import { requireAuth } from '../middleware/auth.js';
 
 export const dispatchRouter = Router();
 
-// Driving ETA via free OSRM (no API key). GET /route?from=lat,lng&to=lat,lng
+// Every dispatch helper requires a login: /route can hit the PAID Google Distance
+// Matrix, so leaving it open lets anyone on the internet spend our Maps budget.
+dispatchRouter.use(requireAuth);
+
+// Driving ETA (Google traffic-aware when keyed, free OSRM otherwise). GET /route?from=lat,lng&to=lat,lng
 dispatchRouter.get('/route', async (req, res) => {
   const { from, to } = req.query;
   if (!from || !to) return res.status(400).json({ error: 'from and to required' });

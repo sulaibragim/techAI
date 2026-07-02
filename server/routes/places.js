@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import { geocode } from '../services/geo.js';
+import { requireAuth } from '../middleware/auth.js';
 
 // Address autocomplete + verification. Same engine switch as services/geo.js:
 //   • GOOGLE_MAPS_API_KEY present → Google Places API (New) — places.googleapis.com/v1
@@ -16,7 +17,9 @@ const GKEY = (process.env.GOOGLE_MAPS_API_KEY || '').trim();
 
 export const placesRouter = Router();
 
-// Protect the paid key from keystroke floods. Generous for a real dispatcher, hard cap on abuse.
+// Auth first (paid Google Places behind this — an open endpoint burns our budget), then
+// a per-minute cap to protect the key from keystroke floods even by logged-in users.
+placesRouter.use(requireAuth);
 placesRouter.use(rateLimit({ windowMs: 60 * 1000, max: 120, standardHeaders: true, legacyHeaders: false }));
 
 // ─── Precision classification ──────────────────────────────────────────────────

@@ -638,7 +638,9 @@ const TeamSection: React.FC = () => {
             <div key={u.id} className="bg-white/5 border border-white/10 rounded-2xl p-3 space-y-3">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl overflow-hidden bg-slate-800 border border-white/10 shrink-0">
-                  <img src={u.photo || `https://i.pravatar.cc/150?u=${u.id}`} className="w-full h-full object-cover" alt="" />
+                  {u.photo
+                    ? <img src={u.photo} className="w-full h-full object-cover" alt="" />
+                    : <div className="w-full h-full flex items-center justify-center bg-blue-600/20 text-blue-300 text-sm font-bold">{(u.name || 'U').slice(0, 1).toUpperCase()}</div>}
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold text-white truncate flex items-center gap-2">
