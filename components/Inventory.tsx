@@ -3,11 +3,13 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   Package, Search, Plus, AlertCircle, RefreshCw, X, Minus, Trash2,
   Truck, ClipboardList, ChevronDown, Camera, ArrowDownLeft, ArrowUpRight, Pencil, TriangleAlert,
+  ScanLine, Copy, CheckCircle2,
 } from 'lucide-react';
 import { useAppStore } from '../store';
 import { useSettingsStore } from '../settingsStore';
 import { useCurrentUser, can } from '../authStore';
 import { Part, StockMovement, MOVEMENT_META } from '../types';
+import { InvoiceImportModal, ReviewLine } from './InvoiceImport';
 
 const CATEGORIES = ['Key Blanks', 'Remotes', 'Cylinders', 'Hardware', 'Tools'] as const;
 
@@ -50,6 +52,12 @@ export const Inventory: React.FC = () => {
   } = useAppStore();
   const movements = useSettingsStore(s => s.stockMovements);
   const addExpense = useSettingsStore(s => s.addExpense);
+  const supplierAliases = useSettingsStore(s => s.supplierAliases);
+  const importedInvoices = useSettingsStore(s => s.importedInvoices);
+  const aiAvailable = useSettingsStore(s => s.aiAvailable);
+  const learnSupplierAlias = useSettingsStore(s => s.learnSupplierAlias);
+  const markInvoiceImported = useSettingsStore(s => s.markInvoiceImported);
+  const addInventoryItemStore = useAppStore(s => s.addInventoryItem);
 
   const currentUser = useCurrentUser();
   const canEdit = currentUser ? can.editInventory(currentUser.role) : false;
@@ -66,6 +74,55 @@ export const Inventory: React.FC = () => {
 
   const [drawerId, setDrawerId] = useState<string | null>(null);
   const [receiveOpen, setReceiveOpen] = useState(false);
+  const [receiveSeed, setReceiveSeed] = useState<{ partId: string; qty: string; cost: string }[] | null>(null);
+  const [scanOpen, setScanOpen] = useState(false);
+  const [reorderOpen, setReorderOpen] = useState(false);
+
+  // Distinct supplier names seen in past receives — the datalist for the Receive modal.
+  const knownSuppliers = useMemo(
+    () => [...new Set(movements.map(m => (m.supplierName || '').trim()).filter(Boolean))].sort(),
+    [movements]
+  );
+
+  // AI invoice confirmed: create any new parts, receive every line, learn the supplier
+  // codes so the next invoice auto-matches, log ONE combined expense, stamp the invoice
+  // number as imported (duplicate guard).
+  const handleInvoiceConfirm = ({ supplier, invoiceNumber, lines }: { supplier: string; invoiceNumber: string; lines: ReviewLine[] }) => {
+    const received: { partId: string; qty: number; cost: number; code: string }[] = [];
+    for (const l of lines) {
+      let partId = l.partId;
+      if (l.createNew) {
+        const p = addInventoryItemStore({
+          name: l.description || l.code || 'New part',
+          sku: (l.code || `NEW-${Date.now().toString().slice(-5)}`).toUpperCase(),
+          category: 'Hardware',
+          stock: 0,
+          reorderPoint: 0,
+          price: 0,
+          cost: l.unitCost,
+          mpn: l.code || undefined,
+          location: 'shop',
+        });
+        partId = p.id;
+      }
+      if (!partId) continue;
+      received.push({ partId, qty: l.qty, cost: l.unitCost, code: l.code });
+    }
+    received.forEach(r => receiveStock(r.partId, r.qty, r.cost, { supplierName: supplier, note: invoiceNumber ? `Invoice ${invoiceNumber}` : 'AI invoice import', logExpense: false }));
+    const total = received.reduce((a, r) => a + r.qty * r.cost, 0);
+    if (total > 0) {
+      addExpense({
+        date: new Date().toISOString().split('T')[0],
+        category: 'Keys & Stock',
+        amount: Math.round(total * 100) / 100,
+        note: `Invoice${invoiceNumber ? ` ${invoiceNumber}` : ''}${supplier ? ` · ${supplier}` : ''} — ${received.length} line${received.length > 1 ? 's' : ''} (AI import)`,
+        createdBy: currentUser?.id,
+      });
+    }
+    if (supplier) received.forEach(r => { if (r.code) learnSupplierAlias(supplier, r.code, r.partId); });
+    if (invoiceNumber) markInvoiceImported(invoiceNumber);
+    setScanOpen(false);
+  };
 
   const filteredInventory = inventory.filter((part: Part) => {
     if (filter !== 'All' && part.category !== filter) return false;
@@ -125,7 +182,11 @@ export const Inventory: React.FC = () => {
                 <Plus size={16} />
                 <span>New Item</span>
               </button>
-              <button onClick={() => setReceiveOpen(true)} className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-blue-500/20 hover:bg-blue-500 transition-colors active:scale-95">
+              <button onClick={() => setScanOpen(true)} className="flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-purple-500/20 hover:bg-purple-500 transition-colors active:scale-95">
+                <ScanLine size={16} />
+                <span>Scan Invoice</span>
+              </button>
+              <button onClick={() => { setReceiveSeed(null); setReceiveOpen(true); }} className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-blue-500/20 hover:bg-blue-500 transition-colors active:scale-95">
                 <Truck size={16} />
                 <span>Receive Stock</span>
               </button>
@@ -141,11 +202,12 @@ export const Inventory: React.FC = () => {
           <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Inventory at cost</p>
           <p className="text-2xl font-black text-white">{money(inventoryAtCost)}</p>
         </div>
-        <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-5 relative overflow-hidden shadow-lg">
+        <button onClick={() => lowCount > 0 && setReorderOpen(true)} className={`bg-amber-500/10 border border-amber-500/20 rounded-2xl p-5 relative overflow-hidden shadow-lg text-left transition-all ${lowCount > 0 ? 'hover:bg-amber-500/15 active:scale-[0.98] cursor-pointer' : 'cursor-default'}`}>
           <div className="absolute top-0 right-0 p-4 opacity-10 text-amber-500"><AlertCircle size={40} /></div>
           <p className="text-amber-500 text-xs font-bold uppercase tracking-widest mb-1">Low stock</p>
           <p className="text-2xl font-black text-amber-500">{lowCount}</p>
-        </div>
+          {lowCount > 0 && <p className="text-[10px] font-bold text-amber-500/70 uppercase tracking-wider mt-0.5">Tap for reorder list →</p>}
+        </button>
         <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-5 relative overflow-hidden shadow-lg">
           <div className="absolute top-0 right-0 p-4 opacity-10 text-red-500"><TriangleAlert size={40} /></div>
           <p className="text-red-400 text-xs font-bold uppercase tracking-widest mb-1">Loss this month</p>
@@ -246,13 +308,42 @@ export const Inventory: React.FC = () => {
         )}
       </AnimatePresence>
 
+      {/* AI INVOICE SCAN */}
+      <AnimatePresence>
+        {scanOpen && (
+          <InvoiceImportModal
+            inventory={inventory}
+            supplierAliases={supplierAliases}
+            importedInvoices={importedInvoices}
+            aiAvailable={aiAvailable}
+            onClose={() => setScanOpen(false)}
+            onConfirm={handleInvoiceConfirm}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* REORDER LIST */}
+      <AnimatePresence>
+        {reorderOpen && (
+          <ReorderModal
+            inventory={inventory}
+            movements={movements}
+            canEdit={canEdit}
+            onClose={() => setReorderOpen(false)}
+            onReceive={(rows) => { setReorderOpen(false); setReceiveSeed(rows); setReceiveOpen(true); }}
+          />
+        )}
+      </AnimatePresence>
+
       {/* RECEIVE MODAL */}
       <AnimatePresence>
         {receiveOpen && (
           <ReceiveModal
             inventory={inventory}
             initialPartId={drawerPart?.id}
-            onClose={() => setReceiveOpen(false)}
+            initialRows={receiveSeed ?? undefined}
+            knownSuppliers={knownSuppliers}
+            onClose={() => { setReceiveOpen(false); setReceiveSeed(null); }}
             onSubmit={(rows, supplierName, logExpense) => {
               // Stock + per-part movements, but defer the expense to one combined entry below.
               rows.forEach(r => receiveStock(r.partId, r.qty, r.cost, { supplierName, logExpense: false }));
@@ -267,6 +358,7 @@ export const Inventory: React.FC = () => {
                 });
               }
               setReceiveOpen(false);
+              setReceiveSeed(null);
             }}
           />
         )}
@@ -483,18 +575,92 @@ const PartDrawer: React.FC<{
   );
 };
 
+// ── Reorder list: everything at/below its reorder point, ready to purchase ────
+const ReorderModal: React.FC<{
+  inventory: Part[];
+  movements: StockMovement[];
+  canEdit: boolean;
+  onClose: () => void;
+  onReceive: (rows: { partId: string; qty: string; cost: string }[]) => void;
+}> = ({ inventory, movements, canEdit, onClose, onReceive }) => {
+  const [copied, setCopied] = useState(false);
+  const low = inventory
+    .filter(p => p.stock <= p.reorderPoint)
+    .map(p => {
+      // Order back up to 2× the alert level — enough to stop re-ordering every week.
+      const suggested = Math.max(p.reorderPoint * 2 - p.stock, 1);
+      const lastReceive = movements.find(m => m.partId === p.id && m.type === 'receive' && m.supplierName);
+      return { part: p, suggested, lastSupplier: lastReceive?.supplierName || '' };
+    })
+    .sort((a, b) => (a.part.stock - a.part.reorderPoint) - (b.part.stock - b.part.reorderPoint));
+
+  const copyList = () => {
+    const text = low.map(l =>
+      `${l.suggested} × ${l.part.name}${l.part.mpn ? ` (MPN ${l.part.mpn})` : l.part.upc ? ` (UPC ${l.part.upc})` : ''}${l.lastSupplier ? ` — ${l.lastSupplier}` : ''}`
+    ).join('\n');
+    navigator.clipboard?.writeText(`Reorder list:\n${text}`).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    });
+  };
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+      <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }}
+        className="bg-slate-900 border border-white/10 p-5 rounded-2xl w-full max-w-lg shadow-2xl relative max-h-[90vh] overflow-y-auto">
+        <button onClick={onClose} className="absolute top-6 right-6 text-slate-400 hover:text-white"><X size={20} /></button>
+        <h3 className="text-xl font-bold mb-1 flex items-center gap-2"><AlertCircle size={20} className="text-amber-500" /> Reorder List</h3>
+        <p className="text-xs text-slate-500 mb-5">Everything at or below its alert level, most urgent first.</p>
+
+        <div className="space-y-2">
+          {low.map(({ part, suggested, lastSupplier }) => (
+            <div key={part.id} className="flex items-center justify-between gap-3 bg-slate-950 border border-white/10 rounded-2xl p-3.5">
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-white truncate">{part.name}</p>
+                <p className="text-[11px] text-slate-500 font-mono">
+                  {part.stock} / {part.reorderPoint} on hand{lastSupplier ? ` · last from ${lastSupplier}` : ''}
+                </p>
+              </div>
+              <span className="shrink-0 text-sm font-black text-amber-400 tabular-nums">order {suggested}</span>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-5 flex gap-3">
+          <button onClick={copyList} className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold text-sm active:scale-95">
+            {copied ? <><CheckCircle2 size={15} className="text-emerald-400" /> Copied</> : <><Copy size={15} /> Copy list</>}
+          </button>
+          {canEdit && (
+            <button
+              onClick={() => onReceive(low.map(l => ({ partId: l.part.id, qty: String(l.suggested), cost: l.part.cost != null ? String(l.part.cost) : '' })))}
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm shadow-lg shadow-blue-500/20 active:scale-95"
+            >
+              <Truck size={15} /> Receive these
+            </button>
+          )}
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
+
 // ── Receive modal: multi-row purchase → stock + Keys & Stock expense ──────────
 type ReceiveRow = { partId: string; qty: number; cost: number };
 const ReceiveModal: React.FC<{
   inventory: Part[];
   initialPartId?: string;
+  initialRows?: { partId: string; qty: string; cost: string }[];
+  knownSuppliers?: string[];
   onClose: () => void;
   onSubmit: (rows: ReceiveRow[], supplierName: string, logExpense: boolean) => void;
-}> = ({ inventory, initialPartId, onClose, onSubmit }) => {
+}> = ({ inventory, initialPartId, initialRows, knownSuppliers = [], onClose, onSubmit }) => {
   const seedPart = initialPartId ? inventory.find(p => p.id === initialPartId) : undefined;
-  const [rows, setRows] = useState<{ partId: string; qty: string; cost: string }[]>([
-    { partId: seedPart?.id || '', qty: '', cost: seedPart?.cost != null ? String(seedPart.cost) : '' },
-  ]);
+  const [rows, setRows] = useState<{ partId: string; qty: string; cost: string }[]>(
+    initialRows && initialRows.length > 0
+      ? initialRows
+      : [{ partId: seedPart?.id || '', qty: '', cost: seedPart?.cost != null ? String(seedPart.cost) : '' }],
+  );
   const [supplier, setSupplier] = useState('');
   const [logExpense, setLogExpense] = useState(true);
 
@@ -526,7 +692,12 @@ const ReceiveModal: React.FC<{
         <div className="space-y-4">
           <div className="space-y-1.5">
             <label className={labelCls}>Supplier</label>
-            <input value={supplier} onChange={e => setSupplier(e.target.value)} className={inputCls} placeholder="e.g. ABC Key Supply" />
+            <input value={supplier} onChange={e => setSupplier(e.target.value)} className={inputCls} placeholder="e.g. ABC Key Supply" list="known-suppliers" />
+            {knownSuppliers.length > 0 && (
+              <datalist id="known-suppliers">
+                {knownSuppliers.map(s => <option key={s} value={s} />)}
+              </datalist>
+            )}
           </div>
 
           <div className="space-y-2">

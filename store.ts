@@ -105,7 +105,7 @@ interface AppState {
   removeJob: (id: string) => void;
   updateJobStatus: (id: string, status: JobStatus) => void;
   updateInventoryItem: (part: Part) => void;
-  addInventoryItem: (part: Omit<Part, 'id'>) => void;
+  addInventoryItem: (part: Omit<Part, 'id'>) => Part;
   removeInventoryItem: (id: string) => void;
   receiveStock: (partId: string, qty: number, unitCost: number, opts?: { supplierName?: string; location?: string; note?: string; logExpense?: boolean }) => void;
   adjustStockTo: (partId: string, newCount: number, opts?: { type?: 'adjust' | 'loss'; note?: string; location?: string }) => void;
@@ -175,6 +175,7 @@ export const useAppStore = create<AppState>()(
     const newPart: Part = { ...part, id: `part-${makeId()}` };
     set((state) => ({ inventory: [...state.inventory, newPart] }));
     upsertPartOnServer(newPart);
+    return newPart; // callers (invoice import) need the id to receive stock into it
   },
   removeInventoryItem: (id) => {
     set((state) => ({ inventory: state.inventory.filter(p => p.id !== id) }));

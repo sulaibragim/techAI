@@ -23,6 +23,8 @@ export interface SettingsState {
   stockMovements: StockMovement[]; // inventory ledger — every receive/sale/adjust/return/loss
   priceBook: ServiceRate[]; // standard service rates (seeded from trustkeyaz.com), tap-to-fill on invoices
   clientProfiles: Record<string, ClientProfile>; // reputation/meta keyed by normalized phone
+  supplierAliases: Record<string, string>; // "<supplier>|<their code>" → partId; learned once at invoice import, auto-matches after
+  importedInvoices: string[]; // supplier invoice numbers already received — duplicate-import guard (capped)
   taxRate: number; // sales-tax percent applied to taxable revenue (0 = none)
   onboardingComplete: boolean;
   aiAvailable: boolean; // runtime flag: is GEMINI_API_KEY configured on the server?
@@ -36,6 +38,8 @@ export interface SettingsState {
   updateServiceRate: (rate: ServiceRate) => void;
   removeServiceRate: (id: string) => void;
   upsertClientProfile: (phoneKey: string, patch: Partial<ClientProfile>) => void;
+  learnSupplierAlias: (supplier: string, code: string, partId: string) => void;
+  markInvoiceImported: (invoiceNumber: string) => void;
   resetSettings: () => void;
   syncSettings: () => Promise<void>;
   checkAiAvailable: () => Promise<void>;
@@ -64,6 +68,8 @@ export const SETTINGS_DEFAULTS = {
   stockMovements: [] as StockMovement[],
   priceBook: PRICE_BOOK_SEED as ServiceRate[],
   clientProfiles: {} as Record<string, ClientProfile>,
+  supplierAliases: {} as Record<string, string>,
+  importedInvoices: [] as string[],
   taxRate: 0,
   onboardingComplete: false,
 };
@@ -190,6 +196,22 @@ export const useSettingsStore = create<SettingsState>()(
           return { clientProfiles: { ...state.clientProfiles, [phoneKey]: next } };
         });
         pushToServer({ clientProfiles: { [phoneKey]: get().clientProfiles[phoneKey] } });
+      },
+
+      // Normalized "<supplier>|<code>" → partId. Learned when the user confirms a match
+      // during invoice import; the next invoice from that supplier auto-matches the line.
+      learnSupplierAlias: (supplier, code, partId) => {
+        const key = `${supplier.trim().toLowerCase()}|${code.trim().toLowerCase()}`;
+        if (!supplier.trim() || !code.trim() || !partId) return;
+        set((state) => ({ supplierAliases: { ...state.supplierAliases, [key]: partId } }));
+        pushToServer({ supplierAliases: { [key]: partId } });
+      },
+
+      markInvoiceImported: (invoiceNumber) => {
+        const no = invoiceNumber.trim();
+        if (!no) return;
+        set((state) => ({ importedInvoices: [no, ...state.importedInvoices.filter(x => x !== no)].slice(0, 200) }));
+        pushToServer({ importedInvoices: [no] });
       },
 
       resetSettings: () => {

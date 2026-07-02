@@ -82,6 +82,11 @@ settingsRouter.put('/', requireAuth, requireRole('owner', 'manager'), async (req
       if (patch.clientProfiles) merged.clientProfiles = mergeMap(current.clientProfiles, patch.clientProfiles);
       if (patch.monthlyTargets) merged.monthlyTargets = mergeMap(current.monthlyTargets, patch.monthlyTargets);
       if (patch.techTargets) merged.techTargets = mergeMap(current.techTargets, patch.techTargets);
+      if (patch.supplierAliases) merged.supplierAliases = mergeMap(current.supplierAliases, patch.supplierAliases);
+      if (patch.importedInvoices) {
+        // String set with newest-first order, capped — the duplicate-invoice guard.
+        merged.importedInvoices = [...new Set([...(patch.importedInvoices || []), ...(current.importedInvoices || [])])].slice(0, 200);
+      }
     }
 
     // Deletions arrive as explicit ops (an id list / a zeroed key), not as an absent
