@@ -198,21 +198,6 @@ async function handleLangReply(fromPhone, body) {
   console.log('[OpenPhone] client switched to Spanish →', fromPhone);
 }
 
-// Company shop coordinates from settings (cached) — the ETA origin when we don't know
-// the technician's live location, so the client still gets a real number, not "soon".
-let _shopCoords = null, _shopKey = null;
-async function shopCoords() {
-  try {
-    const { rows } = await db.query("SELECT value FROM settings WHERE key = 'company'");
-    const s = rows[0] ? JSON.parse(rows[0].value) : {};
-    const addr = [s.companyAddress, s.companyCity].filter(Boolean).join(', ');
-    if (!addr) return null;
-    if (_shopKey === addr && _shopCoords) return _shopCoords;
-    _shopCoords = await geocode(addr);
-    _shopKey = addr;
-    return _shopCoords;
-  } catch { return null; }
-}
 
 // If an inbound text is a status ask AND the sender has an active job, reply once with a
 // fresh ETA. Silent otherwise (no active job, no match) so we never spam or pay to poll.
@@ -231,8 +216,8 @@ async function maybeReplyWithEta(fromPhone, body) {
   const lang = await getClientLang(fromPhone);
   const firstName = (job.client?.firstName || '').trim() || (lang === 'es' ? 'hola' : 'there');
 
-  // Tech's last known GPS → real drive ETA. If we don't know where the tech is, fall
-  // back to the shop address as the origin so the client still gets a number, not "soon".
+  // Tech's last known location → real drive ETA. Mobile company: there's no shop to fall
+  // back to, so if the tech hasn't shared a location we say "on the way" without minutes.
   let techLoc = null, techName = null;
   if (job.assignedTo) {
     const u = await db.query('SELECT name, last_location FROM users WHERE id = $1', [job.assignedTo]);
@@ -240,7 +225,6 @@ async function maybeReplyWithEta(fromPhone, body) {
     const ll = u.rows[0]?.last_location;
     if (ll && typeof ll.lat === 'number' && typeof ll.lng === 'number') techLoc = { lat: ll.lat, lng: ll.lng };
   }
-  if (!techLoc) techLoc = await shopCoords();
 
   // Prefer the address's verified coordinates (captured at intake) over re-geocoding the
   // free text — so a fuzzy address doesn't break the reply.

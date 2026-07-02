@@ -264,9 +264,6 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
     let techLoc = (await getCurrentLocation()) || (currentUser?.lastLocation ? { lat: currentUser.lastLocation.lat, lng: currentUser.lastLocation.lng } : null);
     let clientLoc = clientCoords;
     if (!clientLoc) clientLoc = await geocodeAddress([localJob.client.address, localJob.client.zip].filter(Boolean).join(', '));
-    // No tech GPS (permission denied / off) → use the shop as the origin so the client
-    // still gets a real number instead of a vague "on the way".
-    if (!techLoc) { const shop = await geocodeAddress([companyAddress, companyCity].filter(Boolean).join(', ')); if (shop) techLoc = shop; }
 
     const etaMinutes = (techLoc && clientLoc) ? await getDriveEta(techLoc, clientLoc) : null;
     const weather = clientLoc ? await getWeather(clientLoc) : null;
@@ -299,7 +296,6 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
     let techLoc = (await getCurrentLocation()) || (currentUser?.lastLocation ? { lat: currentUser.lastLocation.lat, lng: currentUser.lastLocation.lng } : null);
     let clientLoc = clientCoords;
     if (!clientLoc) clientLoc = await geocodeAddress([localJob.client.address, localJob.client.zip].filter(Boolean).join(', '));
-    if (!techLoc) { const shop = await geocodeAddress([companyAddress, companyCity].filter(Boolean).join(', ')); if (shop) techLoc = shop; }
 
     const route = (techLoc && clientLoc) ? await getRouteInfo(techLoc, clientLoc) : null;
     const lang = await getClientLang(phone);
