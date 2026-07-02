@@ -5,6 +5,7 @@ import { toE164, sendSMS } from '../services/openphone.js';
 import { requireAuth } from '../middleware/auth.js';
 import { sendPushToRoles } from '../services/push.js';
 import { geocode, drivingRoute, etaPhrase } from '../services/geo.js';
+import { getClientLang, setClientLang, isSpanishOptIn, t } from '../services/messages.js';
 import { db } from '../db.js';
 
 export const openphoneRouter = Router();
@@ -171,9 +172,12 @@ openphoneRouter.post('/webhook', async (req, res) => {
         data: { type: 'message', from: obj.from || null, url: '/' },
       }).catch(e => console.error('[OpenPhone] push error', e.message));
 
-      // "Where's my tech?" — if the client texts a status keyword and they have an active
-      // job, text back a fresh ETA automatically. No app, no timer polling: one reply per
-      // inbound ask, so the cost is a single (free) route lookup. Stays silent otherwise.
+      // Spanish opt-in: a bare "SÍ" (or a Spanish note) flips this client to Spanish for
+      // every future automated message. Handled separately from the ETA ask below.
+      handleLangReply(obj.from, msg.body).catch(e => console.error('[OpenPhone] lang reply error', e.message));
+
+      // "Where's my tech?" — if the client texts a status keyword (EN or ES) and they have
+      // an active job, text back a fresh ETA automatically. One reply per inbound ask.
       maybeReplyWithEta(obj.from, msg.body).catch(e => console.error('[OpenPhone] eta auto-reply error', e.message));
     }
   } catch (err) {
@@ -181,9 +185,34 @@ openphoneRouter.post('/webhook', async (req, res) => {
   }
 });
 
-// Status keywords that make a client's text count as a "where's my tech?" ask.
-const ETA_KEYWORDS = /\b(where|eta|how long|how far|status|track|coming|on the way|here yet|arriv|when)\b/i;
+// Status keywords (English + Spanish) that make a client's text count as a "where's my
+// tech?" ask. Spanish: dónde/donde, cuánto/cuanto falta, cuándo/cuando, llega, lejos, minutos.
+const ETA_KEYWORDS = /\b(where|eta|how long|how far|status|track|coming|on the way|here yet|arriv|when|d[oó]nde|cu[aá]nto|cu[aá]ndo|llega|lejos|minutos|falta)\b/i;
 const last10 = (p) => String(p || '').replace(/\D/g, '').slice(-10);
+
+// A bare "SÍ" (or Spanish mention) switches this client to Spanish and confirms it.
+async function handleLangReply(fromPhone, body) {
+  if (!isSpanishOptIn(body)) return;
+  await setClientLang(fromPhone, 'es');
+  await sendSMS(fromPhone, t('spanishConfirmed', 'es', {}));
+  console.log('[OpenPhone] client switched to Spanish →', fromPhone);
+}
+
+// Company shop coordinates from settings (cached) — the ETA origin when we don't know
+// the technician's live location, so the client still gets a real number, not "soon".
+let _shopCoords = null, _shopKey = null;
+async function shopCoords() {
+  try {
+    const { rows } = await db.query("SELECT value FROM settings WHERE key = 'company'");
+    const s = rows[0] ? JSON.parse(rows[0].value) : {};
+    const addr = [s.companyAddress, s.companyCity].filter(Boolean).join(', ');
+    if (!addr) return null;
+    if (_shopKey === addr && _shopCoords) return _shopCoords;
+    _shopCoords = await geocode(addr);
+    _shopKey = addr;
+    return _shopCoords;
+  } catch { return null; }
+}
 
 // If an inbound text is a status ask AND the sender has an active job, reply once with a
 // fresh ETA. Silent otherwise (no active job, no match) so we never spam or pay to poll.
@@ -199,9 +228,11 @@ async function maybeReplyWithEta(fromPhone, body) {
   const match = rows.find(r => last10(r.data?.client?.phone) === fromKey);
   if (!match) return; // no active job for this number — stay silent
   const job = match.data;
-  const firstName = (job.client?.firstName || '').trim() || 'there';
+  const lang = await getClientLang(fromPhone);
+  const firstName = (job.client?.firstName || '').trim() || (lang === 'es' ? 'hola' : 'there');
 
-  // Tech's last known GPS + the client's geocoded address → real drive ETA.
+  // Tech's last known GPS → real drive ETA. If we don't know where the tech is, fall
+  // back to the shop address as the origin so the client still gets a number, not "soon".
   let techLoc = null, techName = null;
   if (job.assignedTo) {
     const u = await db.query('SELECT name, last_location FROM users WHERE id = $1', [job.assignedTo]);
@@ -209,8 +240,10 @@ async function maybeReplyWithEta(fromPhone, body) {
     const ll = u.rows[0]?.last_location;
     if (ll && typeof ll.lat === 'number' && typeof ll.lng === 'number') techLoc = { lat: ll.lat, lng: ll.lng };
   }
+  if (!techLoc) techLoc = await shopCoords();
+
   // Prefer the address's verified coordinates (captured at intake) over re-geocoding the
-  // free text — same fix as the in-app ETA, so a fuzzy address doesn't break the reply.
+  // free text — so a fuzzy address doesn't break the reply.
   let clientLoc = (typeof job.client?.lat === 'number' && typeof job.client?.lng === 'number')
     ? { lat: job.client.lat, lng: job.client.lng }
     : null;
@@ -219,14 +252,21 @@ async function maybeReplyWithEta(fromPhone, body) {
     clientLoc = addr ? await geocode(addr) : null;
   }
   const route = (techLoc && clientLoc) ? await drivingRoute(techLoc, clientLoc) : null;
-  const tech = techName || 'Your technician';
+  const tech = techName || (lang === 'es' ? 'Su técnico' : 'Your technician');
 
   const reply = route
-    ? `Hi ${firstName}, ${tech} is on the way — ETA ${etaPhrase(route.minutes)} (${route.miles} mi out). See you soon!`
-    : `Hi ${firstName}, ${tech} is on the way and will be there as soon as possible. Thanks for your patience!`;
+    ? t('etaReply', lang, { name: firstName, tech, miles: route.miles, minutes: route.minutes })
+    : t('etaReplyNoLoc', lang, { name: firstName, tech });
   await sendSMS(fromPhone, reply);
-  console.log('[OpenPhone] ETA auto-reply →', fromPhone, route ? `${route.miles}mi/${route.minutes}min` : 'no-route');
+  console.log('[OpenPhone] ETA auto-reply →', fromPhone, route ? `${route.miles}mi/${route.minutes}min` : 'no-route', lang);
 }
+
+// Client SMS language for a phone number — the tech's app reads this before sending
+// On My Way / ETA so those messages match the language the client opted into.
+openphoneRouter.get('/client-lang', requireAuth, async (req, res) => {
+  const lang = await getClientLang(String(req.query.phone || ''));
+  res.json({ lang });
+});
 
 // ─── GET recent calls (from webhook store, not REST API) ─────────────────────
 openphoneRouter.get('/calls', requireAuth, (_req, res) => {

@@ -3,6 +3,7 @@ import { db } from '../db.js';
 import { requireAuth, requireRole } from '../middleware/auth.js';
 import { sendSMS } from '../services/openphone.js';
 import { sendPushToUser } from '../services/push.js';
+import { getClientLang, claimOnce, t, SPANISH_INVITE } from '../services/messages.js';
 
 export const jobsRouter = Router();
 
@@ -70,12 +71,35 @@ async function companyName() {
 async function notifyClientArrived(job, techId) {
   const phone = (job.client?.phone || '').trim();
   if (!phone) return;
-  const first = (job.client?.firstName || '').trim() || 'there';
+  const lang = await getClientLang(phone);
+  const first = (job.client?.firstName || '').trim() || (lang === 'es' ? 'hola' : 'there');
   const [tech, company] = await Promise.all([
-    techId ? userName(techId) : Promise.resolve('Your technician'),
+    techId ? userName(techId) : Promise.resolve(lang === 'es' ? 'Su técnico' : 'Your technician'),
     companyName(),
   ]);
-  await sendSMS(phone, `Hi ${first}, ${tech} from ${company} has arrived at your location. See you in a moment!`);
+  await sendSMS(phone, t('arrived', lang, { name: first, tech, company }));
+}
+
+// Booking confirmation — texts the CLIENT once when a job scheduled for a future slot is
+// created, so they know who's coming and when (ASAP jobs skip this: the tech's On My Way
+// SMS covers them). Idempotent via claimOnce so it can't double-send.
+async function notifyBookingConfirmed(job, jobId) {
+  if (!job.scheduledAhead) return;
+  const phone = (job.client?.phone || '').trim();
+  if (!phone) return;
+  if (!(await claimOnce(jobId, 'booking'))) return;
+
+  const lang = await getClientLang(phone);
+  const first = (job.client?.firstName || '').trim() || (lang === 'es' ? 'hola' : 'there');
+  const [tech, company] = await Promise.all([
+    job.assignedTo ? userName(job.assignedTo) : Promise.resolve(''),
+    companyName(),
+  ]);
+  const when = [job.scheduledDate, job.scheduledTime].filter(Boolean).join(' ');
+  let text = t('bookingScheduled', lang, { name: first, tech: tech || '', company, when });
+  if (lang !== 'es') text += SPANISH_INVITE; // one-time Spanish invite while they're on English
+  await sendSMS(phone, text);
+  console.log('[JOBS] booking confirmation →', phone, lang);
 }
 
 // Alert the dispatchers (active owners/managers with a phone, plus LEAD_NOTIFY_PHONE)
@@ -201,6 +225,8 @@ jobsRouter.post('/', requireAuth, async (req, res) => {
     if (data.assignedTo) {
       notifyAssignedTech(data.assignedTo, { ...data, id: jobId }, req.user.id).catch(e => console.error('[JOBS] notify error:', e));
     }
+    // Scheduled-for-later jobs get a client-facing booking confirmation (ASAP ones don't).
+    notifyBookingConfirmed(data, jobId).catch(e => console.error('[JOBS] booking notify error:', e));
     res.json({ id: jobId, ...data });
   } catch (err) {
     console.error('[JOBS] create error:', err);

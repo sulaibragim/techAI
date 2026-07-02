@@ -204,6 +204,7 @@ export interface Job {
   jobNumber: string;
   createdAt?: string;
   updatedAt?: string; // freshness stamp — bulk /sync only overwrites a stored job with a newer one
+  scheduledAhead?: boolean;    // booked for a future slot (not ASAP) → client gets a booking-confirmation SMS
   paymentReminders?: string[]; // ISO stamps of unpaid-balance reminder SMS the server has sent (max 2)
   stripeSessions?: string[];   // processed Stripe checkout session ids (webhook idempotency)
   client: Client;

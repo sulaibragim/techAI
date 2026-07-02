@@ -2,6 +2,7 @@ import { db } from '../db.js';
 import { sendSMS } from './openphone.js';
 import { sendPushToRoles } from './push.js';
 import { stripeConfigured, createCheckoutSession, publicBase } from './stripe.js';
+import { getClientLang, t } from './messages.js';
 
 // Time-based automations that need a clock, not a request:
 //   • payment reminders — completed-but-unpaid jobs get a polite SMS at 3 and 10 days
@@ -73,12 +74,12 @@ async function runPaymentReminders() {
     const dueAfter = REMINDER_DAYS[sent.length];
     if (daysBetween(j.completedAt, now) < dueAfter) continue;
 
-    const first = (j.client?.firstName || '').trim() || 'there';
-    const call = company.phone ? ` or call us at ${company.phone}` : '';
+    const lang = await getClientLang(phone);
+    const first = (j.client?.firstName || '').trim() || (lang === 'es' ? 'hola' : 'there');
 
-    // With Stripe configured, the nudge carries a tap-to-pay card link — the client can
+    // With Stripe configured, the reminder carries a tap-to-pay card link — the client can
     // settle right from the text. Link failure never blocks the reminder itself.
-    let payLine = '';
+    let payUrl = '';
     if (stripeConfigured()) {
       try {
         const session = await createCheckoutSession({
@@ -88,11 +89,13 @@ async function runPaymentReminders() {
           companyName: company.name,
           base: publicBase(),
         });
-        payLine = ` Pay securely by card: ${session.url}`;
+        payUrl = session.url;
       } catch (e) { console.warn('[scheduler] pay-link failed, sending reminder without it:', e.message); }
     }
 
-    const text = `Hi ${first}, this is ${company.name}. Friendly reminder: job #${j.jobNumber || row.id} has an outstanding balance of ${money(balance)}.${payLine} Reply here${call} with any questions — thank you!`;
+    const text = t('paymentReminder', lang, {
+      name: first, company: company.name, jobNo: j.jobNumber || row.id, balance, payUrl, phone: company.phone,
+    });
     const ok = await sendSMS(phone, text);
     if (!ok) continue; // OpenPhone hiccup — retry next tick, don't stamp
 

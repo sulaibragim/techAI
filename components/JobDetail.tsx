@@ -27,7 +27,7 @@ import { isRevenueJob } from '../financialUtils';
 import { translateCallSummary } from '../translateService';
 import { geocodeAddress } from '../geocoding';
 import { haversineMiles, approxEtaMinutes, formatMiles, LatLng } from '../geoUtils';
-import { getDriveEta, getRouteInfo, getWeather, buildOnMyWayMessage } from '../dispatchMessage';
+import { getDriveEta, getRouteInfo, getWeather, buildOnMyWayMessage, getClientLang } from '../dispatchMessage';
 import { AutoKeyPanel } from './AutoKeyPanel';
 import { AddressAutocomplete } from './AddressAutocomplete';
 import { useSwipeBack } from '../useSwipeBack';
@@ -261,14 +261,18 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
     const techName = users.find(u => u.id === localJob.assignedTo)?.name || technicianName;
     const isCar = localJob.lockDetails.type === 'Automotive';
 
-    const techLoc = (await getCurrentLocation()) || (currentUser?.lastLocation ? { lat: currentUser.lastLocation.lat, lng: currentUser.lastLocation.lng } : null);
+    let techLoc = (await getCurrentLocation()) || (currentUser?.lastLocation ? { lat: currentUser.lastLocation.lat, lng: currentUser.lastLocation.lng } : null);
     let clientLoc = clientCoords;
     if (!clientLoc) clientLoc = await geocodeAddress([localJob.client.address, localJob.client.zip].filter(Boolean).join(', '));
+    // No tech GPS (permission denied / off) → use the shop as the origin so the client
+    // still gets a real number instead of a vague "on the way".
+    if (!techLoc) { const shop = await geocodeAddress([companyAddress, companyCity].filter(Boolean).join(', ')); if (shop) techLoc = shop; }
 
     const etaMinutes = (techLoc && clientLoc) ? await getDriveEta(techLoc, clientLoc) : null;
     const weather = clientLoc ? await getWeather(clientLoc) : null;
+    const lang = await getClientLang(phone);
 
-    const text = buildOnMyWayMessage({ firstName: localJob.client.firstName, techName, companyName, etaMinutes, isCar, weather });
+    const text = buildOnMyWayMessage({ firstName: localJob.client.firstName, techName, companyName, etaMinutes, isCar, weather, lang });
     const ok = await sendSms(phone, text);
 
     if (ok) {
@@ -292,15 +296,21 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
 
     setEtaUpdState('sending');
     const techName = users.find(u => u.id === localJob.assignedTo)?.name || technicianName;
-    const techLoc = (await getCurrentLocation()) || (currentUser?.lastLocation ? { lat: currentUser.lastLocation.lat, lng: currentUser.lastLocation.lng } : null);
+    let techLoc = (await getCurrentLocation()) || (currentUser?.lastLocation ? { lat: currentUser.lastLocation.lat, lng: currentUser.lastLocation.lng } : null);
     let clientLoc = clientCoords;
     if (!clientLoc) clientLoc = await geocodeAddress([localJob.client.address, localJob.client.zip].filter(Boolean).join(', '));
+    if (!techLoc) { const shop = await geocodeAddress([companyAddress, companyCity].filter(Boolean).join(', ')); if (shop) techLoc = shop; }
 
     const route = (techLoc && clientLoc) ? await getRouteInfo(techLoc, clientLoc) : null;
-    const name = (localJob.client.firstName || '').trim() || 'there';
-    const text = route
-      ? `Hi ${name}, quick update — ${techName} is about ${formatMiles(route.miles)} mi away, ETA ~${route.minutes} min. See you soon!`
-      : `Hi ${name}, quick update — ${techName} is still on the way and will be there as soon as possible. Thanks for your patience!`;
+    const lang = await getClientLang(phone);
+    const name = (localJob.client.firstName || '').trim() || (lang === 'es' ? 'hola' : 'there');
+    const text = lang === 'es'
+      ? (route
+        ? `Hola ${name}, actualización — ${techName} está a unas ${formatMiles(route.miles)} millas, llegará en ~${route.minutes} min. ¡Nos vemos pronto!`
+        : `Hola ${name}, actualización — ${techName} sigue en camino y llegará lo antes posible. ¡Gracias por su paciencia!`)
+      : (route
+        ? `Hi ${name}, quick update — ${techName} is about ${formatMiles(route.miles)} mi away, ETA ~${route.minutes} min. See you soon!`
+        : `Hi ${name}, quick update — ${techName} is still on the way and will be there as soon as possible. Thanks for your patience!`);
     const ok = await sendSms(phone, text);
 
     if (ok) {

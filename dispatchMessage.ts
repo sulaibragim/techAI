@@ -4,6 +4,21 @@ import { LatLng, haversineMiles, approxEtaMinutes } from './geoUtils';
 
 export interface Weather { tempF?: number; code?: number; precipitation?: number; }
 
+export type ClientLang = 'en' | 'es';
+
+// One-time invite shown to English-speaking clients so they can switch to Spanish.
+const SPANISH_INVITE = ' Para español, responda SÍ.';
+
+// The client's opted-in SMS language (set server-side when they reply "SÍ"). Defaults to
+// English on any failure so a message always sends.
+export async function getClientLang(phone: string): Promise<ClientLang> {
+  try {
+    const res = await fetch(`${API_BASE}/api/openphone/client-lang?phone=${encodeURIComponent(phone)}`, { headers: { ...authHeaders() } });
+    if (res.ok) { const d = await res.json(); return d.lang === 'es' ? 'es' : 'en'; }
+  } catch { /* offline — default English */ }
+  return 'en';
+}
+
 // Driving ETA in minutes: real road time via the backend (OSRM), falling back to a
 // straight-line estimate so we always have something to tell the client.
 export async function getDriveEta(from: LatLng, to: LatLng): Promise<number | null> {
@@ -78,7 +93,8 @@ function tipFor(isCar: boolean, w: Weather | null): string {
   return pick(tips[key] || tips[cat] || tips.mild);
 }
 
-// Build the full "on my way" SMS: greeting + ETA + a situation-aware tip.
+// Build the full "on my way" SMS: greeting + ETA + a "reply to check ETA" invite, in the
+// client's language. English messages also carry the one-time "responda SÍ" Spanish invite.
 export function buildOnMyWayMessage(opts: {
   firstName?: string;
   techName: string;
@@ -86,11 +102,21 @@ export function buildOnMyWayMessage(opts: {
   etaMinutes: number | null;
   isCar: boolean;
   weather: Weather | null;
+  lang?: ClientLang;
 }): string {
-  const name = (opts.firstName || '').trim() || 'there';
+  const lang: ClientLang = opts.lang === 'es' ? 'es' : 'en';
+  const name = (opts.firstName || '').trim() || (lang === 'es' ? 'hola' : 'there');
+
+  if (lang === 'es') {
+    const arrival = opts.etaMinutes
+      ? `Voy en camino — llegaré en unos ${opts.etaMinutes} min.`
+      : `Voy en camino y llegaré pronto.`;
+    return `Hola ${name}, soy ${opts.techName} de ${opts.companyName}. ${arrival} Responda a este mensaje para saber cuánto falta. ¡Nos vemos pronto!`;
+  }
+
   const arrival = opts.etaMinutes
     ? `I'm on my way and should arrive ${etaPhrase(opts.etaMinutes)}.`
     : `I'm on my way and will arrive shortly.`;
   const tip = tipFor(opts.isCar, opts.weather);
-  return `Hi ${name}, this is ${opts.techName} from ${opts.companyName}. ${arrival} ${tip} See you soon!`;
+  return `Hi ${name}, this is ${opts.techName} from ${opts.companyName}. ${arrival} ${tip} Reply anytime to check my ETA.${SPANISH_INVITE} See you soon!`;
 }

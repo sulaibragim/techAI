@@ -82,6 +82,24 @@ export async function initDB() {
       ALTER TABLE users ADD COLUMN IF NOT EXISTS last_location JSONB;
       -- Technician specialties for smart assignment (idempotent).
       ALTER TABLE users ADD COLUMN IF NOT EXISTS skills JSONB;
+
+      -- Per-client SMS language preference, keyed by the last-10 digits of their phone
+      -- so it follows the person across jobs. 'en' default; flips to 'es' when a client
+      -- replies "SÍ" (or writes to us in Spanish).
+      CREATE TABLE IF NOT EXISTS client_prefs (
+        phone_key TEXT PRIMARY KEY,
+        lang TEXT NOT NULL DEFAULT 'en',
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      -- One-shot guard so a given automated SMS (e.g. a booking confirmation) fires once
+      -- per job even if the job row is created/updated several times.
+      CREATE TABLE IF NOT EXISTS sent_sms (
+        job_id TEXT NOT NULL,
+        kind TEXT NOT NULL,
+        sent_at TIMESTAMPTZ DEFAULT NOW(),
+        PRIMARY KEY (job_id, kind)
+      );
     `);
 
     const { rows } = await client.query('SELECT COUNT(*) FROM users');

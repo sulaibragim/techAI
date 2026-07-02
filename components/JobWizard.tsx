@@ -210,6 +210,7 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
       scheduledDate,
       scheduledTime,
       status: 'scheduled',
+      scheduledAhead: scheduleMode === 'later',
       priority,
       lineItems: [],
       paymentStatus: 'unpaid',
