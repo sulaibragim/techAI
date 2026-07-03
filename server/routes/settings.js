@@ -8,7 +8,7 @@ export const settingsRouter = Router();
 // what their UI actually needs (price book for invoices, client profiles for the job
 // card, company identity) — the expense ledger, stock ledger, and revenue targets are
 // the owner's books and must not ship to every tech's phone just because they hold a token.
-const TECH_HIDDEN_KEYS = ['expenses', 'stockMovements', 'monthlyTargets'];
+const TECH_HIDDEN_KEYS = ['expenses', 'stockMovements', 'monthlyTargets', 'aiMemories'];
 
 // Get settings — any authenticated user. The Gemini key is never returned to any client;
 // it lives only in the server env (GEMINI_API_KEY). Any legacy key still in the DB is stripped.
@@ -79,6 +79,7 @@ settingsRouter.put('/', requireAuth, requireRole('owner', 'manager'), async (req
       if (patch.expenses) merged.expenses = unionById(current.expenses, patch.expenses);
       if (patch.stockMovements) merged.stockMovements = unionById(current.stockMovements, patch.stockMovements, 2000);
       if (patch.priceBook) merged.priceBook = unionKeepOrder(current.priceBook, patch.priceBook);
+      if (patch.aiMemories) merged.aiMemories = unionById(current.aiMemories, patch.aiMemories, 100);
       if (patch.clientProfiles) merged.clientProfiles = mergeMap(current.clientProfiles, patch.clientProfiles);
       if (patch.monthlyTargets) merged.monthlyTargets = mergeMap(current.monthlyTargets, patch.monthlyTargets);
       if (patch.techTargets) merged.techTargets = mergeMap(current.techTargets, patch.techTargets);
@@ -99,6 +100,10 @@ settingsRouter.put('/', requireAuth, requireRole('owner', 'manager'), async (req
       const gone = new Set(patch.removedServiceRateIds);
       merged.priceBook = merged.priceBook.filter((r) => !gone.has(r?.id));
     }
+    if (Array.isArray(patch.removedAiMemoryIds) && merged.aiMemories) {
+      const gone = new Set(patch.removedAiMemoryIds);
+      merged.aiMemories = merged.aiMemories.filter((m) => !gone.has(m?.id));
+    }
     if (merged.techTargets && typeof merged.techTargets === 'object') {
       for (const [k, v] of Object.entries(merged.techTargets)) {
         if (!(Number(v) > 0)) delete merged.techTargets[k];
@@ -106,6 +111,7 @@ settingsRouter.put('/', requireAuth, requireRole('owner', 'manager'), async (req
     }
     delete merged.removedExpenseIds; // transport-only keys — never persisted
     delete merged.removedServiceRateIds;
+    delete merged.removedAiMemoryIds;
     delete merged.replaceLedgers;
 
     await db.query(

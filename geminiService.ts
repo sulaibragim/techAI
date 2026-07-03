@@ -6,6 +6,8 @@ import { useAuthStore } from './authStore';
 import { API_BASE } from './backendUrl';
 import { authHeaders } from './apiClient';
 import { buildClients, clientScore, clientFlags, normalizePhone } from './clientUtils';
+import { findKeyProfiles, findProcedure, decodeVin, reverseLookup, stockForKeyway } from './vehicleKeyLookup';
+import { accountsReceivable } from './financialUtils';
 import { LineItem } from './types';
 
 const CHAT_MODEL = 'gemini-2.5-flash';
@@ -106,6 +108,12 @@ function getBusinessContext(): string {
     .map(({ c }) => { const f = clientFlags(c); return `${c.firstName} ${c.lastName} (${c.phone})${f.doNotService ? ' — DO NOT SERVICE' : ' — difficult/handle with care'}`; })
     .join('\n');
 
+  // Standing instructions Sultan told the AI to remember — owner/manager only.
+  const memories = (currentUser?.role !== 'technician' ? (settings.aiMemories || []) : [])
+    .slice(0, 30)
+    .map(m => `- ${m.text}`)
+    .join('\n');
+
   const recentJobs = jobs.slice(-15).map(j => {
     const rec = repByPhone.get(normalizePhone(j.client.phone));
     const tag = rec ? ` | client: ${clientScore(rec).tier}${rec.rating ? `/${rec.rating}` : ''}` : '';
@@ -125,7 +133,7 @@ TOTAL COMPLETED: ${completedJobs.length} (Revenue: $${totalRevenue})
 MONTHLY TARGET: $${settings.monthlyRevenueTarget}
 
 TECHNICIANS: ${techList || 'None configured'}
-
+${memories ? `\nSTANDING INSTRUCTIONS FROM SULTAN (always honor these; use 'forget' to drop one):\n${memories}\n` : ''}
 TOP CLIENTS (by reputation score):
 ${topClients || '(no clients yet)'}
 ${watchlist ? `\nWATCHLIST (handle with care / do-not-service):\n${watchlist}` : ''}
@@ -135,81 +143,151 @@ ${recentJobs || '(no jobs yet)'}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
 }
 
-const getSystemInstruction = (includeContext = true) => `
+// Who is talking to the AI right now — shapes identity, permissions language, and tone.
+function currentActor(): { role: 'owner' | 'manager' | 'technician'; name: string } {
+  const auth = useAuthStore.getState();
+  const u = auth.users.find(x => x.id === auth.currentUserId) ?? null;
+  return { role: (u?.role as any) || 'owner', name: u?.name || 'Sultan' };
+}
+
+const OWNER_IDENTITY = (name: string) => `
 IDENTITY:
-- Your name is "Дурачок" (Durachok). You are Sultan's elite business partner and AI assistant.
-- You speak with Sultan ONLY in Russian (русский язык).
+- Your name is "Дурачок" (Durachok). You are ${name}'s elite business partner and AI dispatcher.
+- You speak with ${name} ONLY in Russian (русский язык).
 - All client names, addresses, messages to clients, and data entries MUST be in ENGLISH.
 - You think internally in English for all logic and data operations.
 
 ROLE:
-You are the strategic brain of TrustKey Locksmith — a locksmith company in Arizona (AZ).
-Services: automotive lockouts, residential rekeying, commercial lock systems, safe opening.
-You have FULL access to the CRM data and can perform ANY action Sultan asks.
+You are the strategic brain AND front-desk dispatcher of TrustKey Locksmith — a mobile locksmith company in Arizona (AZ).
+Services: automotive lockouts & key programming, residential rekeying, commercial lock systems, safe opening.
+You have FULL access to CRM data and can perform ANY action ${name} asks. You have TWO jobs:
+1. STRATEGIST — when ${name} plans his day/week: revenue, debtors, who's slacking, what to fix.
+2. LIVE DISPATCH — when a client is ON THE PHONE: quote a price from the price book in seconds, book the job, assign the right tech. Speed wins the sale.`;
 
+const TECH_IDENTITY = (name: string) => `
+IDENTITY:
+- Your name is "Дурачок" (Durachok). You are ${name}'s field assistant — a locksmith tech out on jobs.
+- You speak with ${name} ONLY in Russian (русский язык).
+- All client-facing text and data entries MUST be in ENGLISH.
+
+ROLE:
+You are a hands-busy field helper for a TrustKey Locksmith technician in Arizona.
+${name} is usually driving or working a lock — keep it SHORT and practical.
+You help with: updating job status ("еду"→enRoute, "на месте"→onSite, "готово"→completed),
+looking up car-key info (chip/keyway/programming) and whether the blank is in stock,
+adding line items to bill the job, and checking parts.
+${name} sees ONLY his own jobs. Never mention other techs' jobs, clients, earnings, or the shop's totals.`;
+
+const COMMS_OWNER = (name: string) => `
 COMMUNICATION STYLE:
 - Be concise. No fluff. Get to the point.
-- When reporting data, use structured format (bullets, numbers).
-- When Sultan asks "what's up" or "как дела", give a quick business overview: today's jobs, revenue, any issues.
-- Never say "I'll help you with that" — just DO it.
-- Execute immediately for reads, job creation/updates, and navigation. The ONLY exceptions are in PROTOCOLS below (sending a client SMS, cancelling a job).
+- Structured output for data (bullets, short numbers). Money as $NNN.
+- "как дела" / "что по дню" → quick overview: today's jobs, revenue vs target, debtors, low stock, unhandled leads.
+- Never say "сейчас сделаю" — just DO it, then report the result.
+- Execute immediately for reads, job create/update, billing, navigation. Confirm only the outward/irreversible actions in PROTOCOLS.`;
 
-TOOL USAGE (CRITICAL):
-- You MUST call tools for ANY action. Never claim you did something without calling the function.
-- Don't ask permission for routine actions — just do them. Confirm only the irreversible/outward actions listed in PROTOCOLS.
-- If you need a job ID, call 'search_jobs' first to find it.
-- All client names in tool parameters MUST be in English/Latin script.
-- When creating jobs: scheduledDate format is YYYY-MM-DD, scheduledTime is HH:MM.
+const COMMS_TECH = `
+COMMUNICATION STYLE (FIELD):
+- ONE or TWO sentences max. He's driving. No long lists, no lectures.
+- For a status change just confirm: "Отметил — еду к Jack".
+- For a car-key lookup give only what he needs on the job: chip, keyway/blade, program method, and "на складе есть/нет".
+- Never read out a wall of numbers. If there's more, say "подробнее — открой заказ".`;
 
+const COMMS_VOICE = `
+VOICE MODE (spoken aloud — CRITICAL):
+- You are being SPOKEN, not read. No markdown, no bullets, no asterisks — plain spoken Russian sentences.
+- Keep answers to 1-3 short sentences. Say the one thing that matters, then stop.
+- Prices spoken naturally: "сто тридцать девять долларов", not "$139".
+- Confirm actions in a few words: "Готово, отметил на месте".`;
+
+const PROTOCOLS = (name: string) => `
 PROTOCOLS (follow strictly):
-1. CONFIRM before irreversible / outward actions — sending an SMS to a client, or cancelling a job. First state exactly what you'll do (recipient + the message text, or which job), then ask "Подтверди?". Act only after Sultan confirms. Everything else (reading data, creating/updating jobs, navigation) — do immediately.
-2. ROLE AWARENESS — a technician using you can see ONLY their own jobs and clients. Never mention, list, or imply other technicians' jobs, clients, schedules, or earnings to a technician.
-3. CLIENT ESCALATION — before booking or acting for a client who is "Do not service", on the watchlist, or carrying a large unpaid balance, WARN Sultan first and wait. Use get_client when unsure.
-4. NO GUESSING — never invent prices, stock counts, job IDs, addresses, or client details. If you lack the data, say so and call the right tool (search_jobs, search_inventory, get_client) to fetch it.
-5. PRICING — quote only from real data; never invent prices and never offer discounts.
-6. HONEST ERRORS — if a tool returns an error or you could not complete something, say exactly what failed. Never reply "Готово" for an action that did not succeed.
+1. CONFIRM before outward / irreversible actions — sending a client SMS, sending a payment link, or cancelling a job. First state exactly what you'll do (recipient + gist, or which job), then ask "Подтверди?". Act only after ${name} confirms. Everything else (reads, create/update jobs, billing, navigation) — do immediately.
+2. ROLE AWARENESS — a technician sees ONLY their own jobs and clients. Never mention, list, or imply other technicians' jobs, clients, schedules, or earnings to a technician.
+3. CLIENT ESCALATION — before booking or acting for a client who is "Do not service", on the watchlist, or carrying a large unpaid balance, WARN first and wait. Use get_client when unsure.
+4. NO GUESSING — never invent prices, stock counts, job IDs, addresses, key/chip data, or client details. If you lack it, call the right tool (get_price_book, car_key_lookup, search_jobs, search_inventory, get_client). If the tool has no answer, say so plainly.
+5. PRICING — quote ONLY from get_price_book. After 9:00 PM or before 7:00 AM Arizona time, quote the nightPrice when one exists and say it's the after-hours rate. Never invent prices, never offer discounts. "from" prices are a starting point — say "от $NNN".
+6. HONEST ERRORS — if a tool errors or you couldn't finish, say exactly what failed. Never say "Готово" for an action that didn't succeed.`;
 
+const LANGUAGE_RULES = (name: string) => `
 LANGUAGE RULES:
-- Talk to Sultan: RUSSIAN
-- Client names in data: ENGLISH (Султан says "Джек" → you write "Jack")
-- SMS to clients (send_sms content): ENGLISH, professional, friendly
-- Never repeat SMS text back to Sultan. Just confirm: "Отправил сообщение"
-- Job descriptions, addresses, notes: ENGLISH
+- Talk to ${name}: RUSSIAN
+- Client names in data: ENGLISH (${name} says "Джек" → you write "Jack")
+- SMS to clients: ENGLISH, professional, friendly
+- Never repeat SMS/payment-link text back to ${name}. Just confirm: "Отправил".
+- Job descriptions, addresses, notes: ENGLISH`;
 
-WHAT YOU CAN DO:
-1. CREATE jobs with full details
-2. UPDATE any job field (status, schedule, notes, assignment)
-3. SEARCH jobs by name, status, date
-4. VIEW dashboard stats and revenue
-5. SEND real SMS to clients via OpenPhone
-6. CHECK inventory/parts
-7. SEE technician status, specialties and assignments
-8. LOOK UP a client's reputation (tier, rating, flags, preferred tech) via get_client
-9. NAVIGATE between app tabs
-10. ANALYZE business performance and give strategic advice
-11. BILL a job — add labor/part/service line items via add_line_item (auto-recomputes the total)
-12. MANAGE stock — receive new stock or record parts used via adjust_inventory
-13. SET client reputation — rating, flags, private notes via set_client_reputation
-14. SEE unhandled website leads via get_leads
-
+const DOMAIN_KNOWLEDGE = `
 LOCKSMITH DOMAIN KNOWLEDGE:
 - Job types: Automotive (car lockouts, key programming, ignition repair), Residential (lockouts, rekeying, smart locks), Commercial (panic bars, access control, master key systems), Safe/Vault (combination changes, drilling, manipulation)
 - Common brands: Schlage, Kwikset, Yale, Medeco (residential); Toyota, Honda, Ford, BMW, Audi (automotive); Von Duprin, Adams Rite, Corbin Russwin (commercial); Amsec, SentrySafe (safes)
 - Status flow: scheduled → enRoute → onSite → diagnosed → sold → completed
-- Urgency levels: emergency (locked out NOW), urgent (same-day), standard (can schedule)
+- Urgency: emergency (locked out NOW), urgent (same-day), standard (can schedule)
+- CAR KEYS: for any "какой ключ / чип / как прописать" question call car_key_lookup (by make+model+year, by VIN, or reverse by FCC/blade). It also tells you if the blank is in our stock.`;
+
+const OWNER_PLAYBOOK = `
+DISPATCH PLAYBOOK (client on the phone):
+1. Caller's number/name known? get_client first — lead with their standing (VIP/Gold → treat well; "Do not service" → warn BEFORE booking; Slow payer → collect upfront).
+2. Quote from get_price_book. Car key? car_key_lookup for the real part + stock, then price it.
+3. Book with create_job (get date/time; default urgency from how they talk — "прямо сейчас" = emergency).
+4. Assign by specialty + the client's preferred tech; mention the tech's status (available/onJob).
+5. Unpaid balance owed? Offer to send a Stripe payment link (send_payment_link, confirm first).
 
 CLIENT REPUTATION (use it actively):
-- Every client carries a reputation: a tier (Gold/Silver/Bronze/New/Watch/Blocked), a 0-100 score, a rating (good/neutral/difficult), flags (VIP, Frequent, Big ticket, Referrer, Difficult, Grumpy, Slow payer, Haggler, Cancel risk, Do not service), and a preferred technician.
-- It is injected above (TOP CLIENTS + WATCHLIST + tagged on recent jobs). Use 'get_client' to look up anyone in detail before advising.
-- When a known client calls or you discuss them: lead with their standing. Flag VIP/Gold so Sultan treats them well; warn loudly if they are "Do not service" (tell Sultan BEFORE booking) or "Slow payer" (collect upfront).
-- Do NOT offer or apply discounts. Reputation guides priority and care, not price.
+- Tiers Gold/Silver/Bronze/New/Watch/Blocked, 0-100 score, rating, flags (VIP, Frequent, Big ticket, Referrer, Difficult, Grumpy, Slow payer, Haggler, Cancel risk, Do not service), preferred tech — injected below and via get_client.
+- Reputation guides priority and care, NOT price. Do not discount.
 
-TECHNICIAN ASSIGNMENT (smart routing):
-- Each technician has specialties (skills) shown above. Match the job's type to a specialist: Automotive/High-end cars → car jobs, Safes → safe/vault, Commercial → commercial, Residential/Smart locks → home jobs.
-- If the client has a preferred technician, suggest them first. Otherwise suggest a matching specialist. When Sultan asks "кому отдать заказ" / "who should take this", recommend by specialty + preferred tech, and mention their status (available/onJob).
+TECHNICIAN ASSIGNMENT: match job type to a specialist (Automotive/high-end → car; Safe → safe/vault; Commercial → commercial; Residential/smart → home). Prefer the client's favorite tech; note availability.`;
 
+const CAPABILITIES = `
+WHAT YOU CAN DO (call the tool — never fake it):
+create_job, update_job, search_jobs, get_dashboard, get_calls, get_messages,
+send_sms / send_sms_by_name (confirm first), search_inventory, get_reorder_list,
+get_technicians, get_client, set_client_reputation, get_leads, get_debtors,
+get_price_book (real service rates, day/night), car_key_lookup (chip/keyway/blade/programming + stock),
+send_payment_link (Stripe link to a client, confirm first), add_line_item, adjust_inventory, navigate_to,
+remember / forget / list_memories (persist Sultan's standing instructions across sessions).
+
+MEMORY:
+- When Sultan says "запомни" / "всегда" / "никогда" / "на будущее" and it's a durable rule, call 'remember'. Confirm briefly: "Запомнил".
+- Honor every STANDING INSTRUCTION shown in the business state below. If one no longer applies and Sultan says to drop it, call 'forget'.`;
+
+// Build the system prompt for whoever is currently signed in.
+// includeContext=false is used on tool-result follow-up rounds (context already in the history);
+// voice=true swaps in the spoken-output rules.
+const getSystemInstruction = (includeContext = true, voice = false) => {
+  const { role, name } = currentActor();
+  const isTech = role === 'technician';
+
+  const identity = isTech ? TECH_IDENTITY(name) : OWNER_IDENTITY(name);
+  const comms = isTech ? COMMS_TECH : COMMS_OWNER(name);
+  const playbook = isTech ? '' : OWNER_PLAYBOOK;
+
+  return `
+${identity}
+${comms}
+${voice ? COMMS_VOICE : ''}
+
+TOOL USAGE (CRITICAL):
+- You MUST call tools for ANY action. Never claim you did something without calling the function.
+- Don't ask permission for routine actions — just do them. Confirm only the outward/irreversible actions in PROTOCOLS.
+- If you need a job ID, call 'search_jobs' first. All client names in tool parameters MUST be English/Latin.
+
+DATES & TIME (Arizona, no daylight saving — use the date/time shown in the business state below):
+- scheduledDate is always YYYY-MM-DD; scheduledTime is 24-hour HH:MM.
+- "сегодня"/"today" = the date below. "завтра"/"tomorrow" = +1 day. "послезавтра" = +2 days. "через неделю" = +7 days.
+- A weekday ("в пятницу"/"on Friday") = the NEXT occurrence of that weekday (today only if it matches and the time hasn't passed yet).
+- "в конце месяца" = last day of the current month. "утром" ≈ 09:00, "днём" ≈ 13:00, "вечером" ≈ 18:00 unless a time is given.
+- Worked example: if today below is Wednesday 2026-07-08, then "в пятницу в 3 дня" → scheduledDate 2026-07-10, scheduledTime 15:00.
+- Never leave scheduledTime as a blind guess — if a booking has no time and none is implied, ask for it briefly.
+${PROTOCOLS(name)}
+${LANGUAGE_RULES(name)}
+${CAPABILITIES}
+${DOMAIN_KNOWLEDGE}
+${playbook}
 ${includeContext ? getBusinessContext() : ''}
 `;
+};
 
 const AI_TOOLS = [
   {
@@ -382,6 +460,79 @@ const AI_TOOLS = [
       {
         name: 'get_leads',
         description: 'Lists recent unhandled website leads (new jobs from the web form). Owner/manager only.',
+        parameters: { type: Type.OBJECT, properties: {} }
+      },
+      {
+        name: 'get_price_book',
+        description: "The company's real service rates (day and after-hours night price). ALWAYS call this to quote a price — never invent one. Optionally filter by category or search text.",
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            query: { type: Type.STRING, description: 'Optional: service name or category to filter (e.g. "lockout", "car key", "rekey")' },
+          }
+        }
+      },
+      {
+        name: 'car_key_lookup',
+        description: "Look up car-key data for a vehicle: transponder chip, keyway/blade, FCC ID, immobilizer, and step-by-step programming — plus whether the key blank is in our stock. Provide make+model+year, OR a 17-char vin, OR a reverse search (FCC ID / blade / part number of a key in hand).",
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            make: { type: Type.STRING, description: 'Vehicle make, e.g. Toyota' },
+            model: { type: Type.STRING, description: 'Vehicle model, e.g. Camry' },
+            year: { type: Type.NUMBER, description: 'Model year, e.g. 2019' },
+            vin: { type: Type.STRING, description: '17-character VIN — decoded to make/model/year automatically' },
+            reverse: { type: Type.STRING, description: 'Reverse search: an FCC ID, OEM part number, or blade code of a key in hand' },
+          }
+        }
+      },
+      {
+        name: 'send_payment_link',
+        description: 'Creates a secure Stripe card-payment link for a job\'s outstanding balance and texts it to the client. CONFIRM first. Use search_jobs to get the job ID.',
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            jobId: { type: Type.STRING, description: 'The job ID with an unpaid balance' },
+            sms: { type: Type.BOOLEAN, description: 'Text the link to the client (default true). false = just return the URL.' },
+          },
+          required: ['jobId']
+        }
+      },
+      {
+        name: 'get_debtors',
+        description: 'Lists clients who owe money: completed/sold jobs that are unpaid or partially paid, with balance and how many days overdue. Owner/manager only.',
+        parameters: { type: Type.OBJECT, properties: {} }
+      },
+      {
+        name: 'get_reorder_list',
+        description: 'Lists inventory parts at or below their reorder point (what to buy). Sorted by how far below the point they are.',
+        parameters: { type: Type.OBJECT, properties: {} }
+      },
+      {
+        name: 'remember',
+        description: "Save a standing instruction to remember permanently (survives chat clears and shows on every future session), e.g. \"don't schedule Mike after 9pm\", \"collect cash upfront from new clients\". Only save durable rules Sultan asks you to remember — NOT one-off tasks. Owner/manager only.",
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            text: { type: Type.STRING, description: 'The instruction to remember, phrased clearly. Keep the original language.' },
+          },
+          required: ['text']
+        }
+      },
+      {
+        name: 'forget',
+        description: "Remove a saved standing instruction. Provide either its exact id (from list_memories) or matching text. Owner/manager only.",
+        parameters: {
+          type: Type.OBJECT,
+          properties: {
+            id: { type: Type.STRING, description: 'The memory id to remove' },
+            match: { type: Type.STRING, description: 'Text that identifies which memory to remove (substring match)' },
+          }
+        }
+      },
+      {
+        name: 'list_memories',
+        description: 'List all saved standing instructions with their ids. Owner/manager only.',
         parameters: { type: Type.OBJECT, properties: {} }
       },
       {
@@ -743,6 +894,161 @@ export async function handleAITool(name: string, args: any): Promise<any> {
       };
     }
 
+    case 'get_price_book': {
+      const now = new Date();
+      const hourAZ = Number(now.toLocaleString('en-US', { hour: '2-digit', hour12: false, timeZone: 'America/Phoenix' }));
+      const afterHours = hourAZ >= 21 || hourAZ < 7;
+      const q = (args.query || '').toLowerCase().trim();
+      let rates = settings.priceBook || [];
+      if (q) rates = rates.filter(r => r.name.toLowerCase().includes(q) || r.category.toLowerCase().includes(q));
+      return {
+        status: 'success',
+        afterHoursNow: afterHours,
+        note: afterHours ? 'It is after-hours in Arizona — quote nightPrice where present.' : 'Daytime in Arizona — quote the standard price.',
+        count: rates.length,
+        rates: rates.map(r => ({
+          name: r.name,
+          category: r.category,
+          price: r.price,
+          nightPrice: r.nightPrice ?? null,
+          type: r.type,
+          note: r.note || null,
+        })),
+      };
+    }
+
+    case 'car_key_lookup': {
+      let make = (args.make || '').trim();
+      let model = (args.model || '').trim();
+      let year: number | null = args.year ? Number(args.year) : null;
+      let decoded: any = null;
+
+      if (args.reverse) {
+        const hits = reverseLookup(String(args.reverse));
+        if (hits.length === 0) return { status: 'error', message: `No key matches "${args.reverse}"` };
+        return {
+          status: 'success',
+          matchedBy: 'reverse',
+          count: hits.length,
+          vehicles: hits.slice(0, 12).map(p => ({
+            vehicle: `${p.make} ${p.model} ${p.yearStart}-${p.yearEnd ?? 'now'}`,
+            variants: (p.variants || []).map(v => ({ keyType: v.keyType, keyway: v.keyway, chip: v.transponderChip, fccId: v.fccId, partNumber: v.partNumber })),
+          })),
+        };
+      }
+
+      if (args.vin) {
+        decoded = await decodeVin(String(args.vin));
+        if (!decoded) return { status: 'error', message: `Could not decode VIN "${args.vin}" — enter make/model/year instead` };
+        make = decoded.make || make; model = decoded.model || model; year = decoded.year ?? year;
+      }
+      if (!make) return { status: 'error', message: 'Provide a make (and model/year), a vin, or a reverse search' };
+
+      const profiles = findKeyProfiles({ make, model, year });
+      if (profiles.length === 0) {
+        return { status: 'error', message: `No key data for ${make} ${model || ''} ${year || ''}`.trim() + ' — not in our dataset yet', decodedVin: decoded };
+      }
+      const p = profiles[0];
+      const proc = findProcedure(make, model, year);
+      const keyway = p.variants?.[0]?.keyway;
+      const inStock = stockForKeyway(keyway, store.inventory);
+
+      return {
+        status: 'success',
+        decodedVin: decoded,
+        vehicle: `${p.make} ${p.model} ${p.yearStart}-${p.yearEnd ?? 'now'}`,
+        immobilizer: p.immobilizer || null,
+        pinRequired: p.pinRequired ?? proc?.pinRequired ?? null,
+        programming: p.programming || null,
+        variants: (p.variants || []).map(v => ({
+          keyType: v.keyType, keyway: v.keyway, chip: v.transponderChip,
+          blade: v.bladeIlco || v.bladeSilca || v.bladeJma || null,
+          fccId: v.fccId, partNumber: v.partNumber, frequency: v.frequency,
+        })),
+        procedure: proc ? { onboard: proc.onboard, addKey: proc.addKey, allKeysLost: proc.allKeysLost, pinSource: proc.pinSource, specialTool: proc.specialTool } : null,
+        stock: inStock.length ? inStock.map(s => ({ name: s.name, sku: s.sku, qty: s.stock })) : 'no matching blank in stock',
+        confidence: p.confidence,
+      };
+    }
+
+    case 'send_payment_link': {
+      const job = visibleJobs.find(j => j.id === args.jobId);
+      if (!job) return { status: 'error', message: `Job ${args.jobId} not found` };
+      try {
+        const res = await fetch(`${API_BASE}/api/payments/link`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...authHeaders() },
+          body: JSON.stringify({ jobId: args.jobId, sms: args.sms !== false }),
+        });
+        const data = await res.json();
+        if (!res.ok) return { status: 'error', message: data.error || 'Could not create payment link' };
+        return { status: 'success', message: `Payment link for #${job.jobNumber} (balance $${data.balance})${data.smsSent ? ' — texted to client' : ''}`, url: data.url, balance: data.balance };
+      } catch {
+        return { status: 'error', message: 'Backend unreachable' };
+      }
+    }
+
+    case 'get_debtors': {
+      if (isTech) return { status: 'error', message: 'Debtors are visible to owner/manager only' };
+      const today = new Date();
+      const rows = accountsReceivable(store.jobs).sort((a, b) => b.balance - a.balance);
+      const daysOld = (d: string) => {
+        const t = Date.parse(d);
+        return Number.isFinite(t) ? Math.max(0, Math.round((today.getTime() - t) / 86400000)) : null;
+      };
+      return {
+        status: 'success',
+        count: rows.length,
+        totalOutstanding: Math.round(rows.reduce((s, r) => s + r.balance, 0)),
+        debtors: rows.slice(0, 25).map(r => ({
+          jobId: r.id,
+          jobNumber: r.jobNumber,
+          client: r.client,
+          balance: r.balance,
+          total: r.total,
+          paid: r.paid,
+          daysOverdue: daysOld(r.date),
+        })),
+      };
+    }
+
+    case 'get_reorder_list': {
+      const low = store.inventory
+        .filter(p => p.stock <= p.reorderPoint)
+        .map(p => ({ name: p.name, sku: p.sku, category: p.category, stock: p.stock, reorderPoint: p.reorderPoint, deficit: p.reorderPoint - p.stock, price: p.price }))
+        .sort((a, b) => b.deficit - a.deficit);
+      return { status: 'success', count: low.length, parts: low };
+    }
+
+    case 'remember': {
+      if (isTech) return { status: 'error', message: 'Only an owner or manager can save standing instructions' };
+      const text = (args.text || '').trim();
+      if (!text) return { status: 'error', message: 'Nothing to remember — provide the instruction text' };
+      const existing = (settings.aiMemories || []).find(m => m.text.toLowerCase() === text.toLowerCase());
+      if (existing) return { status: 'success', message: 'Already remembered', id: existing.id };
+      const entry = settings.addAiMemory(text);
+      return { status: 'success', message: `Remembered: "${text}"`, id: entry.id };
+    }
+
+    case 'forget': {
+      if (isTech) return { status: 'error', message: 'Only an owner or manager can manage standing instructions' };
+      const list = settings.aiMemories || [];
+      let target = args.id ? list.find(m => m.id === args.id) : null;
+      if (!target && args.match) {
+        const q = String(args.match).toLowerCase();
+        target = list.find(m => m.text.toLowerCase().includes(q)) || null;
+      }
+      if (!target) return { status: 'error', message: 'No matching memory found' };
+      settings.removeAiMemory(target.id);
+      return { status: 'success', message: `Forgot: "${target.text}"` };
+    }
+
+    case 'list_memories': {
+      if (isTech) return { status: 'error', message: 'Standing instructions are owner/manager only' };
+      const list = settings.aiMemories || [];
+      return { status: 'success', count: list.length, memories: list.map(m => ({ id: m.id, text: m.text, createdAt: m.createdAt })) };
+    }
+
     default:
       return { status: 'error', message: `Unknown action: ${name}` };
   }
@@ -756,6 +1062,10 @@ export async function getStrategicBrainResponse(
     role: h.role,
     parts: [{ text: h.text }]
   }));
+  // Gemini requires the first turn to be 'user'. The proactive morning brief leaves a
+  // leading 'model' message in history — drop any leading model turns so the next real
+  // user message isn't rejected with "First content should be with role 'user'".
+  while (contents.length && contents[0].role === 'model') contents.shift();
   contents.push({ role: 'user', parts: [{ text: message }] });
 
   // Loop: keep relaying turns through the backend while the model asks for tool calls.
@@ -826,7 +1136,7 @@ export class GeminiVoiceAssistant {
       model: model || 'gemini-2.5-flash-native-audio-preview-12-2025',
       config: {
         responseModalities: [Modality.AUDIO],
-        systemInstruction: getSystemInstruction(),
+        systemInstruction: getSystemInstruction(true, true),
         tools: AI_TOOLS,
         outputAudioTranscription: {},
         inputAudioTranscription: {},

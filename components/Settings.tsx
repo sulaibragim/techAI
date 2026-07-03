@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { motion } from 'motion/react';
-import { User, Target, Key, RotateCcw, Save, Upload, Info, Building2, AlertTriangle, Users, Plus, Trash2, ShieldCheck, History, Lock, Pencil, Check, X, Tag } from 'lucide-react';
+import { User, Target, Key, RotateCcw, Save, Upload, Info, Building2, AlertTriangle, Users, Plus, Trash2, ShieldCheck, History, Lock, Pencil, Check, X, Tag, BrainCircuit } from 'lucide-react';
 import { useSettingsStore, SETTINGS_DEFAULTS, settingsStorageIsEphemeral } from '../settingsStore';
 import { useAuthStore, useCurrentUser, can, ROLE_LABELS } from '../authStore';
 import { useAppStore } from '../store';
@@ -332,6 +332,8 @@ export const Settings: React.FC = () => {
 
         {currentUser && (currentUser.role === 'owner' || currentUser.role === 'manager') && <RatesSection />}
 
+        {currentUser && (currentUser.role === 'owner' || currentUser.role === 'manager') && <MemoriesSection />}
+
         {currentUser && currentUser.role !== 'technician' && <Section icon={Key} title="AI Configuration">
           <div className="flex items-center justify-between gap-3">
             <div>
@@ -502,6 +504,46 @@ const RatesSection: React.FC = () => {
         );
       })}
       <button onClick={() => addServiceRate({ name: 'New service', category: 'Lockout', price: 0, type: 'labor' })} className="flex items-center gap-1.5 text-blue-400 text-sm font-bold"><Plus size={15} /> Add rate</button>
+    </Section>
+  );
+};
+
+const MemoriesSection: React.FC = () => {
+  const aiMemories = useSettingsStore(s => s.aiMemories);
+  const addAiMemory = useSettingsStore(s => s.addAiMemory);
+  const removeAiMemory = useSettingsStore(s => s.removeAiMemory);
+  const [draft, setDraft] = useState('');
+  const fieldCls = 'bg-slate-950 border border-white/10 rounded-lg px-2.5 py-1.5 text-sm text-white outline-none focus:border-blue-500/50';
+
+  const add = () => {
+    const t = draft.trim();
+    if (!t) return;
+    addAiMemory(t);
+    setDraft('');
+  };
+
+  return (
+    <Section icon={BrainCircuit} title="AI Memory">
+      <p className="text-xs text-slate-500 -mt-2">Standing instructions Дурачок remembers on every session — e.g. «ночью Майка не ставить», «с новых клиентов брать предоплату». Say «запомни …» in chat, or add here.</p>
+      {aiMemories.length === 0 && <p className="text-sm text-slate-600 italic">Пока ничего не запомнено.</p>}
+      <div className="space-y-2">
+        {aiMemories.map(m => (
+          <div key={m.id} className="flex items-start gap-2 bg-slate-950/50 border border-white/5 rounded-lg px-3 py-2">
+            <span className="flex-1 min-w-0 text-sm text-slate-200 break-words">{m.text}</span>
+            <button onClick={() => removeAiMemory(m.id)} className="shrink-0 text-slate-500 hover:text-red-400 p-0.5" aria-label="Forget"><Trash2 size={15} /></button>
+          </div>
+        ))}
+      </div>
+      <div className="flex items-center gap-2">
+        <input
+          value={draft}
+          onChange={e => setDraft(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') add(); }}
+          placeholder="Новая инструкция…"
+          className={`${fieldCls} flex-1 min-w-0`}
+        />
+        <button onClick={add} disabled={!draft.trim()} className="flex items-center gap-1.5 text-blue-400 text-sm font-bold disabled:text-slate-600"><Plus size={15} /> Add</button>
+      </div>
     </Section>
   );
 };

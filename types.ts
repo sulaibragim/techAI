@@ -94,6 +94,14 @@ export interface ServiceRate {
   note?: string;            // e.g. "+$49 each additional door", "all-in with Schlage"
 }
 
+// A standing instruction the AI assistant ("Дурачок") remembers across chat clears
+// and devices — e.g. "don't schedule Mike after 9pm", "always collect upfront from cash clients".
+export interface AiMemory {
+  id: string;
+  text: string;             // the instruction, in whatever language Sultan gave it
+  createdAt: string;        // ISO
+}
+
 export type JobStatus =
   | 'scheduled' 
   | 'enRoute' 
