@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { API_BASE } from './backendUrl';
 import { authHeaders } from './apiClient';
-import { Expense, ClientProfile, StockMovement, ServiceRate } from './types';
+import { Expense, ClientProfile, StockMovement, ServiceRate, AiMemory } from './types';
 import { PRICE_BOOK_SEED } from './priceBook';
 
 export interface SettingsState {
@@ -22,13 +22,14 @@ export interface SettingsState {
   expenses: Expense[]; // business expense ledger (keys & stock, fuel, ads, …)
   stockMovements: StockMovement[]; // inventory ledger — every receive/sale/adjust/return/loss
   priceBook: ServiceRate[]; // standard service rates (seeded from trustkeyaz.com), tap-to-fill on invoices
+  aiMemories: AiMemory[]; // standing instructions the AI assistant remembers across chat clears
   clientProfiles: Record<string, ClientProfile>; // reputation/meta keyed by normalized phone
   supplierAliases: Record<string, string>; // "<supplier>|<their code>" → partId; learned once at invoice import, auto-matches after
   importedInvoices: string[]; // supplier invoice numbers already received — duplicate-import guard (capped)
   taxRate: number; // sales-tax percent applied to taxable revenue (0 = none)
   onboardingComplete: boolean;
   aiAvailable: boolean; // runtime flag: is GEMINI_API_KEY configured on the server?
-  updateSettings: (patch: Partial<Omit<SettingsState, 'updateSettings' | 'resetSettings' | 'setMonthlyTarget' | 'setTechTarget' | 'addExpense' | 'removeExpense' | 'addStockMovement' | 'addServiceRate' | 'updateServiceRate' | 'removeServiceRate' | 'upsertClientProfile' | 'syncSettings' | 'checkAiAvailable' | 'aiAvailable'>>) => void;
+  updateSettings: (patch: Partial<Omit<SettingsState, 'updateSettings' | 'resetSettings' | 'setMonthlyTarget' | 'setTechTarget' | 'addExpense' | 'removeExpense' | 'addStockMovement' | 'addServiceRate' | 'updateServiceRate' | 'removeServiceRate' | 'upsertClientProfile' | 'addAiMemory' | 'removeAiMemory' | 'syncSettings' | 'checkAiAvailable' | 'aiAvailable'>>) => void;
   setMonthlyTarget: (monthKey: string, value: number) => void;
   setTechTarget: (userId: string, value: number) => void;
   addExpense: (expense: Omit<Expense, 'id'>) => void;
@@ -38,6 +39,8 @@ export interface SettingsState {
   updateServiceRate: (rate: ServiceRate) => void;
   removeServiceRate: (id: string) => void;
   upsertClientProfile: (phoneKey: string, patch: Partial<ClientProfile>) => void;
+  addAiMemory: (text: string) => AiMemory;
+  removeAiMemory: (id: string) => void;
   learnSupplierAlias: (supplier: string, code: string, partId: string) => void;
   markInvoiceImported: (invoiceNumber: string) => void;
   resetSettings: () => void;
@@ -67,6 +70,7 @@ export const SETTINGS_DEFAULTS = {
   expenses: [] as Expense[],
   stockMovements: [] as StockMovement[],
   priceBook: PRICE_BOOK_SEED as ServiceRate[],
+  aiMemories: [] as AiMemory[],
   clientProfiles: {} as Record<string, ClientProfile>,
   supplierAliases: {} as Record<string, string>,
   importedInvoices: [] as string[],
@@ -196,6 +200,18 @@ export const useSettingsStore = create<SettingsState>()(
           return { clientProfiles: { ...state.clientProfiles, [phoneKey]: next } };
         });
         pushToServer({ clientProfiles: { [phoneKey]: get().clientProfiles[phoneKey] } });
+      },
+
+      addAiMemory: (text) => {
+        const entry: AiMemory = { id: `mem-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, text: text.trim(), createdAt: new Date().toISOString() };
+        set((state) => ({ aiMemories: [entry, ...state.aiMemories].slice(0, 100) }));
+        pushToServer({ aiMemories: [entry] });
+        return entry;
+      },
+
+      removeAiMemory: (id) => {
+        set((state) => ({ aiMemories: state.aiMemories.filter(m => m.id !== id) }));
+        pushToServer({ removedAiMemoryIds: [id] });
       },
 
       // Normalized "<supplier>|<code>" → partId. Learned when the user confirms a match

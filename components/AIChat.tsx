@@ -3,6 +3,7 @@ import { Send, Bot, Sparkles, BrainCircuit, KeyRound, Settings, Trash2, BarChart
 import { getStrategicBrainResponse } from '../geminiService';
 import { useAppStore } from '../store';
 import { useSettingsStore } from '../settingsStore';
+import { useCurrentUser } from '../authStore';
 
 interface ChatMessage {
   id: string;
@@ -12,6 +13,15 @@ interface ChatMessage {
 }
 
 const STORAGE_KEY = 'techai-brain-chat';
+const BRIEF_DATE_KEY = 'techai-brain-brief-date';
+
+function azDateKey(): string {
+  // "YYYY-MM-DD" for Arizona — the brief fires once per Arizona calendar day.
+  const parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Phoenix', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+  return parts; // en-CA already yields YYYY-MM-DD
+}
+
+const BRIEF_PROMPT = 'Это автоматический утренний бриф — я только что открыл приложение. Поздоровайся со мной по имени и дай короткую сводку на сегодня: сколько заказов и на какое время, выручка против дневной цели, кто должен деньги (сначала крупные суммы), что заканчивается на складе, и есть ли новые необработанные заявки с сайта. Если где-то всё спокойно — коротко так и скажи, не выдумывай. Собери реальные данные инструментами.';
 
 function loadHistory(): ChatMessage[] {
   try {
@@ -25,12 +35,14 @@ function saveHistory(msgs: ChatMessage[]) {
 }
 
 const QUICK_ACTIONS = [
-  { label: 'Dashboard', icon: BarChart3, prompt: 'Дай мне обзор бизнеса на сегодня' },
-  { label: 'Jobs', icon: Calendar, prompt: 'Покажи все активные заказы' },
-  { label: 'Techs', icon: Users, prompt: 'Какой статус у техников?' },
-  { label: 'Calls', icon: Phone, prompt: 'Покажи последние звонки' },
+  { label: 'Сводка дня', icon: BarChart3, prompt: 'Дай мне обзор бизнеса на сегодня: заказы, выручка, должники, что заканчивается, новые заявки' },
+  { label: 'Должники', icon: KeyRound, prompt: 'Кто мне должен и сколько? Покажи по убыванию суммы' },
+  { label: 'Заказы', icon: Calendar, prompt: 'Покажи все активные заказы' },
+  { label: 'Техники', icon: Users, prompt: 'Какой статус у техников?' },
+  { label: 'Прайс', icon: BarChart3, prompt: 'Покажи наш прайс-лист' },
+  { label: 'Звонки', icon: Phone, prompt: 'Покажи последние звонки' },
   { label: 'SMS', icon: MessageSquare, prompt: 'Покажи последние сообщения' },
-  { label: 'Inventory', icon: Package, prompt: 'Какие запчасти заканчиваются?' },
+  { label: 'Дозаказ', icon: Package, prompt: 'Что нужно докупить на склад?' },
 ];
 
 function renderMarkdown(text: string): React.ReactNode {
@@ -135,8 +147,10 @@ export const AIChat: React.FC = () => {
   const [isTyping, setIsTyping] = useState(false);
   const { setActiveTab } = useAppStore();
   const aiAvailable = useSettingsStore(s => s.aiAvailable);
+  const currentUser = useCurrentUser();
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const briefRan = useRef(false);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -177,6 +191,35 @@ export const AIChat: React.FC = () => {
       inputRef.current?.focus();
     }
   };
+
+  // Proactive morning brief: first time the owner/manager opens the AI on a new
+  // Arizona day, Дурачок greets and summarizes without being asked. Fires once/day.
+  useEffect(() => {
+    if (briefRan.current) return;
+    if (!aiAvailable || !currentUser) return;
+    if (currentUser.role === 'technician') return;
+    const today = azDateKey();
+    let last: string | null = null;
+    try { last = localStorage.getItem(BRIEF_DATE_KEY); } catch {}
+    if (last === today) return;
+
+    briefRan.current = true;
+    try { localStorage.setItem(BRIEF_DATE_KEY, today); } catch {}
+
+    (async () => {
+      setIsTyping(true);
+      try {
+        const history = messages.map(m => ({ text: m.text, role: (m.role === 'user' ? 'user' : 'model') as 'user' | 'model' }));
+        const response = await getStrategicBrainResponse(BRIEF_PROMPT, history);
+        if (response) addMessage(response, 'assistant');
+      } catch (e) {
+        // A failed brief is silent — the user can still chat normally.
+        briefRan.current = true;
+      } finally {
+        setIsTyping(false);
+      }
+    })();
+  }, [aiAvailable, currentUser, messages, addMessage]);
 
   const clearChat = () => {
     setMessages([]);
