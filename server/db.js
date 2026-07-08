@@ -82,6 +82,8 @@ export async function initDB() {
       ALTER TABLE users ADD COLUMN IF NOT EXISTS last_location JSONB;
       -- Technician specialties for smart assignment (idempotent).
       ALTER TABLE users ADD COLUMN IF NOT EXISTS skills JSONB;
+      -- Hand-drawn signature (data URL) stamped onto the tech line of invoices.
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS signature TEXT;
 
       -- Per-client SMS language preference, keyed by the last-10 digits of their phone
       -- so it follows the person across jobs. 'en' default; flips to 'es' when a client

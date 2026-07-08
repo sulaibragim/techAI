@@ -13,6 +13,7 @@ export interface User {
   photo?: string;
   commissionRate?: number; // percent of completed-job revenue, for salary calc
   skills?: string[];        // technician specialties (TECH_SKILLS) for smart assignment
+  signature?: string;       // hand-drawn signature (data URL) stamped onto invoices
   active: boolean;
   createdAt: string;
   techStatus?: TechStatus;

@@ -233,6 +233,8 @@ export const Settings: React.FC = () => {
               placeholder="Your company"
             />
           </div>
+
+          {currentUser && <SignaturePad />}
         </Section>
 
         {currentUser && currentUser.role !== 'technician' && <Section icon={Building2} title="Company Info">
@@ -549,6 +551,78 @@ const MemoriesSection: React.FC = () => {
 };
 
 const ROLES: Role[] = ['owner', 'manager', 'technician', 'accountant'];
+
+// Hand-drawn signature saved to the user's profile — it gets stamped onto the
+// Technician line of every invoice for jobs assigned to them. Until one is drawn,
+// invoices fall back to the name in a script font.
+const SignaturePad: React.FC = () => {
+  const { updateUser } = useAuthStore();
+  const currentUser = useCurrentUser();
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const drawing = useRef(false);
+  const dirty = useRef(false);
+  const [saved, setSaved] = useState(false);
+  const [drawn, setDrawn] = useState(false);
+
+  const pos = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    const c = canvasRef.current!;
+    const r = c.getBoundingClientRect();
+    return { x: (e.clientX - r.left) * (c.width / r.width), y: (e.clientY - r.top) * (c.height / r.height) };
+  };
+  const start = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    drawing.current = true;
+    const ctx = canvasRef.current!.getContext('2d')!;
+    ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    const p = pos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y);
+  };
+  const move = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!drawing.current) return;
+    const ctx = canvasRef.current!.getContext('2d')!;
+    const p = pos(e); ctx.lineTo(p.x, p.y); ctx.stroke();
+    dirty.current = true; setDrawn(true);
+  };
+  const end = () => { drawing.current = false; };
+  const clear = () => {
+    const c = canvasRef.current!;
+    c.getContext('2d')!.clearRect(0, 0, c.width, c.height);
+    dirty.current = false; setDrawn(false); setSaved(false);
+  };
+  const save = () => {
+    if (!currentUser || !dirty.current) return;
+    updateUser({ ...currentUser, signature: canvasRef.current!.toDataURL('image/png') });
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
+  };
+
+  if (!currentUser) return null;
+  return (
+    <div>
+      <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">My Signature <span className="normal-case font-normal text-slate-500">· stamped on your invoices</span></label>
+      {currentUser.signature && !drawn && (
+        <div className="mb-2 bg-white rounded-xl p-2 inline-block"><img src={currentUser.signature} alt="Saved signature" className="h-10" /></div>
+      )}
+      <div className="relative bg-white rounded-xl overflow-hidden border border-white/10">
+        <canvas
+          ref={canvasRef}
+          width={600}
+          height={180}
+          className="w-full h-[110px] touch-none cursor-crosshair"
+          onPointerDown={start}
+          onPointerMove={move}
+          onPointerUp={end}
+          onPointerLeave={end}
+        />
+        <span className="pointer-events-none absolute inset-x-0 bottom-1.5 text-center text-[10px] font-bold uppercase tracking-widest text-slate-300">Sign here</span>
+      </div>
+      <div className="flex gap-2 mt-2">
+        <button onClick={save} disabled={!drawn} className={`flex-1 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all active:scale-95 disabled:opacity-40 ${saved ? 'bg-emerald-600/20 text-emerald-400 border border-emerald-500/40' : 'bg-blue-600 text-white'}`}>
+          {saved ? 'Saved ✓' : 'Save signature'}
+        </button>
+        <button onClick={clear} className="px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider bg-white/5 text-slate-400 border border-white/10 active:scale-95 transition-all">Clear</button>
+      </div>
+    </div>
+  );
+};
 
 const TeamSection: React.FC = () => {
   const { users, addUser, updateUser, removeUser } = useAuthStore();

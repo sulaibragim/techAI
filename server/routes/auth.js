@@ -106,7 +106,7 @@ authRouter.put('/users/:id', requireAuth, async (req, res) => {
     const isSelf = req.user.id === req.params.id;
     if (!isOwner && !isSelf) return res.status(403).json({ error: 'Insufficient permissions' });
 
-    let { name, email, password, role, phone, commissionRate, active, techStatus, photo, lastLocation, skills } = req.body;
+    let { name, email, password, role, phone, commissionRate, active, techStatus, photo, lastLocation, skills, signature } = req.body;
 
     // Non-owners cannot change privileged fields (no role/commission/active escalation).
     if (!isOwner) {
@@ -134,9 +134,10 @@ authRouter.put('/users/:id', requireAuth, async (req, res) => {
         tech_status = COALESCE($9, tech_status),
         photo = COALESCE($10, photo),
         last_location = COALESCE($11, last_location),
-        skills = COALESCE($12, skills)
+        skills = COALESCE($12, skills),
+        signature = COALESCE($13, signature)
        WHERE id = $1`,
-      [req.params.id, name, email, hashedPassword, role, phone, commissionRate, active, techStatus, photo, lastLocation ? JSON.stringify(lastLocation) : null, skills !== undefined ? JSON.stringify(skills) : null]
+      [req.params.id, name, email, hashedPassword, role, phone, commissionRate, active, techStatus, photo, lastLocation ? JSON.stringify(lastLocation) : null, skills !== undefined ? JSON.stringify(skills) : null, signature]
     );
     const { rows } = await db.query('SELECT * FROM users WHERE id = $1', [req.params.id]);
     if (rows.length === 0) return res.status(404).json({ error: 'User not found' });
@@ -214,6 +215,7 @@ function mapUser(row, { lite = false } = {}) {
     lastLocation: row.last_location || undefined,
     skills: row.skills || undefined,
     photo: row.photo || undefined,
+    signature: row.signature || undefined,
     createdAt: row.created_at?.toISOString(),
   };
 }

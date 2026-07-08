@@ -832,6 +832,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
   const subtotal = localJob.lineItems.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
   // The technician who actually did the job (falls back to the company's default name).
   const assignedTechName = users.find(u => u.id === localJob.assignedTo)?.name || technicianName;
+  const assignedTechSig = users.find(u => u.id === localJob.assignedTo)?.signature;
 
   // Rank technicians by straight-line distance to the geocoded client address.
   // Those with a known location sort first (nearest → farthest); the rest follow.
@@ -860,7 +861,19 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
   // Best match = preferred tech, else a matching specialist (only worth suggesting over plain nearest).
   const bestMatch = rankedTechs.find(r => r.isFavorite) || rankedTechs.find(r => r.isSpecialist) || null;
 
-  const handlePrintInvoice = () => {
+  // Print opens the shared branded invoice page — one renderer for SMS link, email and
+  // print, so the client always sees the same document. The inline HTML below survives
+  // only as an offline fallback when the server is unreachable.
+  const handlePrintInvoice = async () => {
+    try {
+      await syncJobToServer(localJob);
+      const res = await fetch(`${API_BASE}/api/payments/receipt-url/${localJob.id}`, { headers: { ...authHeaders() } });
+      if (res.ok) {
+        const { url } = await res.json();
+        window.open(url, '_blank', 'noopener');
+        return;
+      }
+    } catch {}
     const esc = (s: string) => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     const isPaid = localJob.paymentStatus === 'paid';
     const isPartial = localJob.paymentStatus === 'partial';
@@ -2287,49 +2300,50 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                     {/* TOP HALF */}
                     <div className="flex flex-col gap-6">
 
-                      {/* 1 · LETTERHEAD */}
-                      <div className="flex items-start justify-between pb-5 border-b-2 border-blue-700">
-                        <div className="space-y-0.5">
-                          <p className="text-[22px] font-extrabold text-blue-700 tracking-tight leading-none">{companyName}</p>
-                          {companyAddress && <p className="text-xs text-slate-500 mt-1">{companyAddress}</p>}
-                          {companyCity   && <p className="text-xs text-slate-500">{companyCity}</p>}
-                          <div className="flex items-center gap-3 mt-1 flex-wrap">
-                            {companyPhone && <span className="text-xs text-slate-500">☎ {companyPhone}</span>}
-                            {companyEmail && <span className="text-xs text-slate-500">✉ {companyEmail}</span>}
-                            {licenseNumber && <span className="text-[10px] font-bold text-slate-400 uppercase">Lic# {licenseNumber}</span>}
-                          </div>
-                        </div>
-                        <div className="text-right space-y-0.5 min-w-[160px]">
-                          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Invoice</p>
-                          <p className="text-xl font-extrabold text-slate-800 tracking-tight">#{localJob.jobNumber}</p>
-                          <p className="text-xs text-slate-500">Date: {localJob.scheduledDate}</p>
-                          <p className="text-xs text-slate-500">Due: Upon Receipt</p>
-                          <span className={`inline-block mt-1.5 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${localJob.paymentStatus === 'paid' ? 'bg-green-100 text-green-700' : localJob.paymentStatus === 'partial' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'}`}>
+                      {/* 1 · INVOICE BAR — number left, date/status right */}
+                      <div className="flex items-center justify-between gap-3 flex-wrap pb-3.5 border-b-[3px] border-blue-700">
+                        <p className="text-lg font-extrabold text-slate-800 tracking-tight">
+                          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mr-2">Invoice</span>#{localJob.jobNumber}
+                        </p>
+                        <div className="flex items-center gap-3 flex-wrap">
+                          <span className="text-xs text-slate-500">Date: {localJob.scheduledDate}</span>
+                          <span className="text-xs text-slate-500">{localJob.paymentStatus === 'paid' ? `Paid${localJob.paymentMethod ? ` · ${localJob.paymentMethod}` : ''}` : 'Due: Upon Receipt'}</span>
+                          <span className={`inline-block text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${localJob.paymentStatus === 'paid' ? 'bg-green-100 text-green-700' : localJob.paymentStatus === 'partial' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'}`}>
                             {localJob.paymentStatus === 'paid' ? '✓ Paid' : localJob.paymentStatus === 'partial' ? '◐ Partial' : '⏳ Payment Due'}
                           </span>
                         </div>
                       </div>
 
-                      {/* 2 · PARTIES + JOB INFO */}
-                      <div className="grid grid-cols-3 gap-4 pb-5 border-b border-slate-100">
-                        <div>
+                      {/* 2 · MIRRORED PARTIES — company left, client right */}
+                      <div className="grid grid-cols-2 gap-10 pb-5 border-b border-slate-100">
+                        <div className="space-y-0.5">
+                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">From</p>
+                          <p className="text-xl font-extrabold text-blue-700 tracking-tight leading-none mb-1.5">{companyName}</p>
+                          {companyAddress && <p className="text-xs text-slate-500">{companyAddress}</p>}
+                          {companyCity   && <p className="text-xs text-slate-500">{companyCity}</p>}
+                          {companyPhone  && <p className="text-xs text-slate-500">☎ {companyPhone}</p>}
+                          {companyEmail  && <p className="text-xs text-slate-500">✉ {companyEmail}</p>}
+                        </div>
+                        <div className="space-y-0.5 text-right">
                           <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Bill To</p>
-                          <p className="text-sm font-bold text-slate-800">{localJob.client.firstName} {localJob.client.lastName}</p>
-                          {localJob.client.phone   && <p className="text-xs text-slate-500 mt-0.5">{localJob.client.phone}</p>}
-                          {localJob.client.email   && <p className="text-xs text-slate-500 mt-0.5">{localJob.client.email}</p>}
-                          {localJob.client.address && <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">{localJob.client.address}</p>}
+                          <p className="text-xl font-extrabold text-slate-800 tracking-tight leading-none mb-1.5">{localJob.client.firstName} {localJob.client.lastName}</p>
+                          {localJob.client.phone   && <p className="text-xs text-slate-500">{localJob.client.phone}</p>}
+                          {localJob.client.email   && <p className="text-xs text-slate-500">{localJob.client.email}</p>}
+                          {localJob.client.address && <p className="text-xs text-slate-500 leading-relaxed">{localJob.client.address}</p>}
                         </div>
-                        <div>
-                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Service Location</p>
-                          <p className="text-xs text-slate-700 leading-relaxed">{localJob.client.address || '—'}</p>
-                        </div>
-                        <div>
-                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Equipment / Job</p>
-                          <p className="text-xs font-semibold text-slate-700">{localJob.lockDetails.type}</p>
-                          {localJob.lockDetails.brand && <p className="text-xs text-slate-500 mt-0.5">{localJob.lockDetails.brand}{localJob.lockDetails.modelOrYear ? ` · ${localJob.lockDetails.modelOrYear}` : ''}</p>}
-                          {localJob.lockDetails.vinOrKeyCode && <p className="text-xs text-slate-400 mt-0.5 font-mono">Key: {localJob.lockDetails.vinOrKeyCode}</p>}
-                          <p className="text-xs text-slate-400 mt-0.5">Tech: {assignedTechName}</p>
-                        </div>
+                      </div>
+
+                      {/* 3 · JOB STRIP */}
+                      <div className="flex items-center justify-between gap-4 flex-wrap pb-3 border-b border-slate-100 -mt-2">
+                        <p className="text-xs text-slate-500">
+                          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mr-2">Job</span>
+                          <span className="font-bold text-slate-700">{localJob.lockDetails.type}</span>
+                          {localJob.lockDetails.brand && <span> · {localJob.lockDetails.brand}{localJob.lockDetails.modelOrYear ? ` · ${localJob.lockDetails.modelOrYear}` : ''}</span>}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mr-2">Technician</span>
+                          <span className="font-bold text-slate-700">{assignedTechName}</span>
+                        </p>
                       </div>
 
                       {/* 3 · LINE ITEMS */}
@@ -2396,6 +2410,14 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                       </div>
                     </div>
 
+                    {/* DIAGNOSTIC / TECHNICIAN NOTES */}
+                    {(localJob.diagnosisNotes || '').trim() && (
+                      <div className="mt-5 bg-slate-50 border border-slate-100 rounded-lg px-4 py-3">
+                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Diagnostic / Technician Notes</p>
+                        <p className="text-xs text-slate-600 leading-relaxed mt-1.5 whitespace-pre-line">{localJob.diagnosisNotes.trim()}</p>
+                      </div>
+                    )}
+
                     {/* BOTTOM HALF — pinned to base of the page */}
                     <div className="mt-auto pt-8 flex flex-col gap-6">
                       <div className="flex items-center justify-between py-3 border-y border-slate-100">
@@ -2417,8 +2439,10 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                       <div className="grid grid-cols-2 gap-8">
                         <div>
                           <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3">Technician</p>
-                          <div className="h-8 border-b border-slate-300" />
-                          <p className="text-xs text-slate-500 mt-1">{technicianName}{licenseNumber ? ` · Lic# ${licenseNumber}` : ''}</p>
+                          {assignedTechSig
+                            ? <img src={assignedTechSig} alt="Technician signature" className="h-8 object-contain object-left border-b border-slate-300" />
+                            : <div className="h-8 border-b border-slate-300 flex items-end"><span className="text-xl text-slate-700 pl-1" style={{ fontFamily: "'Segoe Script','Brush Script MT',cursive" }}>{assignedTechName}</span></div>}
+                          <p className="text-xs text-slate-500 mt-1">{assignedTechName}</p>
                         </div>
                         <div>
                           <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Client Authorization</p>

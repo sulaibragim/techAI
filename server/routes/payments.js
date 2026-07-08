@@ -81,16 +81,22 @@ export function receiptHtml(job, jobId, co, opts = {}) {
   .sheet{background:#fff;max-width:794px;margin:0 auto;border-radius:12px;box-shadow:0 10px 40px rgba(2,6,23,.12);padding:44px 40px;display:flex;flex-direction:column}
   @media (min-width:600px){.sheet{min-height:1123px}}
   .bottom{margin-top:auto;padding-top:24px}
-  .head{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-bottom:18px;border-bottom:3px solid #1d4ed8}
-  .co{font-size:22px;font-weight:800;color:#1d4ed8;letter-spacing:-.02em;margin:0}
-  .muted{color:#64748b;font-size:12px;line-height:1.6}
+  .muted{color:#64748b;font-size:12px;line-height:1.7}
   .tiny{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#94a3b8}
-  .inv-meta{text-align:right}
-  .inv-no{font-size:19px;font-weight:800;color:#1e293b;margin:2px 0}
-  .chip{display:inline-block;margin-top:6px;padding:3px 12px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:${status.bg};color:${status.fg}}
-  .parties{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;padding:18px 0;border-bottom:1px solid #f1f5f9}
+  /* Slim top bar: invoice number left, date/paid/status right */
+  .invbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding-bottom:14px;border-bottom:3px solid #1d4ed8}
+  .invbar .no{font-size:18px;font-weight:800;color:#1e293b}
+  .invbar .no span{color:#94a3b8;font-weight:700;font-size:11px;letter-spacing:.1em;text-transform:uppercase;margin-right:8px}
+  .invbar .right{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .chip{display:inline-block;padding:3px 12px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:${status.bg};color:${status.fg}}
+  /* Mirrored parties: company left, client right */
+  .parties{display:grid;grid-template-columns:1fr 1fr;gap:40px;padding:22px 0;border-bottom:1px solid #f1f5f9}
   .parties p{margin:2px 0}
-  .name{font-size:14px;font-weight:700;color:#1e293b}
+  .party.rt{text-align:right}
+  .co{font-size:20px;font-weight:800;color:#1d4ed8;letter-spacing:-.02em;margin:0 0 6px}
+  .name{font-size:20px;font-weight:800;color:#1e293b;letter-spacing:-.02em;margin:0 0 6px}
+  .jobstrip{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:12px 0;border-bottom:1px solid #f1f5f9}
+  .jobstrip b{color:#334155;font-size:13px;font-weight:700}
   table{width:100%;border-collapse:collapse;margin-top:6px}
   thead td{padding:12px 6px 8px;border-bottom:2px solid #cbd5e1}
   tbody td{padding:10px 6px;border-bottom:1px solid #f1f5f9;font-size:13px;vertical-align:top}
@@ -113,15 +119,21 @@ export function receiptHtml(job, jobId, co, opts = {}) {
   .sigs{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:26px}
   .sigline{height:44px;border-bottom:1px solid #cbd5e1;display:flex;align-items:flex-end}
   .sigline img{max-height:60px;margin-bottom:-8px}
+  .sig-script{font-family:'Segoe Script','Brush Script MT',cursive;font-size:24px;color:#1e293b;margin-bottom:-2px;padding-left:6px}
+  .diag{margin-top:20px;background:#f8fafc;border:1px solid #eef2f7;border-radius:10px;padding:14px 16px}
+  .diag p{margin:6px 0 0;font-size:12.5px;color:#475569;line-height:1.65;white-space:pre-line}
   .foot{text-align:center;color:#94a3b8;font-size:11px;line-height:1.7;margin-top:28px}
   .btn{display:block;text-align:center;margin:18px auto 0;max-width:794px;background:#0f172a;color:#fff;text-decoration:none;font-weight:700;font-size:13px;letter-spacing:.05em;text-transform:uppercase;padding:14px;border-radius:12px;border:none;width:100%;cursor:pointer}
   /* Dense mode (10+ line items): everything tightens so up to ~20 rows still fit one A4. */
   .sheet.dense{padding:24px 32px}
-  .dense .co{font-size:19px}
-  .dense .inv-no{font-size:16px}
-  .dense .head{padding-bottom:10px}
+  .dense .co,.dense .name{font-size:16px;margin-bottom:3px}
+  .dense .invbar{padding-bottom:8px}
+  .dense .invbar .no{font-size:15px}
   .dense .muted{font-size:11px;line-height:1.45}
-  .dense .parties{padding:10px 0;gap:10px}
+  .dense .parties{padding:10px 0;gap:24px}
+  .dense .jobstrip{padding:8px 0}
+  .dense .diag{margin-top:10px;padding:8px 12px}
+  .dense .diag p{font-size:11px}
   .dense thead td{padding:8px 6px 6px}
   .dense tbody td{padding:4px 6px;font-size:11.5px}
   .dense .litype{display:none}
@@ -147,39 +159,36 @@ export function receiptHtml(job, jobId, co, opts = {}) {
   @media (max-width:480px){.sheet{padding:24px 18px}.inv-meta{text-align:left}}
 </style></head><body>
 <div class="sheet${dense ? ' dense' : ''}">
-  <div class="head">
-    <div>
-      <p class="co">${esc(co.companyName)}</p>
-      <div class="muted">${co.companyAddress ? esc(co.companyAddress) + '<br>' : ''}${co.companyCity ? esc(co.companyCity) + '<br>' : ''}${[co.companyPhone && '☎ ' + esc(co.companyPhone), co.companyEmail && '✉ ' + esc(co.companyEmail), co.licenseNumber && 'Lic# ' + esc(co.licenseNumber)].filter(Boolean).join(' · ')}</div>
-    </div>
-    <div class="inv-meta">
-      <p class="tiny">Invoice</p>
-      <p class="inv-no">#${esc(job.jobNumber || jobId)}</p>
-      <p class="muted">Date: ${esc(job.scheduledDate || '')}</p>
-      ${when ? `<p class="muted">Paid: ${esc(when)}${job.paymentMethod ? ' · ' + esc(job.paymentMethod) : ''}</p>` : '<p class="muted">Due: Upon Receipt</p>'}
+  <div class="invbar">
+    <div class="no"><span>Invoice</span>#${esc(job.jobNumber || jobId)}</div>
+    <div class="right">
+      <span class="muted">Date: ${esc(job.scheduledDate || '')}</span>
+      ${when ? `<span class="muted">Paid: ${esc(when)}${job.paymentMethod ? ' · ' + esc(job.paymentMethod) : ''}</span>` : '<span class="muted">Due: Upon Receipt</span>'}
       <span class="chip">${status.label}</span>
     </div>
   </div>
 
   <div class="parties">
-    <div>
-      <p class="tiny">Bill To</p>
+    <div class="party">
+      <p class="tiny" style="margin:0 0 8px">From</p>
+      <p class="co">${esc(co.companyName)}</p>
+      ${co.companyAddress ? `<p class="muted">${esc(co.companyAddress)}</p>` : ''}
+      ${co.companyCity ? `<p class="muted">${esc(co.companyCity)}</p>` : ''}
+      ${co.companyPhone ? `<p class="muted">☎ ${esc(co.companyPhone)}</p>` : ''}
+      ${co.companyEmail ? `<p class="muted">✉ ${esc(co.companyEmail)}</p>` : ''}
+    </div>
+    <div class="party rt">
+      <p class="tiny" style="margin:0 0 8px">Bill To</p>
       <p class="name">${clientName || '—'}</p>
       ${job.client?.phone ? `<p class="muted">${esc(job.client.phone)}</p>` : ''}
       ${job.client?.email ? `<p class="muted">${esc(job.client.email)}</p>` : ''}
       ${job.client?.address ? `<p class="muted">${esc(job.client.address)}</p>` : ''}
     </div>
-    <div>
-      <p class="tiny">Service Location</p>
-      <p class="muted">${esc(job.client?.address || '—')}</p>
-    </div>
-    <div>
-      <p class="tiny">Equipment / Job</p>
-      <p class="muted" style="font-weight:600;color:#334155">${esc(lock.type || '—')}</p>
-      ${lock.brand ? `<p class="muted">${esc(lock.brand)}${lock.modelOrYear ? ' · ' + esc(lock.modelOrYear) : ''}</p>` : ''}
-      ${lock.vinOrKeyCode ? `<p class="muted" style="font-family:ui-monospace,monospace">Key: ${esc(lock.vinOrKeyCode)}</p>` : ''}
-      ${opts.techName ? `<p class="muted">Tech: ${esc(opts.techName)}</p>` : ''}
-    </div>
+  </div>
+
+  <div class="jobstrip">
+    <div><span class="tiny" style="margin-right:8px">Job</span> <b>${esc(lock.type || '—')}</b>${lock.brand ? `<span class="muted"> · ${esc(lock.brand)}${lock.modelOrYear ? ' · ' + esc(lock.modelOrYear) : ''}</span>` : ''}</div>
+    ${opts.techName ? `<div><span class="tiny" style="margin-right:8px">Technician</span> <b>${esc(opts.techName)}</b></div>` : ''}
   </div>
 
   <table>
@@ -197,6 +206,12 @@ export function receiptHtml(job, jobId, co, opts = {}) {
     ${balance > 0.009 ? `<div class="row"><span class="red">Balance Due</span><span class="red">$${balance.toFixed(2)}</span></div>` : ''}
   </div>
 
+  ${(job.diagnosisNotes || '').trim() ? `
+  <div class="diag">
+    <p class="tiny" style="margin:0">Diagnostic / Technician Notes</p>
+    <p>${esc(job.diagnosisNotes.trim())}</p>
+  </div>` : ''}
+
   <div class="bottom">
   <div class="meta-bar">
     <div>
@@ -213,8 +228,12 @@ export function receiptHtml(job, jobId, co, opts = {}) {
   <div class="sigs">
     <div>
       <p class="tiny" style="margin:0 0 14px">Technician</p>
-      <div class="sigline"></div>
-      <p class="muted" style="margin-top:4px">${esc(opts.techName || '')}${co.licenseNumber ? ` · Lic# ${esc(co.licenseNumber)}` : ''}</p>
+      <div class="sigline">${
+        typeof opts.techSignature === 'string' && opts.techSignature.startsWith('data:image')
+          ? `<img src="${opts.techSignature}" alt="Technician signature">`
+          : opts.techName ? `<span class="sig-script">${esc(opts.techName)}</span>` : ''
+      }</div>
+      <p class="muted" style="margin-top:4px">${esc(opts.techName || '')}</p>
     </div>
     <div>
       <p class="tiny" style="margin:0 0 14px">Client Authorization</p>
@@ -231,13 +250,13 @@ ${opts.print ? `<button class="btn" onclick="window.print()">Download PDF / Prin
 </body></html>`;
 }
 
-// Tech display name for the invoice — best-effort, blank when unassigned.
-async function techNameOf(job) {
-  if (!job?.assignedTo) return '';
+// Tech name + stored signature for the invoice — best-effort, blank when unassigned.
+async function techInfoOf(job) {
+  if (!job?.assignedTo) return { name: '', signature: null };
   try {
-    const { rows } = await db.query('SELECT name FROM users WHERE id = $1', [job.assignedTo]);
-    return rows[0]?.name || '';
-  } catch { return ''; }
+    const { rows } = await db.query('SELECT name, signature FROM users WHERE id = $1', [job.assignedTo]);
+    return { name: rows[0]?.name || '', signature: rows[0]?.signature || null };
+  } catch { return { name: '', signature: null }; }
 }
 
 // Thank-you + receipt SMS in the client's language. Fire-and-forget from callers.
@@ -258,6 +277,22 @@ async function sendReceiptSMS({ job, jobId, amount, balance, base }) {
 // Is card payment available? Drives showing/hiding the "Text pay link" button.
 paymentsRouter.get('/status', requireAuth, (_req, res) => {
   res.json({ enabled: stripeConfigured() });
+});
+
+// Signed public URL of a job's invoice page — the app's Print button opens this so
+// print/PDF/share all go through the one branded invoice renderer.
+paymentsRouter.get('/receipt-url/:jobId', requireAuth, async (req, res) => {
+  try {
+    const { rows } = await db.query('SELECT data FROM jobs WHERE id = $1', [req.params.jobId]);
+    if (rows.length === 0) return res.status(404).json({ error: 'Job not found' });
+    if (req.user.role === 'technician' && rows[0].data.assignedTo !== req.user.id) {
+      return res.status(403).json({ error: 'Insufficient permissions' });
+    }
+    res.json({ url: receiptUrlFor(publicBase(req), req.params.jobId) });
+  } catch (err) {
+    console.error('[payments] receipt-url error:', err.message);
+    res.status(500).json({ error: 'Could not build receipt url' });
+  }
 });
 
 // Create a checkout link for a job and (by default) text it to the client. Charges the
@@ -363,11 +398,13 @@ paymentsRouter.post('/receipt', requireAuth, async (req, res) => {
       const to = (job.client?.email || '').trim();
       if (to && emailConfigured()) {
         const co = await companyInfo();
+        const tech = await techInfoOf(job);
         result.emailSent = await sendEmail({
           to,
           subject: `Invoice #${job.jobNumber || jobId} from ${co.companyName}`,
           html: receiptHtml(job, jobId, co, {
-            techName: await techNameOf(job),
+            techName: tech.name,
+            techSignature: tech.signature,
             viewUrl: receiptUrlFor(publicBase(req), jobId),
           }),
         });
@@ -604,7 +641,8 @@ payPagesRouter.get('/receipt/:jobId/:sig', async (req, res) => {
     if (rows.length === 0) return res.sendStatus(404);
     const job = rows[0].data;
     const co = await companyInfo();
-    res.type('html').send(receiptHtml(job, jobId, co, { techName: await techNameOf(job), print: true }));
+    const tech = await techInfoOf(job);
+    res.type('html').send(receiptHtml(job, jobId, co, { techName: tech.name, techSignature: tech.signature, print: true }));
   } catch (err) {
     console.error('[payments] receipt page error:', err.message);
     res.sendStatus(500);

@@ -139,6 +139,7 @@ export const useAuthStore = create<AuthState>()(
             techStatus: user.techStatus,
             photo: user.photo,
             skills: user.skills,
+            signature: user.signature,
           }),
         }).catch(() => {});
       },
