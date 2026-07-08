@@ -68,13 +68,19 @@ export function receiptHtml(job, jobId, co, opts = {}) {
       <td class="num">$${(li.unitPrice || 0).toFixed(2)}</td>
       <td class="num strong">$${((li.unitPrice || 0) * (li.quantity || 1)).toFixed(2)}</td>
     </tr>`).join('');
+  // Long invoices tighten up so a typical job still fits one A4 page.
+  const dense = (job.lineItems || []).length > 10;
 
   return `<!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>Invoice #${esc(job.jobNumber || jobId)} — ${esc(co.companyName)}</title>
 <style>
   *{box-sizing:border-box}
   body{margin:0;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:#e8edf3;padding:16px;color:#0f172a}
-  .sheet{background:#fff;max-width:680px;margin:0 auto;border-radius:12px;box-shadow:0 10px 40px rgba(2,6,23,.12);padding:36px 32px}
+  /* A4 sheet: 794×1123px @96dpi. Bottom block (terms/signatures) is pinned to the base
+     so a short invoice still reads as a full document. */
+  .sheet{background:#fff;max-width:794px;margin:0 auto;border-radius:12px;box-shadow:0 10px 40px rgba(2,6,23,.12);padding:44px 40px;display:flex;flex-direction:column}
+  @media (min-width:600px){.sheet{min-height:1123px}}
+  .bottom{margin-top:auto;padding-top:24px}
   .head{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-bottom:18px;border-bottom:3px solid #1d4ed8}
   .co{font-size:22px;font-weight:800;color:#1d4ed8;letter-spacing:-.02em;margin:0}
   .muted{color:#64748b;font-size:12px;line-height:1.6}
@@ -108,11 +114,39 @@ export function receiptHtml(job, jobId, co, opts = {}) {
   .sigline{height:44px;border-bottom:1px solid #cbd5e1;display:flex;align-items:flex-end}
   .sigline img{max-height:60px;margin-bottom:-8px}
   .foot{text-align:center;color:#94a3b8;font-size:11px;line-height:1.7;margin-top:28px}
-  .btn{display:block;text-align:center;margin:18px auto 0;max-width:680px;background:#0f172a;color:#fff;text-decoration:none;font-weight:700;font-size:13px;letter-spacing:.05em;text-transform:uppercase;padding:14px;border-radius:12px;border:none;width:100%;cursor:pointer}
-  @media print{body{background:#fff;padding:0}.sheet{box-shadow:none;border-radius:0;max-width:none}.btn{display:none}}
+  .btn{display:block;text-align:center;margin:18px auto 0;max-width:794px;background:#0f172a;color:#fff;text-decoration:none;font-weight:700;font-size:13px;letter-spacing:.05em;text-transform:uppercase;padding:14px;border-radius:12px;border:none;width:100%;cursor:pointer}
+  /* Dense mode (10+ line items): everything tightens so up to ~20 rows still fit one A4. */
+  .sheet.dense{padding:24px 32px}
+  .dense .co{font-size:19px}
+  .dense .inv-no{font-size:16px}
+  .dense .head{padding-bottom:10px}
+  .dense .muted{font-size:11px;line-height:1.45}
+  .dense .parties{padding:10px 0;gap:10px}
+  .dense thead td{padding:8px 6px 6px}
+  .dense tbody td{padding:4px 6px;font-size:11.5px}
+  .dense .litype{display:none}
+  .dense .totals{margin-top:8px}
+  .dense .totals .row{padding:2px 0;font-size:11px}
+  .dense .totals .grand span:last-child{font-size:20px}
+  .dense .meta-bar{padding:8px 0;margin-top:12px}
+  .dense .sigs{margin-top:14px;gap:24px}
+  .dense .sigline{height:30px}
+  .dense .foot{margin-top:10px;font-size:10px}
+  .dense .bottom{padding-top:10px}
+  /* Print = real A4. Rows never split, the table header repeats on overflow pages,
+     and the signature block never gets orphaned from the document. */
+  @page{size:A4;margin:11mm}
+  @media print{
+    body{background:#fff;padding:0}
+    .sheet{box-shadow:none;border-radius:0;max-width:none;min-height:auto;padding:0}
+    .btn{display:none}
+    thead{display:table-header-group}
+    tr,.meta-bar,.sigs,.totals{page-break-inside:avoid}
+    .bottom{margin-top:16px}
+  }
   @media (max-width:480px){.sheet{padding:24px 18px}.inv-meta{text-align:left}}
 </style></head><body>
-<div class="sheet">
+<div class="sheet${dense ? ' dense' : ''}">
   <div class="head">
     <div>
       <p class="co">${esc(co.companyName)}</p>
@@ -143,6 +177,7 @@ export function receiptHtml(job, jobId, co, opts = {}) {
       <p class="tiny">Equipment / Job</p>
       <p class="muted" style="font-weight:600;color:#334155">${esc(lock.type || '—')}</p>
       ${lock.brand ? `<p class="muted">${esc(lock.brand)}${lock.modelOrYear ? ' · ' + esc(lock.modelOrYear) : ''}</p>` : ''}
+      ${lock.vinOrKeyCode ? `<p class="muted" style="font-family:ui-monospace,monospace">Key: ${esc(lock.vinOrKeyCode)}</p>` : ''}
       ${opts.techName ? `<p class="muted">Tech: ${esc(opts.techName)}</p>` : ''}
     </div>
   </div>
@@ -162,6 +197,7 @@ export function receiptHtml(job, jobId, co, opts = {}) {
     ${balance > 0.009 ? `<div class="row"><span class="red">Balance Due</span><span class="red">$${balance.toFixed(2)}</span></div>` : ''}
   </div>
 
+  <div class="bottom">
   <div class="meta-bar">
     <div>
       <p class="tiny" style="margin:0 0 6px">Accepted Payment</p>
@@ -188,6 +224,7 @@ export function receiptHtml(job, jobId, co, opts = {}) {
   </div>
 
   <div class="foot">Thank you for choosing ${esc(co.companyName)}!${co.companyEmail ? `<br>Questions? ${esc(co.companyEmail)}` : ''}${co.companyPhone ? ` · ${esc(co.companyPhone)}` : ''}</div>
+  </div>
 </div>
 ${opts.viewUrl ? `<a class="btn" href="${esc(opts.viewUrl)}">View invoice online</a>` : ''}
 ${opts.print ? `<button class="btn" onclick="window.print()">Download PDF / Print</button>` : ''}
