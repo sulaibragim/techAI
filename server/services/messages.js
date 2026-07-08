@@ -73,6 +73,22 @@ export const MSG = {
       + (payUrl ? ` Pague de forma segura con tarjeta: ${payUrl}` : '')
       + ` Responda aquí${phone ? ` o llame al ${phone}` : ''} si tiene preguntas. ¡Gracias!`,
   },
+  paymentReceived: {
+    en: ({ name, company, jobNo, amount, balance, receiptUrl }) =>
+      `Hi ${name}, ${company} received your payment of ${nf(amount)} for job #${jobNo} — thank you!`
+      + (balance > 0.01 ? ` Remaining balance: ${nf(balance)}.` : '')
+      + (receiptUrl ? ` Your receipt: ${receiptUrl}` : ''),
+    es: ({ name, company, jobNo, amount, balance, receiptUrl }) =>
+      `Hola ${name}, ${company} recibió su pago de ${nf(amount)} por el trabajo #${jobNo} — ¡gracias!`
+      + (balance > 0.01 ? ` Saldo restante: ${nf(balance)}.` : '')
+      + (receiptUrl ? ` Su recibo: ${receiptUrl}` : ''),
+  },
+  refundIssued: {
+    en: ({ name, company, jobNo, amount }) =>
+      `Hi ${name}, ${company} has issued a refund of ${nf(amount)} for job #${jobNo}. Card refunds usually appear on your statement within 5–10 business days.`,
+    es: ({ name, company, jobNo, amount }) =>
+      `Hola ${name}, ${company} le ha emitido un reembolso de ${nf(amount)} por el trabajo #${jobNo}. Los reembolsos a tarjeta suelen aparecer en su estado de cuenta en 5–10 días hábiles.`,
+  },
   spanishConfirmed: {
     es: () => `¡Perfecto! A partir de ahora recibirá nuestros mensajes en español. 🇲🇽`,
   },

@@ -23,7 +23,8 @@ export function publicBase(req) {
 
 // Hosted checkout page charging the job's outstanding balance. Expires in 24h so a
 // stale link from an old reminder can't collect after the balance was settled in cash.
-export async function createCheckoutSession({ jobId, jobNumber, amountCents, companyName, base }) {
+// customerEmail (when the client has one) makes Stripe email its own receipt on success.
+export async function createCheckoutSession({ jobId, jobNumber, amountCents, companyName, base, customerEmail }) {
   if (!SKEY) throw new Error('Stripe not configured');
   if (!base) throw new Error('No public base URL for redirect pages');
   const body = new URLSearchParams({
@@ -39,6 +40,9 @@ export async function createCheckoutSession({ jobId, jobNumber, amountCents, com
     'metadata[jobId]': jobId,
     expires_at: String(Math.floor(Date.now() / 1000) + 24 * 3600),
   });
+  if (customerEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) {
+    body.set('customer_email', customerEmail);
+  }
   const r = await fetch('https://api.stripe.com/v1/checkout/sessions', {
     method: 'POST',
     headers: { Authorization: `Bearer ${SKEY}`, 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -47,6 +51,34 @@ export async function createCheckoutSession({ jobId, jobNumber, amountCents, com
   const data = await r.json();
   if (!r.ok) throw new Error(data?.error?.message || `stripe http ${r.status}`);
   return { id: data.id, url: data.url };
+}
+
+// Money back on a specific PaymentIntent. amountCents omitted → full refund.
+export async function createRefund({ paymentIntent, amountCents }) {
+  if (!SKEY) throw new Error('Stripe not configured');
+  const body = new URLSearchParams({ payment_intent: paymentIntent });
+  if (amountCents) body.set('amount', String(amountCents));
+  const r = await fetch('https://api.stripe.com/v1/refunds', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${SKEY}`, 'Content-Type': 'application/x-www-form-urlencoded' },
+    body,
+  });
+  const data = await r.json();
+  if (!r.ok) throw new Error(data?.error?.message || `stripe http ${r.status}`);
+  return { id: data.id, amount: data.amount, status: data.status };
+}
+
+// PaymentIntent id + amount for a checkout session — used for jobs paid before we
+// started recording stripePayments on the webhook.
+export async function getSessionPayment(sessionId) {
+  if (!SKEY) throw new Error('Stripe not configured');
+  const r = await fetch(`https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(sessionId)}`, {
+    headers: { Authorization: `Bearer ${SKEY}` },
+  });
+  const data = await r.json();
+  if (!r.ok) throw new Error(data?.error?.message || `stripe http ${r.status}`);
+  const intent = typeof data.payment_intent === 'string' ? data.payment_intent : data.payment_intent?.id;
+  return intent ? { intent, amount: (data.amount_total || 0) / 100 } : null;
 }
 
 // Stripe-Signature: t=<ts>,v1=<hmac>[,v1=<hmac>...] — HMAC-SHA256 of "<ts>.<rawBody>".

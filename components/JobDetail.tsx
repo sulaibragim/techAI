@@ -11,7 +11,7 @@ import {
   Edit2, DollarSign,
   Hammer, Shield,
   Calendar as CalendarIcon, Send, Percent,
-  Car, Home, ChevronDown, Lock, Printer, History, ThumbsUp, ThumbsDown, Minus, Star, AlertTriangle, Ban
+  Car, Home, ChevronDown, Lock, Printer, History, ThumbsUp, ThumbsDown, Minus, Star, AlertTriangle, Ban, RotateCcw
 } from 'lucide-react';
 import { useSettingsStore } from '../settingsStore';
 import { Job, LineItem, STATUS_COLORS, LockDetails, JobStatus, Client, Message, CLIENT_TAGS, ClientRating, NEGATIVE_TAGS } from '../types';
@@ -144,6 +144,8 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
   // Payment Settlement States
   const [paymentStep, setPaymentStep] = useState<'idle' | 'split' | 'method' | 'card' | 'sign'>('idle');
   const [cardPay, setCardPay] = useState<{ state: 'creating' | 'ready' | 'paid' | 'error'; url?: string; qr?: string; message?: string }>({ state: 'creating' });
+  const [receiptState, setReceiptState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [refund, setRefund] = useState<{ open: boolean; amount: string; cancelJob: boolean; busy: boolean; error?: string }>({ open: false, amount: '', cancelJob: false, busy: false });
   const [paymentSplit, setPaymentSplit] = useState<1 | 0.5>(1);
   const [paymentMethod, setPaymentMethod] = useState<'Card' | 'Cash' | 'Check' | 'Zelle'>('Card');
   const [selectedTerm, setSelectedTerm] = useState('1');
@@ -459,6 +461,59 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
     return () => clearInterval(iv);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paymentStep, cardPay.state]);
+
+  // How much has actually been collected — the refundable ceiling.
+  const paidAmount = localJob.paymentStatus === 'paid' ? (localJob.amountPaid ?? localJob.totalAmount ?? 0) : localJob.amountPaid || 0;
+
+  // Text the client a thank-you + itemized receipt link (auto for card via webhook;
+  // this button covers cash/check/Zelle and re-sends).
+  const handleSendReceipt = async () => {
+    if (receiptState === 'sending') return;
+    setReceiptState('sending');
+    try {
+      await syncJobToServer(localJob);
+      const res = await fetch(`${API_BASE}/api/payments/receipt`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({ jobId: localJob.id }),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      logAudit({ action: 'payment.receipt', detail: `Texted receipt for #${localJob.jobNumber}`, jobId: localJob.id });
+      setReceiptState('sent');
+    } catch {
+      setReceiptState('error');
+    }
+    setTimeout(() => setReceiptState('idle'), 4000);
+  };
+
+  const handleRefund = async () => {
+    const amount = parseFloat(refund.amount);
+    if (!Number.isFinite(amount) || amount <= 0 || refund.busy) return;
+    setRefund(r => ({ ...r, busy: true, error: undefined }));
+    try {
+      const res = await fetch(`${API_BASE}/api/payments/refund`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({ jobId: localJob.id, amount, cancelJob: refund.cancelJob }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(data?.error || 'Refund failed');
+      const updated: Job = {
+        ...localJob,
+        amountPaid: data.amountPaid,
+        paymentStatus: data.paymentStatus,
+        refunds: data.refunds,
+        ...(data.status ? { status: data.status } : {}),
+        updatedAt: new Date().toISOString(),
+      };
+      setLocalJob(updated);
+      commitJob(updated);
+      logAudit({ action: 'payment.refund', detail: `Refunded $${amount.toFixed(2)} on #${localJob.jobNumber}${refund.cancelJob ? ' (job cancelled)' : ''}`, jobId: localJob.id });
+      setRefund({ open: false, amount: '', cancelJob: false, busy: false });
+    } catch (e) {
+      setRefund(r => ({ ...r, busy: false, error: e instanceof Error ? e.message : 'Refund failed' }));
+    }
+  };
 
   const assignTech = (assignedTo: string | undefined) => {
     const isSelf = !!assignedTo && assignedTo === currentUser?.id;
@@ -1187,6 +1242,51 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
               }}
               className="w-full bg-blue-600 text-white py-6 rounded-2xl font-bold text-sm uppercase tracking-widest active:scale-95 shadow-2xl"
             >Save Changes</button>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: REFUND */}
+      {refund.open && (
+        <div className="absolute inset-0 z-[400] bg-black/90 backdrop-blur-2xl flex items-center justify-center p-6">
+          <div className="bg-white w-full max-w-md rounded-2xl p-8 shadow-2xl animate-in slide-in-from-bottom-12 space-y-5 text-slate-900 relative">
+            <button onClick={() => setRefund(r => ({ ...r, open: false }))} className="absolute top-6 right-6 p-2 text-slate-300 hover:text-slate-900"><X size={22} /></button>
+            <div className="text-center">
+              <h3 className="text-2xl font-bold tracking-tight mb-2">Refund</h3>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Collected: ${paidAmount.toFixed(2)}{localJob.paymentMethod ? ` via ${localJob.paymentMethod}` : ''}</p>
+            </div>
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Refund amount ($)</label>
+              <input
+                type="number"
+                min="0.01"
+                step="0.01"
+                max={paidAmount}
+                value={refund.amount}
+                onChange={e => setRefund(r => ({ ...r, amount: e.target.value }))}
+                className="mt-1 w-full border-2 border-slate-100 rounded-xl px-4 py-3.5 text-lg font-bold focus:border-slate-900 outline-none"
+              />
+            </div>
+            <button
+              onClick={() => setRefund(r => ({ ...r, cancelJob: !r.cancelJob }))}
+              className="w-full flex items-center gap-3 p-3.5 rounded-xl border-2 border-slate-100 text-left active:scale-[0.99] transition-all"
+            >
+              <span className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 ${refund.cancelJob ? 'bg-red-500 border-red-500 text-white' : 'border-slate-300'}`}>
+                {refund.cancelJob && <CheckCircle2 size={14} />}
+              </span>
+              <span className="text-xs font-semibold text-slate-600">Also cancel the job <span className="text-slate-400 font-normal">— removes it from revenue (service was voided)</span></span>
+            </button>
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              Card payments are refunded through Stripe (5–10 business days on the client's statement) and the client gets a text. Cash/check refunds are recorded here — hand the money back yourself.
+            </p>
+            {refund.error && <p className="text-xs font-bold text-red-500 text-center">{refund.error}</p>}
+            <button
+              onClick={handleRefund}
+              disabled={refund.busy || !(parseFloat(refund.amount) > 0) || parseFloat(refund.amount) > paidAmount + 0.005}
+              className="w-full bg-red-600 text-white py-5 rounded-2xl font-bold text-sm uppercase tracking-widest active:scale-95 shadow-xl disabled:opacity-40 transition-all"
+            >
+              {refund.busy ? 'Refunding…' : `Refund $${(parseFloat(refund.amount) || 0).toFixed(2)}`}
+            </button>
           </div>
         </div>
       )}
@@ -2208,6 +2308,12 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                     <span className="text-xs font-bold text-slate-300 uppercase tracking-widest">Total Due</span>
                     <span className="text-2xl font-extrabold text-white tabular-nums">${subtotal.toFixed(2)}</span>
                   </div>
+                  {(localJob.refunds?.length ?? 0) > 0 && (
+                    <div className="flex items-center justify-between bg-amber-500/10 border border-amber-500/20 rounded-2xl px-4 py-3">
+                      <span className="text-xs font-bold text-amber-400 uppercase tracking-widest flex items-center gap-2"><RotateCcw size={13} /> Refunded</span>
+                      <span className="text-base font-extrabold text-amber-400 tabular-nums">−${(localJob.refunds ?? []).reduce((s, r) => s + r.amount, 0).toFixed(2)}</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* ── ACTION BAR — one primary CTA + a compact print action ── */}
@@ -2249,6 +2355,35 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                       <span className="hidden md:inline text-xs font-bold uppercase tracking-wider">
                         {payLinkState === 'sent' ? 'Link sent' : payLinkState === 'error' ? 'Failed' : payLinkState === 'sending' ? 'Sending…' : 'Pay link'}
                       </span>
+                    </button>
+                  )}
+                  {paidAmount > 0 && (localJob.client.phone || '').trim() && (
+                    <button
+                      onClick={handleSendReceipt}
+                      disabled={receiptState === 'sending'}
+                      aria-label="Text receipt to client"
+                      title="Text the client a thank-you with an itemized receipt link"
+                      className={`shrink-0 h-[46px] px-4 rounded-xl border flex items-center justify-center gap-2 active:scale-95 transition-all ${
+                        receiptState === 'sent' ? 'bg-emerald-600/15 text-emerald-400 border-emerald-500/40'
+                        : receiptState === 'error' ? 'bg-amber-500/15 text-amber-400 border-amber-500/40'
+                        : 'bg-white/5 text-slate-300 hover:bg-white/10 border-white/10'
+                      }`}
+                    >
+                      {receiptState === 'sent' ? <CheckCircle2 size={17} /> : <Send size={17} className={receiptState === 'sending' ? 'animate-pulse' : ''} />}
+                      <span className="hidden md:inline text-xs font-bold uppercase tracking-wider">
+                        {receiptState === 'sent' ? 'Receipt sent' : receiptState === 'error' ? 'Failed' : receiptState === 'sending' ? 'Sending…' : 'Receipt'}
+                      </span>
+                    </button>
+                  )}
+                  {paidAmount > 0 && role !== 'technician' && (
+                    <button
+                      onClick={() => setRefund({ open: true, amount: paidAmount.toFixed(2), cancelJob: false, busy: false })}
+                      aria-label="Refund payment"
+                      title="Refund the client (card refunds go back through Stripe)"
+                      className="shrink-0 h-[46px] px-4 rounded-xl bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 flex items-center justify-center gap-2 active:scale-95 transition-all"
+                    >
+                      <RotateCcw size={17} />
+                      <span className="hidden md:inline text-xs font-bold uppercase tracking-wider">Refund</span>
                     </button>
                   )}
                   <button
