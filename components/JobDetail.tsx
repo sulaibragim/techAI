@@ -44,7 +44,6 @@ const STATUS_OPTIONS: { id: JobStatus; label: string }[] = [
   { id: 'cancelled', label: 'Cancelled' }
 ];
 
-const TERM_TYPES = ['1', '10', '15', '20', '30'];
 
 // Directions link that opens the EXACT verified pin. A picked address carries coordinates
 // (and a Google place_id), so we send those instead of the raw text — no more "drops in a
@@ -142,13 +141,14 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
   const [showRates, setShowRates] = useState(false);
 
   // Payment Settlement States
-  const [paymentStep, setPaymentStep] = useState<'idle' | 'split' | 'method' | 'card' | 'sign'>('idle');
+  const [paymentStep, setPaymentStep] = useState<'idle' | 'confirm' | 'sign' | 'method' | 'card' | 'receipt'>('idle');
+  const [tipPct, setTipPct] = useState(0);
+  const [discountForm, setDiscountForm] = useState<{ open: boolean; amount: string; reason: string }>({ open: false, amount: '', reason: '' });
+  const [receiptSend, setReceiptSend] = useState<{ state: 'idle' | 'sending' | 'done' | 'error'; smsSent?: boolean; emailSent?: boolean; emailConfigured?: boolean; autoSms?: boolean }>({ state: 'idle' });
   const [cardPay, setCardPay] = useState<{ state: 'creating' | 'ready' | 'paid' | 'error'; url?: string; qr?: string; message?: string }>({ state: 'creating' });
   const [receiptState, setReceiptState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const [refund, setRefund] = useState<{ open: boolean; amount: string; cancelJob: boolean; busy: boolean; error?: string }>({ open: false, amount: '', cancelJob: false, busy: false });
-  const [paymentSplit, setPaymentSplit] = useState<1 | 0.5>(1);
   const [paymentMethod, setPaymentMethod] = useState<'Card' | 'Cash' | 'Check' | 'Zelle'>('Card');
-  const [selectedTerm, setSelectedTerm] = useState('1');
 
   const [showPhotoSource, setShowPhotoSource] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
@@ -454,7 +454,8 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
           }));
           setCardPay(c => ({ ...c, state: 'paid' }));
           logAudit({ action: 'payment.collect', detail: `Card payment received via Stripe on #${localJob.jobNumber} ($${((s.amountPaid || 0) - baselinePaid).toFixed(2)})`, jobId: localJob.id });
-          setTimeout(() => setPaymentStep('idle'), 3000);
+          // The webhook already texted a receipt — the receipt step offers email / re-send.
+          setTimeout(() => { setReceiptSend({ state: 'idle', autoSms: true }); setPaymentStep('receipt'); }, 1500);
         }
       } catch {}
     }, 4000);
@@ -512,6 +513,91 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
       setRefund({ open: false, amount: '', cancelJob: false, busy: false });
     } catch (e) {
       setRefund(r => ({ ...r, busy: false, error: e instanceof Error ? e.message : 'Refund failed' }));
+    }
+  };
+
+  // ─── Settle flow (confirm → sign+tip → method → pay → receipt) ───────────────
+
+  // Discount lands as a negative line item so the invoice, receipt, revenue and the
+  // Stripe charge all agree — and the reason is right there on the invoice.
+  const applyDiscount = () => {
+    const amt = Math.round(parseFloat(discountForm.amount) * 100) / 100;
+    if (!Number.isFinite(amt) || amt <= 0 || amt > collectingAmount) return;
+    const reason = discountForm.reason.trim();
+    handleLocalChange({
+      lineItems: [...localJob.lineItems, {
+        id: Math.random().toString(36).slice(2, 11),
+        type: 'labor',
+        description: `Discount${reason ? ` — ${reason}` : ''}`,
+        quantity: 1,
+        unitPrice: -amt,
+      }],
+    });
+    setDiscountForm({ open: false, amount: '', reason: '' });
+  };
+
+  // Capture the signature and (if chosen) add the tip as a line item, then pick a method.
+  const proceedFromSign = () => {
+    const sig = captureSignature();
+    let items = localJob.lineItems;
+    if (tipAmount > 0.009) {
+      items = [...items, {
+        id: Math.random().toString(36).slice(2, 11),
+        type: 'labor' as const,
+        description: `Tip (${tipPct}%)`,
+        quantity: 1,
+        unitPrice: tipAmount,
+      }];
+    }
+    const next: Job = {
+      ...localJob,
+      lineItems: items,
+      totalAmount: items.reduce((s, li) => s + li.unitPrice * li.quantity, 0),
+      ...(sig ? { signature: sig } : {}),
+    };
+    setLocalJob(next);
+    setIsModified(true);
+    setPaymentStep('method');
+  };
+
+  // Cash / check / Zelle: settle immediately (signature was captured a step ago).
+  const settleManual = (method: 'Cash' | 'Check' | 'Zelle') => {
+    const alreadyPaid = localJob.amountPaid || 0;
+    const newPaid = Math.round((alreadyPaid + collectingAmount) * 100) / 100;
+    const fullyPaid = newPaid >= subtotal - 0.01;
+    const settled: Job = {
+      ...localJob,
+      amountPaid: newPaid,
+      paymentMethod: method,
+      paymentStatus: fullyPaid ? 'paid' : 'partial',
+      // Money collected must count as revenue — a job still in a pre-sale status gets
+      // promoted to sold so the cash shows up in revenue, A/R and payroll.
+      status: isRevenueJob(localJob) ? localJob.status : 'sold',
+    };
+    setLocalJob(settled);
+    commitJob(settled);
+    setIsModified(false);
+    logAudit({ action: 'payment.collect', detail: `Collected $${collectingAmount.toFixed(2)} (${method}) on #${settled.jobNumber} — ${fullyPaid ? 'paid in full' : `balance $${(subtotal - newPaid).toFixed(2)}`}`, jobId: settled.id });
+    setReceiptSend({ state: 'idle', autoSms: false });
+    setPaymentStep('receipt');
+  };
+
+  const sendReceiptChannels = async (channels: ('sms' | 'email')[]) => {
+    if (receiptSend.state === 'sending') return;
+    setReceiptSend(r => ({ ...r, state: 'sending' }));
+    try {
+      await syncJobToServer(localJob);
+      const res = await fetch(`${API_BASE}/api/payments/receipt`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({ jobId: localJob.id, channels }),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      const data = await res.json();
+      logAudit({ action: 'payment.receipt', detail: `Sent receipt (${channels.join('+')}) for #${localJob.jobNumber}`, jobId: localJob.id });
+      setReceiptSend(r => ({ ...r, state: 'done', smsSent: data.smsSent, emailSent: data.emailSent, emailConfigured: data.emailConfigured }));
+    } catch {
+      setReceiptSend(r => ({ ...r, state: 'error' }));
     }
   };
 
@@ -963,7 +1049,11 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
     const w = window.open('', '_blank', 'width=860,height=1050');
     if (w) { w.document.write(html); w.document.close(); w.focus(); setTimeout(() => w.print(), 400); }
   };
-  const collectingAmount = subtotal * paymentSplit;
+  // What's actually being collected now: the outstanding balance (deposits already
+  // paid are subtracted). Tips are added as a line item before charging, so this
+  // stays the single source of truth for every payment path.
+  const collectingAmount = Math.max(0, Math.round((subtotal - (localJob.amountPaid || 0)) * 100) / 100);
+  const tipAmount = Math.round(collectingAmount * tipPct) / 100;
 
   // Friendly schedule label: "Today · 09:00", "Tomorrow · 14:00", or "Tue, Jun 9 · 09:00".
   const schedLabel = (() => {
@@ -1297,36 +1387,122 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
           <div className="bg-white w-full max-w-lg rounded-2xl p-8 shadow-2xl animate-in slide-in-from-bottom-12 space-y-6 text-slate-900 relative">
             <button onClick={() => setPaymentStep('idle')} className="absolute top-8 right-8 p-3 text-slate-300 hover:text-slate-900"><X size={24} /></button>
             
-            {paymentStep === 'split' && (
+            {paymentStep === 'confirm' && (
               <div className="space-y-5 animate-in fade-in">
                 <div className="text-center">
-                  <h3 className="text-2xl font-bold tracking-tight mb-2">Payment Amount</h3>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Identify collection tier</p>
+                  <h3 className="text-2xl font-bold tracking-tight mb-1">Confirm Amount</h3>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Step 1 of 3 · Review before charging</p>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <button onClick={() => { setPaymentSplit(1); setPaymentStep('method'); }} className="p-6 border-2 border-slate-100 rounded-2xl hover:border-blue-600 hover:bg-blue-50 transition-all flex flex-col items-center active:scale-95 shadow-sm">
-                    <DollarSign size={24} className="text-blue-600 mb-4" />
-                    <span className="text-sm font-bold uppercase">Full Settlement</span>
-                    <span className="text-xl font-bold mt-2">${subtotal.toFixed(2)}</span>
-                  </button>
-                  <button onClick={() => { setPaymentSplit(0.5); setPaymentStep('method'); }} className="p-6 border-2 border-slate-100 rounded-2xl hover:border-blue-600 hover:bg-blue-50 transition-all flex flex-col items-center active:scale-95 shadow-sm">
-                    <Percent size={24} className="text-amber-600 mb-4" />
-                    <span className="text-sm font-bold uppercase">50% Deposit</span>
-                    <span className="text-xl font-bold mt-2">${(subtotal * 0.5).toFixed(2)}</span>
-                  </button>
+
+                <div className="bg-slate-50 border-2 border-slate-100 rounded-2xl p-6 text-center">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Balance due</p>
+                  <p className="text-5xl font-black tracking-tighter tabular-nums mt-1">${collectingAmount.toFixed(2)}</p>
+                  {(localJob.amountPaid || 0) > 0 && (
+                    <p className="text-[11px] font-semibold text-slate-400 mt-2">Total ${subtotal.toFixed(2)} − already paid ${(localJob.amountPaid || 0).toFixed(2)}</p>
+                  )}
                 </div>
+
+                {!discountForm.open ? (
+                  <div className="grid grid-cols-2 gap-3">
+                    <button onClick={() => setDiscountForm(d => ({ ...d, open: true }))} className="py-3.5 rounded-xl border-2 border-slate-100 text-xs font-bold uppercase tracking-wider text-slate-500 hover:border-amber-400 hover:text-amber-600 active:scale-95 transition-all flex items-center justify-center gap-2">
+                      <Percent size={14} /> Add discount
+                    </button>
+                    <button onClick={() => setPaymentStep('idle')} className="py-3.5 rounded-xl border-2 border-slate-100 text-xs font-bold uppercase tracking-wider text-slate-500 hover:border-blue-500 hover:text-blue-600 active:scale-95 transition-all flex items-center justify-center gap-2">
+                      <Edit2 size={14} /> Edit invoice
+                    </button>
+                  </div>
+                ) : (
+                  <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-4 space-y-3 animate-in fade-in">
+                    <div className="grid grid-cols-[110px_1fr] gap-3">
+                      <div>
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-amber-700">Amount ($)</label>
+                        <input type="number" min="0.01" step="0.01" autoFocus value={discountForm.amount} onChange={e => setDiscountForm(d => ({ ...d, amount: e.target.value }))} className="mt-1 w-full border-2 border-amber-200 bg-white rounded-xl px-3 py-2.5 text-base font-bold outline-none focus:border-amber-400" />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-amber-700">Reason</label>
+                        <input type="text" placeholder="Veteran / coupon / goodwill…" value={discountForm.reason} onChange={e => setDiscountForm(d => ({ ...d, reason: e.target.value }))} className="mt-1 w-full border-2 border-amber-200 bg-white rounded-xl px-3 py-2.5 text-sm font-semibold outline-none focus:border-amber-400" />
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={applyDiscount} disabled={!(parseFloat(discountForm.amount) > 0) || parseFloat(discountForm.amount) > collectingAmount} className="flex-1 bg-amber-500 text-white py-3 rounded-xl text-xs font-bold uppercase tracking-wider active:scale-95 disabled:opacity-40 transition-all">Apply discount</button>
+                      <button onClick={() => setDiscountForm({ open: false, amount: '', reason: '' })} className="px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-slate-600">Cancel</button>
+                    </div>
+                  </div>
+                )}
+
+                {localJob.lineItems.some(li => li.unitPrice < 0) && (
+                  <p className="text-center text-[11px] font-semibold text-amber-600">
+                    Discount applied: −${localJob.lineItems.filter(li => li.unitPrice < 0).reduce((s, li) => s - li.unitPrice * li.quantity, 0).toFixed(2)}
+                  </p>
+                )}
+
+                <button onClick={() => setPaymentStep('sign')} disabled={collectingAmount < 0.01} className="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold tracking-tight text-base shadow-2xl active:scale-95 hover:bg-blue-600 disabled:opacity-40 transition-all">
+                  Confirm ${collectingAmount.toFixed(2)} →
+                </button>
+              </div>
+            )}
+
+            {paymentStep === 'sign' && (
+              <div className="space-y-5 animate-in slide-in-from-right-8">
+                <div className="text-center">
+                  <h3 className="text-2xl font-bold tracking-tight mb-1">Sign & Tip</h3>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Step 2 of 3 · Hand the phone to the client</p>
+                </div>
+
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 text-center mb-2">Add a tip for your technician?</p>
+                  <div className="grid grid-cols-4 gap-2">
+                    {[0, 10, 15, 20].map(p => (
+                      <button key={p} onClick={() => setTipPct(p)} className={`py-3.5 rounded-xl border-2 transition-all active:scale-95 flex flex-col items-center ${tipPct === p ? 'bg-slate-900 text-white border-slate-900 shadow-lg' : 'bg-white text-slate-500 border-slate-100 hover:border-slate-300'}`}>
+                        <span className="text-sm font-black">{p === 0 ? 'No tip' : `${p}%`}</span>
+                        {p > 0 && <span className={`text-[10px] font-bold tabular-nums ${tipPct === p ? 'text-white/70' : 'text-slate-400'}`}>+${(Math.round(collectingAmount * p) / 100).toFixed(2)}</span>}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="relative w-full aspect-[2/1] bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl overflow-hidden">
+                   <canvas
+                     ref={sigCanvasRef}
+                     width={600}
+                     height={300}
+                     className="absolute inset-0 w-full h-full touch-none cursor-crosshair"
+                     onPointerDown={sigStart}
+                     onPointerMove={sigMove}
+                     onPointerUp={sigEnd}
+                     onPointerLeave={sigEnd}
+                   />
+                   <div className="pointer-events-none absolute inset-x-0 bottom-2 flex items-center justify-center gap-2 text-slate-300">
+                     <PenTool size={12} />
+                     <span className="text-[10px] font-bold uppercase tracking-widest">Client signs here</span>
+                   </div>
+                   <button onClick={clearSignature} className="pointer-events-auto absolute top-2 right-2 text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-600 px-2 py-1">Clear</button>
+                </div>
+
+                <button onClick={proceedFromSign} className="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold tracking-tight text-base shadow-2xl active:scale-95 hover:bg-blue-600 transition-all">
+                  Pay ${(collectingAmount + tipAmount).toFixed(2)}{tipAmount > 0 ? ` (incl. $${tipAmount.toFixed(2)} tip)` : ''}
+                </button>
+                <button onClick={() => setPaymentStep('confirm')} className="w-full text-center text-[11px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-600">← Back to amount</button>
               </div>
             )}
 
             {paymentStep === 'method' && (
               <div className="space-y-5 animate-in slide-in-from-right-8">
                 <div className="text-center">
-                  <h3 className="text-2xl font-bold tracking-tight mb-2">Select Method</h3>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Total to collect: ${collectingAmount.toFixed(2)}</p>
+                  <h3 className="text-2xl font-bold tracking-tight mb-1">How are they paying?</h3>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Step 3 of 3 · Collecting ${collectingAmount.toFixed(2)}</p>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   {(['Card', 'Cash', 'Check', 'Zelle'] as const).map(m => (
-                    <button key={m} onClick={() => { setPaymentMethod(m); if (m === 'Card') startCardCheckout(collectingAmount); else setPaymentStep('sign'); }} className="p-8 border-2 border-slate-100 rounded-3xl hover:border-slate-900 text-sm font-bold uppercase active:scale-95 shadow-sm transition-all">{m}</button>
+                    <button
+                      key={m}
+                      onClick={() => { setPaymentMethod(m); if (m === 'Card') startCardCheckout(collectingAmount); else settleManual(m); }}
+                      className={`p-7 border-2 rounded-3xl text-sm font-bold uppercase active:scale-95 shadow-sm transition-all flex flex-col items-center gap-2 ${m === 'Card' ? 'border-blue-200 bg-blue-50/50 text-blue-700 hover:border-blue-500' : 'border-slate-100 hover:border-slate-900'}`}
+                    >
+                      {m === 'Card' ? <CreditCard size={22} /> : m === 'Cash' ? <DollarSign size={22} /> : m === 'Check' ? <PenTool size={22} /> : <Send size={22} />}
+                      {m}
+                      {m === 'Card' && <span className="text-[9px] font-bold text-blue-400 normal-case tracking-normal">QR · Apple Pay · tap or type</span>}
+                    </button>
                   ))}
                 </div>
               </div>
@@ -1367,8 +1543,8 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                       <span className="w-2 h-2 rounded-full bg-blue-600 animate-ping" />
                       <span className="text-[11px] font-bold uppercase tracking-widest">Waiting for payment…</span>
                     </div>
-                    <button onClick={() => setPaymentStep('sign')} className="w-full text-center text-[11px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-600 py-2">
-                      Charged another way? Mark manually →
+                    <button onClick={() => setPaymentStep('method')} className="w-full text-center text-[11px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-600 py-2">
+                      ← Paying another way? Choose method
                     </button>
                   </div>
                 )}
@@ -1387,70 +1563,64 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                   <div className="py-6 space-y-4 text-center">
                     <p className="text-sm text-slate-500">{cardPay.message || 'Couldn’t start the card checkout. Check the connection and try again.'}</p>
                     <button onClick={() => startCardCheckout(collectingAmount)} className="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold text-sm uppercase tracking-wider active:scale-95 transition-all">Try again</button>
-                    <button onClick={() => setPaymentStep('sign')} className="w-full text-center text-[11px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-600 py-2">
-                      Mark payment manually →
+                    <button onClick={() => setPaymentStep('method')} className="w-full text-center text-[11px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-600 py-2">
+                      ← Choose another method
                     </button>
                   </div>
                 )}
               </div>
             )}
 
-            {paymentStep === 'sign' && (
-              <div className="space-y-5 animate-in slide-in-from-right-8">
-                <div className="text-center">
-                  <h3 className="text-2xl font-bold tracking-tight mb-2">Authorize</h3>
-                  <p className="text-xs font-bold text-blue-600 uppercase tracking-widest">Collecting ${collectingAmount.toFixed(2)} via {paymentMethod}</p>
-                </div>
-                
-                <div className="space-y-4">
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest text-center">Service Type Count / Duration</p>
-                  <div className="grid grid-cols-5 gap-2">
-                    {TERM_TYPES.map(t => (
-                      <button key={t} onClick={() => setSelectedTerm(t)} className={`py-4 rounded-xl text-xs font-bold uppercase border transition-all ${selectedTerm === t ? 'bg-slate-900 text-white border-slate-900' : 'bg-slate-50 text-slate-400 border-slate-100'}`}>{t === '1' ? 'ONE' : t}</button>
-                    ))}
+            {paymentStep === 'receipt' && (
+              <div className="space-y-5 animate-in zoom-in-95">
+                <div className="flex flex-col items-center gap-3 pt-2">
+                  <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+                    <CheckCircle2 size={34} className="text-green-600" />
                   </div>
+                  <h3 className="text-2xl font-bold tracking-tight">Payment received</h3>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest -mt-1">
+                    ${(localJob.amountPaid || 0) > 0 ? (localJob.amountPaid || 0).toFixed(2) : subtotal.toFixed(2)} · {paymentMethod}
+                  </p>
                 </div>
 
-                <div className="relative w-full aspect-video bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl overflow-hidden">
-                   <canvas
-                     ref={sigCanvasRef}
-                     width={600}
-                     height={338}
-                     className="absolute inset-0 w-full h-full touch-none cursor-crosshair"
-                     onPointerDown={sigStart}
-                     onPointerMove={sigMove}
-                     onPointerUp={sigEnd}
-                     onPointerLeave={sigEnd}
-                   />
-                   <div className="pointer-events-none absolute inset-x-0 bottom-2 flex items-center justify-center gap-2 text-slate-300">
-                     <PenTool size={12} />
-                     <span className="text-[10px] font-bold uppercase tracking-widest">Client signs here</span>
-                   </div>
-                   <button onClick={clearSignature} className="pointer-events-auto absolute top-2 right-2 text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-600 px-2 py-1">Clear</button>
+                <div className="bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 space-y-3">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 text-center">Send the client a receipt?</p>
+                  {receiptSend.autoSms && (
+                    <p className="text-center text-[11px] font-semibold text-green-600 flex items-center justify-center gap-1.5"><CheckCircle2 size={13} /> Text receipt already sent automatically</p>
+                  )}
+                  <div className="grid grid-cols-3 gap-2">
+                    <button
+                      onClick={() => sendReceiptChannels(['sms'])}
+                      disabled={receiptSend.state === 'sending' || !(localJob.client.phone || '').trim()}
+                      className="py-3.5 rounded-xl border-2 border-slate-200 bg-white text-xs font-bold uppercase tracking-wider text-slate-600 hover:border-slate-900 active:scale-95 disabled:opacity-40 transition-all"
+                    >{receiptSend.autoSms ? 'Text again' : 'Text'}</button>
+                    <button
+                      onClick={() => sendReceiptChannels(['email'])}
+                      disabled={receiptSend.state === 'sending' || !(localJob.client.email || '').trim()}
+                      title={(localJob.client.email || '').trim() ? '' : 'Client has no email on file'}
+                      className="py-3.5 rounded-xl border-2 border-slate-200 bg-white text-xs font-bold uppercase tracking-wider text-slate-600 hover:border-slate-900 active:scale-95 disabled:opacity-40 transition-all"
+                    >Email</button>
+                    <button
+                      onClick={() => sendReceiptChannels(['sms', 'email'])}
+                      disabled={receiptSend.state === 'sending' || !(localJob.client.phone || '').trim() || !(localJob.client.email || '').trim()}
+                      className="py-3.5 rounded-xl border-2 border-slate-200 bg-white text-xs font-bold uppercase tracking-wider text-slate-600 hover:border-slate-900 active:scale-95 disabled:opacity-40 transition-all"
+                    >Both</button>
+                  </div>
+                  {receiptSend.state === 'sending' && <p className="text-center text-[11px] font-bold text-slate-400 uppercase tracking-widest animate-pulse">Sending…</p>}
+                  {receiptSend.state === 'done' && (
+                    <p className="text-center text-[11px] font-semibold text-slate-500">
+                      {receiptSend.smsSent && <span className="text-green-600">SMS sent ✓ </span>}
+                      {receiptSend.emailSent && <span className="text-green-600">Email sent ✓</span>}
+                      {receiptSend.emailSent === false && (receiptSend.emailConfigured === false
+                        ? <span className="text-amber-600">Email isn’t set up on the server yet</span>
+                        : <span className="text-amber-600">Email failed</span>)}
+                    </p>
+                  )}
+                  {receiptSend.state === 'error' && <p className="text-center text-[11px] font-bold text-red-500">Couldn’t send — try again</p>}
+                  {!(localJob.client.email || '').trim() && <p className="text-center text-[10px] text-slate-400">No email on file for this client — add one in Edit Records to enable email receipts.</p>}
                 </div>
 
-                <button onClick={() => {
-                  const alreadyPaid = localJob.amountPaid || 0;
-                  const newPaid = Math.round((alreadyPaid + collectingAmount) * 100) / 100;
-                  const fullyPaid = newPaid >= subtotal - 0.01;
-                  const sig = captureSignature();
-                  const settled: Job = {
-                    ...localJob,
-                    amountPaid: newPaid,
-                    paymentMethod,
-                    paymentStatus: fullyPaid ? 'paid' : 'partial',
-                    ...(sig ? { signature: sig } : {}),
-                    // Money collected must count as revenue. If the job hasn't reached a
-                    // revenue status yet (still diagnosed/onSite), mark it sold so the cash
-                    // shows up in revenue, A/R and payroll instead of vanishing from the books.
-                    status: isRevenueJob(localJob) ? localJob.status : 'sold',
-                  };
-                  setLocalJob(settled);
-                  commitJob(settled);
-                  setIsModified(false);
-                  logAudit({ action: 'payment.collect', detail: `Collected $${collectingAmount.toFixed(2)} (${paymentMethod}) on #${settled.jobNumber} — ${fullyPaid ? 'paid in full' : `balance $${(subtotal - newPaid).toFixed(2)}`}`, jobId: settled.id });
-                  setPaymentStep('idle');
-                }} className="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold tracking-tight text-base shadow-2xl active:scale-95 hover:bg-blue-600 transition-all">Confirm Payment</button>
+                <button onClick={() => setPaymentStep('idle')} className="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold text-sm uppercase tracking-wider active:scale-95 transition-all">Done</button>
               </div>
             )}
           </div>
@@ -2320,7 +2490,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                 <div className="bg-slate-900 px-4 py-3 flex items-center gap-2.5">
                   {!lockedForTech ? (
                     <button
-                      onClick={() => setPaymentStep('split')}
+                      onClick={() => { setTipPct(0); setDiscountForm({ open: false, amount: '', reason: '' }); setReceiptSend({ state: 'idle' }); setPaymentStep('confirm'); }}
                       disabled={localJob.paymentStatus === 'paid'}
                       className={`flex-1 py-3.5 rounded-xl font-bold uppercase text-xs tracking-wider transition-all flex items-center justify-center gap-2 active:scale-95 ${
                         localJob.paymentStatus === 'paid'

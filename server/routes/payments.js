@@ -5,6 +5,7 @@ import { requireAuth } from '../middleware/auth.js';
 import { sendSMS } from '../services/openphone.js';
 import { sendPushToRoles } from '../services/push.js';
 import { getClientLang, t, claimOnce } from '../services/messages.js';
+import { sendEmail, emailConfigured } from '../services/email.js';
 import { stripeConfigured, webhookConfigured, createCheckoutSession, createRefund, getSessionPayment, getPaymentFee, verifyStripeSignature, publicBase } from '../services/stripe.js';
 
 export const paymentsRouter = Router();
@@ -38,6 +39,56 @@ async function companyName() {
 const RECEIPT_SECRET = process.env.JWT_SECRET || 'dev-insecure-secret-change-me';
 const receiptSig = (jobId) => crypto.createHmac('sha256', RECEIPT_SECRET).update(`receipt:${jobId}`).digest('hex').slice(0, 20);
 const receiptUrlFor = (base, jobId) => (base ? `${base}/pay/receipt/${encodeURIComponent(jobId)}/${receiptSig(jobId)}` : '');
+
+// Itemized receipt HTML — served at the public receipt URL and reused as the email body.
+export function receiptHtml(job, jobId, co) {
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const total = job.totalAmount || 0;
+  const paid = paidOf(job);
+  const refunded = (Array.isArray(job.refunds) ? job.refunds : []).reduce((s, r) => s + (r.amount || 0), 0);
+  const balance = Math.max(0, total - paid);
+  const status = paid < 0.01 && refunded > 0 ? 'REFUNDED' : job.paymentStatus === 'paid' ? 'PAID' : job.paymentStatus === 'partial' ? 'PARTIALLY PAID' : 'BALANCE DUE';
+  const statusColor = status === 'PAID' ? '#22c55e' : status === 'REFUNDED' ? '#f59e0b' : status === 'PARTIALLY PAID' ? '#3b82f6' : '#ef4444';
+  const when = job.paidAt ? new Date(job.paidAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
+
+  const items = (job.lineItems || []).map(li => `
+    <tr>
+      <td>${esc(li.description)}<span class="muted"> × ${li.quantity}</span></td>
+      <td class="num">${money((li.unitPrice || 0) * (li.quantity || 1))}</td>
+    </tr>`).join('');
+
+  return `<!doctype html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Receipt — ${esc(co.companyName)}</title>
+<style>
+  body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:#0f172a;color:#e2e8f0;padding:24px;display:flex;justify-content:center}
+  .card{background:#1e293b;border:1px solid rgba(255,255,255,.08);border-radius:16px;max-width:460px;width:100%;padding:28px}
+  h1{font-size:18px;margin:0;color:#e2e8f0}
+  .muted{color:#94a3b8;font-size:12px}
+  .badge{display:inline-block;padding:4px 12px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.08em;color:#0f172a;background:${statusColor};margin-top:10px}
+  table{width:100%;border-collapse:collapse;margin:18px 0}
+  td{padding:9px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:14px;color:#e2e8f0}
+  .num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .totals td{border-bottom:none;padding:5px 0}
+  .grand td{font-weight:800;font-size:16px;padding-top:10px}
+  .foot{margin-top:20px;color:#64748b;font-size:11px;line-height:1.6;text-align:center}
+</style></head><body><div class="card">
+  <h1>${esc(co.companyName)}</h1>
+  <div class="muted">${esc([co.companyAddress, co.companyCity].filter(Boolean).join(', '))}${co.companyPhone ? ' · ' + esc(co.companyPhone) : ''}${co.licenseNumber ? ' · Lic# ' + esc(co.licenseNumber) : ''}</div>
+  <div class="badge">${status}</div>
+  <table>
+    <tr><td class="muted">Receipt</td><td class="num muted">Job #${esc(job.jobNumber || jobId)}</td></tr>
+    <tr><td class="muted">Client</td><td class="num">${esc([job.client?.firstName, job.client?.lastName].filter(Boolean).join(' '))}</td></tr>
+    ${when ? `<tr><td class="muted">Paid on</td><td class="num">${esc(when)}${job.paymentMethod ? ' · ' + esc(job.paymentMethod) : ''}</td></tr>` : ''}
+  </table>
+  <table>${items}
+    <tr class="totals grand"><td>Total</td><td class="num">${money(total)}</td></tr>
+    <tr class="totals"><td class="muted">Paid</td><td class="num" style="color:#22c55e">${money(paid + refunded)}</td></tr>
+    ${refunded > 0 ? `<tr class="totals"><td class="muted">Refunded</td><td class="num" style="color:#f59e0b">−${money(refunded)}</td></tr>` : ''}
+    ${balance > 0.01 ? `<tr class="totals"><td class="muted">Balance due</td><td class="num" style="color:#ef4444">${money(balance)}</td></tr>` : ''}
+  </table>
+  <div class="foot">Thank you for choosing ${esc(co.companyName)}!${co.companyEmail ? `<br>Questions? ${esc(co.companyEmail)}` : ''}</div>
+</div></body></html>`;
+}
 
 // Thank-you + receipt SMS in the client's language. Fire-and-forget from callers.
 async function sendReceiptSMS({ job, jobId, amount, balance, base }) {
@@ -132,28 +183,44 @@ paymentsRouter.get('/job/:jobId/status', requireAuth, async (req, res) => {
   }
 });
 
-// Text the client a thank-you + receipt link on demand — the card flow does this
-// automatically via the webhook; this covers cash/check/Zelle settles and re-sends.
+// Send the client a receipt — SMS (thank-you + link), email (full itemized HTML), or
+// both. The card flow texts automatically via the webhook; this covers cash/check/Zelle
+// settles, re-sends, and the email channel.
 paymentsRouter.post('/receipt', requireAuth, async (req, res) => {
   try {
-    const { jobId } = req.body || {};
+    const { jobId, channels = ['sms'] } = req.body || {};
     if (!jobId) return res.status(400).json({ error: 'jobId required' });
+    const wants = Array.isArray(channels) ? channels : [channels];
     const { rows } = await db.query('SELECT data FROM jobs WHERE id = $1', [jobId]);
     if (rows.length === 0) return res.status(404).json({ error: 'Job not found' });
     const job = rows[0].data;
     if (req.user.role === 'technician' && job.assignedTo !== req.user.id) {
       return res.status(403).json({ error: 'Insufficient permissions' });
     }
-    if (!(job.client?.phone || '').trim()) return res.status(400).json({ error: 'Client has no phone number' });
     const paid = paidOf(job);
     if (paid < 0.01) return res.status(400).json({ error: 'No payment recorded on this job' });
-    const smsSent = await sendReceiptSMS({
-      job, jobId,
-      amount: paid,
-      balance: Math.max(0, (job.totalAmount || 0) - paid),
-      base: publicBase(req),
-    });
-    res.json({ smsSent, receiptUrl: receiptUrlFor(publicBase(req), jobId) });
+
+    const result = { smsSent: false, emailSent: false, emailConfigured: emailConfigured() };
+    if (wants.includes('sms') && (job.client?.phone || '').trim()) {
+      result.smsSent = await sendReceiptSMS({
+        job, jobId,
+        amount: paid,
+        balance: Math.max(0, (job.totalAmount || 0) - paid),
+        base: publicBase(req),
+      });
+    }
+    if (wants.includes('email')) {
+      const to = (job.client?.email || '').trim();
+      if (to && emailConfigured()) {
+        const co = await companyInfo();
+        result.emailSent = await sendEmail({
+          to,
+          subject: `Receipt from ${co.companyName} — Job #${job.jobNumber || jobId}`,
+          html: receiptHtml(job, jobId, co),
+        });
+      }
+    }
+    res.json({ ...result, receiptUrl: receiptUrlFor(publicBase(req), jobId) });
   } catch (err) {
     console.error('[payments] receipt error:', err.message);
     res.status(500).json({ error: 'Could not send receipt' });
@@ -384,53 +451,7 @@ payPagesRouter.get('/receipt/:jobId/:sig', async (req, res) => {
     if (rows.length === 0) return res.sendStatus(404);
     const job = rows[0].data;
     const co = await companyInfo();
-
-    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-    const total = job.totalAmount || 0;
-    const paid = paidOf(job);
-    const refunded = (Array.isArray(job.refunds) ? job.refunds : []).reduce((s, r) => s + (r.amount || 0), 0);
-    const balance = Math.max(0, total - paid);
-    const status = paid < 0.01 && refunded > 0 ? 'REFUNDED' : job.paymentStatus === 'paid' ? 'PAID' : job.paymentStatus === 'partial' ? 'PARTIALLY PAID' : 'BALANCE DUE';
-    const statusColor = status === 'PAID' ? '#22c55e' : status === 'REFUNDED' ? '#f59e0b' : status === 'PARTIALLY PAID' ? '#3b82f6' : '#ef4444';
-    const when = job.paidAt ? new Date(job.paidAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
-
-    const items = (job.lineItems || []).map(li => `
-      <tr>
-        <td>${esc(li.description)}<span class="muted"> × ${li.quantity}</span></td>
-        <td class="num">${money((li.unitPrice || 0) * (li.quantity || 1))}</td>
-      </tr>`).join('');
-
-    res.type('html').send(`<!doctype html><html><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1"><title>Receipt — ${esc(co.companyName)}</title>
-<style>
-  body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:#0f172a;color:#e2e8f0;padding:24px;display:flex;justify-content:center}
-  .card{background:#1e293b;border:1px solid rgba(255,255,255,.08);border-radius:16px;max-width:460px;width:100%;padding:28px}
-  h1{font-size:18px;margin:0}
-  .muted{color:#94a3b8;font-size:12px}
-  .badge{display:inline-block;padding:4px 12px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.08em;color:#0f172a;background:${statusColor};margin-top:10px}
-  table{width:100%;border-collapse:collapse;margin:18px 0}
-  td{padding:9px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:14px}
-  .num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
-  .totals td{border-bottom:none;padding:5px 0}
-  .grand td{font-weight:800;font-size:16px;padding-top:10px}
-  .foot{margin-top:20px;color:#64748b;font-size:11px;line-height:1.6;text-align:center}
-</style></head><body><div class="card">
-  <h1>${esc(co.companyName)}</h1>
-  <div class="muted">${esc([co.companyAddress, co.companyCity].filter(Boolean).join(', '))}${co.companyPhone ? ' · ' + esc(co.companyPhone) : ''}${co.licenseNumber ? ' · Lic# ' + esc(co.licenseNumber) : ''}</div>
-  <div class="badge">${status}</div>
-  <table>
-    <tr><td class="muted">Receipt</td><td class="num muted">Job #${esc(job.jobNumber || jobId)}</td></tr>
-    <tr><td class="muted">Client</td><td class="num">${esc([job.client?.firstName, job.client?.lastName].filter(Boolean).join(' '))}</td></tr>
-    ${when ? `<tr><td class="muted">Paid on</td><td class="num">${esc(when)}${job.paymentMethod ? ' · ' + esc(job.paymentMethod) : ''}</td></tr>` : ''}
-  </table>
-  <table>${items}
-    <tr class="totals grand"><td>Total</td><td class="num">${money(total)}</td></tr>
-    <tr class="totals"><td class="muted">Paid</td><td class="num" style="color:#22c55e">${money(paid + refunded)}</td></tr>
-    ${refunded > 0 ? `<tr class="totals"><td class="muted">Refunded</td><td class="num" style="color:#f59e0b">−${money(refunded)}</td></tr>` : ''}
-    ${balance > 0.01 ? `<tr class="totals"><td class="muted">Balance due</td><td class="num" style="color:#ef4444">${money(balance)}</td></tr>` : ''}
-  </table>
-  <div class="foot">Thank you for choosing ${esc(co.companyName)}!${co.companyEmail ? `<br>Questions? ${esc(co.companyEmail)}` : ''}</div>
-</div></body></html>`);
+    res.type('html').send(receiptHtml(job, jobId, co));
   } catch (err) {
     console.error('[payments] receipt page error:', err.message);
     res.sendStatus(500);
