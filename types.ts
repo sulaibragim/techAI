@@ -215,7 +215,7 @@ export interface Job {
   scheduledAhead?: boolean;    // booked for a future slot (not ASAP) → client gets a booking-confirmation SMS
   paymentReminders?: string[]; // ISO stamps of unpaid-balance reminder SMS the server has sent (max 2)
   stripeSessions?: string[];   // processed Stripe checkout session ids (webhook idempotency)
-  stripePayments?: { intent: string; amount: number; at?: string }[]; // card charges on file (refund targets)
+  stripePayments?: { intent: string; amount: number; fee?: number; net?: number; at?: string }[]; // card charges on file (refund targets; fee/net from the balance transaction)
   refunds?: { id: string; intent?: string; amount: number; at: string; by?: string; method: 'card' | 'manual' }[];
   client: Client;
   lockDetails: LockDetails;

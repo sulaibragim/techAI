@@ -18,6 +18,7 @@ import { formatDate } from '../dateUtils';
 import { sendSms } from '../smsService';
 
 const fmt$ = (n: number) => `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const fmtSigned$ = (n: number) => `${n < 0 ? '−' : ''}${fmt$(Math.abs(n))}`;
 
 const downloadCSV = (filename: string, csv: string) => {
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -139,7 +140,44 @@ export const Accounting: React.FC<{ onJobSelect?: (job: Job) => void }> = ({ onJ
   const totalExpenses = periodExpenses.reduce((s, e) => s + e.amount, 0);
   const byCategory = useMemo(() => expensesByCategory(periodExpenses), [periodExpenses]);
 
-  const netProfit = summary.grossProfit - totalCommission - totalExpenses - summary.estimatedTax;
+  // Card payments ledger — every Stripe charge and card refund in the period, with the
+  // processor's fee (exact when the webhook recorded it, estimated 2.9%+30¢ otherwise)
+  // so "net to bank" matches the actual payouts.
+  const inSpan = (iso?: string) => {
+    if (!iso) return false;
+    const d = new Date(iso);
+    return span.some(m => d.getFullYear() === m.year && d.getMonth() === m.month);
+  };
+  const cardLedger = useMemo(() => {
+    const rows: { at: string; kind: 'payment' | 'refund'; job: Job; gross: number; fee: number; net: number; feeEstimated: boolean }[] = [];
+    for (const j of jobs) {
+      for (const p of j.stripePayments || []) {
+        const at = p.at || j.paidAt || '';
+        if (!inSpan(at)) continue;
+        const feeKnown = typeof p.fee === 'number';
+        const fee = feeKnown ? p.fee! : Math.round((p.amount * 0.029 + 0.30) * 100) / 100;
+        const net = typeof p.net === 'number' ? p.net! : Math.round((p.amount - fee) * 100) / 100;
+        rows.push({ at, kind: 'payment', job: j, gross: p.amount, fee, net, feeEstimated: !feeKnown });
+      }
+      for (const r of j.refunds || []) {
+        if (r.method !== 'card' || !inSpan(r.at)) continue;
+        rows.push({ at: r.at, kind: 'refund', job: j, gross: -r.amount, fee: 0, net: -r.amount, feeEstimated: false });
+      }
+    }
+    return rows.sort((a, b) => b.at.localeCompare(a.at));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jobs, span]);
+  const cardTotals = useMemo(() => cardLedger.reduce(
+    (acc, r) => ({
+      gross: acc.gross + (r.kind === 'payment' ? r.gross : 0),
+      fees: acc.fees + r.fee,
+      refunds: acc.refunds + (r.kind === 'refund' ? -r.gross : 0),
+      net: acc.net + r.net,
+    }),
+    { gross: 0, fees: 0, refunds: 0, net: 0 }
+  ), [cardLedger]);
+
+  const netProfit = summary.grossProfit - totalCommission - totalExpenses - summary.estimatedTax - cardTotals.fees;
   const netMarginPct = summary.grossRevenue > 0 ? (netProfit / summary.grossRevenue) * 100 : 0;
 
   const receivables = useMemo(() => accountsReceivable(jobs), [jobs]);
@@ -245,6 +283,7 @@ export const Accounting: React.FC<{ onJobSelect?: (job: Job) => void }> = ({ onJ
               { label: 'Parts (COGS)', value: summary.partsCost, sign: '−' },
               { label: 'Technician Commissions', value: totalCommission, sign: '−' },
               { label: 'Expenses', value: totalExpenses, sign: '−' },
+              ...(cardTotals.fees > 0 ? [{ label: 'Card Processing Fees (Stripe)', value: cardTotals.fees, sign: '−' }] : []),
               { label: `Est. Sales Tax (${taxRate}%)`, value: summary.estimatedTax, sign: '−' },
             ].map(r => (
               <div key={r.label} className="flex justify-between items-center text-sm max-w-md">
@@ -351,6 +390,70 @@ export const Accounting: React.FC<{ onJobSelect?: (job: Job) => void }> = ({ onJ
           )}
         </div>
       </div>
+
+      {/* CARD PAYMENTS — STRIPE LEDGER */}
+      {cardLedger.length > 0 && (
+        <div className="bg-slate-900 border border-white/10 rounded-2xl p-6 shadow-lg">
+          <div className="flex items-center justify-between mb-5">
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center"><CreditCard size={16} className="mr-2 text-blue-500" /> Card Payments (Stripe) — {periodLabel}</h3>
+            <button
+              onClick={() => downloadCSV(`card-payments-${fileTag}.csv`,
+                'Date,Job,Client,Type,Gross,Fee,Net\n' + cardLedger.map(r =>
+                  `${r.at.slice(0, 10)},#${r.job.jobNumber},"${[r.job.client.firstName, r.job.client.lastName].filter(Boolean).join(' ')}",${r.kind},${r.gross.toFixed(2)},${r.fee.toFixed(2)},${r.net.toFixed(2)}`
+                ).join('\n'))}
+              className="flex items-center gap-1.5 text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors"
+            ><Download size={13} /> CSV</button>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+            {[
+              { label: 'Charged', value: cardTotals.gross, color: 'text-white' },
+              { label: 'Stripe Fees', value: -cardTotals.fees, color: 'text-pink-400' },
+              { label: 'Refunded', value: -cardTotals.refunds, color: 'text-amber-400' },
+              { label: 'Net to Bank', value: cardTotals.net, color: cardTotals.net >= 0 ? 'text-green-400' : 'text-red-400' },
+            ].map(c => (
+              <div key={c.label} className="bg-slate-950/60 border border-white/5 rounded-xl p-3">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{c.label}</p>
+                <p className={`text-lg font-black tabular-nums mt-1 ${c.color}`}>{fmtSigned$(c.value)}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="text-[10px] uppercase tracking-widest text-slate-500 font-bold border-b border-white/5">
+                  <th className="py-2 pr-3">Date</th>
+                  <th className="py-2 px-2">Job #</th>
+                  <th className="py-2 px-2">Client</th>
+                  <th className="py-2 px-2">Type</th>
+                  <th className="py-2 px-2 text-right">Gross</th>
+                  <th className="py-2 px-2 text-right">Fee</th>
+                  <th className="py-2 pl-2 text-right">Net</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {cardLedger.map((r, i) => (
+                  <tr key={`${r.job.id}-${r.kind}-${i}`} onClick={() => onJobSelect?.(r.job)} className={`transition-colors hover:bg-white/5 ${onJobSelect ? 'cursor-pointer' : ''}`}>
+                    <td className="py-2.5 pr-3 text-xs text-slate-400 tabular-nums">{r.at.slice(0, 10)}</td>
+                    <td className="py-2.5 px-2 text-xs font-mono text-blue-400">#{r.job.jobNumber}</td>
+                    <td className="py-2.5 px-2 text-sm font-semibold text-white">{r.job.client.firstName} {r.job.client.lastName}</td>
+                    <td className="py-2.5 px-2">
+                      <span className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border ${r.kind === 'payment' ? 'bg-green-500/10 text-green-400 border-green-500/30' : 'bg-amber-500/10 text-amber-400 border-amber-500/30'}`}>
+                        {r.kind}
+                      </span>
+                    </td>
+                    <td className={`py-2.5 px-2 text-right text-sm font-bold tabular-nums ${r.gross >= 0 ? 'text-white' : 'text-amber-400'}`}>{fmtSigned$(r.gross)}</td>
+                    <td className="py-2.5 px-2 text-right text-xs text-pink-400/90 tabular-nums">{r.fee > 0 ? `${r.feeEstimated ? '~' : ''}${fmt$(r.fee)}` : '—'}</td>
+                    <td className={`py-2.5 pl-2 text-right text-sm font-bold tabular-nums ${r.net >= 0 ? 'text-green-400' : 'text-red-400'}`}>{fmtSigned$(r.net)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="text-[10px] text-slate-500 mt-3">Fees marked ~ are estimated (2.9% + 30¢) — payments taken before fee tracking. Refunds return the full amount to the client; Stripe keeps the original fee.</p>
+          </div>
+        </div>
+      )}
 
       {/* PER-TECHNICIAN DRILL-DOWN */}
       {selectedTech && selectedTechEarnings && (

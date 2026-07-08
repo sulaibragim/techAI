@@ -5,7 +5,7 @@ import { requireAuth } from '../middleware/auth.js';
 import { sendSMS } from '../services/openphone.js';
 import { sendPushToRoles } from '../services/push.js';
 import { getClientLang, t, claimOnce } from '../services/messages.js';
-import { stripeConfigured, webhookConfigured, createCheckoutSession, createRefund, getSessionPayment, verifyStripeSignature, publicBase } from '../services/stripe.js';
+import { stripeConfigured, webhookConfigured, createCheckoutSession, createRefund, getSessionPayment, getPaymentFee, verifyStripeSignature, publicBase } from '../services/stripe.js';
 
 export const paymentsRouter = Router();
 
@@ -305,6 +305,14 @@ paymentsRouter.post('/webhook', async (req, res) => {
     const fullyPaid = newPaid >= total - 0.01;
     const intentId = typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id;
 
+    // Actual Stripe fee — makes the Accounting ledger match the bank to the cent.
+    // Best-effort: a lookup failure just leaves the fee estimated client-side.
+    let feeInfo = null;
+    if (intentId) {
+      try { feeInfo = await getPaymentFee(intentId); }
+      catch (e) { console.warn('[payments] fee lookup failed:', e.message); }
+    }
+
     const updated = {
       ...job,
       amountPaid: newPaid,
@@ -319,7 +327,7 @@ paymentsRouter.post('/webhook', async (req, res) => {
       // PaymentIntent + amount per charge — what /refund needs to send money back.
       stripePayments: [
         ...(Array.isArray(job.stripePayments) ? job.stripePayments : []),
-        ...(intentId ? [{ intent: intentId, amount, at: now }] : []),
+        ...(intentId ? [{ intent: intentId, amount, ...(feeInfo ? { fee: feeInfo.fee, net: feeInfo.net } : {}), at: now }] : []),
       ],
       updatedAt: now,
     };

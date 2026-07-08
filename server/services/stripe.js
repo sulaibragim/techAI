@@ -68,6 +68,20 @@ export async function createRefund({ paymentIntent, amountCents }) {
   return { id: data.id, amount: data.amount, status: data.status };
 }
 
+// Actual processing fee for a PaymentIntent, from its charge's balance transaction.
+// Returns dollars; null when the transaction isn't available yet.
+export async function getPaymentFee(paymentIntent) {
+  if (!SKEY) return null;
+  const r = await fetch(
+    `https://api.stripe.com/v1/payment_intents/${encodeURIComponent(paymentIntent)}?expand[]=latest_charge.balance_transaction`,
+    { headers: { Authorization: `Bearer ${SKEY}` } }
+  );
+  const data = await r.json();
+  if (!r.ok) throw new Error(data?.error?.message || `stripe http ${r.status}`);
+  const bt = data.latest_charge?.balance_transaction;
+  return bt && typeof bt === 'object' ? { fee: (bt.fee || 0) / 100, net: (bt.net || 0) / 100 } : null;
+}
+
 // PaymentIntent id + amount for a checkout session — used for jobs paid before we
 // started recording stripePayments on the webhook.
 export async function getSessionPayment(sessionId) {
