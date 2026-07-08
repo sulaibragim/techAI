@@ -40,54 +40,167 @@ const RECEIPT_SECRET = process.env.JWT_SECRET || 'dev-insecure-secret-change-me'
 const receiptSig = (jobId) => crypto.createHmac('sha256', RECEIPT_SECRET).update(`receipt:${jobId}`).digest('hex').slice(0, 20);
 const receiptUrlFor = (base, jobId) => (base ? `${base}/pay/receipt/${encodeURIComponent(jobId)}/${receiptSig(jobId)}` : '');
 
-// Itemized receipt HTML — served at the public receipt URL and reused as the email body.
-export function receiptHtml(job, jobId, co) {
+// Full invoice HTML — a faithful copy of the in-app invoice sheet (letterhead, bill-to,
+// line items, totals, terms, client signature). Served at the public receipt URL and
+// reused as the email body. opts: { techName, print (Download-PDF button), viewUrl
+// (email variant: "View invoice" button — email clients strip data-URI signatures). }
+export function receiptHtml(job, jobId, co, opts = {}) {
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const total = job.totalAmount || 0;
   const paid = paidOf(job);
   const refunded = (Array.isArray(job.refunds) ? job.refunds : []).reduce((s, r) => s + (r.amount || 0), 0);
   const balance = Math.max(0, total - paid);
-  const status = paid < 0.01 && refunded > 0 ? 'REFUNDED' : job.paymentStatus === 'paid' ? 'PAID' : job.paymentStatus === 'partial' ? 'PARTIALLY PAID' : 'BALANCE DUE';
-  const statusColor = status === 'PAID' ? '#22c55e' : status === 'REFUNDED' ? '#f59e0b' : status === 'PARTIALLY PAID' ? '#3b82f6' : '#ef4444';
-  const when = job.paidAt ? new Date(job.paidAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
+  const status = paid < 0.01 && refunded > 0
+    ? { label: 'Refunded', bg: '#fef3c7', fg: '#b45309' }
+    : job.paymentStatus === 'paid' ? { label: '✓ Paid', bg: '#dcfce7', fg: '#15803d' }
+    : job.paymentStatus === 'partial' ? { label: '◐ Partial', bg: '#dbeafe', fg: '#1d4ed8' }
+    : { label: 'Payment Due', bg: '#fef3c7', fg: '#b45309' };
+  const when = job.paidAt ? new Date(job.paidAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '';
+  const clientName = esc([job.client?.firstName, job.client?.lastName].filter(Boolean).join(' '));
+  const lock = job.lockDetails || {};
+  const signature = typeof job.signature === 'string' && job.signature.startsWith('data:image') ? job.signature : null;
 
-  const items = (job.lineItems || []).map(li => `
+  const rows = (job.lineItems || []).map((li, i) => `
     <tr>
-      <td>${esc(li.description)}<span class="muted"> × ${li.quantity}</span></td>
-      <td class="num">${money((li.unitPrice || 0) * (li.quantity || 1))}</td>
+      <td class="idx">${i + 1}</td>
+      <td><div class="desc">${esc(li.description)}</div><div class="litype">${esc(String(li.type || '').replace('_', ' '))}</div></td>
+      <td class="ctr">${li.quantity}</td>
+      <td class="num">$${(li.unitPrice || 0).toFixed(2)}</td>
+      <td class="num strong">$${((li.unitPrice || 0) * (li.quantity || 1)).toFixed(2)}</td>
     </tr>`).join('');
 
   return `<!doctype html><html><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1"><title>Receipt — ${esc(co.companyName)}</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Invoice #${esc(job.jobNumber || jobId)} — ${esc(co.companyName)}</title>
 <style>
-  body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:#0f172a;color:#e2e8f0;padding:24px;display:flex;justify-content:center}
-  .card{background:#1e293b;border:1px solid rgba(255,255,255,.08);border-radius:16px;max-width:460px;width:100%;padding:28px}
-  h1{font-size:18px;margin:0;color:#e2e8f0}
-  .muted{color:#94a3b8;font-size:12px}
-  .badge{display:inline-block;padding:4px 12px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.08em;color:#0f172a;background:${statusColor};margin-top:10px}
-  table{width:100%;border-collapse:collapse;margin:18px 0}
-  td{padding:9px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:14px;color:#e2e8f0}
-  .num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
-  .totals td{border-bottom:none;padding:5px 0}
-  .grand td{font-weight:800;font-size:16px;padding-top:10px}
-  .foot{margin-top:20px;color:#64748b;font-size:11px;line-height:1.6;text-align:center}
-</style></head><body><div class="card">
-  <h1>${esc(co.companyName)}</h1>
-  <div class="muted">${esc([co.companyAddress, co.companyCity].filter(Boolean).join(', '))}${co.companyPhone ? ' · ' + esc(co.companyPhone) : ''}${co.licenseNumber ? ' · Lic# ' + esc(co.licenseNumber) : ''}</div>
-  <div class="badge">${status}</div>
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:#e8edf3;padding:16px;color:#0f172a}
+  .sheet{background:#fff;max-width:680px;margin:0 auto;border-radius:12px;box-shadow:0 10px 40px rgba(2,6,23,.12);padding:36px 32px}
+  .head{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-bottom:18px;border-bottom:3px solid #1d4ed8}
+  .co{font-size:22px;font-weight:800;color:#1d4ed8;letter-spacing:-.02em;margin:0}
+  .muted{color:#64748b;font-size:12px;line-height:1.6}
+  .tiny{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#94a3b8}
+  .inv-meta{text-align:right}
+  .inv-no{font-size:19px;font-weight:800;color:#1e293b;margin:2px 0}
+  .chip{display:inline-block;margin-top:6px;padding:3px 12px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:${status.bg};color:${status.fg}}
+  .parties{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;padding:18px 0;border-bottom:1px solid #f1f5f9}
+  .parties p{margin:2px 0}
+  .name{font-size:14px;font-weight:700;color:#1e293b}
+  table{width:100%;border-collapse:collapse;margin-top:6px}
+  thead td{padding:12px 6px 8px;border-bottom:2px solid #cbd5e1}
+  tbody td{padding:10px 6px;border-bottom:1px solid #f1f5f9;font-size:13px;vertical-align:top}
+  .idx{color:#94a3b8;font-size:12px;width:24px}
+  .desc{font-weight:600;color:#1e293b}
+  .litype{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(29,78,216,.6);margin-top:2px}
+  .ctr{text-align:center;color:#475569;width:44px}
+  .num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;color:#475569;width:84px}
+  .strong{font-weight:700;color:#1e293b}
+  .totals{margin-left:auto;width:240px;margin-top:14px}
+  .totals .row{display:flex;justify-content:space-between;font-size:12px;color:#64748b;padding:3px 0}
+  .totals .grand{border-top:1px solid #cbd5e1;margin-top:6px;padding-top:8px;align-items:baseline}
+  .totals .grand span:first-child{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#1e293b}
+  .totals .grand span:last-child{font-size:24px;font-weight:800;color:#0f172a}
+  .green{color:#16a34a!important;font-weight:700}
+  .amber{color:#d97706!important;font-weight:700}
+  .red{color:#dc2626!important;font-weight:700}
+  .meta-bar{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;border-top:1px solid #f1f5f9;border-bottom:1px solid #f1f5f9;padding:14px 0;margin-top:22px}
+  .pill{display:inline-block;font-size:10px;font-weight:700;padding:2px 10px;border-radius:999px;border:1px solid #e2e8f0;color:#64748b;background:#f8fafc;margin-right:4px}
+  .sigs{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:26px}
+  .sigline{height:44px;border-bottom:1px solid #cbd5e1;display:flex;align-items:flex-end}
+  .sigline img{max-height:60px;margin-bottom:-8px}
+  .foot{text-align:center;color:#94a3b8;font-size:11px;line-height:1.7;margin-top:28px}
+  .btn{display:block;text-align:center;margin:18px auto 0;max-width:680px;background:#0f172a;color:#fff;text-decoration:none;font-weight:700;font-size:13px;letter-spacing:.05em;text-transform:uppercase;padding:14px;border-radius:12px;border:none;width:100%;cursor:pointer}
+  @media print{body{background:#fff;padding:0}.sheet{box-shadow:none;border-radius:0;max-width:none}.btn{display:none}}
+  @media (max-width:480px){.sheet{padding:24px 18px}.inv-meta{text-align:left}}
+</style></head><body>
+<div class="sheet">
+  <div class="head">
+    <div>
+      <p class="co">${esc(co.companyName)}</p>
+      <div class="muted">${co.companyAddress ? esc(co.companyAddress) + '<br>' : ''}${co.companyCity ? esc(co.companyCity) + '<br>' : ''}${[co.companyPhone && '☎ ' + esc(co.companyPhone), co.companyEmail && '✉ ' + esc(co.companyEmail), co.licenseNumber && 'Lic# ' + esc(co.licenseNumber)].filter(Boolean).join(' · ')}</div>
+    </div>
+    <div class="inv-meta">
+      <p class="tiny">Invoice</p>
+      <p class="inv-no">#${esc(job.jobNumber || jobId)}</p>
+      <p class="muted">Date: ${esc(job.scheduledDate || '')}</p>
+      ${when ? `<p class="muted">Paid: ${esc(when)}${job.paymentMethod ? ' · ' + esc(job.paymentMethod) : ''}</p>` : '<p class="muted">Due: Upon Receipt</p>'}
+      <span class="chip">${status.label}</span>
+    </div>
+  </div>
+
+  <div class="parties">
+    <div>
+      <p class="tiny">Bill To</p>
+      <p class="name">${clientName || '—'}</p>
+      ${job.client?.phone ? `<p class="muted">${esc(job.client.phone)}</p>` : ''}
+      ${job.client?.email ? `<p class="muted">${esc(job.client.email)}</p>` : ''}
+      ${job.client?.address ? `<p class="muted">${esc(job.client.address)}</p>` : ''}
+    </div>
+    <div>
+      <p class="tiny">Service Location</p>
+      <p class="muted">${esc(job.client?.address || '—')}</p>
+    </div>
+    <div>
+      <p class="tiny">Equipment / Job</p>
+      <p class="muted" style="font-weight:600;color:#334155">${esc(lock.type || '—')}</p>
+      ${lock.brand ? `<p class="muted">${esc(lock.brand)}${lock.modelOrYear ? ' · ' + esc(lock.modelOrYear) : ''}</p>` : ''}
+      ${opts.techName ? `<p class="muted">Tech: ${esc(opts.techName)}</p>` : ''}
+    </div>
+  </div>
+
   <table>
-    <tr><td class="muted">Receipt</td><td class="num muted">Job #${esc(job.jobNumber || jobId)}</td></tr>
-    <tr><td class="muted">Client</td><td class="num">${esc([job.client?.firstName, job.client?.lastName].filter(Boolean).join(' '))}</td></tr>
-    ${when ? `<tr><td class="muted">Paid on</td><td class="num">${esc(when)}${job.paymentMethod ? ' · ' + esc(job.paymentMethod) : ''}</td></tr>` : ''}
+    <thead><tr>
+      <td class="tiny">#</td><td class="tiny">Description</td><td class="tiny" style="text-align:center">Qty</td><td class="tiny" style="text-align:right">Unit Price</td><td class="tiny" style="text-align:right">Amount</td>
+    </tr></thead>
+    <tbody>${rows || '<tr><td colspan="5" style="text-align:center;color:#cbd5e1;font-style:italic;padding:20px">No line items</td></tr>'}</tbody>
   </table>
-  <table>${items}
-    <tr class="totals grand"><td>Total</td><td class="num">${money(total)}</td></tr>
-    <tr class="totals"><td class="muted">Paid</td><td class="num" style="color:#22c55e">${money(paid + refunded)}</td></tr>
-    ${refunded > 0 ? `<tr class="totals"><td class="muted">Refunded</td><td class="num" style="color:#f59e0b">−${money(refunded)}</td></tr>` : ''}
-    ${balance > 0.01 ? `<tr class="totals"><td class="muted">Balance due</td><td class="num" style="color:#ef4444">${money(balance)}</td></tr>` : ''}
-  </table>
-  <div class="foot">Thank you for choosing ${esc(co.companyName)}!${co.companyEmail ? `<br>Questions? ${esc(co.companyEmail)}` : ''}</div>
-</div></body></html>`;
+
+  <div class="totals">
+    <div class="row"><span>Subtotal</span><span>$${total.toFixed(2)}</span></div>
+    <div class="row grand"><span>Total Due</span><span>$${total.toFixed(2)}</span></div>
+    ${paid + refunded > 0.009 ? `<div class="row"><span class="green">Amount Paid</span><span class="green">— $${(paid + refunded).toFixed(2)}</span></div>` : ''}
+    ${refunded > 0.009 ? `<div class="row"><span class="amber">Refunded</span><span class="amber">$${refunded.toFixed(2)}</span></div>` : ''}
+    ${balance > 0.009 ? `<div class="row"><span class="red">Balance Due</span><span class="red">$${balance.toFixed(2)}</span></div>` : ''}
+  </div>
+
+  <div class="meta-bar">
+    <div>
+      <p class="tiny" style="margin:0 0 6px">Accepted Payment</p>
+      <span class="pill">Cash</span><span class="pill">Card</span><span class="pill">Check</span><span class="pill">Zelle</span>
+    </div>
+    <div style="text-align:right">
+      <p class="tiny" style="margin:0 0 4px">Terms</p>
+      <p class="muted" style="margin:0;font-weight:600;color:#475569">Due on Receipt</p>
+      <p class="muted" style="margin:2px 0 0">Labor: 90-day warranty</p>
+    </div>
+  </div>
+
+  <div class="sigs">
+    <div>
+      <p class="tiny" style="margin:0 0 14px">Technician</p>
+      <div class="sigline"></div>
+      <p class="muted" style="margin-top:4px">${esc(opts.techName || '')}${co.licenseNumber ? ` · Lic# ${esc(co.licenseNumber)}` : ''}</p>
+    </div>
+    <div>
+      <p class="tiny" style="margin:0 0 14px">Client Authorization</p>
+      <div class="sigline">${signature ? `<img src="${signature}" alt="Client signature">` : ''}</div>
+      <p class="muted" style="margin-top:4px">${clientName}</p>
+    </div>
+  </div>
+
+  <div class="foot">Thank you for choosing ${esc(co.companyName)}!${co.companyEmail ? `<br>Questions? ${esc(co.companyEmail)}` : ''}${co.companyPhone ? ` · ${esc(co.companyPhone)}` : ''}</div>
+</div>
+${opts.viewUrl ? `<a class="btn" href="${esc(opts.viewUrl)}">View invoice online</a>` : ''}
+${opts.print ? `<button class="btn" onclick="window.print()">Download PDF / Print</button>` : ''}
+</body></html>`;
+}
+
+// Tech display name for the invoice — best-effort, blank when unassigned.
+async function techNameOf(job) {
+  if (!job?.assignedTo) return '';
+  try {
+    const { rows } = await db.query('SELECT name FROM users WHERE id = $1', [job.assignedTo]);
+    return rows[0]?.name || '';
+  } catch { return ''; }
 }
 
 // Thank-you + receipt SMS in the client's language. Fire-and-forget from callers.
@@ -215,8 +328,11 @@ paymentsRouter.post('/receipt', requireAuth, async (req, res) => {
         const co = await companyInfo();
         result.emailSent = await sendEmail({
           to,
-          subject: `Receipt from ${co.companyName} — Job #${job.jobNumber || jobId}`,
-          html: receiptHtml(job, jobId, co),
+          subject: `Invoice #${job.jobNumber || jobId} from ${co.companyName}`,
+          html: receiptHtml(job, jobId, co, {
+            techName: await techNameOf(job),
+            viewUrl: receiptUrlFor(publicBase(req), jobId),
+          }),
         });
       }
     }
@@ -451,7 +567,7 @@ payPagesRouter.get('/receipt/:jobId/:sig', async (req, res) => {
     if (rows.length === 0) return res.sendStatus(404);
     const job = rows[0].data;
     const co = await companyInfo();
-    res.type('html').send(receiptHtml(job, jobId, co));
+    res.type('html').send(receiptHtml(job, jobId, co, { techName: await techNameOf(job), print: true }));
   } catch (err) {
     console.error('[payments] receipt page error:', err.message);
     res.sendStatus(500);
