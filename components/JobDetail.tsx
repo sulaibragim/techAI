@@ -143,7 +143,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
 
   // Payment Settlement States
   const [paymentStep, setPaymentStep] = useState<'idle' | 'split' | 'method' | 'card' | 'sign'>('idle');
-  const [cardPay, setCardPay] = useState<{ state: 'creating' | 'ready' | 'paid' | 'error'; url?: string; qr?: string }>({ state: 'creating' });
+  const [cardPay, setCardPay] = useState<{ state: 'creating' | 'ready' | 'paid' | 'error'; url?: string; qr?: string; message?: string }>({ state: 'creating' });
   const [paymentSplit, setPaymentSplit] = useState<1 | 0.5>(1);
   const [paymentMethod, setPaymentMethod] = useState<'Card' | 'Cash' | 'Check' | 'Zelle'>('Card');
   const [selectedTerm, setSelectedTerm] = useState('1');
@@ -353,6 +353,9 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
     if (payLinkState === 'sending') return;
     setPayLinkState('sending');
     try {
+      commitJob(localJob);
+      setIsModified(false);
+      await syncJobToServer(localJob);
       const res = await fetch(`${API_BASE}/api/payments/link`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeaders() },
@@ -378,6 +381,25 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
     setTimeout(() => setPayLinkState('idle'), 4000);
   };
 
+  // The payments API computes the charge from the SERVER's copy of the job, which lags
+  // local edits: a just-created job may not exist there yet (404) and just-added line
+  // items read as a $0 balance. Push the invoice and wait before asking for a link.
+  const syncJobToServer = async (job: Job) => {
+    const put = await fetch(`${API_BASE}/api/jobs/${job.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
+      body: JSON.stringify(job),
+    });
+    if (put.ok) return;
+    if (put.status !== 404) throw new Error(`sync ${put.status}`);
+    const post = await fetch(`${API_BASE}/api/jobs`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
+      body: JSON.stringify(job),
+    });
+    if (!post.ok) throw new Error(`sync ${post.status}`);
+  };
+
   // In-person card payment: a Checkout session for the amount being collected, shown as
   // a QR (client scans → pays on their phone with Apple Pay / Google Pay / card) or opened
   // directly so the tech can hand their phone over. The webhook settles the job; the modal
@@ -386,13 +408,20 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
     setPaymentStep('card');
     setCardPay({ state: 'creating' });
     try {
+      commitJob(localJob);
+      setIsModified(false);
+      await syncJobToServer(localJob);
       const res = await fetch(`${API_BASE}/api/payments/link`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeaders() },
         body: JSON.stringify({ jobId: localJob.id, sms: false, amount }),
       });
       if (res.status === 503) { setPaymentStep('sign'); return; }
-      if (!res.ok) throw new Error(String(res.status));
+      if (!res.ok) {
+        const message = (await res.json().catch(() => null))?.error;
+        setCardPay({ state: 'error', message });
+        return;
+      }
       const { url } = await res.json();
       let qr: string | undefined;
       try {
@@ -1256,7 +1285,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
 
                 {cardPay.state === 'error' && (
                   <div className="py-6 space-y-4 text-center">
-                    <p className="text-sm text-slate-500">Couldn’t start the card checkout. Check the connection and try again.</p>
+                    <p className="text-sm text-slate-500">{cardPay.message || 'Couldn’t start the card checkout. Check the connection and try again.'}</p>
                     <button onClick={() => startCardCheckout(collectingAmount)} className="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold text-sm uppercase tracking-wider active:scale-95 transition-all">Try again</button>
                     <button onClick={() => setPaymentStep('sign')} className="w-full text-center text-[11px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-600 py-2">
                       Mark payment manually →
