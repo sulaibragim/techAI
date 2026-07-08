@@ -142,7 +142,8 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
   const [showRates, setShowRates] = useState(false);
 
   // Payment Settlement States
-  const [paymentStep, setPaymentStep] = useState<'idle' | 'split' | 'method' | 'sign'>('idle');
+  const [paymentStep, setPaymentStep] = useState<'idle' | 'split' | 'method' | 'card' | 'sign'>('idle');
+  const [cardPay, setCardPay] = useState<{ state: 'creating' | 'ready' | 'paid' | 'error'; url?: string; qr?: string }>({ state: 'creating' });
   const [paymentSplit, setPaymentSplit] = useState<1 | 0.5>(1);
   const [paymentMethod, setPaymentMethod] = useState<'Card' | 'Cash' | 'Check' | 'Zelle'>('Card');
   const [selectedTerm, setSelectedTerm] = useState('1');
@@ -376,6 +377,59 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
     }
     setTimeout(() => setPayLinkState('idle'), 4000);
   };
+
+  // In-person card payment: a Checkout session for the amount being collected, shown as
+  // a QR (client scans → pays on their phone with Apple Pay / Google Pay / card) or opened
+  // directly so the tech can hand their phone over. The webhook settles the job; the modal
+  // polls until it does. If Stripe isn't configured (503) we fall back to the manual flow.
+  const startCardCheckout = async (amount: number) => {
+    setPaymentStep('card');
+    setCardPay({ state: 'creating' });
+    try {
+      const res = await fetch(`${API_BASE}/api/payments/link`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({ jobId: localJob.id, sms: false, amount }),
+      });
+      if (res.status === 503) { setPaymentStep('sign'); return; }
+      if (!res.ok) throw new Error(String(res.status));
+      const { url } = await res.json();
+      let qr: string | undefined;
+      try {
+        const { toDataURL } = await import('qrcode');
+        qr = await toDataURL(url, { width: 480, margin: 1 });
+      } catch {}
+      setCardPay({ state: 'ready', url, qr });
+    } catch {
+      setCardPay({ state: 'error' });
+    }
+  };
+
+  useEffect(() => {
+    if (paymentStep !== 'card' || cardPay.state !== 'ready') return;
+    const baselinePaid = localJob.amountPaid || 0;
+    const iv = setInterval(async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/payments/job/${localJob.id}/status`, { headers: { ...authHeaders() } });
+        if (!res.ok) return;
+        const s = await res.json();
+        if (s.paymentStatus === 'paid' || (s.amountPaid || 0) > baselinePaid + 0.005) {
+          setLocalJob(prev => ({
+            ...prev,
+            amountPaid: s.amountPaid,
+            paymentStatus: s.paymentStatus,
+            paymentMethod: 'Card',
+            ...(s.paidAt ? { paidAt: s.paidAt } : {}),
+          }));
+          setCardPay(c => ({ ...c, state: 'paid' }));
+          logAudit({ action: 'payment.collect', detail: `Card payment received via Stripe on #${localJob.jobNumber} ($${((s.amountPaid || 0) - baselinePaid).toFixed(2)})`, jobId: localJob.id });
+          setTimeout(() => setPaymentStep('idle'), 3000);
+        }
+      } catch {}
+    }, 4000);
+    return () => clearInterval(iv);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paymentStep, cardPay.state]);
 
   const assignTech = (assignedTo: string | undefined) => {
     const isSelf = !!assignedTo && assignedTo === currentUser?.id;
@@ -1143,9 +1197,72 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   {(['Card', 'Cash', 'Check', 'Zelle'] as const).map(m => (
-                    <button key={m} onClick={() => { setPaymentMethod(m); setPaymentStep('sign'); }} className="p-8 border-2 border-slate-100 rounded-3xl hover:border-slate-900 text-sm font-bold uppercase active:scale-95 shadow-sm transition-all">{m}</button>
+                    <button key={m} onClick={() => { setPaymentMethod(m); if (m === 'Card') startCardCheckout(collectingAmount); else setPaymentStep('sign'); }} className="p-8 border-2 border-slate-100 rounded-3xl hover:border-slate-900 text-sm font-bold uppercase active:scale-95 shadow-sm transition-all">{m}</button>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {paymentStep === 'card' && (
+              <div className="space-y-5 animate-in slide-in-from-right-8">
+                <div className="text-center">
+                  <h3 className="text-2xl font-bold tracking-tight mb-2">Card Payment</h3>
+                  <p className="text-xs font-bold text-blue-600 uppercase tracking-widest">Collecting ${collectingAmount.toFixed(2)} securely via Stripe</p>
+                </div>
+
+                {cardPay.state === 'creating' && (
+                  <div className="py-12 flex flex-col items-center gap-3 text-slate-400">
+                    <CreditCard size={28} className="animate-pulse" />
+                    <p className="text-xs font-bold uppercase tracking-widest">Preparing secure checkout…</p>
+                  </div>
+                )}
+
+                {cardPay.state === 'ready' && (
+                  <div className="space-y-4">
+                    {cardPay.qr && (
+                      <div className="flex justify-center">
+                        <img src={cardPay.qr} alt="Payment QR code" className="w-56 h-56 rounded-2xl border-2 border-slate-100 shadow-sm" />
+                      </div>
+                    )}
+                    <p className="text-center text-xs text-slate-500 leading-relaxed px-4">
+                      Client scans with their phone camera — Apple&nbsp;Pay, Google&nbsp;Pay or any card.
+                      Or open the page and hand them your phone.
+                    </p>
+                    <button
+                      onClick={() => cardPay.url && window.open(cardPay.url, '_blank', 'noopener')}
+                      className="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold text-sm uppercase tracking-wider active:scale-95 hover:bg-blue-600 transition-all flex items-center justify-center gap-2"
+                    >
+                      <CreditCard size={16} /> Open payment page
+                    </button>
+                    <div className="flex items-center justify-center gap-2 text-blue-600">
+                      <span className="w-2 h-2 rounded-full bg-blue-600 animate-ping" />
+                      <span className="text-[11px] font-bold uppercase tracking-widest">Waiting for payment…</span>
+                    </div>
+                    <button onClick={() => setPaymentStep('sign')} className="w-full text-center text-[11px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-600 py-2">
+                      Charged another way? Mark manually →
+                    </button>
+                  </div>
+                )}
+
+                {cardPay.state === 'paid' && (
+                  <div className="py-10 flex flex-col items-center gap-4 animate-in zoom-in-95">
+                    <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+                      <CheckCircle2 size={34} className="text-green-600" />
+                    </div>
+                    <p className="text-lg font-bold text-slate-900">Payment received</p>
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Job settled by card</p>
+                  </div>
+                )}
+
+                {cardPay.state === 'error' && (
+                  <div className="py-6 space-y-4 text-center">
+                    <p className="text-sm text-slate-500">Couldn’t start the card checkout. Check the connection and try again.</p>
+                    <button onClick={() => startCardCheckout(collectingAmount)} className="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold text-sm uppercase tracking-wider active:scale-95 transition-all">Try again</button>
+                    <button onClick={() => setPaymentStep('sign')} className="w-full text-center text-[11px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-600 py-2">
+                      Mark payment manually →
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 

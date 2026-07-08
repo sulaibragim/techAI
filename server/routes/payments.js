@@ -27,12 +27,13 @@ paymentsRouter.get('/status', requireAuth, (_req, res) => {
   res.json({ enabled: stripeConfigured() });
 });
 
-// Create a checkout link for a job's outstanding balance and (by default) text it to
-// the client. Returns the URL either way so the UI can copy/share it too.
+// Create a checkout link for a job and (by default) text it to the client. Charges the
+// outstanding balance unless `amount` asks for less (in-person deposits) — never more.
+// Returns the URL either way so the UI can copy/share/QR it too.
 paymentsRouter.post('/link', requireAuth, async (req, res) => {
   if (!stripeConfigured()) return res.status(503).json({ error: 'Card payments not configured (STRIPE_SECRET_KEY)' });
   try {
-    const { jobId, sms = true } = req.body || {};
+    const { jobId, sms = true, amount } = req.body || {};
     if (!jobId) return res.status(400).json({ error: 'jobId required' });
     const { rows } = await db.query('SELECT id, data FROM jobs WHERE id = $1', [jobId]);
     if (rows.length === 0) return res.status(404).json({ error: 'Job not found' });
@@ -46,11 +47,18 @@ paymentsRouter.post('/link', requireAuth, async (req, res) => {
     const balance = balanceOf(job);
     if (balance < 1) return res.status(400).json({ error: 'No outstanding balance on this job' });
 
+    let charge = balance;
+    if (amount !== undefined) {
+      const a = Number(amount);
+      if (!Number.isFinite(a) || a < 1) return res.status(400).json({ error: 'Invalid amount' });
+      charge = Math.min(Math.round(a * 100) / 100, balance);
+    }
+
     const company = await companyName();
     const session = await createCheckoutSession({
       jobId,
       jobNumber: job.jobNumber || jobId,
-      amountCents: Math.round(balance * 100),
+      amountCents: Math.round(charge * 100),
       companyName: company,
       base: publicBase(req),
     });
@@ -59,13 +67,35 @@ paymentsRouter.post('/link', requireAuth, async (req, res) => {
     const phone = (job.client?.phone || '').trim();
     if (sms && phone) {
       const first = (job.client?.firstName || '').trim() || 'there';
-      const ok = await sendSMS(phone, `Hi ${first}, you can pay your balance of ${money(balance)} for job #${job.jobNumber || jobId} securely by card here: ${session.url} — ${company}`);
+      const ok = await sendSMS(phone, `Hi ${first}, you can pay your balance of ${money(charge)} for job #${job.jobNumber || jobId} securely by card here: ${session.url} — ${company}`);
       smsSent = !!ok;
     }
-    res.json({ url: session.url, balance, smsSent });
+    res.json({ url: session.url, balance, amount: charge, smsSent });
   } catch (err) {
     console.error('[payments] link error:', err.message);
     res.status(502).json({ error: 'Could not create payment link' });
+  }
+});
+
+// Lightweight payment-state poll for the in-person card flow: the JobDetail modal asks
+// every few seconds whether the webhook has marked the job paid.
+paymentsRouter.get('/job/:jobId/status', requireAuth, async (req, res) => {
+  try {
+    const { rows } = await db.query('SELECT data FROM jobs WHERE id = $1', [req.params.jobId]);
+    if (rows.length === 0) return res.status(404).json({ error: 'Job not found' });
+    const job = rows[0].data;
+    if (req.user.role === 'technician' && job.assignedTo !== req.user.id) {
+      return res.status(403).json({ error: 'Insufficient permissions' });
+    }
+    res.json({
+      paymentStatus: job.paymentStatus || 'unpaid',
+      amountPaid: job.amountPaid || 0,
+      paidAt: job.paidAt || null,
+      paymentMethod: job.paymentMethod || null,
+    });
+  } catch (err) {
+    console.error('[payments] status error:', err.message);
+    res.status(500).json({ error: 'Could not read payment status' });
   }
 });
 
@@ -110,6 +140,10 @@ paymentsRouter.post('/webhook', async (req, res) => {
       paymentStatus: fullyPaid ? 'paid' : 'partial',
       paymentMethod: 'Card',
       paidAt: job.paidAt || now,
+      // Collected money must count as revenue — mirror the manual collect flow: a job
+      // still in a pre-sale status gets promoted to 'sold' so the payment shows up in
+      // revenue/A-R/payroll instead of vanishing from the books.
+      status: job.status === 'completed' || job.status === 'sold' ? job.status : 'sold',
       stripeSessions: [...seen, session.id],
       updatedAt: now,
     };
