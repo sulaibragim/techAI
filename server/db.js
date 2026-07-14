@@ -1,12 +1,20 @@
 import pg from 'pg';
 import bcrypt from 'bcryptjs';
+import crypto from 'node:crypto';
+import { isProd } from './config.js';
 
 const { Pool } = pg;
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  ssl: isProd() ? { rejectUnauthorized: false } : false,
 });
+
+// Whether initDB() actually completed. A failed connection used to be swallowed and the app
+// kept serving from memory while /health still said ok, so every write vanished on restart.
+// The readiness check reads this so the state is visible instead of silent.
+let connected = false;
+export const dbReady = () => connected;
 
 export async function initDB() {
   const client = await pool.connect();
@@ -104,31 +112,40 @@ export async function initDB() {
       );
     `);
 
+    // Seed ONE owner account, never a shared password. The old seed gave all three roles the
+    // password "1234" — a literal sitting in a public repo, i.e. anyone could log in as owner.
+    // OWNER_INITIAL_PASSWORD sets it deliberately; otherwise generate a random one and print it
+    // to the boot log exactly once, where only whoever can read the server logs will see it.
     const { rows } = await client.query('SELECT COUNT(*) FROM users');
     if (parseInt(rows[0].count) === 0) {
-      const hash = bcrypt.hashSync('1234', 10);
+      const initial = (process.env.OWNER_INITIAL_PASSWORD || '').trim() || crypto.randomBytes(9).toString('base64url');
       await client.query(`
         INSERT INTO users (id, name, email, password, role, active, commission_rate)
-        VALUES
-          ('u-owner', 'Sultan', 'owner@trustkey.az', $1, 'owner', true, 0),
-          ('u-mgr', 'Manager', 'manager@trustkey.az', $1, 'manager', true, 0),
-          ('u-tech', 'Technician', 'tech@trustkey.az', $1, 'technician', true, 30)
-      `, [hash]);
-      console.log('[DB] Seeded default users (hashed passwords)');
+        VALUES ('u-owner', 'Sultan', 'owner@trustkey.az', $1, 'owner', true, 0)
+      `, [bcrypt.hashSync(initial, 10)]);
+      if (process.env.OWNER_INITIAL_PASSWORD) {
+        console.log('[DB] Seeded owner account owner@trustkey.az with OWNER_INITIAL_PASSWORD');
+      } else {
+        console.log(`[DB] Seeded owner account owner@trustkey.az — one-time password: ${initial}`);
+        console.log('[DB] Log in and change it now; it will not be shown again.');
+      }
     }
 
+    // No company seed. It used to plant "Salem Locksmith, 123 Main Street, Portland OR" which
+    // then printed on real client invoices until someone finished onboarding. An empty company
+    // makes the onboarding wizard the only way to fill it, and the readiness check flags it.
     const settingsCheck = await client.query("SELECT COUNT(*) FROM settings WHERE key = 'company'");
     if (parseInt(settingsCheck.rows[0].count) === 0) {
       await client.query(`
         INSERT INTO settings (key, value) VALUES ('company', $1)
       `, [JSON.stringify({
-        technicianName: 'Sultan',
-        companyName: 'Salem Locksmith',
-        companyAddress: '123 Main Street, Suite 100',
-        companyCity: 'Portland, OR 97201',
-        companyPhone: '(503) 555-0100',
-        companyEmail: 'info@salemlocksmith.com',
-        licenseNumber: 'LK-00000',
+        technicianName: '',
+        companyName: '',
+        companyAddress: '',
+        companyCity: '',
+        companyPhone: '',
+        companyEmail: '',
+        licenseNumber: '',
         profilePhoto: '',
         monthlyRevenueTarget: 5000,
         dailyRevenueTarget: 1500,
@@ -136,9 +153,10 @@ export async function initDB() {
         geminiApiKey: '',
         onboardingComplete: false,
       })]);
-      console.log('[DB] Seeded default settings');
+      console.log('[DB] Seeded empty company settings — complete onboarding to fill them');
     }
 
+    connected = true;
     console.log('[DB] Tables initialized');
   } finally {
     client.release();

@@ -1,5 +1,8 @@
 import { Router } from 'express';
-import rateLimit from 'express-rate-limit';
+// ipKeyGenerator groups an IPv6 address by its /56 subnet. Without it a single IPv6 client
+// gets a fresh limiter bucket per address and can walk straight past the cap — express-rate-limit
+// treats a bare req.ip fallback as a hard error, which is why the dev server refused to boot.
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { GoogleGenAI } from '@google/genai';
 import { requireAuth } from '../middleware/auth.js';
 
@@ -12,7 +15,7 @@ const aiUserLimiter = rateLimit({
   max: 30,
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => req.user?.id || req.ip,
+  keyGenerator: (req) => req.user?.id || ipKeyGenerator(req.ip),
   message: { error: 'AI rate limit reached, slow down' },
 });
 const voiceUserLimiter = rateLimit({
@@ -20,7 +23,7 @@ const voiceUserLimiter = rateLimit({
   max: 10,
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => req.user?.id || req.ip,
+  keyGenerator: (req) => req.user?.id || ipKeyGenerator(req.ip),
   message: { error: 'Voice session rate limit reached, slow down' },
 });
 

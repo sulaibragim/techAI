@@ -1,7 +1,8 @@
 import jwt from 'jsonwebtoken';
 import { db } from '../db.js';
+import { jwtSecret } from '../config.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-insecure-secret-change-me';
+const JWT_SECRET = jwtSecret();
 const TOKEN_TTL = '30d';
 
 if (!process.env.JWT_SECRET) {

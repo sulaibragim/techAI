@@ -2,6 +2,7 @@ import { Router } from 'express';
 import crypto from 'node:crypto';
 import { db } from '../db.js';
 import { requireAuth } from '../middleware/auth.js';
+import { jwtSecret } from '../config.js';
 import { sendSMS } from '../services/openphone.js';
 import { sendPushToRoles } from '../services/push.js';
 import { getClientLang, t, claimOnce } from '../services/messages.js';
@@ -36,7 +37,7 @@ async function companyName() {
 // ─── Client receipt link ───────────────────────────────────────────────────────
 // Stateless secret URL: HMAC of the job id, so no token storage and no way to
 // enumerate other jobs' receipts. The page itself is public (the payer isn't a user).
-const RECEIPT_SECRET = process.env.JWT_SECRET || 'dev-insecure-secret-change-me';
+const RECEIPT_SECRET = jwtSecret();
 const receiptSig = (jobId) => crypto.createHmac('sha256', RECEIPT_SECRET).update(`receipt:${jobId}`).digest('hex').slice(0, 20);
 const receiptUrlFor = (base, jobId) => (base ? `${base}/pay/receipt/${encodeURIComponent(jobId)}/${receiptSig(jobId)}` : '');
 

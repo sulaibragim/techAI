@@ -35,7 +35,7 @@ interface AuthState {
   login: (email: string, password: string) => Promise<boolean>;
   loginAs: (userId: string) => void;
   logout: () => void;
-  masterReset: () => Promise<void>;
+  masterReset: () => Promise<string | null>;
   syncUsers: () => Promise<void>;
 
   addUser: (user: Omit<User, 'id' | 'createdAt'>) => void;
@@ -83,14 +83,17 @@ export const useAuthStore = create<AuthState>()(
       loginAs: (userId) => set({ currentUserId: userId }),
       logout: () => { setToken(null); set({ currentUserId: null }); },
 
+      // Returns the generated password the server set, so the caller can show it once.
+      // Deliberately does NOT touch `active`: the server doesn't either, and flipping it
+      // here would silently re-hire anyone the owner had deactivated.
       masterReset: async () => {
-        try { await api('/master-reset', { method: 'POST', body: JSON.stringify({ confirm: 'RESET-ALL-PASSWORDS' }) }); } catch {}
-        set((state) => ({
-          users: state.users.length > 0
-            ? state.users.map(u => ({ ...u, password: '1234', active: true }))
-            : DEFAULT_USERS,
-          currentUserId: null,
-        }));
+        let password: string | null = null;
+        try {
+          const res = await api('/master-reset', { method: 'POST', body: JSON.stringify({ confirm: 'RESET-ALL-PASSWORDS' }) });
+          if (res.ok) password = (await res.json())?.password ?? null;
+        } catch {}
+        set({ currentUserId: null });
+        return password;
       },
 
       syncUsers: async () => {

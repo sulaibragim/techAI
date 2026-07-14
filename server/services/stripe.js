@@ -12,6 +12,11 @@ const WHSEC = (process.env.STRIPE_WEBHOOK_SECRET || '').trim();
 export const stripeConfigured = () => !!SKEY;
 export const webhookConfigured = () => !!WHSEC;
 
+// 'live' | 'test' | null. Nothing in the app behaved differently between a test key and a
+// live one, so a forgotten sk_test_ key would take payments that never move real money and
+// look identical in the UI. The readiness check surfaces this.
+export const stripeMode = () => (!SKEY ? null : SKEY.startsWith('sk_live_') ? 'live' : 'test');
+
 // Public base URL for the success/cancel landing pages. Railway injects
 // RAILWAY_PUBLIC_DOMAIN; PUBLIC_BASE_URL wins if set explicitly.
 export function publicBase(req) {

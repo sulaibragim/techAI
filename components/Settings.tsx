@@ -8,6 +8,7 @@ import { API_BASE } from '../backendUrl';
 import { authHeaders } from '../apiClient';
 import { Role, TECH_SKILLS, SERVICE_CATEGORIES } from '../types';
 import { PushNotificationsCard } from './PushNotificationsCard';
+import { LaunchReadinessCard } from './LaunchReadinessCard';
 
 const VERSION = '0.0.0';
 
@@ -331,6 +332,8 @@ export const Settings: React.FC = () => {
             <p className="text-xs text-slate-500 mt-1">Used in daily goal tracker</p>
           </div>
         </Section>}
+
+        {currentUser?.role === 'owner' && <LaunchReadinessCard />}
 
         {currentUser && (currentUser.role === 'owner' || currentUser.role === 'manager') && <RatesSection />}
 

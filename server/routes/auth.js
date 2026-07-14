@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
+import crypto from 'node:crypto';
 import { db } from '../db.js';
 import { signToken, requireAuth, requireRole } from '../middleware/auth.js';
 import { fulfillEtaRequest } from '../services/etaRequests.js';
@@ -171,19 +172,22 @@ authRouter.delete('/users/:id', requireAuth, requireRole('owner'), async (req, r
   }
 });
 
-// Master reset — owner only, requires authentication. Resets EVERY password to a known
-// default, so it's gated behind an explicit confirmation phrase in the body to make an
-// accidental or scripted call impossible. POST { confirm: 'RESET-ALL-PASSWORDS' }.
+// Master reset — owner only, requires authentication. Resets EVERY password, so it's gated
+// behind an explicit confirmation phrase in the body to make an accidental or scripted call
+// impossible. POST { confirm: 'RESET-ALL-PASSWORDS' }. The new password is GENERATED and
+// returned once, never a fixed literal: the old version reset everyone to "1234", which left
+// production sitting on a password that is published in this repo's history.
 authRouter.post('/master-reset', requireAuth, requireRole('owner'), async (req, res) => {
   try {
     if (req.body?.confirm !== 'RESET-ALL-PASSWORDS') {
       return res.status(400).json({ error: "Confirmation required: send { confirm: 'RESET-ALL-PASSWORDS' }" });
     }
-    const hash = await bcrypt.hash('1234', 10);
+    const password = crypto.randomBytes(6).toString('base64url');
+    const hash = await bcrypt.hash(password, 10);
     // Reset passwords ONLY — do not touch `active`, or this silently un-deactivates
     // (re-hires) anyone the owner has disabled.
     await db.query('UPDATE users SET password = $1', [hash]);
-    res.json({ ok: true });
+    res.json({ ok: true, password });
   } catch (err) {
     console.error('[AUTH] master reset error:', err);
     res.status(500).json({ error: 'Internal server error' });

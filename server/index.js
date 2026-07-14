@@ -18,6 +18,7 @@ import { pushRouter } from './routes/push.js';
 import { paymentsRouter, payPagesRouter } from './routes/payments.js';
 import { initDB } from './db.js';
 import { startScheduler } from './services/scheduler.js';
+import { isProd } from './config.js';
 
 import { fileURLToPath } from 'url';
 import path from 'path';
@@ -27,8 +28,12 @@ dotenv.config({ path: path.resolve(__dirname, '../.env.local') });
 // In production, refuse to boot with insecure defaults / fail-open webhooks. These all
 // have safe local fallbacks for dev, but if any is missing in prod the app is exploitable
 // (forgeable tokens, unauthenticated webhooks), so crash loudly instead of running open.
-if (process.env.NODE_ENV === 'production') {
+if (isProd()) {
   const required = ['JWT_SECRET', 'OPENPHONE_WEBHOOK_SECRET', 'WEBSITE_WEBHOOK_SECRET'];
+  // If card payments are on, the webhook secret is what records them. Without it Stripe
+  // charges the client and the CRM never hears about it — the job stays unpaid forever
+  // and the money is invisible. That's worse than having no payments at all, so gate on it.
+  if (process.env.STRIPE_SECRET_KEY) required.push('STRIPE_WEBHOOK_SECRET');
   const missing = required.filter(k => !process.env[k]);
   if (missing.length > 0) {
     console.error(`[BOOT] Refusing to start in production — missing required env: ${missing.join(', ')}`);
@@ -36,6 +41,9 @@ if (process.env.NODE_ENV === 'production') {
   }
   if (!process.env.ALLOWED_ORIGINS) {
     console.warn('[BOOT] ALLOWED_ORIGINS not set in production — CORS reflects all origins. Set it to your frontend domain(s).');
+  }
+  if ((process.env.STRIPE_SECRET_KEY || '').startsWith('sk_test_')) {
+    console.warn('[BOOT] Stripe is in TEST mode — card payments will not move real money.');
   }
 }
 
@@ -137,9 +145,20 @@ async function start() {
       startScheduler(); // payment reminders + evening digest (needs the DB)
     } catch (err) {
       console.error('[DB] Failed to connect:', err.message);
+      // In production a swallowed DB failure is the worst outcome in this codebase: the app
+      // keeps serving, /health still says ok, and every job, payment and message silently
+      // evaporates on the next restart. Fail loudly so the deploy shows red instead.
+      if (isProd()) {
+        console.error('[BOOT] Refusing to serve production traffic without the database.');
+        process.exit(1);
+      }
       console.log('[DB] Running without database — data will be in-memory only');
     }
   } else {
+    if (isProd()) {
+      console.error('[BOOT] Refusing to start in production — DATABASE_URL is not set.');
+      process.exit(1);
+    }
     console.log('[DB] No DATABASE_URL — running without database');
   }
 

@@ -12,9 +12,14 @@ const STEPS: { id: Step; label: string; icon: React.ReactNode }[] = [
   { id: 'targets', label: 'Targets', icon: <Target size={16} /> },
 ];
 
+// Every tech gets their own generated password, shown to the owner to hand over. The wizard
+// used to create all of them with "1234" and print that on screen.
+const generatePassword = () => Math.random().toString(36).slice(2, 6) + Math.random().toString(36).slice(2, 6);
+
 interface NewTech {
   name: string;
   email: string;
+  password: string;
   phone: string;
 }
 
@@ -37,12 +42,12 @@ export const OnboardingWizard: React.FC = () => {
   const [ownerEmail, setOwnerEmail] = useState(owner?.email || '');
   const [ownerPassword, setOwnerPassword] = useState(owner?.password || '');
 
-  const [techs, setTechs] = useState<NewTech[]>([{ name: '', email: '', phone: '' }]);
+  const [techs, setTechs] = useState<NewTech[]>([{ name: '', email: '', phone: '', password: generatePassword() }]);
 
   const [monthlyTarget, setMonthlyTarget] = useState(5000);
   const [dailyTarget, setDailyTarget] = useState(1500);
 
-  const addTech = () => setTechs(prev => [...prev, { name: '', email: '', phone: '' }]);
+  const addTech = () => setTechs(prev => [...prev, { name: '', email: '', phone: '', password: generatePassword() }]);
   const removeTech = (i: number) => setTechs(prev => prev.filter((_, idx) => idx !== i));
   const updateTech = (i: number, field: keyof NewTech, value: string) => {
     setTechs(prev => prev.map((t, idx) => idx === i ? { ...t, [field]: value } : t));
@@ -94,7 +99,7 @@ export const OnboardingWizard: React.FC = () => {
         addUser({
           name: t.name.trim(),
           email: t.email.trim() || `${t.name.trim().toLowerCase().replace(/\s+/g, '.')}@${companyName.trim().toLowerCase().replace(/\s+/g, '')}.com`,
-          password: '1234',
+          password: t.password || generatePassword(),
           role: 'technician',
           phone: t.phone,
           active: true,
@@ -234,6 +239,7 @@ export const OnboardingWizard: React.FC = () => {
                             <input value={t.name} onChange={e => updateTech(i, 'name', e.target.value)} placeholder="Name" className="bg-slate-800 border border-white/10 rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:border-blue-500/50" />
                             <input value={t.email} onChange={e => updateTech(i, 'email', e.target.value)} placeholder="Email" className="bg-slate-800 border border-white/10 rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:border-blue-500/50" />
                             <input value={t.phone} onChange={e => updateTech(i, 'phone', e.target.value)} placeholder="Phone" className="bg-slate-800 border border-white/10 rounded-lg px-3 py-2 text-white text-xs placeholder-slate-500 focus:outline-none focus:border-blue-500/50" />
+                            <input value={t.password} onChange={e => updateTech(i, 'password', e.target.value)} placeholder="Password" className="bg-slate-800 border border-white/10 rounded-lg px-3 py-2 text-white text-xs font-mono placeholder-slate-500 focus:outline-none focus:border-blue-500/50 sm:col-span-3" />
                           </div>
                           {techs.length > 1 && (
                             <button onClick={() => removeTech(i)} className="p-1.5 text-slate-500 hover:text-red-400 transition-colors">
@@ -243,7 +249,7 @@ export const OnboardingWizard: React.FC = () => {
                         </div>
                       ))}
                     </div>
-                    <p className="text-[10px] text-slate-500">Default password for all accounts: 1234</p>
+                    <p className="text-[10px] text-slate-500">Each tech gets their own password — copy it now and hand it over. You can edit it before finishing.</p>
                   </div>
                 </>
               )}

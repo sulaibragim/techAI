@@ -1,8 +1,20 @@
 import { Router } from 'express';
 import { db } from '../db.js';
 import { requireAuth, requireRole } from '../middleware/auth.js';
+import { buildReadiness } from '../services/readiness.js';
 
 export const adminRouter = Router();
+
+// Live launch-readiness report. Owner only — it names which subsystems are unconfigured,
+// which is a map of where to attack an incomplete deploy. Returns statuses, never secrets.
+adminRouter.get('/readiness', requireAuth, requireRole('owner'), async (_req, res) => {
+  try {
+    res.json(await buildReadiness());
+  } catch (err) {
+    console.error('[ADMIN] readiness error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 const FRESH_SETTINGS = {
   technicianName: '',
