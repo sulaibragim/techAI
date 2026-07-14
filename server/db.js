@@ -1,13 +1,16 @@
 import pg from 'pg';
 import bcrypt from 'bcryptjs';
 import crypto from 'node:crypto';
-import { isProd } from './config.js';
 
 const { Pool } = pg;
 
+// SSL stays keyed to NODE_ENV, NOT isProd(). Railway reaches Postgres over its private
+// network with NODE_ENV unset, and that link works today without TLS — flipping SSL on for
+// a server that doesn't offer it would fail the connection, which is now a fatal boot error.
+// Set NODE_ENV=production only after confirming the DB accepts TLS.
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: isProd() ? { rejectUnauthorized: false } : false,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
 });
 
 // Whether initDB() actually completed. A failed connection used to be swallowed and the app
