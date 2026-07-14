@@ -119,6 +119,40 @@ async function notifyDispatchers(text, excludeUserId) {
   }
 }
 
+// Payment truth lives on the server: the Stripe webhook and the refund route write the
+// ledger (session ids, charges, refunds) straight into the row, but a client only ever
+// PUTs the copy of the job it had in memory — which predates those writes and would wipe
+// them (a refund then finds no charge to reverse, and settled money falls out of revenue).
+// Every client write is merged through here so the ledger survives.
+const REVENUE_STATUSES = new Set(['sold', 'completed']);
+
+function preservePaymentTruth(incoming, existing) {
+  if (!existing) return incoming;
+  const out = { ...incoming };
+
+  for (const key of ['stripeSessions', 'stripePayments', 'refunds']) {
+    if (existing[key] !== undefined) out[key] = existing[key];
+  }
+
+  // Collected money can only be reduced by the refund route (which writes the DB itself),
+  // never by a client that simply hadn't seen the payment yet.
+  const exPaid = existing.amountPaid || 0;
+  if (exPaid > (incoming.amountPaid || 0) + 0.005) {
+    out.amountPaid = existing.amountPaid;
+    out.paymentStatus = existing.paymentStatus;
+    if (existing.paymentMethod) out.paymentMethod = existing.paymentMethod;
+  }
+  if (!out.paidAt && existing.paidAt) out.paidAt = existing.paidAt;
+
+  // A settled job must stay in a revenue status — a stale client copy can't drag it back
+  // to en-route/on-site and drop the sale out of the books.
+  const settled = (out.amountPaid || 0) > 0 || out.paymentStatus === 'paid' || out.paymentStatus === 'partial';
+  if (settled && REVENUE_STATUSES.has(existing.status) && !REVENUE_STATUSES.has(out.status) && out.status !== 'cancelled') {
+    out.status = existing.status;
+  }
+  return out;
+}
+
 // Get jobs — technicians see only jobs assigned to them.
 jobsRouter.get('/', requireAuth, async (req, res) => {
   try {
@@ -159,7 +193,7 @@ jobsRouter.post('/sync', requireAuth, async (req, res) => {
     const existing = new Map();
     if (ids.length > 0) {
       const { rows: existingRows } = await client.query(
-        "SELECT id, data->>'assignedTo' AS assigned, data->>'updatedAt' AS updated FROM jobs WHERE id = ANY($1)",
+        "SELECT id, data, data->>'assignedTo' AS assigned, data->>'updatedAt' AS updated FROM jobs WHERE id = ANY($1)",
         [ids]
       );
       for (const r of existingRows) existing.set(r.id, r);
@@ -180,10 +214,11 @@ jobsRouter.post('/sync', requireAuth, async (req, res) => {
         if (!data.updatedAt) continue;
         if (ex.updated && data.updatedAt <= ex.updated) continue;
       }
+      const merged = preservePaymentTruth(data, ex?.data);
       await client.query(
         `INSERT INTO jobs (id, data, updated_at) VALUES ($1, $2, NOW())
          ON CONFLICT (id) DO UPDATE SET data = $2, updated_at = NOW()`,
-        [id, JSON.stringify(data)]
+        [id, JSON.stringify(merged)]
       );
     }
     await client.query('COMMIT');
@@ -218,9 +253,13 @@ jobsRouter.post('/', requireAuth, async (req, res) => {
     const { id, ...data } = req.body;
     if (isTech(req)) data.assignedTo = req.user.id;
     const jobId = id || `job-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    // POST doubles as an upsert (the client falls back to it when a PUT 404s), so the
+    // ledger has to be protected here too.
+    const { rows: prior } = await db.query('SELECT data FROM jobs WHERE id = $1', [jobId]);
+    const merged = preservePaymentTruth(data, prior[0]?.data);
     await db.query(
       'INSERT INTO jobs (id, data) VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET data = $2, updated_at = NOW()',
-      [jobId, JSON.stringify(data)]
+      [jobId, JSON.stringify(merged)]
     );
     if (data.assignedTo) {
       notifyAssignedTech(data.assignedTo, { ...data, id: jobId }, req.user.id).catch(e => console.error('[JOBS] notify error:', e));
@@ -238,10 +277,11 @@ jobsRouter.post('/', requireAuth, async (req, res) => {
 jobsRouter.put('/:id', requireAuth, async (req, res) => {
   try {
     const { rows: existing } = await db.query(
-      "SELECT data->>'assignedTo' AS assigned, data->>'status' AS status, data->>'acceptanceStatus' AS acceptance FROM jobs WHERE id = $1",
+      "SELECT data, data->>'assignedTo' AS assigned, data->>'status' AS status, data->>'acceptanceStatus' AS acceptance FROM jobs WHERE id = $1",
       [req.params.id]
     );
     if (existing.length === 0) return res.status(404).json({ error: 'Job not found' });
+    const prevData = existing[0].data;
     const prevAssigned = existing[0].assigned || null;
     const prevStatus = existing[0].status || null;
     const prevAcceptance = existing[0].acceptance || null;
@@ -257,9 +297,10 @@ jobsRouter.put('/:id', requireAuth, async (req, res) => {
     if (isTech(req) && data.assignedTo && data.assignedTo !== req.user.id) {
       return res.status(403).json({ error: 'Technicians cannot reassign a job to someone else' });
     }
+    const merged = preservePaymentTruth(data, prevData);
     const result = await db.query(
       'UPDATE jobs SET data = $2, updated_at = NOW() WHERE id = $1',
-      [req.params.id, JSON.stringify(data)]
+      [req.params.id, JSON.stringify(merged)]
     );
     if (result.rowCount === 0) return res.status(404).json({ error: 'Job not found' });
 

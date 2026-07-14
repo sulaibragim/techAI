@@ -451,6 +451,9 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
             paymentStatus: s.paymentStatus,
             paymentMethod: 'Card',
             ...(s.paidAt ? { paidAt: s.paidAt } : {}),
+            // The webhook promoted the job to a revenue status server-side — mirror that
+            // locally so the next save doesn't push a stale pre-sale status back up.
+            status: isRevenueJob(prev) ? prev.status : 'sold',
           }));
           setCardPay(c => ({ ...c, state: 'paid' }));
           logAudit({ action: 'payment.collect', detail: `Card payment received via Stripe on #${localJob.jobNumber} ($${((s.amountPaid || 0) - baselinePaid).toFixed(2)})`, jobId: localJob.id });
