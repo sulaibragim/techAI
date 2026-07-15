@@ -6,6 +6,7 @@ import { jwtSecret } from '../config.js';
 import { sendSMS } from '../services/openphone.js';
 import { sendPushToRoles } from '../services/push.js';
 import { getClientLang, t, claimOnce } from '../services/messages.js';
+import { clientSmsEnabled } from '../services/businessSettings.js';
 import { sendEmail, emailConfigured } from '../services/email.js';
 import { stripeConfigured, webhookConfigured, createCheckoutSession, createRefund, getSessionPayment, getPaymentFee, verifyStripeSignature, publicBase } from '../services/stripe.js';
 
@@ -516,7 +517,7 @@ paymentsRouter.post('/refund', requireAuth, async (req, res) => {
 
     // Tell the client (their language), tell the bosses (push).
     const phone = (job.client?.phone || '').trim();
-    if (phone && newRefunds.some(r => r.method === 'card')) {
+    if (phone && newRefunds.some(r => r.method === 'card') && await clientSmsEnabled('refund')) {
       const lang = await getClientLang(phone);
       const name = (job.client?.firstName || '').trim() || 'there';
       sendSMS(phone, t('refundIssued', lang, {
@@ -612,8 +613,9 @@ paymentsRouter.post('/webhook', async (req, res) => {
     console.log(`[payments] ${money(amount)} received on job ${job.jobNumber || jobId} (${fullyPaid ? 'paid in full' : `balance ${money(Math.max(0, total - newPaid))}`})`);
 
     // Thank-you + receipt link to the payer — once per checkout session even if
-    // Stripe redelivers the event.
-    if (await claimOnce(jobId, `receipt-${session.id}`)) {
+    // Stripe redelivers the event. Owner-controlled (on by default); the manual
+    // "Text receipt" button stays unaffected — that's an explicit send.
+    if (await clientSmsEnabled('receipt') && await claimOnce(jobId, `receipt-${session.id}`)) {
       sendReceiptSMS({ job, jobId, amount, balance: Math.max(0, total - newPaid), base: publicBase(req) })
         .catch(e => console.error('[payments] receipt sms error:', e.message));
     }

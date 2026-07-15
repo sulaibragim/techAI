@@ -4,6 +4,7 @@ import { requireAuth, requireRole } from '../middleware/auth.js';
 import { sendSMS } from '../services/openphone.js';
 import { sendPushToUser } from '../services/push.js';
 import { getClientLang, claimOnce, t, SPANISH_INVITE } from '../services/messages.js';
+import { clientSmsEnabled } from '../services/businessSettings.js';
 
 export const jobsRouter = Router();
 
@@ -71,6 +72,7 @@ async function companyName() {
 async function notifyClientArrived(job, techId) {
   const phone = (job.client?.phone || '').trim();
   if (!phone) return;
+  if (!(await clientSmsEnabled('arrived'))) return; // owner-controlled; off by default
   const lang = await getClientLang(phone);
   const first = (job.client?.firstName || '').trim() || (lang === 'es' ? 'hola' : 'there');
   const [tech, company] = await Promise.all([
@@ -87,6 +89,7 @@ async function notifyBookingConfirmed(job, jobId) {
   if (!job.scheduledAhead) return;
   const phone = (job.client?.phone || '').trim();
   if (!phone) return;
+  if (!(await clientSmsEnabled('booking'))) return; // owner-controlled; on by default
   if (!(await claimOnce(jobId, 'booking'))) return;
 
   const lang = await getClientLang(phone);

@@ -3,17 +3,20 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   Package, Search, Plus, AlertCircle, RefreshCw, X, Minus, Trash2,
   Truck, ClipboardList, ChevronDown, Camera, ArrowDownLeft, ArrowUpRight, Pencil, TriangleAlert,
-  ScanLine, Copy, CheckCircle2, ClipboardCheck, PieChart, Barcode,
+  ScanLine, Copy, CheckCircle2, ClipboardCheck, PieChart, Barcode, FileSpreadsheet,
 } from 'lucide-react';
 import { useAppStore } from '../store';
 import { useSettingsStore } from '../settingsStore';
 import { useCurrentUser, can } from '../authStore';
-import { Part, StockMovement, MOVEMENT_META } from '../types';
+import { Part, StockMovement, MOVEMENT_META, PART_CATEGORY_SUGGESTIONS } from '../types';
 import { InvoiceImportModal, ReviewLine } from './InvoiceImport';
+import { ExcelImport } from './ExcelImport';
+import type { ImportRow } from '../inventoryExcel';
 import { StocktakeModal, InsightsModal } from './StockTools';
 import { BarcodeScanner } from './BarcodeScanner';
 
 const CATEGORIES = ['Key Blanks', 'Remotes', 'Cylinders', 'Hardware', 'Tools'] as const;
+const uniqSorted = (arr: string[]) => [...new Set(arr.filter(Boolean))].sort((a, b) => a.localeCompare(b));
 
 const money = (n: number) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 const marginPct = (price: number, cost?: number) => (cost && cost > 0 && price > 0 ? Math.round(((price - cost) / price) * 100) : null);
@@ -78,6 +81,7 @@ export const Inventory: React.FC = () => {
   const [receiveOpen, setReceiveOpen] = useState(false);
   const [receiveSeed, setReceiveSeed] = useState<{ partId: string; qty: string; cost: string }[] | null>(null);
   const [scanOpen, setScanOpen] = useState(false);
+  const [excelOpen, setExcelOpen] = useState(false);
   const [reorderOpen, setReorderOpen] = useState(false);
   const [stocktakeOpen, setStocktakeOpen] = useState(false);
   const [insightsOpen, setInsightsOpen] = useState(false);
@@ -92,7 +96,7 @@ export const Inventory: React.FC = () => {
     if (hit) { setDrawerId(hit.id); return; }
     if (canEdit) {
       setShowIds(true);
-      setEditingPart({ name: '', sku: '', category: 'Key Blanks', stock: 0, reorderPoint: 0, price: 0, cost: 0, location: 'shop', upc: raw.trim() });
+      setEditingPart({ name: '', sku: '', category: '', stock: 0, reorderPoint: 0, price: 0, cost: 0, location: 'shop', upc: raw.trim() });
       setIsEditing(true);
     } else {
       setSearch(raw.trim());
@@ -145,6 +149,68 @@ export const Inventory: React.FC = () => {
     setScanOpen(false);
   };
 
+  // Excel import confirmed: create new parts, then receive (+) or set the stock per the
+  // chosen mode. 'receive' logs ONE combined Keys & Stock expense (real money out);
+  // 'set' is a stocktake correction and logs no expense.
+  const handleExcelConfirm = (rows: ImportRow[], mode: 'receive' | 'set') => {
+    let spend = 0;
+    for (const r of rows) {
+      let partId = r.matchId;
+      if (r.createNew) {
+        const created = addInventoryItemStore({
+          name: r.name,
+          sku: (r.sku || `NEW-${Math.random().toString(36).slice(2, 7)}`).toUpperCase(),
+          category: r.category || 'Прочее',
+          stock: 0,
+          reorderPoint: r.reorderPoint,
+          price: r.price,
+          cost: r.cost || undefined,
+          brand: r.brand || undefined,
+          upc: r.barcode || undefined,
+          location: 'shop',
+        });
+        partId = created.id;
+      } else if (partId) {
+        // Keep the richer fields fresh on an existing part (reorder point, cost, brand).
+        const existing = inventory.find(p => p.id === partId);
+        if (existing) {
+          updateInventoryItem({
+            ...existing,
+            reorderPoint: r.reorderPoint || existing.reorderPoint,
+            cost: r.cost || existing.cost,
+            brand: r.brand || existing.brand,
+            category: r.category || existing.category,
+          });
+        }
+      }
+      if (!partId) continue;
+      if (mode === 'set') {
+        adjustStockTo(partId, r.stock, { note: 'Excel import (установка остатка)' });
+      } else if (r.stock > 0) {
+        receiveStock(partId, r.stock, r.cost, { supplierName: r.supplier || undefined, note: 'Excel import (приход)', logExpense: false });
+        spend += r.stock * (r.cost || 0);
+      }
+    }
+    if (mode === 'receive' && spend > 0) {
+      addExpense({
+        date: new Date().toISOString().split('T')[0],
+        category: 'Keys & Stock',
+        amount: Math.round(spend * 100) / 100,
+        note: `Excel import — ${rows.length} позиц.`,
+        createdBy: currentUser?.id,
+      });
+    }
+    setExcelOpen(false);
+  };
+
+  // Category chips are derived from what's actually in stock (+ a few suggestions), so
+  // imported types like "транспондер" appear automatically without a fixed list.
+  const categoryOptions = useMemo(
+    () => uniqSorted([...inventory.map(p => p.category), ...PART_CATEGORY_SUGGESTIONS]),
+    [inventory]
+  );
+  const filterChips = useMemo(() => uniqSorted(inventory.map(p => p.category)), [inventory]);
+
   const filteredInventory = inventory.filter((part: Part) => {
     if (filter !== 'All' && part.category !== filter) return false;
     if (search) {
@@ -169,7 +235,7 @@ export const Inventory: React.FC = () => {
   const openEditor = (part?: Part) => {
     setShowIds(false);
     if (part) setEditingPart(part);
-    else setEditingPart({ name: '', sku: '', category: 'Key Blanks', stock: 0, reorderPoint: 0, price: 0, cost: 0, location: 'shop' });
+    else setEditingPart({ name: '', sku: '', category: '', stock: 0, reorderPoint: 0, price: 0, cost: 0, location: 'shop' });
     setIsEditing(true);
   };
 
@@ -217,6 +283,10 @@ export const Inventory: React.FC = () => {
                 <ScanLine size={16} />
                 <span>Scan Invoice</span>
               </button>
+              <button onClick={() => setExcelOpen(true)} className="flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-green-500/20 hover:bg-green-500 transition-colors active:scale-95">
+                <FileSpreadsheet size={16} />
+                <span>Импорт Excel</span>
+              </button>
               <button onClick={() => { setReceiveSeed(null); setReceiveOpen(true); }} className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-blue-500/20 hover:bg-blue-500 transition-colors active:scale-95">
                 <Truck size={16} />
                 <span>Receive Stock</span>
@@ -255,7 +325,7 @@ export const Inventory: React.FC = () => {
       <div className="bg-slate-900 rounded-2xl border border-white/10 overflow-hidden shadow-xl">
         <div className="p-6 border-b border-white/10 flex flex-col md:flex-row gap-4 justify-between">
           <div className="flex bg-slate-950 border border-white/10 rounded-xl overflow-hidden p-1 w-full md:w-auto overflow-x-auto hide-scrollbar">
-            {['All', ...CATEGORIES].map(c => (
+            {['All', ...filterChips].map(c => (
               <button key={c} onClick={() => setFilter(c)}
                 className={`px-4 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${filter === c ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}>
                 {c}
@@ -376,6 +446,13 @@ export const Inventory: React.FC = () => {
             onConfirm={handleInvoiceConfirm}
           />
         )}
+        {excelOpen && (
+          <ExcelImport
+            existing={inventory}
+            onCancel={() => setExcelOpen(false)}
+            onConfirm={handleExcelConfirm}
+          />
+        )}
       </AnimatePresence>
 
       {/* REORDER LIST */}
@@ -445,9 +522,10 @@ export const Inventory: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className={labelCls}>Category</label>
-                    <select value={editingPart.category || 'Key Blanks'} onChange={e => setEditingPart({ ...editingPart, category: e.target.value as Part['category'] })} className={`${inputCls} appearance-none`}>
-                      {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
+                    <input type="text" list="part-categories" value={editingPart.category || ''} onChange={e => setEditingPart({ ...editingPart, category: e.target.value })} className={inputCls} placeholder="заготовка / транспондер / flip…" />
+                    <datalist id="part-categories">
+                      {categoryOptions.map(c => <option key={c} value={c} />)}
+                    </datalist>
                   </div>
                   <div className="space-y-1.5">
                     <label className={labelCls}>Location</label>

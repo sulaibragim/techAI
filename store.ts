@@ -25,15 +25,9 @@ const INITIAL_MISSED_INTERACTIONS: MissedInteraction[] = [];
 const INITIAL_MESSAGES: Message[] = [];
 const INITIAL_CALLS: CallRecord[] = [];
 
-const INITIAL_INVENTORY: Part[] = [
-  { id: '1', name: 'Schlage SC1 Key Blank', sku: 'KB-SC1-BR', category: 'Key Blanks', stock: 154, reorderPoint: 50, price: 1.5 },
-  { id: '2', name: 'Kwikset KW1 Key Blank', sku: 'KB-KW1-BR', category: 'Key Blanks', stock: 212, reorderPoint: 50, price: 1.5 },
-  { id: '3', name: 'Toyota Proximity Key (4 Button)', sku: 'RM-TOY-PROX4', category: 'Remotes', stock: 8, reorderPoint: 10, price: 85 },
-  { id: '4', name: 'Ford H92 Transponder Key', sku: 'RM-FORD-H92', category: 'Remotes', stock: 12, reorderPoint: 10, price: 25 },
-  { id: '5', name: 'Commercial Mortise Cylinder 1-1/8"', sku: 'CY-MORT-118-SC1', category: 'Cylinders', stock: 4, reorderPoint: 5, price: 32 },
-  { id: '6', name: 'Schlage Encode Plymouth (Matte Black)', sku: 'HW-SCH-ENC-MB', category: 'Hardware', stock: 2, reorderPoint: 3, price: 245 },
-  { id: '7', name: 'Lishi SC1 2-in-1 pick', sku: 'TL-LISHI-SC1', category: 'Tools', stock: 1, reorderPoint: 1, price: 65 },
-];
+// No demo stock — the catalog starts empty and is filled by the owner (manual add,
+// invoice scan, or Excel import). A seeded demo list used to masquerade as real stock.
+const INITIAL_INVENTORY: Part[] = [];
 
 // Tracks jobs with a recent local write the server may not have committed yet. The
 // live poll (App.tsx) consults this so an in-flight optimistic update — e.g. "payment

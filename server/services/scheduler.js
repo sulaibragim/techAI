@@ -3,6 +3,7 @@ import { sendSMS } from './openphone.js';
 import { sendPushToRoles } from './push.js';
 import { stripeConfigured, createCheckoutSession, publicBase } from './stripe.js';
 import { getClientLang, t } from './messages.js';
+import { clientSmsEnabled } from './businessSettings.js';
 
 // Time-based automations that need a clock, not a request:
 //   • payment reminders — completed-but-unpaid jobs get a polite SMS at 3 and 10 days
@@ -51,6 +52,7 @@ const balanceOf = (j) => {
 async function runPaymentReminders() {
   const { hour } = localNow();
   if (hour < REMINDER_WINDOW.from || hour >= REMINDER_WINDOW.to) return;
+  if (!(await clientSmsEnabled('reminders'))) return; // owner-controlled; off by default
 
   const { rows } = await db.query(
     `SELECT id, data FROM jobs

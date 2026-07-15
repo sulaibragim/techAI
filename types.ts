@@ -31,11 +31,20 @@ export interface AuditEntry {
   jobId?: string;
 }
 
+// Category is free-form: it holds whatever "type" the business uses (e.g. 'заготовка',
+// 'транспондер', or the legacy 'Key Blanks'). The Inventory filter chips are derived
+// from the categories actually present, so importing new types just works.
+export const PART_CATEGORY_SUGGESTIONS = [
+  'заготовка', 'транспондер', 'remote', 'remote head', 'flip', 'smart', 'fobik',
+  'чип', 'shell', 'батарейка', 'universal',
+  'Key Blanks', 'Remotes', 'Cylinders', 'Hardware', 'Tools',
+];
+
 export interface Part {
   id: string;
   name: string;
   sku: string;              // our internal code, we choose it
-  category: 'Key Blanks' | 'Remotes' | 'Cylinders' | 'Hardware' | 'Tools';
+  category: string;         // free-form type/group (see PART_CATEGORY_SUGGESTIONS)
   stock: number;
   reorderPoint: number;
   price: number;            // sell price charged to the client
@@ -316,6 +325,39 @@ export const EXPENSE_CATEGORIES = [
   'Other',
 ] as const;
 export type ExpenseCategory = typeof EXPENSE_CATEGORIES[number];
+
+// Owner-controlled switches for the automatic texts that go to the CLIENT. Manual
+// buttons (On My Way, pay link, receipt button, review request) are never gated here —
+// they're explicit sends. Keys mirror server/services/businessSettings.js.
+export interface ClientSmsSettings {
+  booking: boolean;   // "you're booked for …" on a future appointment
+  arrived: boolean;   // "your technician has arrived"
+  receipt: boolean;   // "we received your payment / receipt" after a card charge
+  reminders: boolean; // 3-/10-day unpaid-balance nudges
+  etaReply: boolean;  // auto-answer when the client texts "where's the tech?"
+  refund: boolean;    // "we issued a refund of …"
+}
+
+// Restrained defaults — the arrival ping and dunning reminders are OFF so a client
+// isn't over-texted; the owner opts into them. Must match the server defaults.
+export const CLIENT_SMS_DEFAULTS: ClientSmsSettings = {
+  booking: true,
+  arrived: false,
+  receipt: true,
+  reminders: false,
+  etaReply: true,
+  refund: true,
+};
+
+// Human labels + the lifecycle stage each message belongs to, for the Settings panel.
+export const CLIENT_SMS_META: { key: keyof ClientSmsSettings; label: string; desc: string; stage: string }[] = [
+  { key: 'booking',   label: 'Booking confirmation', desc: '“You’re booked for …” on future appointments', stage: 'Booking' },
+  { key: 'arrived',   label: 'Technician arrived',   desc: '“Your technician has arrived” — duplicates On My Way', stage: 'On the way' },
+  { key: 'etaReply',  label: 'Auto ETA reply',       desc: 'Answers the client when they text “where’s the tech?”', stage: 'On the way' },
+  { key: 'receipt',   label: 'Payment receipt',      desc: '“We received your payment” + receipt link after a card charge', stage: 'Payment' },
+  { key: 'reminders', label: 'Unpaid reminders',     desc: 'Friendly nudges on day 3 and 10 if a balance is still open', stage: 'Payment' },
+  { key: 'refund',    label: 'Refund notice',        desc: '“We issued a refund of …” when you refund a card', stage: 'Payment' },
+];
 
 export interface Expense {
   id: string;

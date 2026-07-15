@@ -7,6 +7,7 @@ import { sendPushToRoles } from '../services/push.js';
 import { geocode, drivingRoute, etaPhrase } from '../services/geo.js';
 import { getClientLang, setClientLang, isSpanishOptIn, t } from '../services/messages.js';
 import { sendEtaToClient, requestFreshEta } from '../services/etaRequests.js';
+import { clientSmsEnabled } from '../services/businessSettings.js';
 import { db } from '../db.js';
 
 export const openphoneRouter = Router();
@@ -209,6 +210,7 @@ const LOCATION_FRESH_MS = 4 * 60 * 1000;
 // when there's no active job so we never spam.
 async function maybeReplyWithEta(fromPhone, body) {
   if (!fromPhone || !body || !ETA_KEYWORDS.test(body)) return;
+  if (!(await clientSmsEnabled('etaReply'))) return; // owner-controlled; on by default
   const fromKey = last10(fromPhone);
   if (!fromKey) return;
 
