@@ -230,8 +230,8 @@ export const can = {
 export const visibleTabsFor = (r: Role): string[] => {
   if (r === 'technician') return ['calendar', 'jobs', 'autokey', 'inventory', 'settings'];
   if (r === 'accountant') return ['accounting', 'analytics', 'settings'];
-  if (r === 'manager')    return ['calendar', 'jobs', 'messages', 'calls', 'clients', 'analytics', 'accounting', 'autokey', 'inventory', 'brain', 'settings'];
-  return ['calendar', 'jobs', 'messages', 'calls', 'clients', 'analytics', 'accounting', 'autokey', 'inventory', 'brain', 'settings'];
+  if (r === 'manager')    return ['calendar', 'jobs', 'messages', 'calls', 'clients', 'analytics', 'accounting', 'marketing', 'autokey', 'inventory', 'brain', 'settings'];
+  return ['calendar', 'jobs', 'messages', 'calls', 'clients', 'analytics', 'accounting', 'marketing', 'autokey', 'inventory', 'brain', 'settings'];
 };
 
 export const ROLE_LABELS: Record<Role, string> = {

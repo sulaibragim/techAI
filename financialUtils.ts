@@ -1,4 +1,4 @@
-import { Job, User, Expense } from './types';
+import { Job, User, Expense, LeadChannel } from './types';
 
 export interface FinancialMetrics {
   totalRevenue: number;
@@ -787,6 +787,120 @@ export function expensesByCategory(list: Expense[]): { category: string; amount:
   return [...map.entries()]
     .map(([category, amount]) => ({ category, amount: round2(amount) }))
     .sort((a, b) => b.amount - a.amount);
+}
+
+// ── Marketing attribution & channel ROI ──────────────────────────────────────
+
+/** The marketing channel a job is attributed to. Explicit `channel` wins; otherwise
+ *  fall back to the legacy `source`/website tag so pre-attribution jobs still slot in.
+ *  Returns 'unknown' when we genuinely don't know — never invents a channel. */
+export function channelOf(j: Job): LeadChannel | 'unknown' {
+  if (j.channel) return j.channel;
+  if (j.source === 'web' || j.isNewLead) return 'website';
+  if (j.client?.tags?.includes('Website')) return 'website';
+  return 'unknown';
+}
+
+/** Jobs *created* within a span — this is intake/lead volume, keyed on createdAt
+ *  (when the lead arrived), not on the revenue date. Jobs with no createdAt fall
+ *  back to scheduledDate so nothing silently drops out. */
+export function leadsInMonths(jobs: Job[], span: { year: number; month: number }[]): Job[] {
+  const keys = new Set(span.map(m => monthKey(m.year, m.month)));
+  return jobs.filter(j => {
+    const d = (j.createdAt || j.scheduledDate || '').slice(0, 7);
+    return d && keys.has(d);
+  });
+}
+
+/** Advertising spend in a span, grouped by channel. Unassigned ad spend (no channel
+ *  picked) lands in 'unknown' so it's visible, not swallowed. */
+export function adSpendByChannel(expenses: Expense[], span: { year: number; month: number }[]): Map<LeadChannel | 'unknown', number> {
+  const ads = expensesInMonths(expenses, span).filter(e => e.category === 'Advertising');
+  const map = new Map<LeadChannel | 'unknown', number>();
+  for (const e of ads) {
+    const k = (e.channel || 'unknown') as LeadChannel | 'unknown';
+    map.set(k, (map.get(k) || 0) + e.amount);
+  }
+  return map;
+}
+
+export interface ChannelMetrics {
+  channel: LeadChannel | 'unknown';
+  spend: number;        // advertising $ attributed to this channel in the period
+  leads: number;        // jobs that came in (createdAt) this period
+  wonJobs: number;      // revenue jobs (sold/completed) recognized this period
+  revenue: number;      // their total billed
+  cogs: number;         // parts cost of those jobs
+  profit: number;       // revenue − cogs − spend
+  closeRate: number;    // wonJobs / leads (0..1), same-window approximation
+  avgTicket: number;    // revenue / wonJobs
+  costPerLead: number;  // spend / leads (0 when no spend)
+  cac: number;          // spend / wonJobs (customer acquisition cost)
+  roas: number;         // revenue / spend (0 when no spend)
+  isPaid: boolean;      // whether we actually spend on this channel
+}
+
+const partsCostOf = (j: Job): number =>
+  (j.lineItems || []).reduce((s, li) => s + (li.unitCost || 0) * (li.quantity || 0), 0);
+
+/** Per-channel marketing performance for a reporting span. One row per channel that
+ *  has any leads, revenue, or spend — sorted by revenue. Leads are counted by arrival
+ *  date and revenue by recognition date, so within a single month they line up; over
+ *  a wider span treat close-rate as a directional figure, not an exact cohort. */
+export function channelMetrics(
+  jobs: Job[],
+  expenses: Expense[],
+  span: { year: number; month: number }[],
+): ChannelMetrics[] {
+  const spend = adSpendByChannel(expenses, span);
+  const leadJobs = leadsInMonths(jobs, span);
+  const wonJobs = jobsInMonths(jobs, span); // revenue jobs in the span
+
+  type Acc = { leads: number; wonJobs: number; revenue: number; cogs: number };
+  const rows = new Map<LeadChannel | 'unknown', Acc>();
+  const bucket = (k: LeadChannel | 'unknown') =>
+    rows.get(k) || rows.set(k, { leads: 0, wonJobs: 0, revenue: 0, cogs: 0 }).get(k)!;
+
+  for (const j of leadJobs) bucket(channelOf(j)).leads += 1;
+  for (const j of wonJobs) {
+    const b = bucket(channelOf(j));
+    b.wonJobs += 1;
+    b.revenue += j.totalAmount;
+    b.cogs += partsCostOf(j);
+  }
+  for (const k of spend.keys()) bucket(k); // ensure spend-only channels appear
+
+  const PAID = new Set<LeadChannel>(['google_ads', 'facebook', 'instagram', 'other']);
+  const out: ChannelMetrics[] = [];
+  for (const [channel, a] of rows.entries()) {
+    const sp = round2(spend.get(channel) || 0);
+    out.push({
+      channel,
+      spend: sp,
+      leads: a.leads,
+      wonJobs: a.wonJobs,
+      revenue: round2(a.revenue),
+      cogs: round2(a.cogs),
+      profit: round2(a.revenue - a.cogs - sp),
+      closeRate: a.leads > 0 ? a.wonJobs / a.leads : 0,
+      avgTicket: a.wonJobs > 0 ? round2(a.revenue / a.wonJobs) : 0,
+      costPerLead: sp > 0 && a.leads > 0 ? round2(sp / a.leads) : 0,
+      cac: sp > 0 && a.wonJobs > 0 ? round2(sp / a.wonJobs) : 0,
+      roas: sp > 0 ? round2(a.revenue / sp) : 0,
+      isPaid: channel !== 'unknown' && PAID.has(channel as LeadChannel),
+    });
+  }
+  return out.sort((x, y) => y.revenue - x.revenue);
+}
+
+/** The intake → won funnel for a span (all channels), for the top-of-cabinet funnel bar. */
+export function leadFunnel(jobs: Job[], span: { year: number; month: number }[]) {
+  const leadJobs = leadsInMonths(jobs, span);
+  const leads = leadJobs.length;
+  const booked = leadJobs.filter(j => j.status !== 'cancelled').length;
+  const reached = leadJobs.filter(j => ['onSite', 'diagnosed', 'sold', 'completed'].includes(j.status)).length;
+  const won = leadJobs.filter(j => isRevenueJob(j)).length;
+  return { leads, booked, reached, won };
 }
 
 export function expensesToCSV(list: Expense[]): string {

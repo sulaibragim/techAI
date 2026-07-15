@@ -20,7 +20,7 @@ import {
   MapPin,
   History,
 } from 'lucide-react';
-import { Job, Client, LockDetails } from '../types';
+import { Job, Client, LockDetails, LeadChannel, LEAD_CHANNELS, LEAD_CHANNEL_LABELS } from '../types';
 import { BRANDS as INITIAL_BRANDS, LOCK_TYPES } from '../constants';
 import { useAuthStore, useCurrentUser } from '../authStore';
 import { useVisibleJobs } from '../store';
@@ -93,6 +93,7 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
   const [schedDate, setSchedDate] = useState<string>(todayStr());
   const [schedTime, setSchedTime] = useState<string>('10:00');
   const [priority, setPriority] = useState<'emergency' | 'today' | 'scheduled'>('today');
+  const [channel, setChannel] = useState<LeadChannel | ''>('');
 
   // Returning-customer match by phone
   const [matchedClient, setMatchedClient] = useState<ClientRecord | null>(null);
@@ -216,6 +217,7 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
       paymentStatus: 'unpaid',
       totalAmount: 0,
       photos,
+      channel: channel || undefined,
       assignedTo: assignedTo || undefined,
       acceptanceStatus: assignedTo ? (assignedTo === currentUser?.id ? 'accepted' : 'pending') : undefined,
       acceptedAt: (assignedTo && assignedTo === currentUser?.id) ? new Date().toISOString() : undefined,
@@ -413,6 +415,23 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
                   {PRIORITIES.map(p => (
                     <button key={p.id} onClick={() => setPriority(p.id)} className={`flex items-center justify-center gap-2 py-3 rounded-xl border text-xs font-bold uppercase tracking-wider transition-all active:scale-95 ${priority === p.id ? p.cls : 'bg-white/5 border-white/10 text-slate-400'}`}>
                       <span className={`w-2 h-2 rounded-full ${p.dot}`} /> {p.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Lead source — how the client found us (feeds the marketing cabinet) */}
+              <div className={cardCls}>
+                <label className={labelCls}>How did they find us?</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {LEAD_CHANNELS.map(ch => (
+                    <button
+                      key={ch}
+                      type="button"
+                      onClick={() => setChannel(c => c === ch ? '' : ch)}
+                      className={`py-2.5 px-2 rounded-xl border text-[11px] font-bold uppercase tracking-wide transition-all active:scale-95 ${channel === ch ? 'bg-blue-600 border-blue-400 text-white' : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'}`}
+                    >
+                      {LEAD_CHANNEL_LABELS[ch]}
                     </button>
                   ))}
                 </div>

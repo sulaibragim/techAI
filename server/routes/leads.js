@@ -36,6 +36,11 @@ leadsRouter.post('/', async (req, res) => {
     address = '',
     note = '',
     source,
+    channel: channelRaw,
+    // Marketing attribution — the website form forwards whatever it captured from
+    // the URL / referrer. All optional; absent on plain form posts.
+    utm_source, utm_medium, utm_campaign, utm_term, utm_content,
+    gclid, fbclid, referrer, landing_page, landingPage,
   } = req.body || {};
 
   if (!String(phone).trim() && !String(name).trim()) {
@@ -53,6 +58,16 @@ leadsRouter.post('/', async (req, res) => {
   const now = new Date();
   const id = `job-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
   const jobNumber = `WEB-${now.getTime().toString().slice(-6)}`;
+
+  // Keep only the tracking params the site actually sent, trimmed.
+  const attribution = {};
+  const put = (k, v) => { const s = String(v ?? '').trim(); if (s) attribution[k] = s.slice(0, 400); };
+  put('utmSource', utm_source); put('utmMedium', utm_medium); put('utmCampaign', utm_campaign);
+  put('utmTerm', utm_term); put('utmContent', utm_content);
+  put('gclid', gclid); put('fbclid', fbclid);
+  put('referrer', referrer); put('landingPage', landingPage || landing_page);
+
+  const channel = deriveChannel({ channelRaw, attribution });
 
   const data = {
     jobNumber,
@@ -78,6 +93,8 @@ leadsRouter.post('/', async (req, res) => {
     totalAmount: 0,
     photos: [],
     source: source || 'web',
+    channel,
+    ...(Object.keys(attribution).length ? { attribution } : {}),
     isNewLead: true,
   };
 
@@ -96,6 +113,34 @@ leadsRouter.post('/', async (req, res) => {
 
   res.status(201).json({ ok: true, id, jobNumber });
 });
+
+const VALID_CHANNELS = new Set(['google_ads', 'facebook', 'instagram', 'google_maps', 'website', 'referral', 'repeat', 'other']);
+
+// Turn whatever the site sent into one of our normalized LeadChannel values.
+// Priority: an explicit, valid `channel` the site set → click ids → UTM → default
+// to 'website' (it's a website lead by definition).
+function deriveChannel({ channelRaw, attribution }) {
+  const explicit = String(channelRaw || '').trim().toLowerCase();
+  if (VALID_CHANNELS.has(explicit)) return explicit;
+
+  const src = (attribution.utmSource || '').toLowerCase();
+  const med = (attribution.utmMedium || '').toLowerCase();
+
+  if (attribution.gclid) return 'google_ads';
+
+  // Social — utm_source tells Instagram from Facebook; a bare Meta click id (fbclid)
+  // can't, so default it to Facebook.
+  if (src.includes('instagram') || src === 'ig') return 'instagram';
+  if (src.includes('facebook') || src.includes('fb') || src === 'meta') return 'facebook';
+  if (attribution.fbclid) return 'facebook';
+
+  const paid = med.includes('cpc') || med.includes('ppc') || med.includes('paid');
+  if (src.includes('google')) return paid ? 'google_ads' : 'google_maps';
+  if (med.includes('referral')) return 'referral';
+  if (src) return 'other';
+
+  return 'website';
+}
 
 // A fresh lead isn't assigned to anyone yet, so it goes to whoever dispatches:
 // every active owner/manager with a phone, plus an optional LEAD_NOTIFY_PHONE override.

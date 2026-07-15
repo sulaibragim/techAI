@@ -11,10 +11,10 @@ import {
   Edit2, DollarSign,
   Hammer, Shield,
   Calendar as CalendarIcon, Send, Percent,
-  Car, Home, ChevronDown, Lock, Printer, History, ThumbsUp, ThumbsDown, Minus, Star, AlertTriangle, Ban, RotateCcw
+  Car, Home, ChevronDown, Lock, Printer, History, ThumbsUp, ThumbsDown, Minus, Star, AlertTriangle, Ban, RotateCcw, Megaphone
 } from 'lucide-react';
 import { useSettingsStore } from '../settingsStore';
-import { Job, LineItem, STATUS_COLORS, LockDetails, JobStatus, Client, Message, CLIENT_TAGS, ClientRating, NEGATIVE_TAGS } from '../types';
+import { Job, LineItem, STATUS_COLORS, LockDetails, JobStatus, Client, Message, CLIENT_TAGS, ClientRating, NEGATIVE_TAGS, LeadChannel, LEAD_CHANNELS, LEAD_CHANNEL_LABELS } from '../types';
 import { useAppStore } from '../store';
 import { useAuthStore, useCurrentUser, can } from '../authStore';
 import { BRANDS, LOCK_TYPES as LOCK_ICONS } from '../constants';
@@ -1714,6 +1714,19 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                 }[localJob.priority];
                 return <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] md:text-xs font-bold uppercase tracking-wider border ${pr.cls}`}>{pr.label}</span>;
               })()}
+
+              {/* Lead source — editable, feeds marketing attribution */}
+              <span className={`inline-flex items-center gap-1.5 pl-3 pr-2 py-1.5 rounded-full text-[11px] md:text-xs font-bold uppercase tracking-wider border ${localJob.channel ? 'bg-purple-500/10 text-purple-300 border-purple-500/30' : 'bg-white/5 text-slate-400 border-white/10'}`}>
+                <Megaphone size={12} className="shrink-0" />
+                <select
+                  value={localJob.channel || ''}
+                  onChange={e => { setLocalJob({ ...localJob, channel: (e.target.value || undefined) as LeadChannel | undefined }); setIsModified(true); }}
+                  className="bg-transparent outline-none uppercase tracking-wider font-bold cursor-pointer [&>option]:bg-slate-800 [&>option]:text-white"
+                >
+                  <option value="">Source?</option>
+                  {LEAD_CHANNELS.map(ch => <option key={ch} value={ch}>{LEAD_CHANNEL_LABELS[ch]}</option>)}
+                </select>
+              </span>
             </div>
           </div>
 

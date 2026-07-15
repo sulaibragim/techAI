@@ -13,7 +13,7 @@ import {
   monthsInPeriod, expensesInMonths, expensesByCategory, expensesToCSV,
   PeriodMode, TechnicianEarnings, MONTH_FULL,
 } from '../financialUtils';
-import { Job, Message, EXPENSE_CATEGORIES, ExpenseCategory } from '../types';
+import { Job, Message, EXPENSE_CATEGORIES, ExpenseCategory, LeadChannel, LEAD_CHANNELS, LEAD_CHANNEL_LABELS } from '../types';
 import { formatDate } from '../dateUtils';
 import { sendSms } from '../smsService';
 
@@ -82,6 +82,7 @@ export const Accounting: React.FC<{ onJobSelect?: (job: Job) => void }> = ({ onJ
   const [expCategory, setExpCategory] = useState<ExpenseCategory>('Keys & Stock');
   const [expAmount, setExpAmount] = useState('');
   const [expNote, setExpNote] = useState('');
+  const [expChannel, setExpChannel] = useState<LeadChannel | ''>('');
 
   const stepPeriod = (delta: number) => {
     const size = mode === 'month' ? 1 : mode === 'quarter' ? 3 : 12;
@@ -196,7 +197,14 @@ export const Accounting: React.FC<{ onJobSelect?: (job: Job) => void }> = ({ onJ
   const handleAddExpense = () => {
     const amount = parseFloat(expAmount);
     if (!amount || amount <= 0 || !expDate) return;
-    addExpense({ date: expDate, category: expCategory, amount: Math.round(amount * 100) / 100, note: expNote.trim() || undefined, createdBy: currentUser?.id });
+    addExpense({
+      date: expDate,
+      category: expCategory,
+      amount: Math.round(amount * 100) / 100,
+      note: expNote.trim() || undefined,
+      createdBy: currentUser?.id,
+      ...(expCategory === 'Advertising' && expChannel ? { channel: expChannel } : {}),
+    });
     setExpAmount('');
     setExpNote('');
   };
@@ -534,6 +542,19 @@ export const Accounting: React.FC<{ onJobSelect?: (job: Job) => void }> = ({ onJ
                 onKeyDown={e => { if (e.key === 'Enter') handleAddExpense(); }}
                 className="w-full bg-slate-950 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-pink-500/50" />
             </div>
+            {expCategory === 'Advertising' && (
+              <div className="col-span-2 md:col-span-full grid grid-cols-2 md:grid-cols-[150px_1fr] gap-2 items-end pt-1">
+                <div>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Channel</label>
+                  <select value={expChannel} onChange={e => setExpChannel(e.target.value as LeadChannel | '')}
+                    className="w-full bg-slate-950 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-pink-500/50 [&>option]:bg-slate-900">
+                    <option value="">— unassigned —</option>
+                    {LEAD_CHANNELS.map(c => <option key={c} value={c}>{LEAD_CHANNEL_LABELS[c]}</option>)}
+                  </select>
+                </div>
+                <p className="text-[10px] text-slate-500 leading-tight pb-1.5 hidden md:block">Tag ad spend to a channel to see cost-per-lead & ROAS in the Marketing cabinet.</p>
+              </div>
+            )}
             <button
               onClick={handleAddExpense}
               disabled={!parseFloat(expAmount)}
@@ -555,7 +576,10 @@ export const Accounting: React.FC<{ onJobSelect?: (job: Job) => void }> = ({ onJ
                 <div key={e.id} className="flex items-center gap-3 bg-white/5 rounded-xl px-3 py-2.5 border border-white/5">
                   <span className="text-xs text-slate-400 tabular-nums w-20 shrink-0">{e.date.slice(5)}</span>
                   <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border shrink-0 ${CATEGORY_STYLE[e.category] || CATEGORY_STYLE.Other}`}>{e.category}</span>
-                  <span className="text-xs text-slate-400 truncate flex-1">{e.note || '—'}</span>
+                  <span className="text-xs text-slate-400 truncate flex-1">
+                    {e.channel && <span className="text-purple-300 font-semibold">{LEAD_CHANNEL_LABELS[e.channel]}</span>}
+                    {e.channel && e.note ? ' · ' : ''}{e.note || (e.channel ? '' : '—')}
+                  </span>
                   <span className="text-sm font-bold text-white tabular-nums shrink-0">{fmt$(e.amount)}</span>
                   {canManageMoney && (
                     <button onClick={() => removeExpense(e.id)} className="text-slate-600 hover:text-red-400 transition-colors shrink-0" title="Delete expense">

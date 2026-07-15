@@ -1,4 +1,4 @@
-export type TabId = 'calendar' | 'jobs' | 'messages' | 'calls' | 'clients' | 'analytics' | 'accounting' | 'autokey' | 'inventory' | 'brain' | 'settings';
+export type TabId = 'calendar' | 'jobs' | 'messages' | 'calls' | 'clients' | 'analytics' | 'accounting' | 'marketing' | 'autokey' | 'inventory' | 'brain' | 'settings';
 
 export type Role = 'owner' | 'manager' | 'technician' | 'accountant';
 export type TechStatus = 'available' | 'onJob' | 'offDuty';
@@ -208,6 +208,53 @@ export interface LineItem {
   unitCost?: number;   // cost basis snapshot from inventory at sale time (для COGS / прибыли)
 }
 
+// ── Marketing attribution ───────────────────────────────────────────────────
+// Where a job came from, as a normalized channel we can slice revenue by. The
+// website webhook derives this from UTM/gclid; for phone/walk-in jobs the owner
+// or dispatcher picks it by hand ("откуда узнали"). 'unknown' is never stored —
+// it's what channelOf() returns for an un-tagged job, so old jobs read cleanly.
+export type LeadChannel =
+  | 'google_ads'    // paid Google search / Local Services Ads
+  | 'facebook'      // Facebook / Meta ads
+  | 'instagram'     // Instagram ads
+  | 'google_maps'   // Google Business Profile / organic maps
+  | 'website'       // site form / SEO, no ad click
+  | 'referral'      // word of mouth, another business, partner
+  | 'repeat'        // returning customer
+  | 'other';        // Yelp, signage, truck wrap, anything else
+
+export const LEAD_CHANNELS: LeadChannel[] = ['google_ads', 'facebook', 'instagram', 'google_maps', 'website', 'referral', 'repeat', 'other'];
+
+export const LEAD_CHANNEL_LABELS: Record<LeadChannel | 'unknown', string> = {
+  google_ads:  'Google Ads',
+  facebook:    'Facebook',
+  instagram:   'Instagram',
+  google_maps: 'Google Maps',
+  website:     'Website',
+  referral:    'Referral',
+  repeat:      'Repeat client',
+  other:       'Other',
+  unknown:     'Not set',
+};
+
+// Whether spend on this channel is something we pay for — drives which channels
+// show a CAC/ROAS row vs. a plain "free leads" row in the marketing cabinet.
+export const PAID_CHANNELS = new Set<LeadChannel>(['google_ads', 'facebook', 'instagram', 'other']);
+
+// Raw tracking params captured at intake (mostly from the website form). Kept as
+// a snapshot so we can re-derive channel or drill into a specific campaign later.
+export interface LeadAttribution {
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  utmTerm?: string;
+  utmContent?: string;
+  gclid?: string;       // Google Ads click id
+  fbclid?: string;      // Facebook click id
+  referrer?: string;    // document.referrer
+  landingPage?: string; // first page URL the visitor hit
+}
+
 export interface Job {
   id: string;
   jobNumber: string;
@@ -244,6 +291,8 @@ export interface Job {
   signature?: string; // PNG data URL of the client's on-site authorization signature
   createdBy?: string;  // User id of whoever created the job
   source?: string;     // Where the job came from, e.g. 'web' for website leads
+  channel?: LeadChannel;          // normalized marketing channel for revenue attribution
+  attribution?: LeadAttribution;  // raw UTM/gclid snapshot captured at intake
   isNewLead?: boolean; // Unhandled website lead — surfaced in its own column/banner until taken
   callSummary?: string; // AI-generated summary of the intake call
   callQuality?: {
@@ -275,6 +324,8 @@ export interface Expense {
   amount: number;
   note?: string;
   createdBy?: string; // user id
+  channel?: LeadChannel; // for Advertising spend: which channel the money went to (ROAS/CAC)
+  campaign?: string;     // optional free-text campaign name for the ad spend
 }
 
 export interface MissedInteraction {

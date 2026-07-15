@@ -26,6 +26,7 @@ const MessagesList = lazy(() => import('./components/MessagesList').then(m => ({
 const CallsList = lazy(() => import('./components/CallsList').then(m => ({ default: m.CallsList })));
 const Inventory = lazy(() => import('./components/Inventory').then(m => ({ default: m.Inventory })));
 const Accounting = lazy(() => import('./components/Accounting').then(m => ({ default: m.Accounting })));
+const MarketingDashboard = lazy(() => import('./components/MarketingDashboard').then(m => ({ default: m.MarketingDashboard })));
 const Settings = lazy(() => import('./components/Settings').then(m => ({ default: m.Settings })));
 const ClientsList = lazy(() => import('./components/ClientsList').then(m => ({ default: m.ClientsList })));
 const AutoKey = lazy(() => import('./components/AutoKey').then(m => ({ default: m.AutoKey })));
@@ -258,6 +259,7 @@ const App: React.FC = () => {
               case 'clients': return <ClientsList onJobSelect={(job) => setSelectedJobId(job.id)} focusClientId={clientFocusId} onFocusConsumed={() => setClientFocusId(null)} />;
               case 'analytics': return <Dashboard />;
               case 'accounting': return <Accounting onJobSelect={(job) => setSelectedJobId(job.id)} />;
+              case 'marketing': return <MarketingDashboard />;
               case 'autokey': return <AutoKey />;
               case 'inventory': return <Inventory />;
               case 'brain': return <AIChat />;
