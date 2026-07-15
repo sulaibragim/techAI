@@ -166,7 +166,14 @@ const KanbanCard: React.FC<{ job: Job; onSelect: () => void; onDragStart: (e: Re
     </div>
 
     <div className="flex items-center justify-between pt-3 border-t border-white/10">
-      <span className="text-sm font-bold text-blue-400">${job.totalAmount > 0 ? job.totalAmount.toLocaleString() : 'TBD'}</span>
+      <span className="flex items-center gap-1.5 min-w-0">
+        <span className="text-sm font-bold text-blue-400">${job.totalAmount > 0 ? job.totalAmount.toLocaleString() : 'TBD'}</span>
+        {job.totalAmount > 0 && job.status !== 'cancelled' && job.paymentStatus !== 'paid' && (
+          <span className="text-[9px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-red-500/15 text-red-400 border border-red-500/30 shrink-0">
+            {job.paymentStatus === 'partial' ? `Due $${Math.max(0, job.totalAmount - (job.amountPaid || 0)).toFixed(0)}` : 'Unpaid'}
+          </span>
+        )}
+      </span>
       <div className="flex items-center space-x-1.5">
          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: STATUS_COLORS[job.status] }} />
          <span className="text-xs font-medium text-slate-300 capitalize">{job.status}</span>

@@ -41,6 +41,25 @@ const RECEIPT_SECRET = jwtSecret();
 const receiptSig = (jobId) => crypto.createHmac('sha256', RECEIPT_SECRET).update(`receipt:${jobId}`).digest('hex').slice(0, 20);
 const receiptUrlFor = (base, jobId) => (base ? `${base}/pay/receipt/${encodeURIComponent(jobId)}/${receiptSig(jobId)}` : '');
 
+// The Download-PDF/Print button can't use an inline onclick: helmet's default CSP ships
+// script-src-attr 'none', which silently kills inline handlers (the "button does nothing"
+// bug). Instead the page carries one <script> whose sha256 hash is allow-listed in a
+// per-route CSP header — everything else stays as strict as helmet's defaults.
+export const PRINT_SCRIPT = "document.getElementById('printBtn').addEventListener('click',function(){window.print()});";
+const PRINT_SCRIPT_HASH = `'sha256-${crypto.createHash('sha256').update(PRINT_SCRIPT).digest('base64')}'`;
+export const RECEIPT_CSP = [
+  "default-src 'self'",
+  'base-uri \'self\'',
+  "font-src 'self' https: data:",
+  "form-action 'self'",
+  "frame-ancestors 'self'",
+  "img-src 'self' data:",
+  "object-src 'none'",
+  `script-src ${PRINT_SCRIPT_HASH}`,
+  "script-src-attr 'none'",
+  "style-src 'self' https: 'unsafe-inline'",
+].join(';');
+
 // Full invoice HTML — a faithful copy of the in-app invoice sheet (letterhead, bill-to,
 // line items, totals, terms, client signature). Served at the public receipt URL and
 // reused as the email body. opts: { techName, print (Download-PDF button), viewUrl
@@ -247,7 +266,7 @@ export function receiptHtml(job, jobId, co, opts = {}) {
   </div>
 </div>
 ${opts.viewUrl ? `<a class="btn" href="${esc(opts.viewUrl)}">View invoice online</a>` : ''}
-${opts.print ? `<button class="btn" onclick="window.print()">Download PDF / Print</button>` : ''}
+${opts.print ? `<button class="btn" id="printBtn">Download PDF / Print</button><script>${PRINT_SCRIPT}</script>` : ''}
 </body></html>`;
 }
 
@@ -643,6 +662,7 @@ payPagesRouter.get('/receipt/:jobId/:sig', async (req, res) => {
     const job = rows[0].data;
     const co = await companyInfo();
     const tech = await techInfoOf(job);
+    res.setHeader('Content-Security-Policy', RECEIPT_CSP);
     res.type('html').send(receiptHtml(job, jobId, co, { techName: tech.name, techSignature: tech.signature, print: true }));
   } catch (err) {
     console.error('[payments] receipt page error:', err.message);

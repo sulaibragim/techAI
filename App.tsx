@@ -285,7 +285,7 @@ const App: React.FC = () => {
       <div className="flex-1 flex flex-col min-w-0 relative">
         {/* Elite Dispatch Bar */}
         {inProgressJob && (
-          <div className="bg-gradient-to-r from-[#00E5FF]/20 to-transparent border-b border-blue-500/20 text-white px-4 md:px-8 py-2 md:py-3 flex items-center justify-between shadow-[0_0_20px_rgba(0,229,255,0.1)] z-50 sticky top-0 md:relative backdrop-blur-xl">
+          <div className="bg-gradient-to-r from-[#00E5FF]/20 to-transparent border-b border-blue-500/20 text-white px-4 md:px-8 pt-[max(0.5rem,env(safe-area-inset-top))] pb-2 md:py-3 flex items-center justify-between shadow-[0_0_20px_rgba(0,229,255,0.1)] z-50 sticky top-0 md:relative backdrop-blur-xl">
              <div className="flex items-center space-x-3 md:space-x-5">
                 <div className="w-6 h-6 md:w-7 md:h-7 bg-blue-500/20 text-blue-400 rounded-lg flex items-center justify-center animate-pulse"><AlertCircle size={13} /></div>
                 <div>
@@ -312,7 +312,9 @@ const App: React.FC = () => {
           )}
         </AnimatePresence>
 
-        <header className="px-4 md:px-8 py-4 md:py-6 flex items-center justify-between border-b border-white/10 bg-slate-950/80 backdrop-blur-3xl sticky top-0 md:relative z-40 shadow-sm">
+        {/* The header is the topmost element in the standalone PWA — pad it below the iPhone
+            notch/Dynamic Island. When the dispatch bar is present, that bar absorbs the inset. */}
+        <header className={`px-4 md:px-8 ${inProgressJob ? 'pt-4' : 'pt-[max(1rem,env(safe-area-inset-top))]'} pb-4 md:py-6 flex items-center justify-between border-b border-white/10 bg-slate-950/80 backdrop-blur-3xl sticky top-0 md:relative z-40 shadow-sm`}>
           <div>
              <h2 className="text-xs font-semibold uppercase tracking-widest text-blue-400 mb-0.5">TrustKey</h2>
              <h3 className="text-lg md:text-2xl font-bold capitalize tracking-tight text-white">{effectiveTab === 'calendar' ? 'Workroom' : effectiveTab}</h3>

@@ -193,6 +193,11 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
                   <div className="flex justify-between items-center mb-3">
                     <span className="text-xs font-semibold text-blue-400/80 uppercase tracking-widest">#{job.jobNumber}</span>
                     <div className="flex items-center space-x-2">
+                      {job.totalAmount > 0 && job.status !== 'cancelled' && job.paymentStatus !== 'paid' && (
+                        <span className="text-[9px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-red-500/15 text-red-400 border border-red-500/30">
+                          {job.paymentStatus === 'partial' ? `Due $${Math.max(0, job.totalAmount - (job.amountPaid || 0)).toFixed(0)}` : 'Unpaid'}
+                        </span>
+                      )}
                       <span className="text-sm font-bold text-white tracking-tight">${job.totalAmount}</span>
                       <div className={`px-2 py-0.5 rounded-lg text-xs font-bold uppercase tracking-widest bg-white/5 border border-white/10`} style={{ color: STATUS_COLORS[job.status] }}>
                         {job.status.charAt(0).toUpperCase()}

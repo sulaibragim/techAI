@@ -1715,6 +1715,14 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                 )}
               </div>
 
+              {/* Payment state — loud red until the money is in */}
+              {subtotal > 0 && localJob.status !== 'cancelled' && localJob.paymentStatus !== 'paid' && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] md:text-xs font-bold uppercase tracking-wider bg-red-500/10 text-red-400 border border-red-500/30">
+                  <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                  {localJob.paymentStatus === 'partial' ? `Balance $${Math.max(0, subtotal - (localJob.amountPaid || 0)).toFixed(0)}` : 'Unpaid'}
+                </span>
+              )}
+
               {/* SCHEDULE PILL — opens the date/time sheet */}
               <button
                 onClick={() => setShowCalendar(true)}
