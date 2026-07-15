@@ -71,6 +71,15 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
   const lockedForTech = role === 'technician' && jobIsClosed; // tech cannot reopen a closed job
   const [localJob, setLocalJob] = useState<Job>({ ...initialJob });
   const [isModified, setIsModified] = useState(false);
+  // Money locks a technician's invoice: once anything is collected they can't delete or
+  // edit billed items (only add while a balance remains); fully paid freezes it entirely.
+  // Closing needs the money actually in — for card that's the Stripe webhook flipping the
+  // job to 'paid', so a pending charge keeps "Completed" out of reach.
+  const hasPayment = (localJob.amountPaid || 0) > 0 || localJob.paymentStatus === 'paid' || localJob.paymentStatus === 'partial';
+  const techItemsLocked = role === 'technician' && (jobIsClosed || hasPayment);
+  const techInvoiceFrozen = role === 'technician' && (jobIsClosed || localJob.paymentStatus === 'paid');
+  const techCompleteBlocked = role === 'technician' && localJob.paymentStatus !== 'paid';
+  const techCancelBlocked = role === 'technician' && hasPayment;
 
   // Swipe right anywhere on the card to go back — the top "back" button sits under the
   // phone's status bar/notch and is awkward to tap, so a big swipe is the reliable way out.
@@ -1686,12 +1695,22 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                 </button>
                 {showStatusPicker && !lockedForTech && (
                   <div className="absolute top-full left-0 mt-3 w-64 max-w-[calc(100vw-1.5rem)] bg-slate-800 border border-white/10 rounded-[1.5rem] shadow-2xl z-[200] p-2 animate-in slide-in-from-top-2">
-                    {STATUS_OPTIONS.map(s => (
-                      <button key={s.id} onClick={() => { handleLocalChange({ status: s.id }); setShowStatusPicker(false); }} className={`w-full text-left px-4 py-3 rounded-xl text-xs font-bold uppercase transition-all flex items-center justify-between active:scale-95 ${localJob.status === s.id ? 'bg-blue-600 text-white' : 'hover:bg-white/5 text-slate-300'}`}>
-                        <span>{s.label}</span>
-                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: STATUS_COLORS[s.id] }} />
-                      </button>
-                    ))}
+                    {STATUS_OPTIONS.map(s => {
+                      const blocked = (s.id === 'completed' && techCompleteBlocked) || (s.id === 'cancelled' && techCancelBlocked);
+                      return (
+                        <button
+                          key={s.id}
+                          disabled={blocked}
+                          onClick={() => { if (blocked) return; handleLocalChange({ status: s.id }); setShowStatusPicker(false); }}
+                          className={`w-full text-left px-4 py-3 rounded-xl text-xs font-bold uppercase transition-all flex items-center justify-between ${blocked ? 'text-slate-600 cursor-not-allowed' : `active:scale-95 ${localJob.status === s.id ? 'bg-blue-600 text-white' : 'hover:bg-white/5 text-slate-300'}`}`}
+                        >
+                          <span>{s.label}</span>
+                          {blocked
+                            ? <span className="flex items-center gap-1.5 text-[9px] text-amber-500/90 normal-case font-semibold tracking-wide"><Lock size={10} />{s.id === 'completed' ? 'Payment first' : 'Paid job'}</span>
+                            : <div className="w-2 h-2 rounded-full" style={{ backgroundColor: STATUS_COLORS[s.id] }} />}
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -2237,7 +2256,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                     <AutoKeyPanel
                       make={localJob.lockDetails.brand}
                       modelOrYear={localJob.lockDetails.modelOrYear}
-                      onAddToInvoice={(items) => handleLocalChange({ lineItems: [...localJob.lineItems, ...items.map(it => ({ id: Math.random().toString(36).slice(2, 9), type: it.type, description: it.description, quantity: 1, unitPrice: it.unitPrice }))] })}
+                      onAddToInvoice={(items) => { if (techInvoiceFrozen) return; handleLocalChange({ lineItems: [...localJob.lineItems, ...items.map(it => ({ id: Math.random().toString(36).slice(2, 9), type: it.type, description: it.description, quantity: 1, unitPrice: it.unitPrice }))] }); }}
                     />
                   </div>
                 )}
@@ -2289,8 +2308,14 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
               <div className="flex flex-col rounded-2xl overflow-hidden shadow-2xl border border-white/10">
 
                 {/* ── TOOLBAR (dark) ── */}
-                {/* Field techs price the job on-site; only a closed job is read-only to them. */}
-                {!lockedForTech && (
+                {/* Field techs price the job on-site; a paid invoice is frozen for them. */}
+                {techInvoiceFrozen && (
+                  <div className="bg-slate-900 px-5 py-2.5 flex items-center gap-2 border-b border-white/10">
+                    <Lock size={12} className="text-amber-400 shrink-0" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400/90">Invoice locked — payment received</span>
+                  </div>
+                )}
+                {!lockedForTech && !techInvoiceFrozen && (
                 <div className="bg-slate-900 px-5 py-2.5 flex items-center gap-2 flex-wrap border-b border-white/10">
                   <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mr-1">Add:</span>
                   {([
@@ -2386,7 +2411,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                                 <p className="col-span-2 text-xs text-slate-600 text-right pt-0.5">${item.unitPrice.toFixed(2)}</p>
                                 <div className="col-span-2 flex items-start justify-end gap-0.5">
                                   <span className="text-xs font-bold text-slate-800 tabular-nums">${(item.unitPrice * item.quantity).toFixed(2)}</span>
-                                  {!lockedForTech && <button onClick={() => handleRemoveLineItem(item.id)} className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-300 hover:text-red-500 transition-all shrink-0 mt-0.5"><Trash2 size={11} /></button>}
+                                  {!lockedForTech && !techItemsLocked && <button onClick={() => handleRemoveLineItem(item.id)} className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-300 hover:text-red-500 transition-all shrink-0 mt-0.5"><Trash2 size={11} /></button>}
                                 </div>
                               </div>
                             ))
@@ -2507,7 +2532,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                           </div>
                           <div className="flex items-center gap-2 shrink-0">
                             <span className="text-sm font-bold text-white tabular-nums">${(item.unitPrice * item.quantity).toFixed(2)}</span>
-                            {!lockedForTech && <button onClick={() => handleRemoveLineItem(item.id)} className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 text-slate-400 active:text-red-400 active:scale-90 transition-all"><Trash2 size={15} /></button>}
+                            {!lockedForTech && !techItemsLocked && <button onClick={() => handleRemoveLineItem(item.id)} className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 text-slate-400 active:text-red-400 active:scale-90 transition-all"><Trash2 size={15} /></button>}
                           </div>
                         </div>
                       ))

@@ -140,6 +140,13 @@ export const useAppStore = create<AppState>()(
     // transition, so editing an old already-paid job doesn't fake today's date.
     const next = { ...updatedJob };
     const prev = get().jobs.find(j => j.id === next.id);
+    // The server enforces this too, but keep the tech's screen honest: a technician
+    // can't close a job until the money has actually landed (paymentStatus 'paid').
+    const auth = useAuthStore.getState();
+    const actorRole = auth.users.find(u => u.id === auth.currentUserId)?.role;
+    if (actorRole === 'technician' && prev && next.status === 'completed' && prev.status !== 'completed' && next.paymentStatus !== 'paid') {
+      next.status = prev.status;
+    }
     const gotPaid = (next.paymentStatus === 'paid' || next.paymentStatus === 'partial') &&
       prev?.paymentStatus !== next.paymentStatus;
     if (gotPaid && !next.paidAt) next.paidAt = new Date().toISOString();
@@ -158,6 +165,13 @@ export const useAppStore = create<AppState>()(
     deleteJobOnServer(id);
   },
   updateJobStatus: (id, status) => {
+    if (status === 'completed') {
+      // Techs may only close a job once the money is in (card = Stripe webhook flip).
+      const auth = useAuthStore.getState();
+      const actorRole = auth.users.find(u => u.id === auth.currentUserId)?.role;
+      const job = get().jobs.find(j => j.id === id);
+      if (actorRole === 'technician' && job && job.paymentStatus !== 'paid') return;
+    }
     set((state) => ({ jobs: state.jobs.map(j => {
       if (j.id !== id) return j;
       const next = { ...j, status, updatedAt: new Date().toISOString() };

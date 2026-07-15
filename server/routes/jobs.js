@@ -153,6 +153,46 @@ function preservePaymentTruth(incoming, existing) {
   return out;
 }
 
+// Money locks a technician's hands (owners/managers are exempt; applied AFTER
+// preservePaymentTruth so payment fields are already the server's truth):
+//  · once anything is collected, billed line items can't be deleted or edited —
+//    only new ones added while a balance remains;
+//  · a fully-paid invoice can't change at all;
+//  · the job can't close until the money has actually landed (paymentStatus 'paid' —
+//    for card that's the Stripe webhook, not the tech's copy of the job);
+//  · a settled job can't be cancelled by a tech (voiding paid work is the refund
+//    route, which is owner/manager only).
+function enforceTechJobRules(incoming, existing) {
+  if (!existing) return incoming;
+  const out = { ...incoming };
+  const settled = (existing.amountPaid || 0) > 0 || existing.paymentStatus === 'paid' || existing.paymentStatus === 'partial';
+
+  if (settled && Array.isArray(existing.lineItems) && existing.lineItems.length > 0) {
+    const sent = Array.isArray(out.lineItems) ? out.lineItems : [];
+    const byId = new Map(sent.map(li => [li.id, li]));
+    const intact = existing.lineItems.every(prev => {
+      const cur = byId.get(prev.id);
+      return cur && cur.quantity === prev.quantity && cur.unitPrice === prev.unitPrice && cur.description === prev.description;
+    });
+    const grew = sent.length > existing.lineItems.length;
+    if (!intact || (existing.paymentStatus === 'paid' && grew)) {
+      out.lineItems = existing.lineItems;
+    }
+    if (Array.isArray(out.lineItems)) {
+      out.totalAmount = Math.round(out.lineItems.reduce((s, li) => s + (li.unitPrice || 0) * (li.quantity || 0), 0) * 100) / 100;
+    }
+  }
+
+  if (out.status === 'completed' && existing.status !== 'completed' && out.paymentStatus !== 'paid') {
+    out.status = existing.status;
+    out.completedAt = existing.completedAt;
+  }
+  if (out.status === 'cancelled' && existing.status !== 'cancelled' && settled) {
+    out.status = existing.status;
+  }
+  return out;
+}
+
 // Get jobs — technicians see only jobs assigned to them.
 jobsRouter.get('/', requireAuth, async (req, res) => {
   try {
@@ -214,7 +254,8 @@ jobsRouter.post('/sync', requireAuth, async (req, res) => {
         if (!data.updatedAt) continue;
         if (ex.updated && data.updatedAt <= ex.updated) continue;
       }
-      const merged = preservePaymentTruth(data, ex?.data);
+      let merged = preservePaymentTruth(data, ex?.data);
+      if (isTech(req)) merged = enforceTechJobRules(merged, ex?.data);
       await client.query(
         `INSERT INTO jobs (id, data, updated_at) VALUES ($1, $2, NOW())
          ON CONFLICT (id) DO UPDATE SET data = $2, updated_at = NOW()`,
@@ -256,7 +297,8 @@ jobsRouter.post('/', requireAuth, async (req, res) => {
     // POST doubles as an upsert (the client falls back to it when a PUT 404s), so the
     // ledger has to be protected here too.
     const { rows: prior } = await db.query('SELECT data FROM jobs WHERE id = $1', [jobId]);
-    const merged = preservePaymentTruth(data, prior[0]?.data);
+    let merged = preservePaymentTruth(data, prior[0]?.data);
+    if (isTech(req)) merged = enforceTechJobRules(merged, prior[0]?.data);
     await db.query(
       'INSERT INTO jobs (id, data) VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET data = $2, updated_at = NOW()',
       [jobId, JSON.stringify(merged)]
@@ -297,7 +339,8 @@ jobsRouter.put('/:id', requireAuth, async (req, res) => {
     if (isTech(req) && data.assignedTo && data.assignedTo !== req.user.id) {
       return res.status(403).json({ error: 'Technicians cannot reassign a job to someone else' });
     }
-    const merged = preservePaymentTruth(data, prevData);
+    let merged = preservePaymentTruth(data, prevData);
+    if (isTech(req)) merged = enforceTechJobRules(merged, prevData);
     const result = await db.query(
       'UPDATE jobs SET data = $2, updated_at = NOW() WHERE id = $1',
       [req.params.id, JSON.stringify(merged)]

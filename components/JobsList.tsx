@@ -60,11 +60,20 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
     }
   };
 
-  const handleUpdate = (e: React.MouseEvent, jobId: string, currentStatus: JobStatus) => {
+  // A technician can't close a job until the money has actually landed (paymentStatus
+  // 'paid' — for card that's the Stripe webhook). The button flips to "Collect $" and
+  // opens the job card so the payment flow is one tap away.
+  const completeNeedsPayment = (job: Job) =>
+    currentUser?.role === 'technician' && job.paymentStatus !== 'paid' &&
+    getButtonConfig(job.status).nextStatus === 'completed' &&
+    job.status !== 'completed' && job.status !== 'cancelled';
+
+  const handleUpdate = (e: React.MouseEvent, job: Job) => {
     e.stopPropagation();
-    if (currentStatus === 'completed' || currentStatus === 'cancelled') return; // terminal
-    const config = getButtonConfig(currentStatus);
-    updateJobStatus(jobId, config.nextStatus);
+    if (job.status === 'completed' || job.status === 'cancelled') return; // terminal
+    if (completeNeedsPayment(job)) { onJobSelect(job); return; }
+    const config = getButtonConfig(job.status);
+    updateJobStatus(job.id, config.nextStatus);
     if (config.nextStatus === 'completed') setFilter('completed');
   };
 
@@ -167,7 +176,10 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filteredJobs.map((job) => {
-            const btn = getButtonConfig(job.status);
+            const needsPayment = completeNeedsPayment(job);
+            const btn = needsPayment
+              ? { label: 'Collect $', color: 'bg-amber-500 text-white', nextStatus: job.status }
+              : getButtonConfig(job.status);
             const tech = job.assignedTo ? users.find(u => u.id === job.assignedTo) : null;
             return (
               <div
@@ -215,7 +227,7 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
 
                 <div className="mt-auto pt-4 border-t border-white/10 flex items-center space-x-2">
                    <button
-                     onClick={(e) => handleUpdate(e, job.id, job.status)}
+                     onClick={(e) => handleUpdate(e, job)}
                      className={`flex-1 py-2.5 rounded-xl flex items-center justify-center font-bold text-xs uppercase tracking-widest text-white shadow-lg hover:scale-105 active:scale-95 transition-all ${btn.color}`}
                    >
                       {job.status === 'completed' ? <CheckCircle2 size={13} className="mr-1.5" /> : <Activity size={13} className="mr-1.5" />}

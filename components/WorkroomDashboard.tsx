@@ -178,6 +178,7 @@ const KanbanCard: React.FC<{ job: Job; onSelect: () => void; onDragStart: (e: Re
 
 export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAddJob: () => void }> = ({ onJobSelect, onAddJob }) => {
   const { updateJobStatus, updateJob } = useAppStore();
+  const isTechUser = useAuthStore(s => s.users.find(u => u.id === s.currentUserId)?.role === 'technician');
   const jobs = useVisibleJobs();
   const { monthlyRevenueTarget, monthlyTargets, dailyRevenueTarget } = useSettingsStore();
   const nowRef = new Date();
@@ -271,6 +272,8 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
       if (job && !job.isNewLead) updateJob({ ...job, isNewLead: true }); // rare: re-flag
       return;
     }
+    // Techs can't drop a job into Closed until the money has actually landed.
+    if (isTechUser && col.defaultStatus === 'completed' && job && job.paymentStatus !== 'paid') return;
     // Moving into a status column clears the lead flag and sets the status in one write.
     if (job?.isNewLead) updateJob({ ...job, isNewLead: false, status: col.defaultStatus });
     else updateJobStatus(jobId, col.defaultStatus);
