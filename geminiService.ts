@@ -940,7 +940,7 @@ export async function handleAITool(name: string, args: any): Promise<any> {
       let decoded: any = null;
 
       if (args.reverse) {
-        const hits = reverseLookup(String(args.reverse));
+        const hits = await reverseLookup(String(args.reverse));
         if (hits.length === 0) return { status: 'error', message: `No key matches "${args.reverse}"` };
         return {
           status: 'success',
@@ -960,12 +960,12 @@ export async function handleAITool(name: string, args: any): Promise<any> {
       }
       if (!make) return { status: 'error', message: 'Provide a make (and model/year), a vin, or a reverse search' };
 
-      const profiles = findKeyProfiles({ make, model, year });
+      const profiles = await findKeyProfiles({ make, model, year });
       if (profiles.length === 0) {
         return { status: 'error', message: `No key data for ${make} ${model || ''} ${year || ''}`.trim() + ' — not in our dataset yet', decodedVin: decoded };
       }
       const p = profiles[0];
-      const proc = findProcedure(make, model, year);
+      const proc = await findProcedure(make, model, year);
       const keyway = p.variants?.[0]?.keyway;
       const inStock = stockForKeyway(keyway, store.inventory);
 

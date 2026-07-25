@@ -7,7 +7,7 @@ import { Login } from './components/Login';
 import { useAppStore, useVisibleJobs, hasPendingJobWrite } from './store';
 import { subscribeToWrites, clearWriteError, setSessionExpiredHandler, resetWriteQueue, flushWrites } from './writeQueue';
 import { useSettingsStore } from './settingsStore';
-import { useCurrentUser, useAuthStore, visibleTabsFor, ROLE_LABELS } from './authStore';
+import { useCurrentUser, useAuthStore, visibleTabsFor, ROLE_LABELS, can } from './authStore';
 import { getToken, authHeaders } from './apiClient';
 import { API_BASE } from './backendUrl';
 import type { Job, TechStatus } from './types';
@@ -416,7 +416,11 @@ const App: React.FC = () => {
       </div>
 
       <Suspense fallback={null}>
-        <VoiceAssistant />
+        {/* Gate the MOUNT, not just the render inside. React.lazy only fetches when the
+            element is actually rendered, so mounting it unconditionally downloaded the
+            voice chunk — and everything it statically pulls in — for technicians and
+            accountants who can never use it. */}
+        {currentUser && can.useAIBrain(currentUser.role) && <VoiceAssistant />}
 
         {isWizardOpen && (
           <JobWizard

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'motion/react';
 import {
   KeyRound, Search, Car, AlertTriangle, CircleCheck, Loader2,
@@ -12,8 +12,8 @@ import { VinScanner } from './VinScanner';
 import { GatedCodesBlock } from './GatedCodesBlock';
 import { ComboPicker } from './ComboPicker';
 import {
-  decodeVin, findKeyProfiles, reverseLookup, KNOWN_MAKES, modelsForMake, stockForKeyway,
-  type DecodedVin,
+  decodeVin, findKeyProfiles, reverseLookup, knownMakes, modelsForMake, stockForKeyway,
+  preloadVehicleKeys, type DecodedVin,
 } from '../vehicleKeyLookup';
 import type { VehicleKeyProfile, KeyConfidence, KeyVariant, Part } from '../types';
 
@@ -228,26 +228,39 @@ export const AutoKey: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [results, setResults] = useState<VehicleKeyProfile[] | null>(null);
 
-  const modelOptions = useMemo(() => modelsForMake(make), [make]);
+  // The key reference is fetched on demand (it is 1.2 MB, and bundling it eagerly made
+  // every cold app open pay for it). Warm it as soon as this screen opens, so the fetch
+  // overlaps with the tech typing and the first lookup feels instant.
+  useEffect(() => { preloadVehicleKeys(); }, []);
 
-  const runManual = () => {
+  const [makeOptions, setMakeOptions] = useState<string[]>([]);
+  useEffect(() => { knownMakes().then(setMakeOptions); }, []);
+
+  const [modelOptions, setModelOptions] = useState<string[]>([]);
+  useEffect(() => {
+    let alive = true;
+    modelsForMake(make).then(m => { if (alive) setModelOptions(m); });
+    return () => { alive = false; };
+  }, [make]);
+
+  const runManual = async () => {
     setError(null); setDecoded(null);
     const y = year ? parseInt(year, 10) : null;
-    setResults(findKeyProfiles({ make, model: model || undefined, year: y }));
+    setResults(await findKeyProfiles({ make, model: model || undefined, year: y }));
   };
-  const runFob = () => {
+  const runFob = async () => {
     setError(null); setDecoded(null);
-    setResults(reverseLookup(fob));
+    setResults(await reverseLookup(fob));
   };
   const runVin = async (override?: string) => {
     const raw = (override ?? vin).trim();
     if (override) setVin(override);
     setError(null); setDecoded(null); setResults(null); setLoading(true);
     const d = await decodeVin(raw);
-    setLoading(false);
-    if (!d) { setError('Could not decode that VIN. Check it has 17 characters, or switch to make & year.'); return; }
+    if (!d) { setLoading(false); setError('Could not decode that VIN. Check it has 17 characters, or switch to make & year.'); return; }
     setDecoded(d);
-    setResults(findKeyProfiles({ make: d.make, model: d.model, year: d.year }));
+    setResults(await findKeyProfiles({ make: d.make, model: d.model, year: d.year }));
+    setLoading(false);
   };
 
   return (
@@ -326,7 +339,7 @@ export const AutoKey: React.FC = () => {
             <ComboPicker
               value={make}
               onChange={(v) => { setMake(v); setModel(''); }}
-              options={KNOWN_MAKES}
+              options={makeOptions}
               placeholder="Make"
               title="Pick a make"
               searchPlaceholder="Search makes…"
