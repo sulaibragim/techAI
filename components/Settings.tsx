@@ -10,7 +10,7 @@ import { Role, TECH_SKILLS, SERVICE_CATEGORIES, CLIENT_SMS_META, CLIENT_SMS_DEFA
 import { PushNotificationsCard } from './PushNotificationsCard';
 import { LaunchReadinessCard } from './LaunchReadinessCard';
 
-const VERSION = '0.0.0';
+const VERSION = '1.0.0';
 
 const Section = ({ icon: Icon, title, children }: { icon: React.ElementType; title: string; children: React.ReactNode }) => (
   <motion.div
@@ -47,6 +47,7 @@ export const Settings: React.FC = () => {
   const [saved, setSaved] = useState(false);
   const [photoError, setPhotoError] = useState('');
   const [showReset, setShowReset] = useState(false);
+  const [resetConfirm, setResetConfirm] = useState('');
   const [showStartFresh, setShowStartFresh] = useState(false);
   const [freshConfirm, setFreshConfirm] = useState('');
   const [freshBusy, setFreshBusy] = useState(false);
@@ -130,7 +131,9 @@ export const Settings: React.FC = () => {
   };
 
   const handleReset = () => {
+    if (resetConfirm.trim().toUpperCase() !== 'RESET') return;
     settings.resetSettings();
+    setResetConfirm('');
     setForm({
       technicianName: SETTINGS_DEFAULTS.technicianName,
       companyName: SETTINGS_DEFAULTS.companyName,
@@ -170,9 +173,12 @@ export const Settings: React.FC = () => {
           <h2 className="text-2xl font-bold text-white">Preferences</h2>
         </div>
         <div className="flex items-center space-x-3">
-          {currentUser && currentUser.role !== 'technician' && (
+          {/* Owner only: Reset does not just clear UI preferences — it wipes the company's
+              expense ledger, stock-movement history, price book and client profiles from
+              the SERVER, for every device, with no undo. That is not a manager's call. */}
+          {currentUser && currentUser.role === 'owner' && (
             <button
-              onClick={() => setShowReset(true)}
+              onClick={() => { setResetConfirm(''); setShowReset(true); }}
               className="flex items-center space-x-2 px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-slate-400 hover:text-red-400 hover:border-red-500/30 transition-all text-xs font-semibold uppercase tracking-wider"
             >
               <RotateCcw size={14} />
@@ -489,18 +495,39 @@ export const Settings: React.FC = () => {
             animate={{ scale: 1, opacity: 1 }}
             className="bg-slate-900 border border-white/10 rounded-2xl p-8 max-w-sm w-full shadow-2xl"
           >
-            <h3 className="text-lg font-bold text-white mb-2">Reset all settings?</h3>
-            <p className="text-sm text-slate-400 mb-6">This will restore all defaults and clear saved preferences.</p>
+            <h3 className="text-lg font-bold text-white mb-2">Factory reset — this destroys data</h3>
+            <p className="text-sm text-slate-400 mb-3">
+              This permanently deletes the following <span className="text-red-300 font-semibold">from the server, on every device</span>:
+            </p>
+            <ul className="text-sm text-slate-300 mb-4 space-y-1 list-disc list-inside">
+              <li>every expense in the accounting ledger</li>
+              <li>the entire stock-movement history</li>
+              <li>your custom price book (back to defaults)</li>
+              <li>all client reputation profiles &amp; notes</li>
+              <li>company info, targets and AI standing instructions</li>
+            </ul>
+            <p className="text-xs text-slate-500 mb-2">Jobs and inventory counts are not affected. There is no undo.</p>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+              Type RESET to confirm
+            </label>
+            <input
+              value={resetConfirm}
+              onChange={e => setResetConfirm(e.target.value)}
+              autoFocus
+              placeholder="RESET"
+              className="w-full mb-6 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-red-500/50"
+            />
             <div className="flex space-x-3">
               <button
-                onClick={() => setShowReset(false)}
+                onClick={() => { setShowReset(false); setResetConfirm(''); }}
                 className="flex-1 py-3 bg-white/5 border border-white/10 rounded-xl text-slate-300 text-sm font-semibold hover:bg-white/10 transition-all"
               >
                 Cancel
               </button>
               <button
                 onClick={handleReset}
-                className="flex-1 py-3 bg-red-600 hover:bg-red-500 rounded-xl text-white text-sm font-bold transition-all"
+                disabled={resetConfirm.trim().toUpperCase() !== 'RESET'}
+                className="flex-1 py-3 bg-red-600 hover:bg-red-500 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed rounded-xl text-white text-sm font-bold transition-all"
               >
                 Reset
               </button>
@@ -818,7 +845,9 @@ const TeamSection: React.FC = () => {
                   ) : (
                     <p className="text-xs text-slate-500 truncate flex items-center gap-1.5 group/email">
                       {u.email}
-                      <button onClick={() => startEditEmail(u)} className="opacity-0 group-hover/email:opacity-100 text-slate-500 hover:text-blue-400 transition-all"><Pencil size={10} /></button>
+                      {/* Reachable on touch. Hidden behind hover, the owner had no way on a
+                          phone to add the tech phone number that SMS + push alerts need. */}
+                      <button aria-label="Edit email" onClick={() => startEditEmail(u)} className="p-1.5 -m-1 opacity-100 md:opacity-0 md:group-hover/email:opacity-100 text-slate-400 md:text-slate-500 hover:text-blue-400 transition-all"><Pencil size={12} /></button>
                     </p>
                   )}
                   {isEditingPhone ? (
@@ -838,7 +867,7 @@ const TeamSection: React.FC = () => {
                   ) : (
                     <p className="text-xs text-slate-500 truncate flex items-center gap-1.5 group/phone">
                       {u.phone || <span className="italic text-slate-600">No phone — add for SMS</span>}
-                      <button onClick={() => startEditPhone(u)} className="opacity-0 group-hover/phone:opacity-100 text-slate-500 hover:text-blue-400 transition-all"><Pencil size={10} /></button>
+                      <button aria-label="Edit phone" onClick={() => startEditPhone(u)} className="p-1.5 -m-1 opacity-100 md:opacity-0 md:group-hover/phone:opacity-100 text-slate-400 md:text-slate-500 hover:text-blue-400 transition-all"><Pencil size={12} /></button>
                     </p>
                   )}
                 </div>

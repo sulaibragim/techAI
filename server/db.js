@@ -2,16 +2,79 @@ import pg from 'pg';
 import bcrypt from 'bcryptjs';
 import crypto from 'node:crypto';
 
-const { Pool } = pg;
+const { Pool, Client } = pg;
 
-// SSL stays keyed to NODE_ENV, NOT isProd(). Railway reaches Postgres over its private
-// network with NODE_ENV unset, and that link works today without TLS — flipping SSL on for
-// a server that doesn't offer it would fail the connection, which is now a fatal boot error.
-// Set NODE_ENV=production only after confirming the DB accepts TLS.
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-});
+// TLS is negotiated, not configured. It used to hang off NODE_ENV, which is unset on
+// Railway — so the link ran in the clear while the readiness screen showed green, and
+// nobody could safely flip it because turning SSL on against a server that doesn't offer
+// it fails the connection, and a failed connection is a fatal boot. So: probe once at
+// startup. Encrypted if the server will take it, plaintext if it won't, and say which in
+// the log. PGSSLMODE=disable / =require forces the decision if you ever need to.
+const SSL_ON = { rejectUnauthorized: false }; // Railway/Heroku-style certs aren't publicly chained
+let pool = null;
+let sslMode = 'unknown';
+
+const forcedSsl = () => {
+  const m = (process.env.PGSSLMODE || '').toLowerCase();
+  if (m === 'disable') return false;
+  if (m === 'require' || m === 'prefer' || m === 'verify-ca' || m === 'verify-full') return true;
+  return null; // decide by probing
+};
+
+// Only these mean "this server genuinely cannot do TLS". Anything else (host down, DNS,
+// timeout, bad password) is not evidence about encryption — and must NOT silently
+// downgrade the link, or one hiccup at boot would leave the container in the clear
+// until someone restarts it.
+const SSL_UNSUPPORTED = /does not support SSL|server does not support ssl|sslmode|unsupported frontend protocol/i;
+
+async function serverAcceptsTls() {
+  const probe = new Client({
+    connectionString: process.env.DATABASE_URL,
+    ssl: SSL_ON,
+    connectionTimeoutMillis: 8000,
+  });
+  try {
+    await probe.connect();
+    await probe.end();
+    return true;
+  } catch (e) {
+    try { await probe.end(); } catch { /* already down */ }
+    if (SSL_UNSUPPORTED.test(e.message || '')) {
+      console.warn('[DB] Server reports no SSL support — using an unencrypted link:', e.message);
+      return false;
+    }
+    // Couldn't tell. Keep TLS on: if the DB is merely unreachable the pool will fail
+    // loudly either way, and that is far better than quietly dropping encryption.
+    console.warn('[DB] TLS probe inconclusive, keeping encryption on:', e.message);
+    return true;
+  }
+}
+
+async function buildPool() {
+  const forced = forcedSsl();
+  const useTls = forced === null ? await serverAcceptsTls() : forced;
+  sslMode = useTls ? 'encrypted (TLS)' : 'plaintext';
+  console.log(`[DB] Connection mode: ${sslMode}${forced === null ? ' (auto-detected)' : ' (forced by PGSSLMODE)'}`);
+  return new Pool({ connectionString: process.env.DATABASE_URL, ssl: useTls ? SSL_ON : false });
+}
+
+let poolPromise = null;
+function getPool() {
+  if (pool) return Promise.resolve(pool);
+  if (!poolPromise) poolPromise = buildPool().then(p => { pool = p; return p; });
+  return poolPromise;
+}
+
+// Same surface the rest of the server already uses (query / connect / end), so the
+// lazily-built pool is invisible to callers.
+const dbFacade = {
+  query: async (...args) => (await getPool()).query(...args),
+  connect: async () => (await getPool()).connect(),
+  end: async () => { if (pool) { const p = pool; pool = null; poolPromise = null; await p.end(); } },
+};
+
+/** How the DB link is actually secured — surfaced on the readiness screen. */
+export const dbSslMode = () => sslMode;
 
 // Whether initDB() actually completed. A failed connection used to be swallowed and the app
 // kept serving from memory while /health still said ok, so every write vanished on restart.
@@ -20,8 +83,13 @@ let connected = false;
 export const dbReady = () => connected;
 
 export async function initDB() {
-  const client = await pool.connect();
+  const client = await dbFacade.connect();
   try {
+    // Serialize schema setup across containers. Railway keeps the old instance serving
+    // while the new one boots, so two initDB() runs can overlap — and concurrent
+    // CREATE TABLE / ALTER TABLE is NOT race-safe in Postgres even with IF NOT EXISTS
+    // (it raises duplicate-key on pg_type). Here that would be a fatal boot.
+    await client.query('SELECT pg_advisory_lock(778901234)');
     await client.query(`
       CREATE TABLE IF NOT EXISTS users (
         id TEXT PRIMARY KEY,
@@ -105,6 +173,15 @@ export async function initDB() {
         updated_at TIMESTAMPTZ DEFAULT NOW()
       );
 
+      -- Numbers that replied STOP. Carriers require a working opt-out on automated
+      -- traffic; without this the carrier blocked the message, our send failed, and the
+      -- scheduler retried the same number every 15 minutes indefinitely.
+      CREATE TABLE IF NOT EXISTS sms_opt_outs (
+        phone_key TEXT PRIMARY KEY,
+        reason TEXT,
+        at TIMESTAMPTZ DEFAULT NOW()
+      );
+
       -- One-shot guard so a given automated SMS (e.g. a booking confirmation) fires once
       -- per job even if the job row is created/updated several times.
       CREATE TABLE IF NOT EXISTS sent_sms (
@@ -122,9 +199,13 @@ export async function initDB() {
     const { rows } = await client.query('SELECT COUNT(*) FROM users');
     if (parseInt(rows[0].count) === 0) {
       const initial = (process.env.OWNER_INITIAL_PASSWORD || '').trim() || crypto.randomBytes(9).toString('base64url');
+      // ON CONFLICT: two containers booting against an empty DB (the very first deploy)
+      // both see COUNT = 0, and a bare INSERT makes the loser blow up the whole initDB
+      // transaction — which is a fatal boot in production.
       await client.query(`
         INSERT INTO users (id, name, email, password, role, active, commission_rate)
         VALUES ('u-owner', 'Sultan', 'owner@trustkey.az', $1, 'owner', true, 0)
+        ON CONFLICT (id) DO NOTHING
       `, [bcrypt.hashSync(initial, 10)]);
       if (process.env.OWNER_INITIAL_PASSWORD) {
         console.log('[DB] Seeded owner account owner@trustkey.az with OWNER_INITIAL_PASSWORD');
@@ -141,6 +222,7 @@ export async function initDB() {
     if (parseInt(settingsCheck.rows[0].count) === 0) {
       await client.query(`
         INSERT INTO settings (key, value) VALUES ('company', $1)
+        ON CONFLICT (key) DO NOTHING
       `, [JSON.stringify({
         technicianName: '',
         companyName: '',
@@ -162,8 +244,9 @@ export async function initDB() {
     connected = true;
     console.log('[DB] Tables initialized');
   } finally {
+    await client.query('SELECT pg_advisory_unlock(778901234)').catch(() => {});
     client.release();
   }
 }
 
-export { pool as db };
+export { dbFacade as db };

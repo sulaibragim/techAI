@@ -18,6 +18,11 @@ export interface FinancialMetrics {
   planStatus: 'excellent' | 'good' | 'warning' | 'critical';
   // Extended (period-aware) fields
   partsCost: number;
+  /**
+   * GROSS margin: revenue minus parts cost only. It is NOT the bottom line — commissions,
+   * overhead, Stripe fees and sales tax are not in here. Accounting's "Net Profit" is,
+   * and the two were labelled the same, differing by thousands for the same month.
+   */
   margin: number;
   marginPct: number;
   projectedRevenue: number;
@@ -45,7 +50,16 @@ export const isRevenueJob = (j: Job) => REVENUE_STATUSES.has(j.status);
 // it was first scheduled. A job booked June 30 but completed July 2 belongs to July
 // (matters for monthly revenue, targets, and technician commission/payroll). `sold`
 // jobs carry no completedAt, so fall back to the scheduled date.
-const revenueDateStr = (j: Job): string => (j.completedAt ? j.completedAt.slice(0, 10) : j.scheduledDate);
+// completedAt is a UTC instant (`new Date().toISOString()`), so slicing it gives the
+// UTC calendar day — which is TOMORROW for anything finished after 5pm in Arizona.
+// Evening lockouts are the highest-ticket work there is, so that quietly moved money,
+// commission and day-of-week stats into the wrong day (and the wrong month on the 31st).
+// Format in the device's own timezone instead; the crew works one metro.
+const localDayOf = (iso: string): string => {
+  const d = new Date(iso);
+  return isNaN(d.getTime()) ? iso.slice(0, 10) : d.toLocaleDateString('en-CA'); // en-CA → YYYY-MM-DD
+};
+const revenueDateStr = (j: Job): string => (j.completedAt ? localDayOf(j.completedAt) : j.scheduledDate);
 
 // A "sale" is any revenue job that actually produced billable money (service call,
 // labor, parts — anything > $0), not just labor/part line items.
@@ -67,7 +81,9 @@ export function calculatePeriodMetrics(
   const now = new Date();
   const key = monthKey(year, month);
   const completed = completedJobsInMonth(jobs, year, month);
-  const totalRevenue = completed.reduce((s, j) => s + j.totalAmount, 0);
+  // Net of refunds, excluding tips — the same definition Accounting uses, so the two
+  // screens can't disagree about the same month.
+  const totalRevenue = completed.reduce((s, j) => s + netRevenueAmount(j), 0);
 
   const jobsSold = completed.filter(isSale).length;
   // Coffee = an explicit no-sale visit this month (its own status), not "completed minus sale".
@@ -251,11 +267,14 @@ export function coffeeAnalysis(jobs: Job[], year: number, month: number) {
   const inMonth = jobs.filter(j => j.scheduledDate.startsWith(key));
   const coffee = inMonth.filter(j => j.status === 'coffee').length;
   const cancelled = inMonth.filter(j => j.status === 'cancelled').length;
-  // Average ticket by the revenue-recognition date (completedAt), matching every other
-  // report — a job booked in June but finished in July counts as July here too.
-  const completed = jobs.filter(j => j.status === 'completed' && revenueDateStr(j).startsWith(key));
-  const avgTicket = completed.length
-    ? completed.reduce((s, j) => s + j.totalAmount, 0) / completed.length
+  // Use the SAME average ticket the dashboard shows (calculatePeriodMetrics): revenue
+  // jobs that actually billed something, divided by that count. The old version counted
+  // only status 'completed' (dropping 'sold') and divided by all of them including $0
+  // warranty calls, producing a lower figure that appears nowhere in the UI — so "Est.
+  // Lost" contradicted its own footnote, understating the loss by ~40%.
+  const sales = completedJobsInMonth(jobs, year, month).filter(isSale);
+  const avgTicket = sales.length
+    ? sales.reduce((s, j) => s + netRevenueAmount(j), 0) / sales.length
     : 0;
   const lostEstimate = (coffee + cancelled) * avgTicket;
   return { coffeeCount: coffee, cancelledCount: cancelled, lostEstimate };
@@ -283,10 +302,12 @@ export function availableMonths(jobs: Job[]): { year: number; month: number }[] 
 export interface TechnicianEarnings {
   userId: string;
   name: string;
-  revenue: number;
+  revenue: number;        // company revenue on their jobs — net of refunds, excludes tips
   jobCount: number;
   commissionRate: number; // percent
   commission: number;     // revenue * rate, rounded to cents
+  tips: number;           // client tips on their jobs — theirs in full
+  payout: number;         // commission + tips: what the technician is actually owed
 }
 
 /** Per-technician revenue and commission for a period (salary engine). */
@@ -297,26 +318,34 @@ export function revenueByTechnician(
   users: Pick<User, 'id' | 'name' | 'role' | 'commissionRate'>[]
 ): TechnicianEarnings[] {
   const completed = completedJobsInMonth(jobs, year, month);
-  const byTech = new Map<string, { revenue: number; jobCount: number }>();
+  const byTech = new Map<string, { revenue: number; tips: number; jobCount: number }>();
   for (const j of completed) {
     if (!j.assignedTo) continue;
-    const cur = byTech.get(j.assignedTo) || { revenue: 0, jobCount: 0 };
-    cur.revenue += j.totalAmount;
+    const cur = byTech.get(j.assignedTo) || { revenue: 0, tips: 0, jobCount: 0 };
+    // Commission is earned on company revenue, net of refunds and excluding tips.
+    cur.revenue += netRevenueAmount(j);
+    cur.tips += tipAmount(j);
     cur.jobCount += 1;
     byTech.set(j.assignedTo, cur);
   }
   return users
     .filter(u => u.role === 'technician')
     .map(u => {
-      const agg = byTech.get(u.id) || { revenue: 0, jobCount: 0 };
+      const agg = byTech.get(u.id) || { revenue: 0, tips: 0, jobCount: 0 };
       const rate = u.commissionRate ?? 0;
+      const commission = Math.round(agg.revenue * (rate / 100) * 100) / 100;
+      const tips = Math.round(agg.tips * 100) / 100;
       return {
         userId: u.id,
         name: u.name,
         revenue: Math.round(agg.revenue * 100) / 100,
         jobCount: agg.jobCount,
         commissionRate: rate,
-        commission: Math.round(agg.revenue * (rate / 100) * 100) / 100,
+        // The tip is the client's money for this technician — it passes through whole,
+        // on top of commission, instead of being shaved to the commission rate.
+        tips,
+        commission,
+        payout: Math.round((commission + tips) * 100) / 100,
       };
     })
     .sort((a, b) => b.revenue - a.revenue);
@@ -397,18 +426,21 @@ export function technicianStats(
     .map(u => {
       const mine = jobs.filter(j => j.assignedTo === u.id);
       const completed = mine.filter(j => isRevenueJob(j) && revenueDateStr(j).startsWith(key));
-      const revenue = completed.reduce((s, j) => s + j.totalAmount, 0);
+      // Company revenue: net of refunds, tips excluded (they're the tech's, not ours).
+      const revenue = completed.reduce((s, j) => s + netRevenueAmount(j), 0);
+      const tips = completed.reduce((s, j) => s + tipAmount(j), 0);
       const soldCount = completed.filter(isSale).length;
       const coffeeCount = mine.filter(j => j.status === 'coffee' && j.scheduledDate.startsWith(key)).length;
       const opportunities = soldCount + coffeeCount;
       const byDay = new Map<string, number>();
       for (const j of completed) {
         const d = revenueDateStr(j);
-        byDay.set(d, (byDay.get(d) || 0) + j.totalAmount);
+        byDay.set(d, (byDay.get(d) || 0) + netRevenueAmount(j));
       }
       let bestDay = { date: '', revenue: 0 };
       for (const [date, rev] of byDay) if (rev > bestDay.revenue) bestDay = { date, revenue: rev };
       const rate = u.commissionRate ?? 0;
+      const commission = round2(revenue * (rate / 100));
       return {
         userId: u.id,
         name: u.name,
@@ -416,7 +448,9 @@ export function technicianStats(
         revenue: round2(revenue),
         jobCount: completed.length,
         commissionRate: rate,
-        commission: round2(revenue * (rate / 100)),
+        commission,
+        tips: round2(tips),
+        payout: round2(commission + tips),
         soldCount,
         coffeeCount,
         closeRate: opportunities > 0 ? (soldCount / opportunities) * 100 : 0,
@@ -596,10 +630,17 @@ export function revenueByHourDow(jobs: Job[], year: number, month: number, month
     if (!isRevenueJob(j)) continue;
     const d = new Date(revenueDateStr(j) + 'T00:00:00');
     if (isNaN(d.getTime()) || d < start || d >= end) continue;
-    const hour = Number((j.scheduledTime || '').slice(0, 2));
-    if (!Number.isFinite(hour) || hour < 0 || hour > 23) continue;
+    // A job with no scheduled time tells us nothing about WHEN the money was earned, so
+    // it must not vote. `Number('')` is 0 and `Number.isFinite(0)` is true, so the old
+    // guard never fired: every website lead (which arrives with scheduledTime: '') piled
+    // into the midnight cell, and the dashboard advised staffing a graveyard shift for a
+    // window with no actual work in it.
+    const hh = (j.scheduledTime || '').slice(0, 2);
+    if (!/^\d{2}$/.test(hh)) continue;
+    const hour = Number(hh);
+    if (hour < 0 || hour > 23) continue;
     const cell = grid[d.getDay()][Math.floor(hour / 3)];
-    cell.revenue += j.totalAmount;
+    cell.revenue += netRevenueAmount(j);
     cell.count += 1;
   }
   let max = 0;
@@ -615,13 +656,52 @@ export function revenueByHourDow(jobs: Job[], year: number, month: number, month
 
 /** How much has actually been collected on a job. */
 export const collectedAmount = (j: Job): number => {
-  if (j.paymentStatus === 'paid') return j.totalAmount;
+  // Prefer the recorded amount over the 'paid' label: raising a paid invoice (a
+  // forgotten part added afterwards) leaves the label at 'paid' while the extra was
+  // never collected, and reading totalAmount here booked money that never arrived and
+  // hid the balance from A/R. Rows predating amountPaid fall back to the total.
+  if (j.paymentStatus === 'paid') return j.amountPaid ?? j.totalAmount;
   if (j.paymentStatus === 'partial') return j.amountPaid || 0;
   return 0;
 };
 
+/**
+ * The client's tip on a job. Charged and collected with everything else, but it is the
+ * technician's money, not the company's: excluded from revenue and from sales tax, and
+ * paid out in full rather than at the commission rate.
+ */
+export const tipAmount = (j: Job): number =>
+  (j.lineItems || []).filter(i => i.type === 'tip').reduce((s, i) => s + (i.unitPrice || 0) * (i.quantity || 0), 0);
+
+/** Money sent back to the client. The refund route already nets this out of amountPaid. */
+export const refundedAmount = (j: Job): number =>
+  (j.refunds || []).reduce((s, r) => s + (r.amount || 0), 0);
+
+/**
+ * Invoice total net of refunds — what the sale is actually worth now.
+ * Without this a refunded job kept its full totalAmount while amountPaid dropped to 0,
+ * so it reappeared as an open invoice: the owner saw phantom A/R, and the scheduler
+ * texted a customer we had just refunded to ask them to pay.
+ */
+export const netRevenueAmount = (j: Job): number =>
+  Math.max(0, (j.totalAmount || 0) - refundedAmount(j) - tipAmount(j));
+
+/**
+ * What the CLIENT still owes — tips included, because the tip is on the invoice they
+ * agreed to. Distinct from netRevenueAmount, which is what the COMPANY earned.
+ */
+export const billableAmount = (j: Job): number => Math.max(0, (j.totalAmount || 0) - refundedAmount(j));
+
 /** Outstanding balance still owed on a job. */
-export const outstandingAmount = (j: Job): number => Math.max(0, j.totalAmount - collectedAmount(j));
+export const outstandingAmount = (j: Job): number => Math.max(0, billableAmount(j) - collectedAmount(j));
+
+/**
+ * Of the money collected, the part that is the COMPANY's. A tip passes through the
+ * business to the technician, so counting it as collected revenue would overstate the
+ * books by exactly the amount owed back out in payroll. Keeps the accounting identity
+ * collected + outstanding = gross revenue intact.
+ */
+export const collectedCompanyAmount = (j: Job): number => Math.max(0, collectedAmount(j) - tipAmount(j));
 
 export interface AccountingSummary {
   grossRevenue: number;
@@ -636,8 +716,9 @@ export interface AccountingSummary {
 /** Period accounting summary (revenue jobs in the month). */
 export function accountingSummary(jobs: Job[], year: number, month: number, taxRate = 0): AccountingSummary {
   const inMonth = completedJobsInMonth(jobs, year, month);
-  const grossRevenue = inMonth.reduce((s, j) => s + j.totalAmount, 0);
-  const collected = inMonth.reduce((s, j) => s + collectedAmount(j), 0);
+  // Net of refunds: money handed back is not revenue, and taxing/commissioning it is worse.
+  const grossRevenue = inMonth.reduce((s, j) => s + netRevenueAmount(j), 0);
+  const collected = inMonth.reduce((s, j) => s + collectedCompanyAmount(j), 0);
   const outstanding = inMonth.reduce((s, j) => s + outstandingAmount(j), 0);
   const partsCost = inMonth.reduce(
     (s, j) => s + j.lineItems.filter(i => i.type === 'part').reduce((ss, i) => ss + (i.unitCost ?? 0) * i.quantity, 0),
@@ -659,7 +740,7 @@ export function paymentMethodBreakdown(jobs: Job[], year: number, month: number)
   const inMonth = completedJobsInMonth(jobs, year, month);
   const map = new Map<string, number>();
   for (const j of inMonth) {
-    const c = collectedAmount(j);
+    const c = collectedCompanyAmount(j); // tips aren't company income to break down
     if (c <= 0) continue;
     const m = j.paymentMethod || 'Unspecified';
     map.set(m, (map.get(m) || 0) + c);
@@ -708,9 +789,10 @@ export function payrollToCSV(rows: TechnicianEarnings[]): string {
     const s = String(v ?? '');
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
-  const header = ['Technician', 'Jobs', 'Revenue', 'Commission Rate (%)', 'Commission'];
-  const body = rows.map(r => [r.name, r.jobCount, r.revenue.toFixed(2), r.commissionRate, r.commission.toFixed(2)]);
-  const totals = ['TOTAL', rows.reduce((s, r) => s + r.jobCount, 0), rows.reduce((s, r) => s + r.revenue, 0).toFixed(2), '', rows.reduce((s, r) => s + r.commission, 0).toFixed(2)];
+  const sum = (pick: (r: TechnicianEarnings) => number) => rows.reduce((s, r) => s + pick(r), 0).toFixed(2);
+  const header = ['Technician', 'Jobs', 'Revenue', 'Commission Rate (%)', 'Commission', 'Tips', 'Total Payout'];
+  const body = rows.map(r => [r.name, r.jobCount, r.revenue.toFixed(2), r.commissionRate, r.commission.toFixed(2), r.tips.toFixed(2), r.payout.toFixed(2)]);
+  const totals = ['TOTAL', rows.reduce((s, r) => s + r.jobCount, 0), sum(r => r.revenue), '', sum(r => r.commission), sum(r => r.tips), sum(r => r.payout)];
   return [header, ...body, totals].map(r => r.map(esc).join(',')).join('\n');
 }
 

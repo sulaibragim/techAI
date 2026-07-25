@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import { db, dbReady } from '../db.js';
+import { db, dbReady, dbSslMode } from '../db.js';
 import { isProd, DEV_JWT_FALLBACK, jwtSecret } from '../config.js';
 import { stripeConfigured, webhookConfigured, stripeMode } from './stripe.js';
 import { emailConfigured } from './email.js';
@@ -50,8 +50,10 @@ export async function buildReadiness() {
     usingDevSecret ? 'Signing with the public dev fallback — anyone can forge an owner login'
                    : 'Signed with a private secret');
 
+  // Say how the link is secured, not just that it is up — the old check reported a green
+  // "Connected" while the traffic ran in the clear.
   add('database', 'Database', dbReady() ? 'ok' : 'fail',
-    dbReady() ? 'Connected to PostgreSQL'
+    dbReady() ? `Connected to PostgreSQL — ${dbSslMode()}`
               : process.env.DATABASE_URL ? 'DATABASE_URL is set but the connection failed — data is in memory and will be lost'
                                          : 'No DATABASE_URL — data is in memory and will be lost on restart');
 

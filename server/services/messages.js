@@ -31,6 +31,70 @@ export async function setClientLang(phone, lang) {
   } catch (e) { console.error('[messages] setClientLang', e.message); }
 }
 
+// ─── SMS opt-out (STOP) ────────────────────────────────────────────────────────
+// Carriers require a working opt-out on automated A2P traffic, and there was none: a
+// client who replied STOP got blocked at the carrier, our send failed, and the scheduler
+// simply retried the same number every 15 minutes forever.
+
+// Standard carrier keywords, plus the Spanish ones our clients actually use.
+// The message must BE the keyword — that's how carriers match, and it matters here:
+// "cancel my appointment" is a request to reschedule, not a demand to stop all texts.
+// Punctuation and case are ignored ("STOP.", "stop!").
+const STOP_WORDS = /^(stop|stopall|unsubscribe|cancel|end|quit|revoke|optout|opt out|baja|parar|detener)$/i;
+const START_WORDS = /^(start|unstop|subscribe|resume|alta)$/i;
+
+const keyword = (body) => String(body || '').trim().replace(/[.!¡?¿,;:]+$/g, '').replace(/\s+/g, ' ');
+export const isStopKeyword = (body) => STOP_WORDS.test(keyword(body));
+export const isStartKeyword = (body) => START_WORDS.test(keyword(body));
+
+/** True when this number has asked us to stop texting. Fails OPEN only on a DB error. */
+export async function isOptedOut(phone) {
+  const key = last10(phone);
+  if (!key || !hasDB()) return false;
+  try {
+    const { rows } = await db.query('SELECT 1 FROM sms_opt_outs WHERE phone_key = $1', [key]);
+    return rows.length > 0;
+  } catch (e) {
+    console.error('[messages] isOptedOut', e.message);
+    return false;
+  }
+}
+
+export async function setOptOut(phone, reason = 'client replied STOP') {
+  const key = last10(phone);
+  if (!key || !hasDB()) return;
+  try {
+    await db.query(
+      `INSERT INTO sms_opt_outs (phone_key, reason, at) VALUES ($1, $2, NOW())
+       ON CONFLICT (phone_key) DO UPDATE SET reason = $2, at = NOW()`,
+      [key, reason]
+    );
+  } catch (e) { console.error('[messages] setOptOut', e.message); }
+}
+
+export async function clearOptOut(phone) {
+  const key = last10(phone);
+  if (!key || !hasDB()) return;
+  try {
+    await db.query('DELETE FROM sms_opt_outs WHERE phone_key = $1', [key]);
+  } catch (e) { console.error('[messages] clearOptOut', e.message); }
+}
+
+// Confirmations, per the carrier convention that the STOP acknowledgement is itself
+// allowed to go out.
+export const OPT_OUT_CONFIRM = {
+  en: "You're unsubscribed and won't get any more automated texts from us. Reply START to resume.",
+  es: 'Se ha dado de baja y no recibirá más mensajes automáticos. Responda START para reactivar.',
+};
+export const OPT_IN_CONFIRM = {
+  en: "You're subscribed again — we'll text you about your jobs. Reply STOP to opt out anytime.",
+  es: 'Se ha suscrito de nuevo — le enviaremos mensajes sobre sus trabajos. Responda STOP para darse de baja.',
+};
+
+// Appended to automated (non-transactional-reply) client messages so the opt-out path is
+// always visible, as carriers expect.
+export const OPT_OUT_NOTE = { en: ' Reply STOP to opt out.', es: ' Responda STOP para no recibir más.' };
+
 // A bare "SÍ / si / yes" reply (the opt-in), or an explicit mention of Spanish.
 export function isSpanishOptIn(body) {
   const s = String(body || '').trim().toLowerCase();

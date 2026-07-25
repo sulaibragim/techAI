@@ -1,8 +1,8 @@
 import { db } from '../db.js';
 import { sendSMS } from './openphone.js';
 import { sendPushToRoles } from './push.js';
-import { stripeConfigured, createCheckoutSession, publicBase } from './stripe.js';
-import { getClientLang, t } from './messages.js';
+import { stripeConfigured, publicBase, payUrlFor } from './stripe.js';
+import { getClientLang, t, isOptedOut, OPT_OUT_NOTE } from './messages.js';
 import { clientSmsEnabled } from './businessSettings.js';
 
 // Time-based automations that need a clock, not a request:
@@ -16,6 +16,7 @@ const TZ = process.env.BUSINESS_TZ || 'America/Phoenix';
 const DIGEST_HOUR = Number(process.env.DIGEST_HOUR || 20);
 const REMINDER_DAYS = [3, 10]; // days after completion → reminder #1, #2; then stop
 const REMINDER_WINDOW = { from: 10, to: 18 }; // only nag clients during business hours
+const MAX_SEND_ATTEMPTS = 3;   // a number that fails this often is bad, not busy
 
 const hasDB = () => !!process.env.DATABASE_URL;
 
@@ -31,6 +32,15 @@ function localNow() {
 const daysBetween = (isoThen, isoNow) =>
   Math.floor((new Date(isoNow) - new Date(isoThen)) / 86400000);
 
+// The business-timezone calendar day of a UTC instant. completedAt is stored as
+// toISOString(), so slicing it gives the UTC day — in Arizona that rolls over at 5pm
+// local and files every evening job under tomorrow. The digest compares against a
+// BUSINESS_TZ date, so it has to convert the same way.
+const localDay = (iso) => {
+  const d = new Date(iso);
+  return isNaN(d.getTime()) ? '' : new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(d);
+};
+
 const money = (n) => `$${(Math.round(n * 100) / 100).toLocaleString('en-US')}`;
 
 async function companyInfo() {
@@ -44,21 +54,51 @@ async function companyInfo() {
 // ─── Payment reminders ─────────────────────────────────────────────────────────
 
 const balanceOf = (j) => {
-  const total = j.totalAmount || 0;
-  const paid = j.paymentStatus === 'paid' ? total : j.paymentStatus === 'partial' ? (j.amountPaid || 0) : 0;
+  // A refund shrinks the invoice. The refund route already nets the money out of
+  // amountPaid, so without this the job looks unpaid again and we would text a customer
+  // we just refunded asking them to pay.
+  const refunded = (j.refunds || []).reduce((s, r) => s + (r.amount || 0), 0);
+  const total = Math.max(0, (j.totalAmount || 0) - refunded);
+  // Trust the collected amount over the 'paid' label — an invoice raised after payment
+  // keeps the label and would otherwise hide a real balance from the reminders.
+  const paid = j.paymentStatus === 'paid' ? (j.amountPaid ?? j.totalAmount ?? 0) : j.paymentStatus === 'partial' ? (j.amountPaid || 0) : 0;
   return Math.max(0, total - paid);
 };
+
+// Stamp a reminder as done (and bump freshness). Appends in SQL rather than writing the
+// whole job blob back: the row we read is a projection (no photos) and may be seconds
+// stale, so a full replace would delete the job's photos and clobber whatever the tech
+// saved while the SMS was in flight.
+async function stampReminder(jobId, now) {
+  await db.query(
+    `UPDATE jobs SET
+       data = jsonb_set(
+         jsonb_set(COALESCE(data, '{}'::jsonb), '{paymentReminders}',
+                   COALESCE(data->'paymentReminders', '[]'::jsonb) || to_jsonb($2::text)),
+         '{updatedAt}', to_jsonb($2::text)),
+       updated_at = NOW()
+     WHERE id = $1`,
+    [jobId, now]
+  );
+}
 
 async function runPaymentReminders() {
   const { hour } = localNow();
   if (hour < REMINDER_WINDOW.from || hour >= REMINDER_WINDOW.to) return;
   if (!(await clientSmsEnabled('reminders'))) return; // owner-controlled; off by default
 
+  // Exclude jobs that already got both nudges IN SQL, not after the LIMIT. Without the
+  // predicate, written-off debtors keep matching forever; once 200 of them accumulate
+  // they fill the window and no new customer is ever reminded again — silently. Oldest
+  // first so the queue drains in a predictable order. Photos are base64 data URLs living
+  // in the same JSONB blob, so strip them or a few hundred jobs pull hundreds of MB.
   const { rows } = await db.query(
-    `SELECT id, data FROM jobs
+    `SELECT id, data - 'photos' AS data FROM jobs
       WHERE data->>'status' = 'completed'
         AND data->>'paymentStatus' IN ('unpaid', 'partial')
         AND data->>'completedAt' IS NOT NULL
+        AND COALESCE(jsonb_array_length(data->'paymentReminders'), 0) < ${REMINDER_DAYS.length}
+      ORDER BY data->>'completedAt' ASC
       LIMIT 200`
   );
   const now = new Date().toISOString();
@@ -76,34 +116,48 @@ async function runPaymentReminders() {
     const dueAfter = REMINDER_DAYS[sent.length];
     if (daysBetween(j.completedAt, now) < dueAfter) continue;
 
+    // Asked us to stop. Skip permanently rather than letting the send fail and retrying
+    // this number every 15 minutes for the rest of its life.
+    if (await isOptedOut(phone)) {
+      await stampReminder(row.id, now);
+      console.log(`[scheduler] reminder skipped — job ${j.jobNumber || row.id} client opted out`);
+      continue;
+    }
+
+    // A number that keeps failing is almost always permanently bad (landline, typo,
+    // carrier block), not a transient hiccup. Give up after MAX_SEND_ATTEMPTS instead of
+    // retrying forever — each attempt also used to mint a Stripe checkout session.
+    const fails = Number(j.reminderFailures || 0);
+    if (fails >= MAX_SEND_ATTEMPTS) continue;
+
     const lang = await getClientLang(phone);
     const first = (j.client?.firstName || '').trim() || (lang === 'es' ? 'hola' : 'there');
 
-    // With Stripe configured, the reminder carries a tap-to-pay card link — the client can
-    // settle right from the text. Link failure never blocks the reminder itself.
-    let payUrl = '';
-    if (stripeConfigured()) {
-      try {
-        const session = await createCheckoutSession({
-          jobId: row.id,
-          jobNumber: j.jobNumber || row.id,
-          amountCents: Math.round(balance * 100),
-          companyName: company.name,
-          base: publicBase(),
-        });
-        payUrl = session.url;
-      } catch (e) { console.warn('[scheduler] pay-link failed, sending reminder without it:', e.message); }
-    }
+    // Durable pay link rather than a raw Stripe session URL. A session dies after 24h, so
+    // a Tuesday reminder was a dead end by Thursday — the client tapped it, got Stripe's
+    // "expired" page, and had no way to pay until someone re-texted them by hand. This
+    // link mints a fresh session when tapped, however late that is.
+    const payUrl = stripeConfigured() ? (payUrlFor(publicBase(), row.id) || '') : '';
 
+    // Carriers expect the opt-out path to be visible on automated traffic like this.
     const text = t('paymentReminder', lang, {
       name: first, company: company.name, jobNo: j.jobNumber || row.id, balance, payUrl, phone: company.phone,
-    });
+    }) + (OPT_OUT_NOTE[lang] || OPT_OUT_NOTE.en);
     const ok = await sendSMS(phone, text);
-    if (!ok) continue; // OpenPhone hiccup — retry next tick, don't stamp
+    if (!ok) {
+      // Count the failure so a permanently bad number eventually falls out of the queue.
+      await db.query(
+        `UPDATE jobs SET data = jsonb_set(COALESCE(data, '{}'::jsonb), '{reminderFailures}', to_jsonb($2::int))
+         WHERE id = $1`,
+        [row.id, fails + 1]
+      ).catch(e => console.warn('[scheduler] could not record send failure:', e.message));
+      if (fails + 1 >= MAX_SEND_ATTEMPTS) {
+        console.warn(`[scheduler] giving up on reminders for job ${j.jobNumber || row.id} after ${MAX_SEND_ATTEMPTS} failed sends`);
+      }
+      continue;
+    }
 
-    // Stamp the reminder (and freshness) so restarts/other devices never double-send.
-    const updated = { ...j, paymentReminders: [...sent, now], updatedAt: now };
-    await db.query('UPDATE jobs SET data = $2, updated_at = NOW() WHERE id = $1', [row.id, JSON.stringify(updated)]);
+    await stampReminder(row.id, now);
     console.log(`[scheduler] payment reminder #${sent.length + 1} → job ${j.jobNumber || row.id} (${money(balance)})`);
   }
 }
@@ -114,20 +168,25 @@ async function runEveningDigest() {
   const { date, hour } = localNow();
   if (hour < DIGEST_HOUR) return;
 
-  // Once per local day, survives restarts via a settings stamp.
-  const { rows: stamp } = await db.query("SELECT value FROM settings WHERE key = 'digest-last'");
-  if (stamp[0]?.value === date) return;
-  await db.query(
+  // Once per local day. Claim the day ATOMICALLY: a rolling Railway deploy runs the old
+  // and new containers side by side for a while, and a read-then-write check lets both
+  // pass and text the owner twice. Only the writer that actually changes the row wins.
+  const claim = await db.query(
     `INSERT INTO settings (key, value, updated_at) VALUES ('digest-last', $1, NOW())
-     ON CONFLICT (key) DO UPDATE SET value = $1, updated_at = NOW()`,
+     ON CONFLICT (key) DO UPDATE SET value = $1, updated_at = NOW()
+     WHERE settings.value IS DISTINCT FROM $1`,
     [date]
   );
+  if (claim.rowCount === 0) return; // another instance already sent today's digest
 
-  const { rows } = await db.query('SELECT id, data FROM jobs');
+  // Photos are base64 data URLs in the same blob — pulling every job's would OOM the
+  // container as the archive grows. The digest only needs the scalar fields.
+  const { rows } = await db.query("SELECT id, data - 'photos' AS data FROM jobs");
   const jobs = rows.map(r => r.data);
 
+  // completedAt is UTC; `date` is business-local. Compare like for like.
   const doneToday = jobs.filter(j =>
-    (j.status === 'completed' || j.status === 'sold') && (j.completedAt || '').slice(0, 10) === date);
+    (j.status === 'completed' || j.status === 'sold') && localDay(j.completedAt || '') === date);
   const revenueToday = doneToday.reduce((s, j) => s + (j.totalAmount || 0), 0);
   const outstanding = jobs
     .filter(j => (j.status === 'completed' || j.status === 'sold'))

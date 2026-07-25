@@ -91,11 +91,11 @@ export function modelsForMake(make: string): string[] {
 export function stockForKeyway(keyway: string | undefined, inventory: Part[]): Part[] {
   if (!keyway) return [];
   const k = norm(keyway);
-  return inventory.filter(
-    (p) =>
-      p.category === 'Key Blanks' &&
-      (norm(p.name).includes(k) || norm(p.sku).includes(k))
-  );
+  // Match on the keyway code in the name/SKU, not on a fixed category. Categories became
+  // free text (the Excel importer writes "Прочее", the item form is a plain input), so the
+  // old `category === 'Key Blanks'` check matched almost nothing and Auto-Key told the tech
+  // "none in stock — order one" for blanks sitting in the van.
+  return inventory.filter((p) => norm(p.name).includes(k) || norm(p.sku).includes(k));
 }
 
 // Reverse lookup: tech has a mystery fob / blank in hand — type its FCC ID, OEM part

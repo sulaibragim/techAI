@@ -5,6 +5,7 @@ import { sendSMS } from '../services/openphone.js';
 import { sendPushToUser } from '../services/push.js';
 import { getClientLang, claimOnce, t, SPANISH_INVITE } from '../services/messages.js';
 import { clientSmsEnabled } from '../services/businessSettings.js';
+import { voidOpenSessions } from './payments.js';
 
 export const jobsRouter = Router();
 
@@ -133,7 +134,10 @@ function preservePaymentTruth(incoming, existing) {
   if (!existing) return incoming;
   const out = { ...incoming };
 
-  for (const key of ['stripeSessions', 'stripePayments', 'refunds']) {
+  // paymentReminders belongs here too: it is the ONLY record that a dunning SMS went
+  // out. A client blob that predates the scheduler's stamp used to erase it, and the
+  // next tick then texted the same customer the same reminder again.
+  for (const key of ['stripeSessions', 'stripePayments', 'refunds', 'paymentReminders']) {
     if (existing[key] !== undefined) out[key] = existing[key];
   }
 
@@ -186,7 +190,20 @@ function enforceTechJobRules(incoming, existing) {
     }
   }
 
-  if (out.status === 'completed' && existing.status !== 'completed' && out.paymentStatus !== 'paid') {
+  // 'paid' is a label the browser sends; money is an amount. A payload claiming
+  // paymentStatus:'paid' with amountPaid:0 used to satisfy this check on its own, so a
+  // tech could close an unpaid job and book revenue that never arrived. Require the
+  // claim to be backed by a collected amount that actually covers the invoice — on the
+  // incoming payload (settle-and-close in one save) or on the stored row (settled
+  // earlier). Legacy rows predating amountPaid keep working: undefined reads as 0 and
+  // a $0 invoice is covered by 0.
+  const covers = (paid, tot) => (Number(paid) || 0) >= (Number(tot) || 0) - 0.01;
+  // A no-charge visit — warranty callback, courtesy re-open — has nothing to collect, and
+  // the tech must be able to close it without phoning the owner.
+  const nothingOwed = (Number(out.totalAmount) || 0) <= 0.01;
+  const paymentBacked = nothingOwed || (out.paymentStatus === 'paid'
+    && (covers(out.amountPaid, out.totalAmount) || covers(existing.amountPaid, existing.totalAmount)));
+  if (out.status === 'completed' && existing.status !== 'completed' && !paymentBacked) {
     out.status = existing.status;
     out.completedAt = existing.completedAt;
   }
@@ -300,6 +317,12 @@ jobsRouter.post('/', requireAuth, async (req, res) => {
     // POST doubles as an upsert (the client falls back to it when a PUT 404s), so the
     // ledger has to be protected here too.
     const { rows: prior } = await db.query('SELECT data FROM jobs WHERE id = $1', [jobId]);
+    // ...and so does the assignment. Without this, a tech who kept a job id in their local
+    // store could POST it back with themselves as assignee and seize another tech's job
+    // (and its commission). PUT /:id and /sync already guard this; POST was the hole.
+    if (isTech(req) && prior[0] && (prior[0].data?.assignedTo || null) !== req.user.id) {
+      return res.status(403).json({ error: 'Insufficient permissions' });
+    }
     let merged = preservePaymentTruth(data, prior[0]?.data);
     if (isTech(req)) merged = enforceTechJobRules(merged, prior[0]?.data);
     await db.query(
@@ -320,35 +343,66 @@ jobsRouter.post('/', requireAuth, async (req, res) => {
 
 // Update job — technicians may only update jobs assigned to them.
 jobsRouter.put('/:id', requireAuth, async (req, res) => {
+  // The whole read-modify-write runs inside one transaction with the row locked. The
+  // Stripe webhook and the refund route lock the same row, so a payment landing while
+  // a tech saves the job can no longer interleave: previously the PUT could read the
+  // row a moment BEFORE the webhook wrote the ledger, then overwrite it — and because
+  // preservePaymentTruth copies from that stale read, the charge, the session id and
+  // the collected amount all vanished with Stripe already acked.
+  const client = await db.connect();
+  let prevData, prevAssigned, prevStatus, prevAcceptance, data;
   try {
-    const { rows: existing } = await db.query(
-      "SELECT data, data->>'assignedTo' AS assigned, data->>'status' AS status, data->>'acceptanceStatus' AS acceptance FROM jobs WHERE id = $1",
+    await client.query('BEGIN');
+    const { rows: existing } = await client.query(
+      "SELECT data, data->>'assignedTo' AS assigned, data->>'status' AS status, data->>'acceptanceStatus' AS acceptance FROM jobs WHERE id = $1 FOR UPDATE",
       [req.params.id]
     );
-    if (existing.length === 0) return res.status(404).json({ error: 'Job not found' });
-    const prevData = existing[0].data;
-    const prevAssigned = existing[0].assigned || null;
-    const prevStatus = existing[0].status || null;
-    const prevAcceptance = existing[0].acceptance || null;
+    if (existing.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Job not found' });
+    }
+    prevData = existing[0].data;
+    prevAssigned = existing[0].assigned || null;
+    prevStatus = existing[0].status || null;
+    prevAcceptance = existing[0].acceptance || null;
 
     if (isTech(req) && prevAssigned !== req.user.id) {
+      await client.query('ROLLBACK');
       return res.status(403).json({ error: 'Insufficient permissions' });
     }
 
-    const { id: _id, ...data } = req.body;
+    const { id: _id, ...body } = req.body;
+    data = body;
 
     // A tech working their own job may bill it, change status, add notes/photos, or
     // decline (which clears the assignee) — but must not hand it to a DIFFERENT tech.
     if (isTech(req) && data.assignedTo && data.assignedTo !== req.user.id) {
+      await client.query('ROLLBACK');
       return res.status(403).json({ error: 'Technicians cannot reassign a job to someone else' });
     }
     let merged = preservePaymentTruth(data, prevData);
     if (isTech(req)) merged = enforceTechJobRules(merged, prevData);
-    const result = await db.query(
+    await client.query(
       'UPDATE jobs SET data = $2, updated_at = NOW() WHERE id = $1',
       [req.params.id, JSON.stringify(merged)]
     );
-    if (result.rowCount === 0) return res.status(404).json({ error: 'Job not found' });
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK').catch(() => {});
+    console.error('[JOBS] update error:', err);
+    return res.status(500).json({ error: 'Internal server error' });
+  } finally {
+    client.release();
+  }
+
+  try {
+    // Settled by another method (cash/check/Zelle at the door) → kill any card link still
+    // live. Otherwise the client pays the tech in cash, then taps the payment text that
+    // evening and is charged a second time for the same job.
+    const wasOwing = (prevData?.paymentStatus || 'unpaid') !== 'paid';
+    if (wasOwing && data.paymentStatus === 'paid') {
+      voidOpenSessions(req.params.id).catch(e => console.error('[JOBS] void sessions error:', e.message));
+    }
 
     // Newly assigned (or reassigned) to a different tech → text them.
     if (data.assignedTo && data.assignedTo !== prevAssigned) {
@@ -380,8 +434,9 @@ jobsRouter.put('/:id', requireAuth, async (req, res) => {
 
     res.json({ id: req.params.id, ...data });
   } catch (err) {
-    console.error('[JOBS] update error:', err);
-    res.status(500).json({ error: 'Internal server error' });
+    // The write already committed — only the notifications failed. Don't 500 a saved job.
+    console.error('[JOBS] update notify error:', err);
+    if (!res.headersSent) res.json({ id: req.params.id, ...data });
   }
 });
 

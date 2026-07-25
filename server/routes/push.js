@@ -32,7 +32,7 @@ pushRouter.post('/subscribe', requireAuth, async (req, res) => {
 
 pushRouter.post('/unsubscribe', requireAuth, async (req, res) => {
   try {
-    if (req.body?.endpoint) await deleteSubscription(req.body.endpoint);
+    if (req.body?.endpoint) await deleteSubscription(req.body.endpoint, req.user.id);
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });

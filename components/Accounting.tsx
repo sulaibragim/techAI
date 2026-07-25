@@ -76,6 +76,8 @@ export const Accounting: React.FC<{ onJobSelect?: (job: Job) => void }> = ({ onJ
   const [month, setMonth] = useState(now.getMonth());
   const [mode, setMode] = useState<PeriodMode>('month');
   const [selectedTech, setSelectedTech] = useState<string>('');
+  // Raw text while the tax field is being edited; null means "show the stored value".
+  const [taxDraft, setTaxDraft] = useState<string | null>(null);
   const [remindState, setRemindState] = useState<Record<string, 'sending' | 'sent' | 'error'>>({});
 
   const [expDate, setExpDate] = useState(todayLocal());
@@ -131,7 +133,10 @@ export const Accounting: React.FC<{ onJobSelect?: (job: Job) => void }> = ({ onJ
       for (const t of revenueByTechnician(jobs, m.year, m.month, users)) {
         const cur = rows.get(t.userId);
         if (!cur) rows.set(t.userId, { ...t });
-        else { cur.revenue += t.revenue; cur.jobCount += t.jobCount; cur.commission += t.commission; }
+        else {
+          cur.revenue += t.revenue; cur.jobCount += t.jobCount;
+          cur.commission += t.commission; cur.tips += t.tips; cur.payout += t.payout;
+        }
       }
     return [...rows.values()].sort((a, b) => b.revenue - a.revenue);
   }, [jobs, span, users]);
@@ -178,7 +183,17 @@ export const Accounting: React.FC<{ onJobSelect?: (job: Job) => void }> = ({ onJ
     { gross: 0, fees: 0, refunds: 0, net: 0 }
   ), [cardLedger]);
 
-  const netProfit = summary.grossProfit - totalCommission - totalExpenses - summary.estimatedTax - cardTotals.fees;
+  // Stock purchases are capitalised into each part's cost and then expensed again as
+  // COGS (summary.partsCost) when the part is billed on a job. Receiving stock also
+  // auto-logs a "Keys & Stock" expense, so counting it here subtracts the same dollars
+  // twice and understates profit by the COGS of everything consumed that period.
+  const overheadExpenses = useMemo(
+    () => periodExpenses.filter(e => e.category !== 'Keys & Stock').reduce((s, e) => s + e.amount, 0),
+    [periodExpenses]
+  );
+  // grossRevenue is already net of refunds (accountingSummary), so refunds are not
+  // subtracted again here.
+  const netProfit = summary.grossProfit - totalCommission - overheadExpenses - summary.estimatedTax - cardTotals.fees;
   const netMarginPct = summary.grossRevenue > 0 ? (netProfit / summary.grossRevenue) * 100 : 0;
 
   const receivables = useMemo(() => accountsReceivable(jobs), [jobs]);
@@ -290,7 +305,7 @@ export const Accounting: React.FC<{ onJobSelect?: (job: Job) => void }> = ({ onJ
               { label: 'Gross Revenue', value: summary.grossRevenue, sign: '' },
               { label: 'Parts (COGS)', value: summary.partsCost, sign: '−' },
               { label: 'Technician Commissions', value: totalCommission, sign: '−' },
-              { label: 'Expenses', value: totalExpenses, sign: '−' },
+              { label: 'Overhead Expenses', value: overheadExpenses, sign: '−' },
               ...(cardTotals.fees > 0 ? [{ label: 'Card Processing Fees (Stripe)', value: cardTotals.fees, sign: '−' }] : []),
               { label: `Est. Sales Tax (${taxRate}%)`, value: summary.estimatedTax, sign: '−' },
             ].map(r => (
@@ -339,10 +354,22 @@ export const Accounting: React.FC<{ onJobSelect?: (job: Job) => void }> = ({ onJ
               <p className="text-[10px] text-slate-500 mt-0.5">{isOwner ? 'Used to estimate tax owed' : 'Only the owner can change this'}</p>
             </div>
             <div className="flex items-center gap-2">
+              {/* Kept as text while editing. Bound straight to the parsed number, typing
+                  "8" then "." produced an invalid intermediate that `|| 0` collapsed to 0
+                  and React wrote back — so a fractional rate like 8.25 was impossible to
+                  enter. Commit on blur, not on every keystroke. */}
               <input
-                type="number" step="0.01" min="0" disabled={!isOwner}
-                value={taxRate}
-                onChange={e => updateSettings({ taxRate: Math.min(100, Math.max(0, parseFloat(e.target.value) || 0)) })}
+                type="text" inputMode="decimal" disabled={!isOwner}
+                value={taxDraft ?? String(taxRate)}
+                onChange={e => setTaxDraft(e.target.value.replace(/[^\d.]/g, ''))}
+                onBlur={() => {
+                  if (taxDraft !== null) {
+                    const n = parseFloat(taxDraft);
+                    updateSettings({ taxRate: Number.isFinite(n) ? Math.min(100, Math.max(0, n)) : 0 });
+                    setTaxDraft(null);
+                  }
+                }}
+                onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
                 className="w-20 bg-slate-950 border border-white/10 rounded-lg px-3 py-2 text-sm font-mono text-white text-right outline-none focus:border-blue-500/50 disabled:opacity-60"
               />
               <span className="text-sm font-bold text-slate-400">%</span>
@@ -369,7 +396,9 @@ export const Accounting: React.FC<{ onJobSelect?: (job: Job) => void }> = ({ onJ
                     <th className="py-2 px-2 text-right">Jobs</th>
                     <th className="py-2 px-2 text-right">Revenue</th>
                     <th className="py-2 px-2 text-right">Rate</th>
-                    <th className="py-2 pl-2 text-right">Commission</th>
+                    <th className="py-2 px-2 text-right">Commission</th>
+                    <th className="py-2 px-2 text-right">Tips</th>
+                    <th className="py-2 pl-2 text-right">Payout</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
@@ -379,7 +408,9 @@ export const Accounting: React.FC<{ onJobSelect?: (job: Job) => void }> = ({ onJ
                       <td className="py-2.5 px-2 text-right text-sm text-slate-300 tabular-nums">{t.jobCount}</td>
                       <td className="py-2.5 px-2 text-right text-sm font-bold text-white tabular-nums">{fmt$(t.revenue)}</td>
                       <td className="py-2.5 px-2 text-right text-xs text-slate-400 tabular-nums">{t.commissionRate}%</td>
-                      <td className="py-2.5 pl-2 text-right text-sm font-bold text-green-400 tabular-nums">{fmt$(t.commission)}</td>
+                      <td className="py-2.5 px-2 text-right text-sm text-slate-300 tabular-nums">{fmt$(t.commission)}</td>
+                      <td className="py-2.5 px-2 text-right text-sm text-slate-300 tabular-nums">{t.tips > 0 ? fmt$(t.tips) : '—'}</td>
+                      <td className="py-2.5 pl-2 text-right text-sm font-bold text-green-400 tabular-nums">{fmt$(t.payout)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -389,11 +420,13 @@ export const Accounting: React.FC<{ onJobSelect?: (job: Job) => void }> = ({ onJ
                     <td className="py-2.5 px-2 text-right text-slate-300 tabular-nums">{payroll.reduce((s, t) => s + t.jobCount, 0)}</td>
                     <td className="py-2.5 px-2 text-right text-white tabular-nums">{fmt$(payroll.reduce((s, t) => s + t.revenue, 0))}</td>
                     <td></td>
-                    <td className="py-2.5 pl-2 text-right text-green-400 tabular-nums">{fmt$(totalCommission)}</td>
+                    <td className="py-2.5 px-2 text-right text-slate-300 tabular-nums">{fmt$(totalCommission)}</td>
+                    <td className="py-2.5 px-2 text-right text-slate-300 tabular-nums">{fmt$(payroll.reduce((s, t) => s + t.tips, 0))}</td>
+                    <td className="py-2.5 pl-2 text-right text-green-400 tabular-nums">{fmt$(payroll.reduce((s, t) => s + t.payout, 0))}</td>
                   </tr>
                 </tfoot>
               </table>
-              <p className="text-[10px] text-slate-500 mt-3">Tap a technician to see their jobs. Commission = revenue × rate (set per-tech in Settings → Team).</p>
+              <p className="text-[10px] text-slate-500 mt-3">Tap a technician to see their jobs. Commission = revenue × rate (set per-tech in Settings → Team). Revenue excludes tips and is net of refunds; tips pass through to the technician in full, so Payout = commission + tips.</p>
             </div>
           )}
         </div>

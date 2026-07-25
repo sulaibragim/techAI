@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Mic, X, Bot, User, Minimize2, CheckCircle, KeyRound } from 'lucide-react';
 import { GeminiVoiceAssistant, handleAITool } from '../geminiService';
 import { useSettingsStore } from '../settingsStore';
+import { useCurrentUser, can } from '../authStore';
 
 export const VoiceAssistant: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -17,10 +18,18 @@ export const VoiceAssistant: React.FC = () => {
   const assistantRef = useRef<GeminiVoiceAssistant | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const hasApiKey = useSettingsStore(s => s.aiAvailable);
+  // Same gate as the AI Brain tab. The FAB used to render for every role, which handed
+  // technicians and accountants the assistant's whole tool surface without the tab.
+  const currentUser = useCurrentUser();
+  const mayUseAI = !!currentUser && can.useAIBrain(currentUser.role);
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages]);
+
+  // Release the microphone and the Live session if the tree unmounts (logout, tab swap)
+  // while a conversation is open — otherwise the mic stays hot with no UI attached.
+  useEffect(() => () => { assistantRef.current?.stop(); }, []);
 
   useEffect(() => {
     if (isListening) {
@@ -87,6 +96,15 @@ export const VoiceAssistant: React.FC = () => {
           },
           onAction: handleActionWithConfirmation
         });
+      } catch (err) {
+        // Mic denied, token refused, backend down — without this the panel sat on
+        // "Listening…" forever and the user had no idea anything had failed.
+        console.error('[voice] connect failed', err);
+        assistantRef.current?.stop();
+        assistantRef.current = null;
+        setIsListening(false);
+        setIsOpen(false);
+        triggerConfirmation('Voice unavailable — check mic access');
       } finally {
         setIsConnecting(false);
       }
@@ -97,6 +115,8 @@ export const VoiceAssistant: React.FC = () => {
       setMessages([]);
     }
   };
+
+  if (!mayUseAI) return null;
 
   return (
     <>

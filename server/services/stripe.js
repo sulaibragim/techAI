@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import { jwtSecret } from '../config.js';
 
 // Stripe via plain REST — no SDK dependency. Two things live here:
 //   • createCheckoutSession — a one-off hosted card-payment page for a job's balance
@@ -25,6 +26,15 @@ export function publicBase(req) {
   if (process.env.RAILWAY_PUBLIC_DOMAIN) return `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`;
   return req ? `${req.protocol}://${req.get('host')}` : null;
 }
+
+// Durable, unguessable pay address for a job: /pay/j/<jobId>/<sig>. Lives here (not in
+// the payments route) so the scheduler can build the same link without importing a route.
+// The route behind it recomputes the balance and mints a fresh checkout session on each
+// visit, so a link inside an old SMS keeps working long after any session has expired.
+export const paySig = (jobId) =>
+  crypto.createHmac('sha256', jwtSecret()).update(`pay:${jobId}`).digest('hex').slice(0, 20);
+export const payUrlFor = (base, jobId) =>
+  (base ? `${base}/pay/j/${encodeURIComponent(jobId)}/${paySig(jobId)}` : '');
 
 // Hosted checkout page charging the job's outstanding balance. Expires in 24h so a
 // stale link from an old reminder can't collect after the balance was settled in cash.
@@ -58,19 +68,48 @@ export async function createCheckoutSession({ jobId, jobNumber, amountCents, com
   return { id: data.id, url: data.url };
 }
 
+// Kill a checkout session that is still open. Used when the job gets settled another way
+// (cash at the door) so the client can't tap a live link that evening and pay twice.
+// Best-effort: an already-paid or already-expired session just reports not-open.
+export async function expireCheckoutSession(sessionId) {
+  if (!SKEY || !sessionId) return false;
+  const r = await fetch(
+    `https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(sessionId)}/expire`,
+    { method: 'POST', headers: { Authorization: `Bearer ${SKEY}` } }
+  );
+  if (r.ok) return true;
+  const data = await r.json().catch(() => ({}));
+  // "not in the `open` state" means it was already paid or expired — nothing to do.
+  if (/not in the .?open.? state|No such checkout.session/i.test(data?.error?.message || '')) return false;
+  throw new Error(data?.error?.message || `stripe http ${r.status}`);
+}
+
 // Money back on a specific PaymentIntent. amountCents omitted → full refund.
-export async function createRefund({ paymentIntent, amountCents }) {
+// idempotencyKey is REQUIRED by callers that can race (two managers hitting Refund at
+// once): Stripe collapses retries with the same key into one refund instead of sending
+// the customer their money twice.
+export async function createRefund({ paymentIntent, amountCents, idempotencyKey }) {
   if (!SKEY) throw new Error('Stripe not configured');
   const body = new URLSearchParams({ payment_intent: paymentIntent });
   if (amountCents) body.set('amount', String(amountCents));
-  const r = await fetch('https://api.stripe.com/v1/refunds', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${SKEY}`, 'Content-Type': 'application/x-www-form-urlencoded' },
-    body,
-  });
+  const headers = { Authorization: `Bearer ${SKEY}`, 'Content-Type': 'application/x-www-form-urlencoded' };
+  if (idempotencyKey) headers['Idempotency-Key'] = idempotencyKey;
+  const r = await fetch('https://api.stripe.com/v1/refunds', { method: 'POST', headers, body });
   const data = await r.json();
   if (!r.ok) throw new Error(data?.error?.message || `stripe http ${r.status}`);
   return { id: data.id, amount: data.amount, status: data.status };
+}
+
+// The PaymentIntent behind a charge id — dashboard refunds and disputes arrive keyed by
+// charge, but our ledger is keyed by intent.
+export async function getChargeIntent(chargeId) {
+  if (!SKEY || !chargeId) return null;
+  const r = await fetch(`https://api.stripe.com/v1/charges/${encodeURIComponent(chargeId)}`, {
+    headers: { Authorization: `Bearer ${SKEY}` },
+  });
+  const data = await r.json();
+  if (!r.ok) return null;
+  return typeof data.payment_intent === 'string' ? data.payment_intent : data.payment_intent?.id || null;
 }
 
 // Actual processing fee for a PaymentIntent, from its charge's balance transaction.

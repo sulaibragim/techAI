@@ -5,12 +5,13 @@ import { Navigation } from './components/Navigation';
 import { WorkroomDashboard } from './components/WorkroomDashboard';
 import { Login } from './components/Login';
 import { useAppStore, useVisibleJobs, hasPendingJobWrite } from './store';
+import { subscribeToWrites, clearWriteError, setSessionExpiredHandler, resetWriteQueue, flushWrites } from './writeQueue';
 import { useSettingsStore } from './settingsStore';
 import { useCurrentUser, useAuthStore, visibleTabsFor, ROLE_LABELS } from './authStore';
 import { getToken, authHeaders } from './apiClient';
 import { API_BASE } from './backendUrl';
 import type { Job, TechStatus } from './types';
-import { Bell, AlertCircle, CheckCircle2, X, Menu } from 'lucide-react';
+import { Bell, AlertCircle, CheckCircle2, X, Menu, WifiOff } from 'lucide-react';
 import type { TabId } from './types';
 
 // Heavy / not-immediately-needed screens are code-split so the first paint (Login +
@@ -52,6 +53,19 @@ const App: React.FC = () => {
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [clientFocusId, setClientFocusId] = useState<string | null>(null);
   const [notification, setNotification] = useState<{msg: string, type: 'info' | 'success'} | null>(null);
+  const serverReachable = useAppStore(s => s.serverReachable);
+  // Outbox state: how many writes are still unsent, and the last failure worth showing.
+  const [writeState, setWriteState] = useState<{ pending: number; lastError: string | null }>({ pending: 0, lastError: null });
+  useEffect(() => subscribeToWrites(setWriteState), []);
+
+  // A 401 anywhere means the session is over. Previously there was no global handler at
+  // all, so an expired token just looked like "nothing saves any more".
+  useEffect(() => {
+    setSessionExpiredHandler(() => { useAuthStore.getState().logout(); });
+  }, []);
+
+  // Signed in (again) — push anything that piled up while we were logged out or offline.
+  useEffect(() => { if (currentUser) void flushWrites(); }, [currentUser?.id]);
 
   const openClient = (clientId: string) => { setClientFocusId(clientId); setActiveTab('clients'); };
   const openWizard = (seed?: { phone?: string; name?: string }) => { setWizardSeed(seed || {}); setIsWizardOpen(true); };
@@ -130,6 +144,7 @@ const App: React.FC = () => {
       if (document.visibilityState === 'hidden') return;
       try {
         const res = await fetch(`${API_BASE}/api/jobs`, { headers: { ...authHeaders() } });
+        useAppStore.getState().reportServerContact(res.ok);
         if (!res.ok || stopped) return;
         const serverJobs: Job[] = await res.json();
         const local = useAppStore.getState().jobs;
@@ -174,7 +189,9 @@ const App: React.FC = () => {
         if (notes.length && !stopped) {
           setNotification({ msg: notes.length > 1 ? `${notes[0]} (+${notes.length - 1} more)` : notes[0], type: 'success' });
         }
-      } catch { /* offline — retry next tick */ }
+      } catch {
+        useAppStore.getState().reportServerContact(false); // offline — retry next tick
+      }
     };
     const id = setInterval(poll, 8000);
     return () => { stopped = true; clearInterval(id); };
@@ -366,6 +383,31 @@ const App: React.FC = () => {
             </div>
           </div>
         </header>
+
+        {/* Connection + save state. Every screen renders from the local store, so without
+            this a dead backend looks exactly like a dead business: $0 revenue, 0 jobs,
+            empty A/R — with nothing on screen to say the numbers are stale. The second
+            bar is the other half of the same problem: writes used to fail in silence. */}
+        {!serverReachable && (
+          <div className="bg-amber-500/15 border-y border-amber-500/30 px-4 py-2.5 flex items-center gap-2.5 shrink-0">
+            <WifiOff size={15} className="text-amber-400 shrink-0" />
+            <p className="text-[11px] md:text-xs font-semibold text-amber-200 leading-tight">
+              Can’t reach the server — figures below are the last data this device saw, not live.
+              {writeState.pending > 0
+                ? ` ${writeState.pending} change${writeState.pending > 1 ? 's are' : ' is'} waiting to sync.`
+                : ' New changes are saved on this device and will sync when the connection returns.'}
+            </p>
+          </div>
+        )}
+        {writeState.lastError && (
+          <div className="bg-red-500/15 border-y border-red-500/30 px-4 py-2.5 flex items-center gap-2.5 shrink-0">
+            <AlertCircle size={15} className="text-red-400 shrink-0" />
+            <p className="flex-1 text-[11px] md:text-xs font-semibold text-red-200 leading-tight">{writeState.lastError}</p>
+            <button onClick={clearWriteError} aria-label="Dismiss" className="p-1 text-red-300 hover:text-white shrink-0">
+              <X size={14} />
+            </button>
+          </div>
+        )}
 
         {/* Main content */}
         <main className="flex-1 p-3 md:p-8 overflow-y-auto scrollbar-hide bg-slate-950">

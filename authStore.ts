@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { User, Role, AuditEntry, TechStatus } from './types';
 import { API_BASE } from './backendUrl';
 import { setToken, authHeaders } from './apiClient';
+import { resetWriteQueue } from './writeQueue';
 
 const DEFAULT_USERS: User[] = [
   { id: 'u-owner', name: 'Sultan',     email: 'owner@trustkey.az',   role: 'owner',      active: true, createdAt: new Date().toISOString() },
@@ -81,7 +82,24 @@ export const useAuthStore = create<AuthState>()(
       },
 
       loginAs: (userId) => set({ currentUserId: userId }),
-      logout: () => { setToken(null); set({ currentUserId: null }); },
+      // Logout has to actually forget. It used to clear only the token and the current
+      // user id, leaving the persisted job list, inventory, messages and the whole
+      // settings blob — expenses, stock ledger, price book, client profiles — on the
+      // device. On the shop tablet the next person to sign in read all of it, including
+      // the keys the server deliberately withholds from technicians.
+      logout: () => {
+        setToken(null);
+        set({ currentUserId: null });
+        try {
+          resetWriteQueue(); // queued writes belong to the session that made them
+          for (const k of ['techai-crm-store-v3', 'techai-settings-v2', 'techai-brain-chat']) {
+            localStorage.removeItem(k);
+          }
+        } catch { /* storage unavailable — nothing to clear */ }
+        // Reload so no in-memory copy of the previous user's data survives into the
+        // next session. Logout is rare; correctness beats the extra second.
+        if (typeof window !== 'undefined') window.location.reload();
+      },
 
       // Returns the generated password the server set, so the caller can show it once.
       // Deliberately does NOT touch `active`: the server doesn't either, and flipping it

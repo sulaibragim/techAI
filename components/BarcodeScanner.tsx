@@ -64,7 +64,14 @@ export const BarcodeScanner: React.FC<{
           </p>
         </div>
       )}
-      <button onClick={onClose} className="absolute top-6 right-6 p-3 bg-white/10 backdrop-blur rounded-full text-white pointer-events-auto active:scale-95"><X size={24} /></button>
+      {/* Below the notch: a bare top-6 puts this under the iPhone status bar, and it is
+          the only way out of a full-screen camera — a mistap left the tech stuck. */}
+      <button
+        onClick={onClose}
+        aria-label="Close scanner"
+        style={{ top: 'calc(1.5rem + env(safe-area-inset-top))' }}
+        className="absolute right-6 p-3 bg-white/10 backdrop-blur rounded-full text-white pointer-events-auto active:scale-95"
+      ><X size={24} /></button>
     </div>
   );
 };

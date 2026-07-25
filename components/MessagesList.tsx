@@ -67,7 +67,9 @@ export const MessagesList: React.FC<MessagesListProps> = ({ onJobSelect }) => {
   }, [jobs]);
 
   const sendReply = async (to: string) => {
-    if (!replyText.trim()) return;
+    // `sending` guard lives here, not only on the button: the textarea's Enter handler
+    // calls this directly, so two quick Enters used to bill two SMS.
+    if (sending || !replyText.trim()) return;
     setSending(true);
     try {
       const res = await fetch(`${API_BASE}/api/openphone/messages/send`, {
@@ -188,7 +190,9 @@ export const MessagesList: React.FC<MessagesListProps> = ({ onJobSelect }) => {
                         )}
                       </div>
                     </div>
-                    <p className="text-sm text-slate-300 leading-relaxed pl-13">{msg.body}</p>
+                    {/* pl-13 doesn't exist in Tailwind's scale (…12, 14…), so no class was
+                        generated and the message body sat flush left under the avatar. */}
+                    <p className="text-sm text-slate-300 leading-relaxed pl-14">{msg.body}</p>
                   </div>
 
                   {/* Inline reply box */}

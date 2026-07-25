@@ -22,7 +22,7 @@ import { formatTimestamp, formatDate } from '../dateUtils';
 import { sendSms } from '../smsService';
 import { API_BASE } from '../backendUrl';
 import { authHeaders } from '../apiClient';
-import { normalizePhone, toE164US, formatPhone, buildClients, clientFlags, clientScore, TIER_STYLE } from '../clientUtils';
+import { normalizePhone, toE164US, formatPhone, buildClients, clientFlags, clientScore, TIER_STYLE, priorVisits } from '../clientUtils';
 import { isRevenueJob } from '../financialUtils';
 import { translateCallSummary } from '../translateService';
 import { geocodeAddress } from '../geocoding';
@@ -71,6 +71,8 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
   const lockedForTech = role === 'technician' && jobIsClosed; // tech cannot reopen a closed job
   const [localJob, setLocalJob] = useState<Job>({ ...initialJob });
   const [isModified, setIsModified] = useState(false);
+  // Past work for this customer or this building — shown at the top of the client panel.
+  const previousVisits = useMemo(() => priorVisits(jobs, initialJob), [jobs, initialJob]);
   // Money locks a technician's invoice: once anything is collected they can't delete or
   // edit billed items (only add while a balance remains); fully paid freezes it entirely.
   // Closing needs the money actually in — for card that's the Stripe webhook flipping the
@@ -78,7 +80,11 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
   const hasPayment = (localJob.amountPaid || 0) > 0 || localJob.paymentStatus === 'paid' || localJob.paymentStatus === 'partial';
   const techItemsLocked = role === 'technician' && (jobIsClosed || hasPayment);
   const techInvoiceFrozen = role === 'technician' && (jobIsClosed || localJob.paymentStatus === 'paid');
-  const techCompleteBlocked = role === 'technician' && localJob.paymentStatus !== 'paid';
+  // A $0 invoice (warranty callback, courtesy visit) has nothing to collect — blocking it
+  // on paymentStatus left the tech unable to close the job at all.
+  const techCompleteBlocked = role === 'technician'
+    && localJob.paymentStatus !== 'paid'
+    && (localJob.totalAmount || 0) > 0.01;
   const techCancelBlocked = role === 'technician' && hasPayment;
 
   // Swipe right anywhere on the card to go back — the top "back" button sits under the
@@ -555,7 +561,9 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
     if (tipAmount > 0.009) {
       items = [...items, {
         id: Math.random().toString(36).slice(2, 11),
-        type: 'labor' as const,
+        // Not 'labor': booked as labor the tip became company revenue — taxed, and paid
+        // out to the tech at the commission rate instead of in full.
+        type: 'tip' as const,
         description: `Tip (${tipPct}%)`,
         quantity: 1,
         unitPrice: tipAmount,
@@ -877,15 +885,29 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
   // print, so the client always sees the same document. The inline HTML below survives
   // only as an offline fallback when the server is unreachable.
   const handlePrintInvoice = async () => {
+    // Open the tab SYNCHRONOUSLY, inside the click. Both window.open calls used to run
+    // after an await, by which point the user-gesture token is gone and iOS Safari blocks
+    // the popup — the tech tapped Print in front of the client and nothing happened at
+    // all, with no error. Now we take the tab first and point it at the URL once we have
+    // it; if the browser refused the tab, we say so instead of failing mutely.
+    const tab = window.open('', '_blank');
+    if (tab) {
+      tab.document.write('<!doctype html><meta charset="utf-8"><title>Invoice</title><body style="background:#0f172a;color:#94a3b8;font:15px system-ui;display:flex;align-items:center;justify-content:center;height:100vh">Preparing the invoice…</body>');
+      tab.document.close();
+    }
     try {
       await syncJobToServer(localJob);
       const res = await fetch(`${API_BASE}/api/payments/receipt-url/${localJob.id}`, { headers: { ...authHeaders() } });
       if (res.ok) {
         const { url } = await res.json();
-        window.open(url, '_blank', 'noopener');
+        if (tab) { tab.location.href = url; return; }
+        // No tab to use (popup blocked and no fallback) — navigate this one instead of
+        // leaving the tech staring at an unchanged screen.
+        window.location.href = url;
         return;
       }
     } catch {}
+    if (tab) tab.close();
     const esc = (s: string) => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     const isPaid = localJob.paymentStatus === 'paid';
     const isPartial = localJob.paymentStatus === 'partial';
@@ -1071,8 +1093,18 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
 
 </div></body></html>`;
 
-    const w = window.open('', '_blank', 'width=860,height=1050');
-    if (w) { w.document.write(html); w.document.close(); w.focus(); setTimeout(() => w.print(), 400); }
+    // Reuse the tab we grabbed on the click; only open a new one if we never got it.
+    const w = tab || window.open('', '_blank', 'width=860,height=1050');
+    if (w) {
+      w.document.open();
+      w.document.write(html);
+      w.document.close();
+      w.focus();
+      setTimeout(() => w.print(), 400);
+    } else {
+      // Popup blocked outright. Say so — this used to be a completely silent no-op.
+      alert('Your browser blocked the invoice window. Allow pop-ups for this site, then tap Print again.');
+    }
   };
   // What's actually being collected now: the outstanding balance (deposits already
   // paid are subtracted). Tips are added as a line item before charging, so this
@@ -1272,14 +1304,19 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
       )}
 
       {/* MODAL: CLIENT EDIT */}
+      {/* max-h + overflow: this panel holds ~11 field cards, notes and Save. In two fixed
+          columns on a 375px screen it measured taller than the viewport, and with no
+          scroll container (and overflow-hidden above it) the flex centering clipped it top
+          and bottom — the technician could edit the gate code and then simply could not
+          reach "Save Changes". One column on phones, two from md up. */}
       {isEditingClient && (
-        <div className="absolute inset-0 z-[500] bg-black/90 backdrop-blur-2xl flex items-center justify-center p-6">
-          <div className="bg-slate-900 w-full max-w-2xl rounded-2xl border border-white/10 p-6 shadow-2xl space-y-5 animate-in zoom-in-95">
-            <div className="flex justify-between items-center">
-              <h3 className="text-xl font-bold text-white tracking-tight">Edit Client Records</h3>
+        <div className="absolute inset-0 z-[500] bg-black/90 backdrop-blur-2xl flex items-start md:items-center justify-center p-4 md:p-6 overflow-y-auto">
+          <div className="bg-slate-900 w-full max-w-2xl rounded-2xl border border-white/10 p-4 md:p-6 shadow-2xl space-y-5 animate-in zoom-in-95 my-auto max-h-[92vh] overflow-y-auto">
+            <div className="flex justify-between items-center sticky top-0 bg-slate-900 -mt-1 pt-1 pb-2 z-10">
+              <h3 className="text-lg md:text-xl font-bold text-white tracking-tight">Edit Client Records</h3>
               <button onClick={() => setIsEditingClient(false)} className="p-2 text-slate-400 hover:text-white"><X size={24} /></button>
             </div>
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <div className="space-y-4">
                 <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
                   <label className="text-xs font-bold text-slate-400 uppercase block mb-1">First Name</label>
@@ -1311,6 +1348,9 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                   address={localJob.client.address || ''}
                   zip={localJob.client.zip || ''}
                   precision={localJob.client.geoPrecision}
+                  lat={localJob.client.lat}
+                  lng={localJob.client.lng}
+                  placeId={localJob.client.placeId}
                   onChange={(v) => handleClientChange({
                     address: v.address,
                     zip: v.zip,
@@ -2011,6 +2051,32 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                   </div>
                 )}
 
+                {/* WE'VE BEEN HERE BEFORE — repeat calls are a big share of this trade,
+                    and the tech used to arrive with no idea what was fitted last time or
+                    what it cost. Matched on phone, or on the street address so a second
+                    call to the same building still connects. */}
+                {previousVisits.length > 0 && (
+                  <div className="bg-blue-500/5 border border-blue-500/20 rounded-2xl p-4 space-y-2.5">
+                    <p className="text-xs font-bold uppercase tracking-widest text-blue-400 flex items-center gap-1.5">
+                      <History size={13} /> We’ve been here before · {previousVisits.length}
+                    </p>
+                    {previousVisits.map(v => (
+                      <div key={v.id} className="flex items-start justify-between gap-3 text-xs border-t border-white/5 pt-2.5 first:border-0 first:pt-0">
+                        <div className="min-w-0">
+                          <p className="font-semibold text-white truncate">
+                            {v.lockDetails?.type || 'Service'}{v.lockDetails?.brand ? ` · ${v.lockDetails.brand}` : ''}
+                          </p>
+                          <p className="text-slate-400 truncate">
+                            {formatDate(v.completedAt || v.scheduledDate)}
+                            {v.diagnosisNotes ? ` — ${v.diagnosisNotes.slice(0, 60)}` : ''}
+                          </p>
+                        </div>
+                        <span className="font-bold text-slate-300 tabular-nums shrink-0">${(v.totalAmount || 0).toFixed(0)}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 {/* CONTACT ACTIONS */}
                 <div className="space-y-1">
                   <div className="flex items-center justify-between py-2.5 border-b border-slate-700/50 group">
@@ -2018,9 +2084,12 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                       <Phone size={13} className="text-blue-500 shrink-0" />
                       <span className="text-xs font-semibold text-white">{formatPhone(localJob.client.phone)}</span>
                     </div>
-                    <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => window.location.href = `tel:${localJob.client.phone}`} className="p-1.5 text-slate-400 hover:text-blue-400 transition-colors"><Phone size={12} /></button>
-                      <button onClick={() => copyToClipboard(localJob.client.phone)} className="p-1.5 text-slate-400 hover:text-blue-400 transition-colors"><Copy size={12} /></button>
+                    {/* Always visible on touch: `opacity-0 group-hover` meant the only way
+                        to dial the client from a job card did not exist on a phone, which
+                        is where every technician uses this screen. */}
+                    <div className="flex space-x-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                      <button aria-label="Call client" onClick={() => window.location.href = `tel:${localJob.client.phone}`} className="p-2.5 text-slate-300 md:text-slate-400 hover:text-blue-400 transition-colors"><Phone size={14} /></button>
+                      <button aria-label="Copy phone number" onClick={() => copyToClipboard(localJob.client.phone)} className="p-2.5 text-slate-300 md:text-slate-400 hover:text-blue-400 transition-colors"><Copy size={14} /></button>
                     </div>
                   </div>
                   <div className="flex items-center justify-between py-2.5 border-b border-slate-700/50 group">
@@ -2028,7 +2097,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                       <Mail size={13} className="text-blue-500 shrink-0" />
                       <span className="text-xs font-semibold text-white truncate max-w-[200px]">{localJob.client.email}</span>
                     </div>
-                    <button onClick={() => copyToClipboard(localJob.client.email)} className="p-1.5 text-slate-400 hover:text-blue-400 transition-colors opacity-0 group-hover:opacity-100"><Copy size={12} /></button>
+                    <button aria-label="Copy email" onClick={() => copyToClipboard(localJob.client.email)} className="p-2.5 text-slate-300 md:text-slate-400 hover:text-blue-400 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100"><Copy size={14} /></button>
                   </div>
                   <div className="flex items-center justify-between py-2.5 group">
                     <div className="flex items-center space-x-3">
@@ -2595,7 +2664,10 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                       }`}
                     >
                       {payLinkState === 'sent' ? <CheckCircle2 size={17} /> : <Send size={17} className={payLinkState === 'sending' ? 'animate-pulse' : ''} />}
-                      <span className="hidden md:inline text-xs font-bold uppercase tracking-wider">
+                      {/* The label is hidden on phones to save width, but the STATE must
+                          not be — "Sending… / Link sent / Failed" was invisible exactly
+                          where it matters, on the tech's phone in front of the client. */}
+                      <span className={`text-xs font-bold uppercase tracking-wider ${payLinkState === 'idle' ? 'hidden md:inline' : 'inline'}`}>
                         {payLinkState === 'sent' ? 'Link sent' : payLinkState === 'error' ? 'Failed' : payLinkState === 'sending' ? 'Sending…' : 'Pay link'}
                       </span>
                     </button>
@@ -2613,7 +2685,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                       }`}
                     >
                       {receiptState === 'sent' ? <CheckCircle2 size={17} /> : <Send size={17} className={receiptState === 'sending' ? 'animate-pulse' : ''} />}
-                      <span className="hidden md:inline text-xs font-bold uppercase tracking-wider">
+                      <span className={`text-xs font-bold uppercase tracking-wider ${receiptState === 'idle' ? 'hidden md:inline' : 'inline'}`}>
                         {receiptState === 'sent' ? 'Receipt sent' : receiptState === 'error' ? 'Failed' : receiptState === 'sending' ? 'Sending…' : 'Receipt'}
                       </span>
                     </button>
