@@ -57,6 +57,50 @@ inventoryRouter.post('/sync', requireAuth, requireRole('owner', 'manager'), asyn
   }
 });
 
+// Apply a signed stock DELTA. Two problems this solves:
+//
+//  1. A technician billing a part on their own job used to PUT the whole part, which is
+//     owner/manager-only. The 403 was never read, so the shelf count dropped locally,
+//     the client was invoiced, and the next login snapped stock back up. Inventory drifted
+//     high forever and the reorder point never tripped.
+//  2. Absolute writes clobber each other. Two people receiving stock from a stale screen
+//     each wrote their own total, so one receipt vanished while the ledger kept both.
+//     The arithmetic happens in SQL here, so concurrent movements add up.
+//
+// A technician may move stock in either direction — they consume a part on a job, or put
+// an unused one back — but only against a job assigned to them, and every movement is
+// recorded in the stock ledger with their name. Free-hand adjustments stay owner/manager.
+inventoryRouter.post('/:id/movement', requireAuth, async (req, res) => {
+  try {
+    const delta = Number(req.body?.delta);
+    if (!Number.isFinite(delta) || delta === 0) return res.status(400).json({ error: 'delta must be a non-zero number' });
+    if (Math.abs(delta) > 10000) return res.status(400).json({ error: 'Implausible quantity' });
+
+    if (req.user.role === 'technician') {
+      const jobId = req.body?.jobId;
+      if (!jobId) return res.status(403).json({ error: 'Technicians can only move stock against one of their jobs' });
+      const { rows } = await db.query("SELECT data->>'assignedTo' AS assigned FROM jobs WHERE id = $1", [jobId]);
+      if (rows.length === 0) return res.status(404).json({ error: 'Job not found' });
+      if (rows[0].assigned !== req.user.id) return res.status(403).json({ error: 'Not your job' });
+    }
+
+    const { rows } = await db.query(
+      `UPDATE inventory
+          SET data = jsonb_set(data, '{stock}',
+                to_jsonb(GREATEST(0, COALESCE((data->>'stock')::numeric, 0) + $2::numeric))),
+              updated_at = NOW()
+        WHERE id = $1
+      RETURNING id, data`,
+      [req.params.id, delta]
+    );
+    if (rows.length === 0) return res.status(404).json({ error: 'Part not found' });
+    res.json({ id: rows[0].id, ...rows[0].data });
+  } catch (err) {
+    console.error('[INVENTORY] movement error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Upsert a single part — owner/manager only.
 inventoryRouter.put('/:id', requireAuth, requireRole('owner', 'manager'), async (req, res) => {
   try {

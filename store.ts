@@ -5,6 +5,7 @@ import { useAuthStore } from './authStore';
 import { useSettingsStore } from './settingsStore';
 import { API_BASE } from './backendUrl';
 import { authHeaders } from './apiClient';
+import { sendWrite, flushWrites } from './writeQueue';
 
 const getDynamicDate = (offsetDays: number) => {
   const d = new Date();
@@ -55,39 +56,47 @@ function settleJobPending(id: string, p: Promise<unknown>) {
   p.then(() => markJobPending(id)).catch(() => markJobPending(id));
 }
 
+// All writes go through the outbox: it reads the HTTP status (these used to be
+// `.catch(() => {})`, so a 403 or no signal looked identical to success), retries what
+// is retryable, and surfaces what isn't.
+const jobLabel = (job: Job) => `job #${job.jobNumber || job.id}`;
+
 function pushJobToServer(job: Job) {
   markJobPending(job.id);
-  settleJobPending(job.id, fetch(`${API_BASE}/api/jobs`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...authHeaders() },
-    body: JSON.stringify(job),
+  settleJobPending(job.id, sendWrite({
+    url: '/api/jobs', method: 'POST', body: job,
+    dedupe: `job:${job.id}`, label: jobLabel(job),
   }));
 }
 
 function updateJobOnServer(job: Job) {
   markJobPending(job.id);
-  settleJobPending(job.id, fetch(`${API_BASE}/api/jobs/${job.id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json', ...authHeaders() },
-    body: JSON.stringify(job),
+  settleJobPending(job.id, sendWrite({
+    url: `/api/jobs/${job.id}`, method: 'PUT', body: job,
+    dedupe: `job:${job.id}`, label: jobLabel(job),
   }));
 }
 
 function deleteJobOnServer(id: string) {
   markJobPending(id);
-  settleJobPending(id, fetch(`${API_BASE}/api/jobs/${id}`, { method: 'DELETE', headers: { ...authHeaders() } }));
+  settleJobPending(id, sendWrite({
+    url: `/api/jobs/${id}`, method: 'DELETE',
+    dedupe: `job:${id}`, label: `the deletion of job ${id}`,
+  }));
 }
 
 function upsertPartOnServer(part: Part) {
-  fetch(`${API_BASE}/api/inventory/${part.id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json', ...authHeaders() },
-    body: JSON.stringify(part),
-  }).catch(() => {});
+  void sendWrite({
+    url: `/api/inventory/${part.id}`, method: 'PUT', body: part,
+    dedupe: `part:${part.id}`, label: `stock for ${part.name || part.sku || 'this part'}`,
+  });
 }
 
 function deletePartOnServer(id: string) {
-  fetch(`${API_BASE}/api/inventory/${id}`, { method: 'DELETE', headers: { ...authHeaders() } }).catch(() => {});
+  void sendWrite({
+    url: `/api/inventory/${id}`, method: 'DELETE',
+    dedupe: `part:${id}`, label: 'this inventory item',
+  });
 }
 
 interface AppState {
@@ -260,7 +269,14 @@ export const useAppStore = create<AppState>()(
     if (!part) return;
     const updated: Part = { ...part, stock: Math.max(0, (part.stock || 0) - qty) };
     set((state) => ({ inventory: state.inventory.map(p => p.id === partId ? updated : p) }));
-    upsertPartOnServer(updated);
+    // Signed delta, not an absolute count: technicians aren't allowed to PUT a whole part
+    // (that 403 used to be swallowed, so the shelf count silently drifted high), and a
+    // delta can't clobber a movement someone else made from a stale screen.
+    void sendWrite({
+      url: `/api/inventory/${partId}/movement`, method: 'POST',
+      body: { delta: -qty, jobId },
+      label: `stock for ${part.name || part.sku || 'this part'}`,
+    });
     const auth = useAuthStore.getState();
     const user = auth.users.find(u => u.id === auth.currentUserId);
     useSettingsStore.getState().addStockMovement({
@@ -275,7 +291,12 @@ export const useAppStore = create<AppState>()(
     if (!part) return;
     const updated: Part = { ...part, stock: (part.stock || 0) + qty };
     set((state) => ({ inventory: state.inventory.map(p => p.id === partId ? updated : p) }));
-    upsertPartOnServer(updated);
+    // A return is the mirror of a consume — same delta endpoint, same reasons.
+    void sendWrite({
+      url: `/api/inventory/${partId}/movement`, method: 'POST',
+      body: { delta: qty, jobId },
+      label: `stock for ${part.name || part.sku || 'this part'}`,
+    });
     const auth = useAuthStore.getState();
     const user = auth.users.find(u => u.id === auth.currentUserId);
     useSettingsStore.getState().addStockMovement({
@@ -315,8 +336,12 @@ export const useAppStore = create<AppState>()(
   serverReachable: true,
   reportServerContact: (ok) => {
     if (ok) {
+      const wasDown = !get().serverReachable;
       serverMissCount = 0;
-      if (!get().serverReachable) set({ serverReachable: true });
+      if (wasDown) {
+        set({ serverReachable: true });
+        void flushWrites(); // back online — push whatever piled up while we were dark
+      }
       return;
     }
     serverMissCount += 1;

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { API_BASE } from './backendUrl';
 import { authHeaders } from './apiClient';
+import { sendWrite } from './writeQueue';
 import { Expense, ClientProfile, StockMovement, ServiceRate, AiMemory, ClientSmsSettings, CLIENT_SMS_DEFAULTS } from './types';
 import { PRICE_BOOK_SEED } from './priceBook';
 
@@ -94,13 +95,21 @@ const { storage: safeStorage, ephemeral: storageIsEphemeral } = (() => {
 
 export const settingsStorageIsEphemeral = storageIsEphemeral;
 
+// Settings writes are deltas, so they must NOT be deduped against each other — losing an
+// older queued patch would lose whichever keys only it carried. Each goes out on its own.
 function pushToServer(patch: Record<string, any>) {
-  fetch(`${API_BASE}/api/settings`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json', ...authHeaders() },
-    body: JSON.stringify(patch),
-  }).catch(() => {});
+  const keys = Object.keys(patch);
+  const label = keys.length === 1 ? `your ${humanKey(keys[0])}` : 'your settings';
+  void sendWrite({ url: '/api/settings', method: 'PUT', body: patch, label });
 }
+
+const KEY_WORDS: Record<string, string> = {
+  expenses: 'expense', stockMovements: 'stock movement', priceBook: 'price book',
+  clientProfiles: 'client profile', monthlyTargets: 'monthly target', techTargets: 'technician target',
+  aiMemories: 'AI instruction', taxRate: 'tax rate', adSpend: 'ad spend',
+};
+const humanKey = (k: string) =>
+  KEY_WORDS[k] || k.replace(/([A-Z])/g, ' $1').toLowerCase().trim();
 
 function migrateOldSettings(): Partial<typeof DEFAULTS> {
   try {
