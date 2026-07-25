@@ -292,10 +292,12 @@ export function availableMonths(jobs: Job[]): { year: number; month: number }[] 
 export interface TechnicianEarnings {
   userId: string;
   name: string;
-  revenue: number;
+  revenue: number;        // company revenue on their jobs — net of refunds, excludes tips
   jobCount: number;
   commissionRate: number; // percent
   commission: number;     // revenue * rate, rounded to cents
+  tips: number;           // client tips on their jobs — theirs in full
+  payout: number;         // commission + tips: what the technician is actually owed
 }
 
 /** Per-technician revenue and commission for a period (salary engine). */
@@ -306,26 +308,34 @@ export function revenueByTechnician(
   users: Pick<User, 'id' | 'name' | 'role' | 'commissionRate'>[]
 ): TechnicianEarnings[] {
   const completed = completedJobsInMonth(jobs, year, month);
-  const byTech = new Map<string, { revenue: number; jobCount: number }>();
+  const byTech = new Map<string, { revenue: number; tips: number; jobCount: number }>();
   for (const j of completed) {
     if (!j.assignedTo) continue;
-    const cur = byTech.get(j.assignedTo) || { revenue: 0, jobCount: 0 };
-    cur.revenue += j.totalAmount;
+    const cur = byTech.get(j.assignedTo) || { revenue: 0, tips: 0, jobCount: 0 };
+    // Commission is earned on company revenue, net of refunds and excluding tips.
+    cur.revenue += netRevenueAmount(j);
+    cur.tips += tipAmount(j);
     cur.jobCount += 1;
     byTech.set(j.assignedTo, cur);
   }
   return users
     .filter(u => u.role === 'technician')
     .map(u => {
-      const agg = byTech.get(u.id) || { revenue: 0, jobCount: 0 };
+      const agg = byTech.get(u.id) || { revenue: 0, tips: 0, jobCount: 0 };
       const rate = u.commissionRate ?? 0;
+      const commission = Math.round(agg.revenue * (rate / 100) * 100) / 100;
+      const tips = Math.round(agg.tips * 100) / 100;
       return {
         userId: u.id,
         name: u.name,
         revenue: Math.round(agg.revenue * 100) / 100,
         jobCount: agg.jobCount,
         commissionRate: rate,
-        commission: Math.round(agg.revenue * (rate / 100) * 100) / 100,
+        // The tip is the client's money for this technician — it passes through whole,
+        // on top of commission, instead of being shaved to the commission rate.
+        tips,
+        commission,
+        payout: Math.round((commission + tips) * 100) / 100,
       };
     })
     .sort((a, b) => b.revenue - a.revenue);
@@ -406,18 +416,21 @@ export function technicianStats(
     .map(u => {
       const mine = jobs.filter(j => j.assignedTo === u.id);
       const completed = mine.filter(j => isRevenueJob(j) && revenueDateStr(j).startsWith(key));
-      const revenue = completed.reduce((s, j) => s + j.totalAmount, 0);
+      // Company revenue: net of refunds, tips excluded (they're the tech's, not ours).
+      const revenue = completed.reduce((s, j) => s + netRevenueAmount(j), 0);
+      const tips = completed.reduce((s, j) => s + tipAmount(j), 0);
       const soldCount = completed.filter(isSale).length;
       const coffeeCount = mine.filter(j => j.status === 'coffee' && j.scheduledDate.startsWith(key)).length;
       const opportunities = soldCount + coffeeCount;
       const byDay = new Map<string, number>();
       for (const j of completed) {
         const d = revenueDateStr(j);
-        byDay.set(d, (byDay.get(d) || 0) + j.totalAmount);
+        byDay.set(d, (byDay.get(d) || 0) + netRevenueAmount(j));
       }
       let bestDay = { date: '', revenue: 0 };
       for (const [date, rev] of byDay) if (rev > bestDay.revenue) bestDay = { date, revenue: rev };
       const rate = u.commissionRate ?? 0;
+      const commission = round2(revenue * (rate / 100));
       return {
         userId: u.id,
         name: u.name,
@@ -425,7 +438,9 @@ export function technicianStats(
         revenue: round2(revenue),
         jobCount: completed.length,
         commissionRate: rate,
-        commission: round2(revenue * (rate / 100)),
+        commission,
+        tips: round2(tips),
+        payout: round2(commission + tips),
         soldCount,
         coffeeCount,
         closeRate: opportunities > 0 ? (soldCount / opportunities) * 100 : 0,
@@ -633,6 +648,14 @@ export const collectedAmount = (j: Job): number => {
   return 0;
 };
 
+/**
+ * The client's tip on a job. Charged and collected with everything else, but it is the
+ * technician's money, not the company's: excluded from revenue and from sales tax, and
+ * paid out in full rather than at the commission rate.
+ */
+export const tipAmount = (j: Job): number =>
+  (j.lineItems || []).filter(i => i.type === 'tip').reduce((s, i) => s + (i.unitPrice || 0) * (i.quantity || 0), 0);
+
 /** Money sent back to the client. The refund route already nets this out of amountPaid. */
 export const refundedAmount = (j: Job): number =>
   (j.refunds || []).reduce((s, r) => s + (r.amount || 0), 0);
@@ -643,10 +666,25 @@ export const refundedAmount = (j: Job): number =>
  * so it reappeared as an open invoice: the owner saw phantom A/R, and the scheduler
  * texted a customer we had just refunded to ask them to pay.
  */
-export const netRevenueAmount = (j: Job): number => Math.max(0, (j.totalAmount || 0) - refundedAmount(j));
+export const netRevenueAmount = (j: Job): number =>
+  Math.max(0, (j.totalAmount || 0) - refundedAmount(j) - tipAmount(j));
+
+/**
+ * What the CLIENT still owes — tips included, because the tip is on the invoice they
+ * agreed to. Distinct from netRevenueAmount, which is what the COMPANY earned.
+ */
+export const billableAmount = (j: Job): number => Math.max(0, (j.totalAmount || 0) - refundedAmount(j));
 
 /** Outstanding balance still owed on a job. */
-export const outstandingAmount = (j: Job): number => Math.max(0, netRevenueAmount(j) - collectedAmount(j));
+export const outstandingAmount = (j: Job): number => Math.max(0, billableAmount(j) - collectedAmount(j));
+
+/**
+ * Of the money collected, the part that is the COMPANY's. A tip passes through the
+ * business to the technician, so counting it as collected revenue would overstate the
+ * books by exactly the amount owed back out in payroll. Keeps the accounting identity
+ * collected + outstanding = gross revenue intact.
+ */
+export const collectedCompanyAmount = (j: Job): number => Math.max(0, collectedAmount(j) - tipAmount(j));
 
 export interface AccountingSummary {
   grossRevenue: number;
@@ -663,7 +701,7 @@ export function accountingSummary(jobs: Job[], year: number, month: number, taxR
   const inMonth = completedJobsInMonth(jobs, year, month);
   // Net of refunds: money handed back is not revenue, and taxing/commissioning it is worse.
   const grossRevenue = inMonth.reduce((s, j) => s + netRevenueAmount(j), 0);
-  const collected = inMonth.reduce((s, j) => s + collectedAmount(j), 0);
+  const collected = inMonth.reduce((s, j) => s + collectedCompanyAmount(j), 0);
   const outstanding = inMonth.reduce((s, j) => s + outstandingAmount(j), 0);
   const partsCost = inMonth.reduce(
     (s, j) => s + j.lineItems.filter(i => i.type === 'part').reduce((ss, i) => ss + (i.unitCost ?? 0) * i.quantity, 0),
@@ -685,7 +723,7 @@ export function paymentMethodBreakdown(jobs: Job[], year: number, month: number)
   const inMonth = completedJobsInMonth(jobs, year, month);
   const map = new Map<string, number>();
   for (const j of inMonth) {
-    const c = collectedAmount(j);
+    const c = collectedCompanyAmount(j); // tips aren't company income to break down
     if (c <= 0) continue;
     const m = j.paymentMethod || 'Unspecified';
     map.set(m, (map.get(m) || 0) + c);
@@ -734,9 +772,10 @@ export function payrollToCSV(rows: TechnicianEarnings[]): string {
     const s = String(v ?? '');
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
-  const header = ['Technician', 'Jobs', 'Revenue', 'Commission Rate (%)', 'Commission'];
-  const body = rows.map(r => [r.name, r.jobCount, r.revenue.toFixed(2), r.commissionRate, r.commission.toFixed(2)]);
-  const totals = ['TOTAL', rows.reduce((s, r) => s + r.jobCount, 0), rows.reduce((s, r) => s + r.revenue, 0).toFixed(2), '', rows.reduce((s, r) => s + r.commission, 0).toFixed(2)];
+  const sum = (pick: (r: TechnicianEarnings) => number) => rows.reduce((s, r) => s + pick(r), 0).toFixed(2);
+  const header = ['Technician', 'Jobs', 'Revenue', 'Commission Rate (%)', 'Commission', 'Tips', 'Total Payout'];
+  const body = rows.map(r => [r.name, r.jobCount, r.revenue.toFixed(2), r.commissionRate, r.commission.toFixed(2), r.tips.toFixed(2), r.payout.toFixed(2)]);
+  const totals = ['TOTAL', rows.reduce((s, r) => s + r.jobCount, 0), sum(r => r.revenue), '', sum(r => r.commission), sum(r => r.tips), sum(r => r.payout)];
   return [header, ...body, totals].map(r => r.map(esc).join(',')).join('\n');
 }
 

@@ -5,6 +5,7 @@ import { sendSMS } from '../services/openphone.js';
 import { sendPushToUser } from '../services/push.js';
 import { getClientLang, claimOnce, t, SPANISH_INVITE } from '../services/messages.js';
 import { clientSmsEnabled } from '../services/businessSettings.js';
+import { voidOpenSessions } from './payments.js';
 
 export const jobsRouter = Router();
 
@@ -395,6 +396,13 @@ jobsRouter.put('/:id', requireAuth, async (req, res) => {
   }
 
   try {
+    // Settled by another method (cash/check/Zelle at the door) → kill any card link still
+    // live. Otherwise the client pays the tech in cash, then taps the payment text that
+    // evening and is charged a second time for the same job.
+    const wasOwing = (prevData?.paymentStatus || 'unpaid') !== 'paid';
+    if (wasOwing && data.paymentStatus === 'paid') {
+      voidOpenSessions(req.params.id).catch(e => console.error('[JOBS] void sessions error:', e.message));
+    }
 
     // Newly assigned (or reassigned) to a different tech → text them.
     if (data.assignedTo && data.assignedTo !== prevAssigned) {

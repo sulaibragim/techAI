@@ -1,7 +1,7 @@
 import { db } from '../db.js';
 import { sendSMS } from './openphone.js';
 import { sendPushToRoles } from './push.js';
-import { stripeConfigured, createCheckoutSession, publicBase } from './stripe.js';
+import { stripeConfigured, publicBase, payUrlFor } from './stripe.js';
 import { getClientLang, t } from './messages.js';
 import { clientSmsEnabled } from './businessSettings.js';
 
@@ -101,21 +101,11 @@ async function runPaymentReminders() {
     const lang = await getClientLang(phone);
     const first = (j.client?.firstName || '').trim() || (lang === 'es' ? 'hola' : 'there');
 
-    // With Stripe configured, the reminder carries a tap-to-pay card link — the client can
-    // settle right from the text. Link failure never blocks the reminder itself.
-    let payUrl = '';
-    if (stripeConfigured()) {
-      try {
-        const session = await createCheckoutSession({
-          jobId: row.id,
-          jobNumber: j.jobNumber || row.id,
-          amountCents: Math.round(balance * 100),
-          companyName: company.name,
-          base: publicBase(),
-        });
-        payUrl = session.url;
-      } catch (e) { console.warn('[scheduler] pay-link failed, sending reminder without it:', e.message); }
-    }
+    // Durable pay link rather than a raw Stripe session URL. A session dies after 24h, so
+    // a Tuesday reminder was a dead end by Thursday — the client tapped it, got Stripe's
+    // "expired" page, and had no way to pay until someone re-texted them by hand. This
+    // link mints a fresh session when tapped, however late that is.
+    const payUrl = stripeConfigured() ? (payUrlFor(publicBase(), row.id) || '') : '';
 
     const text = t('paymentReminder', lang, {
       name: first, company: company.name, jobNo: j.jobNumber || row.id, balance, payUrl, phone: company.phone,

@@ -22,6 +22,12 @@ export default defineConfig(() => {
         },
       },
       plugins: [react()],
+      test: {
+        // prd/specs holds unimplemented spec stubs (no imports, bodies that throw). They
+        // are documentation, not tests — tsconfig already excludes them, and picking them
+        // up here makes a green suite look red.
+        exclude: ['node_modules/**', 'dist/**', 'prd/**'],
+      },
       build: {
         rollupOptions: {
           output: {

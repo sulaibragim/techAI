@@ -8,7 +8,7 @@ import { sendPushToRoles } from '../services/push.js';
 import { getClientLang, t, claimOnce } from '../services/messages.js';
 import { clientSmsEnabled } from '../services/businessSettings.js';
 import { sendEmail, emailConfigured } from '../services/email.js';
-import { stripeConfigured, webhookConfigured, createCheckoutSession, createRefund, getSessionPayment, getPaymentFee, verifyStripeSignature, publicBase } from '../services/stripe.js';
+import { stripeConfigured, webhookConfigured, createCheckoutSession, createRefund, getSessionPayment, getPaymentFee, verifyStripeSignature, publicBase, expireCheckoutSession, getChargeIntent, paySig, payUrlFor } from '../services/stripe.js';
 
 export const paymentsRouter = Router();
 
@@ -47,6 +47,42 @@ async function companyName() {
 const RECEIPT_SECRET = jwtSecret();
 const receiptSig = (jobId) => crypto.createHmac('sha256', RECEIPT_SECRET).update(`receipt:${jobId}`).digest('hex').slice(0, 20);
 const receiptUrlFor = (base, jobId) => (base ? `${base}/pay/receipt/${encodeURIComponent(jobId)}/${receiptSig(jobId)}` : '');
+
+// Checkout sessions we created and that may still be open. Kept so they can be killed
+// the moment the job is settled some other way — otherwise the client pays cash at the
+// door and then taps the still-live link that evening and pays a second time.
+async function rememberOpenSession(jobId, sessionId) {
+  try {
+    await db.query(
+      `UPDATE jobs SET data = jsonb_set(COALESCE(data, '{}'::jsonb), '{openSessions}',
+         COALESCE(data->'openSessions', '[]'::jsonb) || to_jsonb($2::text))
+       WHERE id = $1`,
+      [jobId, sessionId]
+    );
+  } catch (e) { console.warn('[payments] could not record open session:', e.message); }
+}
+
+/** Expire every open checkout session on a job and clear the list. Best-effort. */
+export async function voidOpenSessions(jobId, except) {
+  if (!stripeConfigured()) return;
+  let ids = [];
+  try {
+    const { rows } = await db.query("SELECT data->'openSessions' AS s FROM jobs WHERE id = $1", [jobId]);
+    ids = Array.isArray(rows[0]?.s) ? rows[0].s : [];
+  } catch { return; }
+  const doomed = ids.filter(id => id && id !== except);
+  for (const id of doomed) {
+    try { await expireCheckoutSession(id); }
+    catch (e) { console.warn('[payments] could not expire session', id, e.message); }
+  }
+  if (doomed.length === 0 && ids.length === 0) return;
+  try {
+    await db.query(
+      `UPDATE jobs SET data = jsonb_set(COALESCE(data, '{}'::jsonb), '{openSessions}', $2::jsonb) WHERE id = $1`,
+      [jobId, JSON.stringify(except ? [except] : [])]
+    );
+  } catch (e) { console.warn('[payments] could not clear open sessions:', e.message); }
+}
 
 // The Download-PDF/Print button can't use an inline onclick: helmet's default CSP ships
 // script-src-attr 'none', which silently kills inline handlers (the "button does nothing"
@@ -359,14 +395,23 @@ paymentsRouter.post('/link', requireAuth, async (req, res) => {
       customerEmail: (job.client?.email || '').trim(), // Stripe emails its own receipt
     });
 
+    // Only the newest link stays live: an older one still open would let the client pay
+    // the same balance twice.
+    await rememberOpenSession(jobId, session.id);
+    await voidOpenSessions(jobId, session.id);
+
     let smsSent = false;
     const phone = (job.client?.phone || '').trim();
     if (sms && phone) {
       const first = (job.client?.firstName || '').trim() || 'there';
-      const ok = await sendSMS(phone, `Hi ${first}, you can pay your balance of ${money(charge)} for job #${job.jobNumber || jobId} securely by card here: ${session.url} — ${company}`);
+      // Text the durable link, not the raw session URL — the text outlives the session.
+      const link = payUrlFor(publicBase(req), jobId) || session.url;
+      const ok = await sendSMS(phone, `Hi ${first}, you can pay your balance of ${money(charge)} for job #${job.jobNumber || jobId} securely by card here: ${link} — ${company}`);
       smsSent = !!ok;
     }
-    res.json({ url: session.url, balance, amount: charge, smsSent });
+    // The QR/copy flow in the app still uses the direct session URL — it's scanned on the
+    // spot, so freshness isn't a concern there.
+    res.json({ url: session.url, payLink: payUrlFor(publicBase(req), jobId), balance, amount: charge, smsSent });
   } catch (err) {
     console.error('[payments] link error:', err.message);
     res.status(502).json({ error: 'Could not create payment link' });
@@ -451,18 +496,28 @@ paymentsRouter.post('/receipt', requireAuth, async (req, res) => {
 // Allowlist, not deny-technician: `accountant` is a real role and must not be able to
 // push money back out through Stripe just by not being a tech.
 paymentsRouter.post('/refund', requireAuth, requireRole('owner', 'manager'), async (req, res) => {
+  // The read (how much is refundable), the Stripe calls and the ledger write all run
+  // under one row lock. Unlocked, two managers hitting Refund at the same moment both
+  // read "collected $500", both pass the ceiling check, and the customer gets $500 back
+  // twice while the books record one refund.
+  const client = await db.connect();
+  let updated, refundAmount, newRefunds, job, jobId, cancelJob;
   try {
-    const { jobId, amount, cancelJob = false } = req.body || {};
-    if (!jobId) return res.status(400).json({ error: 'jobId required' });
-    const refundAmount = Math.round(Number(amount) * 100) / 100;
-    if (!Number.isFinite(refundAmount) || refundAmount < 0.01) return res.status(400).json({ error: 'Invalid amount' });
+    ({ jobId, cancelJob = false } = req.body || {});
+    const { amount } = req.body || {};
+    if (!jobId) { client.release(); return res.status(400).json({ error: 'jobId required' }); }
+    refundAmount = Math.round(Number(amount) * 100) / 100;
+    if (!Number.isFinite(refundAmount) || refundAmount < 0.01) { client.release(); return res.status(400).json({ error: 'Invalid amount' }); }
 
-    const { rows } = await db.query('SELECT data FROM jobs WHERE id = $1', [jobId]);
-    if (rows.length === 0) return res.status(404).json({ error: 'Job not found' });
-    const job = rows[0].data;
+    await client.query('BEGIN');
+    const { rows } = await client.query('SELECT data FROM jobs WHERE id = $1 FOR UPDATE', [jobId]);
+    if (rows.length === 0) { await client.query('ROLLBACK'); client.release(); return res.status(404).json({ error: 'Job not found' }); }
+    job = rows[0].data;
 
     const paid = paidOf(job);
     if (refundAmount > paid + 0.005) {
+      await client.query('ROLLBACK');
+      client.release();
       return res.status(400).json({ error: `Refund exceeds collected amount (${money(paid)})` });
     }
 
@@ -486,17 +541,22 @@ paymentsRouter.post('/refund', requireAuth, requireRole('owner', 'manager'), asy
     }
 
     const now = new Date().toISOString();
-    const newRefunds = [];
+    newRefunds = [];
     let remaining = refundAmount;
 
     if (payments.length > 0) {
-      if (!stripeConfigured()) return res.status(503).json({ error: 'Card payments not configured (STRIPE_SECRET_KEY)' });
+      if (!stripeConfigured()) { await client.query('ROLLBACK'); client.release(); return res.status(503).json({ error: 'Card payments not configured (STRIPE_SECRET_KEY)' }); }
       for (const p of payments.reverse()) { // newest charge first
         if (remaining < 0.01) break;
-        const available = Math.max(0, (p.amount || 0) - (refundedByIntent.get(p.intent) || 0));
+        const alreadyOnIntent = refundedByIntent.get(p.intent) || 0;
+        const available = Math.max(0, (p.amount || 0) - alreadyOnIntent);
         if (available < 0.01) continue;
         const slice = Math.min(remaining, available);
-        const r = await createRefund({ paymentIntent: p.intent, amountCents: Math.round(slice * 100) });
+        // Keyed to the ledger state this refund produces, so a retry after a crash (or a
+        // duplicate delivery) collapses into the same refund, while a genuinely separate
+        // refund later has a different cumulative total and therefore a different key.
+        const idempotencyKey = `rf-${jobId}-${p.intent}-${Math.round((alreadyOnIntent + slice) * 100)}`;
+        const r = await createRefund({ paymentIntent: p.intent, amountCents: Math.round(slice * 100), idempotencyKey });
         newRefunds.push({ id: r.id, intent: p.intent, amount: slice, at: now, by: req.user.id, method: 'card' });
         remaining = Math.round((remaining - slice) * 100) / 100;
       }
@@ -511,7 +571,7 @@ paymentsRouter.post('/refund', requireAuth, requireRole('owner', 'manager'), asy
     }
 
     const newPaid = Math.max(0, Math.round((paid - refundAmount) * 100) / 100);
-    const updated = {
+    updated = {
       ...job,
       amountPaid: newPaid,
       paymentStatus: newPaid < 0.01 ? 'unpaid' : newPaid >= (job.totalAmount || 0) - 0.01 ? 'paid' : 'partial',
@@ -519,7 +579,17 @@ paymentsRouter.post('/refund', requireAuth, requireRole('owner', 'manager'), asy
       ...(cancelJob ? { status: 'cancelled' } : {}),
       updatedAt: now,
     };
-    await db.query('UPDATE jobs SET data = $2, updated_at = NOW() WHERE id = $1', [jobId, JSON.stringify(updated)]);
+    await client.query('UPDATE jobs SET data = $2, updated_at = NOW() WHERE id = $1', [jobId, JSON.stringify(updated)]);
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK').catch(() => {});
+    client.release();
+    console.error('[payments] refund error:', err.message);
+    return res.status(502).json({ error: err.message || 'Could not process refund' });
+  }
+  client.release();
+
+  try {
     console.log(`[payments] refunded ${money(refundAmount)} on job ${job.jobNumber || jobId} (${newRefunds.map(r => r.method).join('+')})${cancelJob ? ' — job cancelled' : ''}`);
 
     // Tell the client (their language), tell the bosses (push).
@@ -541,18 +611,94 @@ paymentsRouter.post('/refund', requireAuth, requireRole('owner', 'manager'), asy
       data: { type: 'refund', jobId, url: '/' },
     }).catch(() => {});
 
-    res.json({
-      refunded: refundAmount,
-      refunds: updated.refunds,
-      amountPaid: updated.amountPaid,
-      paymentStatus: updated.paymentStatus,
-      status: updated.status,
-    });
   } catch (err) {
-    console.error('[payments] refund error:', err.message);
-    res.status(502).json({ error: err.message || 'Could not process refund' });
+    // Money already moved and the ledger already committed — only notifications failed.
+    console.error('[payments] refund notify error:', err.message);
   }
+
+  res.json({
+    refunded: refundAmount,
+    refunds: updated.refunds,
+    amountPaid: updated.amountPaid,
+    paymentStatus: updated.paymentStatus,
+    status: updated.status,
+  });
 });
+
+// A refund or dispute that happened OUTSIDE this app (Stripe dashboard, chargeback).
+// Finds the job by the PaymentIntent recorded on it, then tops the ledger up to whatever
+// Stripe says has been reversed. Idempotent by construction: we only ever write the
+// difference between Stripe's total and ours, so a redelivered event is a no-op.
+async function recordExternalReversal(event) {
+  const obj = event.data?.object || {};
+  const isDispute = event.type === 'charge.dispute.created';
+  const chargeId = isDispute ? obj.charge : obj.id;
+  const intentId = (typeof obj.payment_intent === 'string' ? obj.payment_intent : obj.payment_intent?.id)
+    || (await getChargeIntent(chargeId));
+  if (!intentId) { console.warn('[payments] reversal with no resolvable PaymentIntent'); return; }
+
+  // Stripe reports the CUMULATIVE amount refunded on a charge; a dispute reports its own.
+  const reversedTotal = isDispute ? (obj.amount || 0) / 100 : (obj.amount_refunded || 0) / 100;
+  if (reversedTotal <= 0) return;
+
+  const client = await db.connect();
+  try {
+    await client.query('BEGIN');
+    const { rows } = await client.query(
+      "SELECT id, data FROM jobs WHERE data->'stripePayments' @> $1::jsonb FOR UPDATE",
+      [JSON.stringify([{ intent: intentId }])]
+    );
+    if (rows.length === 0) {
+      await client.query('ROLLBACK');
+      console.warn('[payments] reversal for an intent not on any job:', intentId);
+      return;
+    }
+    const jobId = rows[0].id;
+    const job = rows[0].data;
+    const prior = Array.isArray(job.refunds) ? job.refunds : [];
+
+    // What we've already booked against THIS intent (from any source).
+    const alreadyBooked = prior
+      .filter(r => r.intent === intentId)
+      .reduce((s, r) => s + (r.amount || 0), 0);
+    const delta = Math.round((reversedTotal - alreadyBooked) * 100) / 100;
+    if (delta <= 0.005) { await client.query('ROLLBACK'); return; } // already recorded
+
+    const now = new Date().toISOString();
+    const entry = {
+      id: isDispute ? `dispute-${obj.id}` : `stripe-${chargeId}-${Math.round(reversedTotal * 100)}`,
+      intent: intentId,
+      amount: delta,
+      at: now,
+      by: isDispute ? 'chargeback' : 'stripe-dashboard',
+      method: 'card',
+    };
+    const paidNow = Math.max(0, Math.round(((job.amountPaid ?? job.totalAmount ?? 0) - delta) * 100) / 100);
+    const total = job.totalAmount || 0;
+    const updated = {
+      ...job,
+      refunds: [...prior, entry],
+      amountPaid: paidNow,
+      paymentStatus: paidNow <= 0.005 ? 'unpaid' : paidNow >= total - 0.01 ? 'paid' : 'partial',
+      updatedAt: now,
+    };
+    await client.query('UPDATE jobs SET data = $2, updated_at = NOW() WHERE id = $1', [jobId, JSON.stringify(updated)]);
+    await client.query('COMMIT');
+
+    console.log(`[payments] ${isDispute ? 'DISPUTE' : 'external refund'} ${money(delta)} on job ${job.jobNumber || jobId}`);
+    sendPushToRoles(['owner', 'manager'], {
+      title: isDispute ? `⚠ Chargeback — ${money(delta)}` : `Refund recorded — ${money(delta)}`,
+      body: `Job #${job.jobNumber || jobId}${isDispute ? ' is being disputed by the cardholder.' : ' was refunded from the Stripe dashboard.'}`,
+      tag: `rev-${entry.id}`,
+      data: { type: 'refund', jobId, url: '/' },
+    }).catch(() => {});
+  } catch (e) {
+    await client.query('ROLLBACK').catch(() => {});
+    throw e;
+  } finally {
+    client.release();
+  }
+}
 
 // ─── Stripe webhook ────────────────────────────────────────────────────────────
 // Mounted with express.raw (see index.js) — signature verification needs the exact bytes.
@@ -566,6 +712,20 @@ paymentsRouter.post('/webhook', async (req, res) => {
 
   let event;
   try { event = JSON.parse(raw); } catch { return res.status(400).json({ error: 'Invalid JSON' }); }
+
+  // Money can also leave without anyone touching this app — the owner refunds from the
+  // Stripe dashboard, or a customer wins a dispute. Those never reached the CRM, so the
+  // job stayed 'paid' and the amount stayed in revenue and in the tech's commission base
+  // forever. Mirror them into the ledger.
+  if (event.type === 'charge.refunded' || event.type === 'charge.dispute.created') {
+    try {
+      await recordExternalReversal(event);
+      return res.sendStatus(200);
+    } catch (err) {
+      console.error('[payments] reversal processing error:', err.message);
+      return res.status(500).json({ error: 'Could not record reversal' });
+    }
+  }
 
   // NOTE: we deliberately do NOT ack before doing the work. Acking first means a DB
   // blip loses the payment permanently — Stripe considers the event delivered and never
@@ -657,6 +817,10 @@ paymentsRouter.post('/webhook', async (req, res) => {
   try {
     console.log(`[payments] ${money(amount)} received on job ${job.jobNumber || jobId} (${fullyPaid ? 'paid in full' : `balance ${money(Math.max(0, total - newPaid))}`})`);
 
+    // Settled in full — kill any other link still floating around in an old text so it
+    // can't collect a second time.
+    if (fullyPaid) voidOpenSessions(jobId).catch(() => {});
+
     // Thank-you + receipt link to the payer — once per checkout session even if
     // Stripe redelivers the event. Owner-controlled (on by default); the manual
     // "Text receipt" button stays unaffected — that's an explicit send.
@@ -693,6 +857,51 @@ payPagesRouter.get('/success', (_req, res) => {
 });
 payPagesRouter.get('/cancelled', (_req, res) => {
   res.type('html').send(page('↩️', 'Payment cancelled', 'No charge was made. You can use the payment link again anytime, or contact us to pay another way.'));
+});
+
+// Durable pay link. Texted to the client instead of a raw Stripe URL, because a checkout
+// session expires in 24h and a reminder from Tuesday would be a dead end by Thursday.
+// Tapping this mints a fresh session for whatever is still owed, right now, and forwards.
+// Public by design; the HMAC path segment is the auth, and the amount is always recomputed
+// server-side from the stored balance — the URL carries no amount to tamper with.
+payPagesRouter.get('/j/:jobId/:sig', async (req, res) => {
+  const { jobId, sig } = req.params;
+  const expected = paySig(jobId);
+  const got = Buffer.from(String(sig));
+  const exp = Buffer.from(expected);
+  if (got.length !== exp.length || !crypto.timingSafeEqual(got, exp)) return res.sendStatus(404);
+
+  try {
+    const { rows } = await db.query('SELECT data FROM jobs WHERE id = $1', [jobId]);
+    if (rows.length === 0) return res.sendStatus(404);
+    const job = rows[0].data;
+
+    const balance = balanceOf(job);
+    if (balance < 1) {
+      return res.type('html').send(page('✅', 'Nothing left to pay',
+        'This invoice is already settled — no payment is needed. Thank you!'));
+    }
+    if (!stripeConfigured()) {
+      return res.type('html').send(page('📞', 'Card payments unavailable',
+        'We can’t take a card online right now. Please contact us and we’ll sort it out.'));
+    }
+
+    const session = await createCheckoutSession({
+      jobId,
+      jobNumber: job.jobNumber || jobId,
+      amountCents: Math.round(balance * 100),
+      companyName: await companyName(),
+      base: publicBase(req),
+      customerEmail: (job.client?.email || '').trim(),
+    });
+    await rememberOpenSession(jobId, session.id);
+    await voidOpenSessions(jobId, session.id); // only the one they're about to use stays live
+    res.redirect(303, session.url);
+  } catch (err) {
+    console.error('[payments] pay-link error:', err.message);
+    res.type('html').status(502).send(page('⚠️', 'Something went wrong',
+      'We couldn’t open the payment page. Please try again in a moment, or contact us.'));
+  }
 });
 
 // Full itemized receipt at an unguessable URL — texted to the client after payment.

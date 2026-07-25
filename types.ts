@@ -209,7 +209,10 @@ export interface LockDetails {
 
 export interface LineItem {
   id: string;
-  type: 'part' | 'labor' | 'service_call' | 'maintenance' | 'installation';
+  // 'tip' is the client's money for the technician, not the company's revenue: it is
+  // charged and collected like any other line, but it is not taxed, not part of the
+  // commission base, and it goes to the tech in full.
+  type: 'part' | 'labor' | 'service_call' | 'maintenance' | 'installation' | 'tip';
   description: string;
   quantity: number;
   unitPrice: number;   // price charged to the client

@@ -131,7 +131,10 @@ export const Accounting: React.FC<{ onJobSelect?: (job: Job) => void }> = ({ onJ
       for (const t of revenueByTechnician(jobs, m.year, m.month, users)) {
         const cur = rows.get(t.userId);
         if (!cur) rows.set(t.userId, { ...t });
-        else { cur.revenue += t.revenue; cur.jobCount += t.jobCount; cur.commission += t.commission; }
+        else {
+          cur.revenue += t.revenue; cur.jobCount += t.jobCount;
+          cur.commission += t.commission; cur.tips += t.tips; cur.payout += t.payout;
+        }
       }
     return [...rows.values()].sort((a, b) => b.revenue - a.revenue);
   }, [jobs, span, users]);
@@ -379,7 +382,9 @@ export const Accounting: React.FC<{ onJobSelect?: (job: Job) => void }> = ({ onJ
                     <th className="py-2 px-2 text-right">Jobs</th>
                     <th className="py-2 px-2 text-right">Revenue</th>
                     <th className="py-2 px-2 text-right">Rate</th>
-                    <th className="py-2 pl-2 text-right">Commission</th>
+                    <th className="py-2 px-2 text-right">Commission</th>
+                    <th className="py-2 px-2 text-right">Tips</th>
+                    <th className="py-2 pl-2 text-right">Payout</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
@@ -389,7 +394,9 @@ export const Accounting: React.FC<{ onJobSelect?: (job: Job) => void }> = ({ onJ
                       <td className="py-2.5 px-2 text-right text-sm text-slate-300 tabular-nums">{t.jobCount}</td>
                       <td className="py-2.5 px-2 text-right text-sm font-bold text-white tabular-nums">{fmt$(t.revenue)}</td>
                       <td className="py-2.5 px-2 text-right text-xs text-slate-400 tabular-nums">{t.commissionRate}%</td>
-                      <td className="py-2.5 pl-2 text-right text-sm font-bold text-green-400 tabular-nums">{fmt$(t.commission)}</td>
+                      <td className="py-2.5 px-2 text-right text-sm text-slate-300 tabular-nums">{fmt$(t.commission)}</td>
+                      <td className="py-2.5 px-2 text-right text-sm text-slate-300 tabular-nums">{t.tips > 0 ? fmt$(t.tips) : '—'}</td>
+                      <td className="py-2.5 pl-2 text-right text-sm font-bold text-green-400 tabular-nums">{fmt$(t.payout)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -399,11 +406,13 @@ export const Accounting: React.FC<{ onJobSelect?: (job: Job) => void }> = ({ onJ
                     <td className="py-2.5 px-2 text-right text-slate-300 tabular-nums">{payroll.reduce((s, t) => s + t.jobCount, 0)}</td>
                     <td className="py-2.5 px-2 text-right text-white tabular-nums">{fmt$(payroll.reduce((s, t) => s + t.revenue, 0))}</td>
                     <td></td>
-                    <td className="py-2.5 pl-2 text-right text-green-400 tabular-nums">{fmt$(totalCommission)}</td>
+                    <td className="py-2.5 px-2 text-right text-slate-300 tabular-nums">{fmt$(totalCommission)}</td>
+                    <td className="py-2.5 px-2 text-right text-slate-300 tabular-nums">{fmt$(payroll.reduce((s, t) => s + t.tips, 0))}</td>
+                    <td className="py-2.5 pl-2 text-right text-green-400 tabular-nums">{fmt$(payroll.reduce((s, t) => s + t.payout, 0))}</td>
                   </tr>
                 </tfoot>
               </table>
-              <p className="text-[10px] text-slate-500 mt-3">Tap a technician to see their jobs. Commission = revenue × rate (set per-tech in Settings → Team).</p>
+              <p className="text-[10px] text-slate-500 mt-3">Tap a technician to see their jobs. Commission = revenue × rate (set per-tech in Settings → Team). Revenue excludes tips and is net of refunds; tips pass through to the technician in full, so Payout = commission + tips.</p>
             </div>
           )}
         </div>

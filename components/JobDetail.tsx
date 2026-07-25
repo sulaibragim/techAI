@@ -559,7 +559,9 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
     if (tipAmount > 0.009) {
       items = [...items, {
         id: Math.random().toString(36).slice(2, 11),
-        type: 'labor' as const,
+        // Not 'labor': booked as labor the tip became company revenue — taxed, and paid
+        // out to the tech at the commission rate instead of in full.
+        type: 'tip' as const,
         description: `Tip (${tipPct}%)`,
         quantity: 1,
         unitPrice: tipAmount,
