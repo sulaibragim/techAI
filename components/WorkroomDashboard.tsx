@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   DollarSign, Clock, Target,
   AlertCircle, Activity, Plus, ChevronLeft, ChevronRight,
-  ArrowLeft, Zap, Shield, Bell, Phone, MapPin, Globe, User
+  ArrowLeft, Zap, Shield, Bell, Phone, MapPin, Globe, User, MoveRight, X
 } from 'lucide-react';
 import { useAppStore, useVisibleJobs } from '../store';
 import { useAuthStore } from '../authStore';
@@ -123,7 +123,12 @@ const DailyGoalTracker: React.FC<{ current: number; target: number }> = ({ curre
   );
 };
 
-const KanbanCard: React.FC<{ job: Job; onSelect: () => void; onDragStart: (e: React.DragEvent, job: Job) => void }> = ({ job, onSelect, onDragStart }) => {
+const KanbanCard: React.FC<{
+  job: Job;
+  onSelect: () => void;
+  onDragStart: (e: React.DragEvent, job: Job) => void;
+  onRequestMove: (job: Job) => void;
+}> = ({ job, onSelect, onDragStart, onRequestMove }) => {
   const tech = useAuthStore(s => (job.assignedTo ? s.users.find(u => u.id === job.assignedTo) : null));
   return (
   <motion.div
@@ -133,8 +138,17 @@ const KanbanCard: React.FC<{ job: Job; onSelect: () => void; onDragStart: (e: Re
     draggable
     onDragStart={(e: any) => onDragStart(e, job)}
     onClick={onSelect}
-    className={`bg-slate-900 p-4 rounded-xl border shadow-lg mb-3 cursor-grab active:cursor-grabbing transition-colors group shrink-0 w-full ${job.isNewLead ? 'border-amber-500/60 ring-1 ring-amber-500/40 shadow-amber-500/10 hover:border-amber-400' : 'border-white/10 hover:border-blue-500/50'}`}
+    className={`relative bg-slate-900 p-4 rounded-xl border shadow-lg mb-3 md:cursor-grab md:active:cursor-grabbing transition-colors group shrink-0 w-full ${job.isNewLead ? 'border-amber-500/60 ring-1 ring-amber-500/40 shadow-amber-500/10 hover:border-amber-400' : 'border-white/10 hover:border-blue-500/50'}`}
   >
+    {/* Touch devices get no drag events at all, so the board was read-only on a phone.
+        This opens a "move to" sheet — the same action, reachable with a thumb. */}
+    <button
+      aria-label="Move this job"
+      onClick={(e) => { e.stopPropagation(); onRequestMove(job); }}
+      className="md:hidden absolute top-2 right-2 p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 active:bg-white/20"
+    >
+      <MoveRight size={16} />
+    </button>
     <div className="flex justify-between items-start mb-3">
       <div className="flex items-center space-x-2">
         <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${job.isNewLead ? 'bg-amber-500/15 text-amber-400' : 'bg-white/5 text-blue-400'}`}>
@@ -214,6 +228,9 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [popDay, setPopDay] = useState<{ day: number; cx: number; cy: number; cw: number; ch: number } | null>(null);
+  // Touch alternative to dragging a Kanban card, plus the reason when a move is refused.
+  const [movingJob, setMovingJob] = useState<Job | null>(null);
+  const [moveNotice, setMoveNotice] = useState<string | null>(null);
   const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const year = currentDate.getFullYear();
@@ -272,21 +289,43 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
     e.dataTransfer.setData('jobId', job.id);
   };
 
+  /**
+   * Move a job into a pipeline column. Shared by drag-and-drop (desktop) and the move
+   * menu (touch) — HTML5 drag events never fire on a phone, so the board used to be a
+   * picture there, with `cursor-grab` advertising a gesture that didn't exist.
+   * Returns a reason when the move is refused, so the caller can say why instead of the
+   * card just snapping back.
+   */
+  const moveJobToColumn = (jobId: string, columnId: string): string | null => {
+    const col = pipelineColumns.find(c => c.id === columnId);
+    if (!col) return null;
+    const job = jobs.find(j => j.id === jobId);
+    if (!job) return null;
+
+    // Dropping a card back where it already is must not rewrite its status: "In Progress"
+    // always wrote `diagnosed`, so a job that was already `sold` lost the sale, and "New
+    // Tasks" dragged an `onSite` job back to `scheduled`.
+    if (!col.isLeads && col.statuses.includes(job.status) && !job.isNewLead) return null;
+
+    if (col.isLeads) {
+      if (!job.isNewLead) updateJob({ ...job, isNewLead: true }); // rare: re-flag
+      return null;
+    }
+    // Techs can't close a job until the money has actually landed — unless there's
+    // nothing to collect (a $0 warranty callback).
+    if (isTechUser && col.defaultStatus === 'completed' && job.paymentStatus !== 'paid' && (job.totalAmount || 0) > 0.01) {
+      return 'This job can’t be closed until the payment has landed.';
+    }
+    // Moving into a status column clears the lead flag and sets the status in one write.
+    if (job.isNewLead) updateJob({ ...job, isNewLead: false, status: col.defaultStatus });
+    else updateJobStatus(jobId, col.defaultStatus);
+    return null;
+  };
+
   const handleDrop = (e: React.DragEvent, columnId: string) => {
     e.preventDefault();
-    const jobId = e.dataTransfer.getData('jobId');
-    const col = pipelineColumns.find(c => c.id === columnId);
-    if (!col) return;
-    const job = jobs.find(j => j.id === jobId);
-    if (col.isLeads) {
-      if (job && !job.isNewLead) updateJob({ ...job, isNewLead: true }); // rare: re-flag
-      return;
-    }
-    // Techs can't drop a job into Closed until the money has actually landed.
-    if (isTechUser && col.defaultStatus === 'completed' && job && job.paymentStatus !== 'paid') return;
-    // Moving into a status column clears the lead flag and sets the status in one write.
-    if (job?.isNewLead) updateJob({ ...job, isNewLead: false, status: col.defaultStatus });
-    else updateJobStatus(jobId, col.defaultStatus);
+    const refusal = moveJobToColumn(e.dataTransfer.getData('jobId'), columnId);
+    if (refusal) setMoveNotice(refusal);
   };
 
   const todayStr = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`;
@@ -643,7 +682,7 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
                   </div>
                 )}
                 {colJobs.map(job => (
-                  <KanbanCard key={job.id} job={job} onSelect={() => (col.isLeads ? openLead(job) : onJobSelect(job))} onDragStart={handleDragStart} />
+                  <KanbanCard key={job.id} job={job} onSelect={() => (col.isLeads ? openLead(job) : onJobSelect(job))} onDragStart={handleDragStart} onRequestMove={(j) => { setMoveNotice(null); setMovingJob(j); }} />
                 ))}
               </div>
             </motion.div>
@@ -651,6 +690,56 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
           })}
         </div>
       </section>
+
+      {/* Move sheet — the touch equivalent of dragging a card between columns.
+          Deliberately NOT wrapped in AnimatePresence: an exit animation that doesn't
+          finish leaves the overlay in the DOM covering the whole board, and a modal that
+          can get stuck open is a worse trade than a slightly abrupt dismiss. */}
+      {movingJob && (
+          <div
+            className="fixed inset-0 z-[300] bg-black/70 backdrop-blur-sm flex items-end md:items-center justify-center animate-in fade-in duration-150"
+            onClick={() => setMovingJob(null)}
+          >
+            <motion.div
+              initial={{ y: 40 }} animate={{ y: 0 }}
+              onClick={e => e.stopPropagation()}
+              className="w-full md:max-w-sm bg-slate-900 border-t md:border border-white/10 md:rounded-2xl rounded-t-2xl p-5 space-y-2"
+              style={{ paddingBottom: 'calc(1.25rem + env(safe-area-inset-bottom))' }}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div className="min-w-0">
+                  <p className="text-xs font-bold uppercase tracking-widest text-blue-400">Move job</p>
+                  <p className="text-sm font-bold text-white truncate">
+                    #{movingJob.jobNumber} · {movingJob.client.firstName} {movingJob.client.lastName}
+                  </p>
+                </div>
+                <button aria-label="Close" onClick={() => setMovingJob(null)} className="p-2 text-slate-400 hover:text-white"><X size={20} /></button>
+              </div>
+              {pipelineColumns.map(col => {
+                const here = !col.isLeads && col.statuses.includes(movingJob.status) && !movingJob.isNewLead;
+                return (
+                  <button
+                    key={col.id}
+                    disabled={here}
+                    onClick={() => {
+                      const refusal = moveJobToColumn(movingJob.id, col.id);
+                      setMoveNotice(refusal);
+                      if (!refusal) setMovingJob(null);
+                    }}
+                    className={`w-full text-left px-4 py-3.5 rounded-xl text-sm font-semibold transition-colors ${
+                      here
+                        ? 'bg-white/5 text-slate-500 cursor-default'
+                        : 'bg-white/5 text-white hover:bg-blue-600/20 hover:text-blue-200 active:bg-blue-600/30'
+                    }`}
+                  >
+                    {col.label}{here && <span className="text-[10px] uppercase tracking-widest ml-2">· current</span>}
+                  </button>
+                );
+              })}
+              {moveNotice && <p className="text-xs font-semibold text-amber-300 pt-1">{moveNotice}</p>}
+            </motion.div>
+          </div>
+        )}
     </div>
   );
 };
