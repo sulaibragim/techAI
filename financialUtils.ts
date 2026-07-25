@@ -18,6 +18,11 @@ export interface FinancialMetrics {
   planStatus: 'excellent' | 'good' | 'warning' | 'critical';
   // Extended (period-aware) fields
   partsCost: number;
+  /**
+   * GROSS margin: revenue minus parts cost only. It is NOT the bottom line — commissions,
+   * overhead, Stripe fees and sales tax are not in here. Accounting's "Net Profit" is,
+   * and the two were labelled the same, differing by thousands for the same month.
+   */
   margin: number;
   marginPct: number;
   projectedRevenue: number;
@@ -76,7 +81,9 @@ export function calculatePeriodMetrics(
   const now = new Date();
   const key = monthKey(year, month);
   const completed = completedJobsInMonth(jobs, year, month);
-  const totalRevenue = completed.reduce((s, j) => s + j.totalAmount, 0);
+  // Net of refunds, excluding tips — the same definition Accounting uses, so the two
+  // screens can't disagree about the same month.
+  const totalRevenue = completed.reduce((s, j) => s + netRevenueAmount(j), 0);
 
   const jobsSold = completed.filter(isSale).length;
   // Coffee = an explicit no-sale visit this month (its own status), not "completed minus sale".
@@ -260,11 +267,14 @@ export function coffeeAnalysis(jobs: Job[], year: number, month: number) {
   const inMonth = jobs.filter(j => j.scheduledDate.startsWith(key));
   const coffee = inMonth.filter(j => j.status === 'coffee').length;
   const cancelled = inMonth.filter(j => j.status === 'cancelled').length;
-  // Average ticket by the revenue-recognition date (completedAt), matching every other
-  // report — a job booked in June but finished in July counts as July here too.
-  const completed = jobs.filter(j => j.status === 'completed' && revenueDateStr(j).startsWith(key));
-  const avgTicket = completed.length
-    ? completed.reduce((s, j) => s + j.totalAmount, 0) / completed.length
+  // Use the SAME average ticket the dashboard shows (calculatePeriodMetrics): revenue
+  // jobs that actually billed something, divided by that count. The old version counted
+  // only status 'completed' (dropping 'sold') and divided by all of them including $0
+  // warranty calls, producing a lower figure that appears nowhere in the UI — so "Est.
+  // Lost" contradicted its own footnote, understating the loss by ~40%.
+  const sales = completedJobsInMonth(jobs, year, month).filter(isSale);
+  const avgTicket = sales.length
+    ? sales.reduce((s, j) => s + netRevenueAmount(j), 0) / sales.length
     : 0;
   const lostEstimate = (coffee + cancelled) * avgTicket;
   return { coffeeCount: coffee, cancelledCount: cancelled, lostEstimate };
@@ -620,10 +630,17 @@ export function revenueByHourDow(jobs: Job[], year: number, month: number, month
     if (!isRevenueJob(j)) continue;
     const d = new Date(revenueDateStr(j) + 'T00:00:00');
     if (isNaN(d.getTime()) || d < start || d >= end) continue;
-    const hour = Number((j.scheduledTime || '').slice(0, 2));
-    if (!Number.isFinite(hour) || hour < 0 || hour > 23) continue;
+    // A job with no scheduled time tells us nothing about WHEN the money was earned, so
+    // it must not vote. `Number('')` is 0 and `Number.isFinite(0)` is true, so the old
+    // guard never fired: every website lead (which arrives with scheduledTime: '') piled
+    // into the midnight cell, and the dashboard advised staffing a graveyard shift for a
+    // window with no actual work in it.
+    const hh = (j.scheduledTime || '').slice(0, 2);
+    if (!/^\d{2}$/.test(hh)) continue;
+    const hour = Number(hh);
+    if (hour < 0 || hour > 23) continue;
     const cell = grid[d.getDay()][Math.floor(hour / 3)];
-    cell.revenue += j.totalAmount;
+    cell.revenue += netRevenueAmount(j);
     cell.count += 1;
   }
   let max = 0;

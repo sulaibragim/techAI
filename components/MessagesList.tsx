@@ -190,7 +190,9 @@ export const MessagesList: React.FC<MessagesListProps> = ({ onJobSelect }) => {
                         )}
                       </div>
                     </div>
-                    <p className="text-sm text-slate-300 leading-relaxed pl-13">{msg.body}</p>
+                    {/* pl-13 doesn't exist in Tailwind's scale (…12, 14…), so no class was
+                        generated and the message body sat flush left under the avatar. */}
+                    <p className="text-sm text-slate-300 leading-relaxed pl-14">{msg.body}</p>
                   </div>
 
                   {/* Inline reply box */}

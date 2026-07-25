@@ -109,6 +109,8 @@ export const Dashboard: React.FC = () => {
   const prevDefault = stepMonth(now.getFullYear(), now.getMonth(), -1);
   const [cmpYear, setCmpYear] = useState(prevDefault.year);
   const [cmpMonth, setCmpMonth] = useState(prevDefault.month);
+  // Raw text while the monthly target is being edited; null means "show the stored value".
+  const [targetDraft, setTargetDraft] = useState<string | null>(null);
 
   const keyOf = (y: number, m: number) => `${y}-${String(m + 1).padStart(2, '0')}`;
   const targetGoal = monthlyTargets[keyOf(viewYear, viewMonth)] ?? monthlyRevenueTarget;
@@ -156,7 +158,7 @@ export const Dashboard: React.FC = () => {
       out.push(`At current pace you'll finish ~${fmt$(A.projectedRevenue)} — ${A.projectedRevenue >= targetGoal ? 'above' : 'below'} your ${fmt$(targetGoal)} target.`);
     }
     if (A.margin > 0 && A.totalRevenue > 0) {
-      out.push(`Net margin ${A.marginPct.toFixed(0)}% after ${fmt$(A.partsCost)} parts cost — ${fmt$(A.margin)} kept.`);
+      out.push(`Gross margin ${A.marginPct.toFixed(0)}% after ${fmt$(A.partsCost)} parts cost — ${fmt$(A.margin)} before commissions & overhead.`);
     }
     return out.slice(0, 4);
   }, [velocityPct, prevMonth, prevMetrics, A, byType, targetGoal]);
@@ -271,10 +273,21 @@ export const Dashboard: React.FC = () => {
                     <label className="text-xs font-bold text-slate-400 uppercase block mb-2 pl-1">Target — {MONTH_FULL[viewMonth]} {viewYear}</label>
                     <div className="relative">
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
+                      {/* Commit on blur. Bound to the parsed number it fired a PUT on
+                          every keystroke — typing 20000 persisted 2, 20, 200, 2000, 20000
+                          — snapped to 1 on backspace, and changed on mouse-wheel. */}
                       <input
-                        type="number"
-                        value={targetGoal}
-                        onChange={e => setTargetGoal(Math.max(1, Number(e.target.value) || 1))}
+                        type="text"
+                        inputMode="numeric"
+                        value={targetDraft ?? String(targetGoal)}
+                        onChange={e => setTargetDraft(e.target.value.replace(/[^\d]/g, ''))}
+                        onBlur={() => {
+                          if (targetDraft !== null) {
+                            setTargetGoal(Math.max(1, Number(targetDraft) || 1));
+                            setTargetDraft(null);
+                          }
+                        }}
+                        onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
                         className="w-full bg-slate-950 border border-white/10 rounded-xl px-10 py-3 text-xl font-bold text-white outline-none focus:border-blue-500 transition-all shadow-inner"
                       />
                     </div>
@@ -463,7 +476,7 @@ export const Dashboard: React.FC = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
             {[
               { label: 'Gross', value: fmt$(A.totalRevenue) },
-              { label: 'Net Margin', value: fmt$(A.margin), accent: 'text-green-400' },
+              { label: 'Gross Margin', value: fmt$(A.margin), accent: 'text-green-400' },
               { label: 'Close Rate', value: `${A.closeRate.toFixed(0)}%` },
               { label: 'Avg Ticket', value: fmt$(A.averageTicket) },
               { label: 'Jobs Done', value: String(A.totalCount) },
@@ -819,7 +832,10 @@ export const Dashboard: React.FC = () => {
 
           {/* MARGIN  |  AUTO-INSIGHTS */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            <Card title="Net Profit Margin" icon={Wallet}>
+            {/* Named "Gross" deliberately: this is revenue minus parts only. Accounting's
+                "Net Profit" also subtracts commissions, overhead, Stripe fees and tax —
+                both used to be called "Net" and differed by thousands for the same month. */}
+            <Card title="Gross Margin (before commissions & overhead)" icon={Wallet}>
               <div className="space-y-1">
                 <div className="flex justify-between items-center py-3 border-b border-white/10">
                   <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Gross Revenue</span>
@@ -881,7 +897,7 @@ const CompareView: React.FC<{
 
   const rows: { label: string; a: number; b: number; fmt: (n: number) => string; higherIsBetter: boolean }[] = [
     { label: 'Revenue', a: A.totalRevenue, b: B.totalRevenue, fmt: fmt$, higherIsBetter: true },
-    { label: 'Net Margin', a: A.margin, b: B.margin, fmt: fmt$, higherIsBetter: true },
+    { label: 'Gross Margin', a: A.margin, b: B.margin, fmt: fmt$, higherIsBetter: true },
     { label: 'Jobs Done', a: A.totalCount, b: B.totalCount, fmt: n => String(n), higherIsBetter: true },
     { label: 'Close Rate', a: A.closeRate, b: B.closeRate, fmt: n => `${n.toFixed(0)}%`, higherIsBetter: true },
     { label: 'Avg Ticket', a: A.averageTicket, b: B.averageTicket, fmt: fmt$, higherIsBetter: true },

@@ -240,7 +240,10 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
                    </button>
 
                    <button
-                     onClick={(e) => { e.stopPropagation(); setReschedulingId(job.id); }}
+                     // Seed the picker from THIS job. tempDate was initialised once and
+                     // never reset, so after rescheduling job A to Aug 14, opening job B
+                     // showed Aug 14 already selected — and confirming sent job B there.
+                     onClick={(e) => { e.stopPropagation(); setTempDate(job.scheduledDate || new Date().toISOString().split('T')[0]); setReschedulingId(job.id); }}
                      className="w-9 h-9 bg-white/5 rounded-xl flex items-center justify-center text-slate-300 hover:text-white hover:bg-white/10 transition-all border border-white/10"
                      title="Reschedule"
                    >

@@ -1,20 +1,58 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# TrustKey CRM
 
-# Run and deploy your AI Studio app
+Field CRM for a locksmith company. Dispatch, job cards, invoicing, card payments,
+inventory, client SMS, analytics, and an AI assistant.
 
-This contains everything you need to run your app locally.
+- **Frontend** — React 19 + TypeScript + Vite, deployed on Vercel from `main`.
+- **Backend** — Express (`server/`), deployed on Railway.
+- **Database** — PostgreSQL on Railway. Tables are created on boot by `initDB()`.
 
-View your app in AI Studio: https://ai.studio/apps/e68f41e3-55ad-4e8b-89de-6d36b3268f26
+## Run it locally
 
-## Run Locally
+```bash
+npm install
+npm run dev:all      # Vite on :3000 + API on :3001
+```
 
-**Prerequisites:**  Node.js
+`npm run dev` alone starts only the frontend. Most screens render without the
+backend, but anything that reads or writes data needs it — and without
+`DATABASE_URL` the server keeps data in memory only and loses it on restart.
 
+```bash
+npm test             # money math, SMS opt-out keywords, the write outbox
+npm run build        # typecheck + production build
+```
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## Configuration
+
+**All secrets live on the server.** In particular the Gemini key is server-only:
+the browser talks to `/api/ai` and uses short-lived tokens for voice. Never put a
+key in a `VITE_*` variable — those are compiled into the public bundle.
+
+Copy `.env.example` to `.env.local` and fill in what you need. The server refuses
+to start in production without `JWT_SECRET`, `OPENPHONE_WEBHOOK_SECRET`,
+`WEBSITE_WEBHOOK_SECRET`, and `STRIPE_WEBHOOK_SECRET` (when Stripe is on) — this
+is deliberate, since every one of those otherwise fails silently rather than
+loudly.
+
+The only client-side variable is `VITE_API_BASE`, which must point at the Railway
+backend in production.
+
+## Where things are
+
+```
+App.tsx              tab shell, live poll, connection + save banners
+store.ts             jobs, inventory (Zustand, persisted)
+settingsStore.ts     company settings, ledgers, price book — synced as deltas
+writeQueue.ts        outbox: retries writes, surfaces the ones that failed
+financialUtils.ts    revenue, payroll, accounting — the money math
+components/          one file per screen
+server/routes/       REST API
+server/services/     Stripe, OpenPhone, push, email, geo, scheduler
+```
+
+## Health check
+
+Settings → Launch Readiness reports what is actually configured on the server
+(secrets, database and how the link is secured, Stripe mode, SMS, push). Check it
+after any deploy — a half-configured backend otherwise looks perfectly healthy.

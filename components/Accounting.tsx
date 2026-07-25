@@ -76,6 +76,8 @@ export const Accounting: React.FC<{ onJobSelect?: (job: Job) => void }> = ({ onJ
   const [month, setMonth] = useState(now.getMonth());
   const [mode, setMode] = useState<PeriodMode>('month');
   const [selectedTech, setSelectedTech] = useState<string>('');
+  // Raw text while the tax field is being edited; null means "show the stored value".
+  const [taxDraft, setTaxDraft] = useState<string | null>(null);
   const [remindState, setRemindState] = useState<Record<string, 'sending' | 'sent' | 'error'>>({});
 
   const [expDate, setExpDate] = useState(todayLocal());
@@ -352,10 +354,22 @@ export const Accounting: React.FC<{ onJobSelect?: (job: Job) => void }> = ({ onJ
               <p className="text-[10px] text-slate-500 mt-0.5">{isOwner ? 'Used to estimate tax owed' : 'Only the owner can change this'}</p>
             </div>
             <div className="flex items-center gap-2">
+              {/* Kept as text while editing. Bound straight to the parsed number, typing
+                  "8" then "." produced an invalid intermediate that `|| 0` collapsed to 0
+                  and React wrote back — so a fractional rate like 8.25 was impossible to
+                  enter. Commit on blur, not on every keystroke. */}
               <input
-                type="number" step="0.01" min="0" disabled={!isOwner}
-                value={taxRate}
-                onChange={e => updateSettings({ taxRate: Math.min(100, Math.max(0, parseFloat(e.target.value) || 0)) })}
+                type="text" inputMode="decimal" disabled={!isOwner}
+                value={taxDraft ?? String(taxRate)}
+                onChange={e => setTaxDraft(e.target.value.replace(/[^\d.]/g, ''))}
+                onBlur={() => {
+                  if (taxDraft !== null) {
+                    const n = parseFloat(taxDraft);
+                    updateSettings({ taxRate: Number.isFinite(n) ? Math.min(100, Math.max(0, n)) : 0 });
+                    setTaxDraft(null);
+                  }
+                }}
+                onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
                 className="w-20 bg-slate-950 border border-white/10 rounded-lg px-3 py-2 text-sm font-mono text-white text-right outline-none focus:border-blue-500/50 disabled:opacity-60"
               />
               <span className="text-sm font-bold text-slate-400">%</span>

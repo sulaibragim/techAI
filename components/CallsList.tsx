@@ -59,7 +59,9 @@ export const CallsList: React.FC<{
       setLiveCalls((data.data || []).map(mapOpenPhoneCall));
       setIsLive(true);
     } catch {
-      setError('Backend offline — showing local data');
+      // "showing local data" was a lie: the local `calls` array is seeded empty and
+      // nothing ever writes to it, so the banner sat directly above "No call history yet".
+      setError('Can’t reach the server — call history is unavailable right now.');
       setLiveCalls(null);
       setIsLive(false);
     } finally {

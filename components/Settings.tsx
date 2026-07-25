@@ -10,7 +10,7 @@ import { Role, TECH_SKILLS, SERVICE_CATEGORIES, CLIENT_SMS_META, CLIENT_SMS_DEFA
 import { PushNotificationsCard } from './PushNotificationsCard';
 import { LaunchReadinessCard } from './LaunchReadinessCard';
 
-const VERSION = '0.0.0';
+const VERSION = '1.0.0';
 
 const Section = ({ icon: Icon, title, children }: { icon: React.ElementType; title: string; children: React.ReactNode }) => (
   <motion.div

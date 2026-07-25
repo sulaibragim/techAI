@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Calendar, Briefcase, BarChart2, Settings, LogOut, BrainCircuit, Phone, MessageSquare, AlertCircle, X, Activity, Package, Users, Receipt, KeyRound, Megaphone } from 'lucide-react';
 import { useAppStore, useVisibleJobs } from '../store';
 import { useAuthStore, useCurrentUser, visibleTabsFor, ROLE_LABELS } from '../authStore';
+import { outstandingAmount } from '../financialUtils';
 
 function formatRelativeTime(isoString: string): string {
   const diff = Date.now() - new Date(isoString).getTime();
@@ -31,11 +32,28 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onTabChange }) => {
-  const { missedInteractions, clearMissed, inventory } = useAppStore();
+  const { inventory } = useAppStore();
   const visibleJobs = useVisibleJobs();
   const logout = useAuthStore(s => s.logout);
   const currentUser = useCurrentUser();
   const lowStockCount = inventory.filter(p => p.stock <= p.reorderPoint).length;
+
+  // Work that needs a human decision now, newest first. Derived from real job state —
+  // the old panel read a store field nothing ever writes, so it was always empty.
+  const attention = React.useMemo(() => {
+    const items: { id: string; title: string; detail: string; tone: string; tab: string }[] = [];
+    for (const j of visibleJobs) {
+      const who = [j.client?.firstName, j.client?.lastName].filter(Boolean).join(' ') || 'Client';
+      if (j.acceptanceStatus === 'declined' && j.status !== 'cancelled' && j.status !== 'completed') {
+        items.push({ id: `d-${j.id}`, title: `#${j.jobNumber} declined`, detail: `${who} — needs reassigning`, tone: 'bg-red-500', tab: 'jobs' });
+      } else if (j.isNewLead) {
+        items.push({ id: `l-${j.id}`, title: `New lead — ${who}`, detail: j.complaint || 'From the website', tone: 'bg-amber-400', tab: 'calendar' });
+      } else if (j.status === 'completed' && outstandingAmount(j) > 1) {
+        items.push({ id: `u-${j.id}`, title: `#${j.jobNumber} unpaid`, detail: `${who} owes $${outstandingAmount(j).toFixed(0)}`, tone: 'bg-orange-400', tab: 'accounting' });
+      }
+    }
+    return items.slice(0, 6);
+  }, [visibleJobs]);
 
   const allowed = currentUser ? visibleTabsFor(currentUser.role) : [];
   const ALL_TABS = [
@@ -123,36 +141,33 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onTabChange }) => 
           </div>
         )}
 
-        <div className="space-y-3">
-           <h3 className="text-xs font-semibold uppercase tracking-widest text-blue-400 px-2 flex justify-between items-center">
-             <span>Attention</span>
-             {missedInteractions.length > 0 && (
-               <span className="text-red-500 bg-red-500/10 px-2 py-0.5 rounded-lg font-bold">{missedInteractions.length}</span>
-             )}
-           </h3>
-           <div className="space-y-2">
-             <AnimatePresence>
-               {missedInteractions.map(mi => (
-                 <motion.div
-                   key={mi.id}
-                   initial={{ opacity: 0, x: -10 }}
-                   animate={{ opacity: 1, x: 0 }}
-                   exit={{ opacity: 0, scale: 0.9 }}
-                   className="bg-white/5 p-3 rounded-xl border border-white/10 flex items-center space-x-3 group relative hover:border-white/10 transition-all"
+        {/* "Attention" used to read `missedInteractions`, which is seeded empty and has no
+            writer anywhere in the app — the only function touching it removes entries. So
+            the heading rendered on every desktop screen above nothing, forever. It now
+            derives from real job state: work that needs a human decision today. */}
+        {attention.length > 0 && (
+          <div className="space-y-3">
+             <h3 className="text-xs font-semibold uppercase tracking-widest text-blue-400 px-2 flex justify-between items-center">
+               <span>Attention</span>
+               <span className="text-red-500 bg-red-500/10 px-2 py-0.5 rounded-lg font-bold">{attention.length}</span>
+             </h3>
+             <div className="space-y-2">
+               {attention.map(item => (
+                 <button
+                   key={item.id}
+                   onClick={() => onTabChange(item.tab)}
+                   className="w-full text-left bg-white/5 p-3 rounded-xl border border-white/10 hover:border-blue-500/40 hover:bg-white/[0.07] transition-all"
                  >
-                   <img src={mi.avatar} className="w-8 h-8 rounded-lg object-cover grayscale group-hover:grayscale-0 transition-all" alt="" />
-                   <div className="flex-1 min-w-0">
-                      <p className="text-xs font-semibold text-white truncate uppercase">{mi.from}</p>
-                      <p className="text-xs text-slate-400 font-medium uppercase mt-0.5">{formatRelativeTime(mi.timestamp)}</p>
+                   <div className="flex items-center gap-2">
+                     <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${item.tone}`} />
+                     <p className="text-xs font-semibold text-white truncate">{item.title}</p>
                    </div>
-                   <button onClick={() => clearMissed(mi.id)} className="opacity-0 group-hover:opacity-100 text-red-500 p-1.5 hover:bg-red-500/10 rounded-lg transition-all">
-                      <X size={13} />
-                   </button>
-                 </motion.div>
+                   <p className="text-[11px] text-slate-400 font-medium mt-0.5 pl-3.5 truncate">{item.detail}</p>
+                 </button>
                ))}
-             </AnimatePresence>
-           </div>
-        </div>
+             </div>
+          </div>
+        )}
       </div>
 
       <div className="px-4 mt-4 pt-4 border-t border-white/10 space-y-3">
