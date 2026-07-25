@@ -69,6 +69,31 @@ export function formatPhone(raw?: string): string {
 // Build the client roster from job history, merged with saved reputation profiles.
 // Clients are keyed by phone (falling back to email or name) so every job for the same
 // person rolls up into one record, and the profile (rating/tags/notes) follows them.
+/**
+ * Past work for the same customer — matched on phone first, then on the street address
+ * so a second call to the same building still connects even when a different person
+ * booked it. Returned newest first, excluding the job you're looking at.
+ *
+ * Half of a locksmith's calls are repeats, and the tech used to arrive with no idea what
+ * was fitted last time or what it cost.
+ */
+export function priorVisits(jobs: Job[], current: Job, limit = 5): Job[] {
+  const phone = normalizePhone(current.client?.phone);
+  // Street part only: "1600 Main St, Apt 4" and "1600 Main St" are the same building.
+  const addrKey = (a?: string) =>
+    (a || '').toLowerCase().replace(/[.,#]/g, ' ').replace(/\s+/g, ' ').trim().split(' apt ')[0].trim();
+  const addr = addrKey(current.client?.address);
+
+  return jobs
+    .filter(j =>
+      j.id !== current.id &&
+      j.status !== 'cancelled' &&
+      ((phone && normalizePhone(j.client?.phone) === phone) || (addr.length > 5 && addrKey(j.client?.address) === addr))
+    )
+    .sort((a, b) => (b.completedAt || b.scheduledDate || '').localeCompare(a.completedAt || a.scheduledDate || ''))
+    .slice(0, limit);
+}
+
 export function buildClients(jobs: Job[], profiles?: Record<string, ClientProfile>): ClientRecord[] {
   const map = new Map<string, ClientRecord>();
   jobs.forEach(j => {

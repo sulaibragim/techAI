@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Job, JobStatus, STATUS_COLORS } from '../types';
-import { MapPin, Clock, ArrowRight, Calendar, X, Hash, CheckCircle2, Activity, Trash2, AlertCircle, Wrench, Search, User } from 'lucide-react';
+import { MapPin, Clock, ArrowRight, Calendar, X, Hash, CheckCircle2, Activity, Trash2, AlertCircle, Wrench, Search, User, Phone } from 'lucide-react';
 import { useAppStore } from '../store';
 import { useCurrentUser, can, useAuthStore } from '../authStore';
 
@@ -239,12 +239,26 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
                       {btn.label}
                    </button>
 
+                   {/* Call the client straight from the queue. The only other way to dial
+                       from a job was three taps deep inside the card. */}
+                   {(job.client.phone || '').trim() && (
+                     <a
+                       href={`tel:${job.client.phone}`}
+                       onClick={(e) => e.stopPropagation()}
+                       aria-label={`Call ${job.client.firstName}`}
+                       title={`Call ${job.client.firstName}`}
+                       className="w-9 h-9 bg-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-400 hover:bg-emerald-500 hover:text-white transition-all border border-emerald-500/20 active:scale-95 shrink-0"
+                     >
+                       <Phone size={14} />
+                     </a>
+                   )}
+
                    <button
                      // Seed the picker from THIS job. tempDate was initialised once and
                      // never reset, so after rescheduling job A to Aug 14, opening job B
                      // showed Aug 14 already selected — and confirming sent job B there.
                      onClick={(e) => { e.stopPropagation(); setTempDate(job.scheduledDate || new Date().toISOString().split('T')[0]); setReschedulingId(job.id); }}
-                     className="w-9 h-9 bg-white/5 rounded-xl flex items-center justify-center text-slate-300 hover:text-white hover:bg-white/10 transition-all border border-white/10"
+                     className="w-9 h-9 bg-white/5 rounded-xl flex items-center justify-center text-slate-300 hover:text-white hover:bg-white/10 transition-all border border-white/10 shrink-0"
                      title="Reschedule"
                    >
                       <Calendar size={14} />

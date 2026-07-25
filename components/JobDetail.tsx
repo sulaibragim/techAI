@@ -22,7 +22,7 @@ import { formatTimestamp, formatDate } from '../dateUtils';
 import { sendSms } from '../smsService';
 import { API_BASE } from '../backendUrl';
 import { authHeaders } from '../apiClient';
-import { normalizePhone, toE164US, formatPhone, buildClients, clientFlags, clientScore, TIER_STYLE } from '../clientUtils';
+import { normalizePhone, toE164US, formatPhone, buildClients, clientFlags, clientScore, TIER_STYLE, priorVisits } from '../clientUtils';
 import { isRevenueJob } from '../financialUtils';
 import { translateCallSummary } from '../translateService';
 import { geocodeAddress } from '../geocoding';
@@ -71,6 +71,8 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
   const lockedForTech = role === 'technician' && jobIsClosed; // tech cannot reopen a closed job
   const [localJob, setLocalJob] = useState<Job>({ ...initialJob });
   const [isModified, setIsModified] = useState(false);
+  // Past work for this customer or this building — shown at the top of the client panel.
+  const previousVisits = useMemo(() => priorVisits(jobs, initialJob), [jobs, initialJob]);
   // Money locks a technician's invoice: once anything is collected they can't delete or
   // edit billed items (only add while a balance remains); fully paid freezes it entirely.
   // Closing needs the money actually in — for card that's the Stripe webhook flipping the
@@ -2046,6 +2048,32 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                         </div>
                       </div>
                     )}
+                  </div>
+                )}
+
+                {/* WE'VE BEEN HERE BEFORE — repeat calls are a big share of this trade,
+                    and the tech used to arrive with no idea what was fitted last time or
+                    what it cost. Matched on phone, or on the street address so a second
+                    call to the same building still connects. */}
+                {previousVisits.length > 0 && (
+                  <div className="bg-blue-500/5 border border-blue-500/20 rounded-2xl p-4 space-y-2.5">
+                    <p className="text-xs font-bold uppercase tracking-widest text-blue-400 flex items-center gap-1.5">
+                      <History size={13} /> We’ve been here before · {previousVisits.length}
+                    </p>
+                    {previousVisits.map(v => (
+                      <div key={v.id} className="flex items-start justify-between gap-3 text-xs border-t border-white/5 pt-2.5 first:border-0 first:pt-0">
+                        <div className="min-w-0">
+                          <p className="font-semibold text-white truncate">
+                            {v.lockDetails?.type || 'Service'}{v.lockDetails?.brand ? ` · ${v.lockDetails.brand}` : ''}
+                          </p>
+                          <p className="text-slate-400 truncate">
+                            {formatDate(v.completedAt || v.scheduledDate)}
+                            {v.diagnosisNotes ? ` — ${v.diagnosisNotes.slice(0, 60)}` : ''}
+                          </p>
+                        </div>
+                        <span className="font-bold text-slate-300 tabular-nums shrink-0">${(v.totalAmount || 0).toFixed(0)}</span>
+                      </div>
+                    ))}
                   </div>
                 )}
 
