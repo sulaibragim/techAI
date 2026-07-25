@@ -5,7 +5,10 @@ import { toE164, sendSMS } from '../services/openphone.js';
 import { requireAuth, requireRole } from '../middleware/auth.js';
 import { sendPushToRoles } from '../services/push.js';
 import { geocode, drivingRoute, etaPhrase } from '../services/geo.js';
-import { getClientLang, setClientLang, isSpanishOptIn, t } from '../services/messages.js';
+import {
+  getClientLang, setClientLang, isSpanishOptIn, t,
+  isStopKeyword, isStartKeyword, setOptOut, clearOptOut, OPT_OUT_CONFIRM, OPT_IN_CONFIRM,
+} from '../services/messages.js';
 import { sendEtaToClient, requestFreshEta } from '../services/etaRequests.js';
 import { clientSmsEnabled } from '../services/businessSettings.js';
 import { db } from '../db.js';
@@ -176,13 +179,30 @@ openphoneRouter.post('/webhook', async (req, res) => {
         data: { type: 'message', from: obj.from || null, url: '/' },
       }).catch(e => console.error('[OpenPhone] push error', e.message));
 
-      // Spanish opt-in: a bare "SÍ" (or a Spanish note) flips this client to Spanish for
-      // every future automated message. Handled separately from the ETA ask below.
-      handleLangReply(obj.from, msg.body).catch(e => console.error('[OpenPhone] lang reply error', e.message));
+      // STOP / START. Carriers require this on automated traffic, and it has to win over
+      // every other reply handler — a client texting "CANCEL" is opting out, not asking
+      // for an ETA. The acknowledgement is the one message allowed past the opt-out.
+      if (isStopKeyword(msg.body)) {
+        (async () => {
+          await setOptOut(obj.from);
+          const lang = await getClientLang(obj.from);
+          await sendSMS(obj.from, OPT_OUT_CONFIRM[lang] || OPT_OUT_CONFIRM.en, { bypassOptOut: true });
+        })().catch(e => console.error('[OpenPhone] opt-out error', e.message));
+      } else if (isStartKeyword(msg.body)) {
+        (async () => {
+          await clearOptOut(obj.from);
+          const lang = await getClientLang(obj.from);
+          await sendSMS(obj.from, OPT_IN_CONFIRM[lang] || OPT_IN_CONFIRM.en);
+        })().catch(e => console.error('[OpenPhone] opt-in error', e.message));
+      } else {
+        // Spanish opt-in: a bare "SÍ" (or a Spanish note) flips this client to Spanish for
+        // every future automated message. Handled separately from the ETA ask below.
+        handleLangReply(obj.from, msg.body).catch(e => console.error('[OpenPhone] lang reply error', e.message));
 
-      // "Where's my tech?" — if the client texts a status keyword (EN or ES) and they have
-      // an active job, text back a fresh ETA automatically. One reply per inbound ask.
-      maybeReplyWithEta(obj.from, msg.body).catch(e => console.error('[OpenPhone] eta auto-reply error', e.message));
+        // "Where's my tech?" — if the client texts a status keyword (EN or ES) and they have
+        // an active job, text back a fresh ETA automatically. One reply per inbound ask.
+        maybeReplyWithEta(obj.from, msg.body).catch(e => console.error('[OpenPhone] eta auto-reply error', e.message));
+      }
     }
   } catch (err) {
     console.error('[OpenPhone webhook error]', err);

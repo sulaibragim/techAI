@@ -2,7 +2,7 @@ import { db } from '../db.js';
 import { sendSMS } from './openphone.js';
 import { sendPushToRoles } from './push.js';
 import { stripeConfigured, publicBase, payUrlFor } from './stripe.js';
-import { getClientLang, t } from './messages.js';
+import { getClientLang, t, isOptedOut, OPT_OUT_NOTE } from './messages.js';
 import { clientSmsEnabled } from './businessSettings.js';
 
 // Time-based automations that need a clock, not a request:
@@ -16,6 +16,7 @@ const TZ = process.env.BUSINESS_TZ || 'America/Phoenix';
 const DIGEST_HOUR = Number(process.env.DIGEST_HOUR || 20);
 const REMINDER_DAYS = [3, 10]; // days after completion → reminder #1, #2; then stop
 const REMINDER_WINDOW = { from: 10, to: 18 }; // only nag clients during business hours
+const MAX_SEND_ATTEMPTS = 3;   // a number that fails this often is bad, not busy
 
 const hasDB = () => !!process.env.DATABASE_URL;
 
@@ -64,6 +65,23 @@ const balanceOf = (j) => {
   return Math.max(0, total - paid);
 };
 
+// Stamp a reminder as done (and bump freshness). Appends in SQL rather than writing the
+// whole job blob back: the row we read is a projection (no photos) and may be seconds
+// stale, so a full replace would delete the job's photos and clobber whatever the tech
+// saved while the SMS was in flight.
+async function stampReminder(jobId, now) {
+  await db.query(
+    `UPDATE jobs SET
+       data = jsonb_set(
+         jsonb_set(COALESCE(data, '{}'::jsonb), '{paymentReminders}',
+                   COALESCE(data->'paymentReminders', '[]'::jsonb) || to_jsonb($2::text)),
+         '{updatedAt}', to_jsonb($2::text)),
+       updated_at = NOW()
+     WHERE id = $1`,
+    [jobId, now]
+  );
+}
+
 async function runPaymentReminders() {
   const { hour } = localNow();
   if (hour < REMINDER_WINDOW.from || hour >= REMINDER_WINDOW.to) return;
@@ -98,6 +116,20 @@ async function runPaymentReminders() {
     const dueAfter = REMINDER_DAYS[sent.length];
     if (daysBetween(j.completedAt, now) < dueAfter) continue;
 
+    // Asked us to stop. Skip permanently rather than letting the send fail and retrying
+    // this number every 15 minutes for the rest of its life.
+    if (await isOptedOut(phone)) {
+      await stampReminder(row.id, now);
+      console.log(`[scheduler] reminder skipped — job ${j.jobNumber || row.id} client opted out`);
+      continue;
+    }
+
+    // A number that keeps failing is almost always permanently bad (landline, typo,
+    // carrier block), not a transient hiccup. Give up after MAX_SEND_ATTEMPTS instead of
+    // retrying forever — each attempt also used to mint a Stripe checkout session.
+    const fails = Number(j.reminderFailures || 0);
+    if (fails >= MAX_SEND_ATTEMPTS) continue;
+
     const lang = await getClientLang(phone);
     const first = (j.client?.firstName || '').trim() || (lang === 'es' ? 'hola' : 'there');
 
@@ -107,26 +139,25 @@ async function runPaymentReminders() {
     // link mints a fresh session when tapped, however late that is.
     const payUrl = stripeConfigured() ? (payUrlFor(publicBase(), row.id) || '') : '';
 
+    // Carriers expect the opt-out path to be visible on automated traffic like this.
     const text = t('paymentReminder', lang, {
       name: first, company: company.name, jobNo: j.jobNumber || row.id, balance, payUrl, phone: company.phone,
-    });
+    }) + (OPT_OUT_NOTE[lang] || OPT_OUT_NOTE.en);
     const ok = await sendSMS(phone, text);
-    if (!ok) continue; // OpenPhone hiccup — retry next tick, don't stamp
+    if (!ok) {
+      // Count the failure so a permanently bad number eventually falls out of the queue.
+      await db.query(
+        `UPDATE jobs SET data = jsonb_set(COALESCE(data, '{}'::jsonb), '{reminderFailures}', to_jsonb($2::int))
+         WHERE id = $1`,
+        [row.id, fails + 1]
+      ).catch(e => console.warn('[scheduler] could not record send failure:', e.message));
+      if (fails + 1 >= MAX_SEND_ATTEMPTS) {
+        console.warn(`[scheduler] giving up on reminders for job ${j.jobNumber || row.id} after ${MAX_SEND_ATTEMPTS} failed sends`);
+      }
+      continue;
+    }
 
-    // Stamp the reminder (and freshness) so restarts/other devices never double-send.
-    // Append in SQL rather than writing the whole blob back: the row we read is a
-    // projection (no photos) and may be seconds stale, so a full replace would delete
-    // the job's photos and clobber whatever the tech saved while the SMS was in flight.
-    await db.query(
-      `UPDATE jobs SET
-         data = jsonb_set(
-           jsonb_set(COALESCE(data, '{}'::jsonb), '{paymentReminders}',
-                     COALESCE(data->'paymentReminders', '[]'::jsonb) || to_jsonb($2::text)),
-           '{updatedAt}', to_jsonb($2::text)),
-         updated_at = NOW()
-       WHERE id = $1`,
-      [row.id, now]
-    );
+    await stampReminder(row.id, now);
     console.log(`[scheduler] payment reminder #${sent.length + 1} → job ${j.jobNumber || row.id} (${money(balance)})`);
   }
 }

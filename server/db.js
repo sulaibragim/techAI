@@ -173,6 +173,15 @@ export async function initDB() {
         updated_at TIMESTAMPTZ DEFAULT NOW()
       );
 
+      -- Numbers that replied STOP. Carriers require a working opt-out on automated
+      -- traffic; without this the carrier blocked the message, our send failed, and the
+      -- scheduler retried the same number every 15 minutes indefinitely.
+      CREATE TABLE IF NOT EXISTS sms_opt_outs (
+        phone_key TEXT PRIMARY KEY,
+        reason TEXT,
+        at TIMESTAMPTZ DEFAULT NOW()
+      );
+
       -- One-shot guard so a given automated SMS (e.g. a booking confirmation) fires once
       -- per job even if the job row is created/updated several times.
       CREATE TABLE IF NOT EXISTS sent_sms (

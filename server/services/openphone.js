@@ -4,6 +4,8 @@ import path from 'path';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, '../../.env.local') });
 
+import { isOptedOut } from './messages.js';
+
 const BASE = 'https://api.openphone.com/v1';
 const headers = () => ({ Authorization: process.env.OPENPHONE_API_KEY });
 
@@ -35,17 +37,30 @@ export async function getCallTranscript(callId) {
 
 // Server-initiated SMS (notifications). Best-effort: returns null if OpenPhone isn't configured
 // or the send fails, so callers can fire-and-forget without breaking their own flow.
-export async function sendSMS(to, content) {
+// Honours STOP: a number that opted out never gets another automated message from us.
+// `bypassOptOut` exists for exactly one caller — the STOP acknowledgement itself.
+export async function sendSMS(to, content, { bypassOptOut = false } = {}) {
   const from = process.env.OPENPHONE_PHONE_NUMBER;
   if (!process.env.OPENPHONE_API_KEY || !from) {
     console.warn('[OpenPhone] API key / OPENPHONE_PHONE_NUMBER not set — cannot send SMS');
+    return null;
+  }
+  // A malformed number is a permanent failure, not a transient one — sending it just
+  // burns an API call and comes back as an opaque error.
+  const dest = toE164(to);
+  if (!/^\+\d{10,15}$/.test(dest)) {
+    console.warn('[OpenPhone] refusing to send to a malformed number');
+    return null;
+  }
+  if (!bypassOptOut && await isOptedOut(dest)) {
+    console.log('[OpenPhone] skipped — recipient opted out');
     return null;
   }
   try {
     const res = await fetch(`${BASE}/messages`, {
       method: 'POST',
       headers: { ...headers(), 'Content-Type': 'application/json' },
-      body: JSON.stringify({ from: toE164(from), to: [toE164(to)], content }),
+      body: JSON.stringify({ from: toE164(from), to: [dest], content }),
     });
     if (!res.ok) {
       console.error('[OpenPhone] send failed', res.status, await res.text());
