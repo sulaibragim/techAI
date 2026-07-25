@@ -38,9 +38,17 @@ export async function saveSubscription(userId, sub) {
   );
 }
 
-export async function deleteSubscription(endpoint) {
+// userId scopes the delete when the caller is a user unsubscribing their own device.
+// Omitted only by the internal pruner, which removes endpoints the push service has
+// already reported as gone. Without the scope, anyone who learns another user's
+// endpoint could silence their job-assignment and payment alerts.
+export async function deleteSubscription(endpoint, userId) {
   if (!hasDB() || !endpoint) return;
-  await db.query('DELETE FROM push_subscriptions WHERE endpoint = $1', [endpoint]);
+  if (userId) {
+    await db.query('DELETE FROM push_subscriptions WHERE endpoint = $1 AND user_id = $2', [endpoint, userId]);
+  } else {
+    await db.query('DELETE FROM push_subscriptions WHERE endpoint = $1', [endpoint]);
+  }
 }
 
 // Send to a set of subscription rows; prune any the push service reports as gone (404/410).

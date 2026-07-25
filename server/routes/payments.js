@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import crypto from 'node:crypto';
 import { db } from '../db.js';
-import { requireAuth } from '../middleware/auth.js';
+import { requireAuth, requireRole } from '../middleware/auth.js';
 import { jwtSecret } from '../config.js';
 import { sendSMS } from '../services/openphone.js';
 import { sendPushToRoles } from '../services/push.js';
@@ -12,11 +12,17 @@ import { stripeConfigured, webhookConfigured, createCheckoutSession, createRefun
 
 export const paymentsRouter = Router();
 
-const money = (n) => `$${(Math.round(n * 100) / 100).toLocaleString('en-US')}`;
+// Always two decimals — `toLocaleString` alone renders $1,234.50 as "$1,234.5" in the
+// pay-link SMS and the owner's push notification.
+const money = (n) =>
+  `$${(Math.round(n * 100) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 const balanceOf = (j) => {
-  const total = j.totalAmount || 0;
-  const paid = j.paymentStatus === 'paid' ? total : j.paymentStatus === 'partial' ? (j.amountPaid || 0) : 0;
+  // Net of refunds, and read off the collected amount rather than the 'paid' label —
+  // otherwise a refunded job looks owing again and a raised invoice looks settled.
+  const refunded = (j.refunds || []).reduce((s, r) => s + (r.amount || 0), 0);
+  const total = Math.max(0, (j.totalAmount || 0) - refunded);
+  const paid = j.paymentStatus === 'paid' ? (j.amountPaid ?? j.totalAmount ?? 0) : j.paymentStatus === 'partial' ? (j.amountPaid || 0) : 0;
   return Math.max(0, total - paid);
 };
 
@@ -251,14 +257,14 @@ export function receiptHtml(job, jobId, co, opts = {}) {
       <p class="tiny" style="margin:0 0 14px">Technician</p>
       <div class="sigline">${
         typeof opts.techSignature === 'string' && opts.techSignature.startsWith('data:image')
-          ? `<img src="${opts.techSignature}" alt="Technician signature">`
+          ? `<img src="${esc(opts.techSignature)}" alt="Technician signature">`
           : opts.techName ? `<span class="sig-script">${esc(opts.techName)}</span>` : ''
       }</div>
       <p class="muted" style="margin-top:4px">${esc(opts.techName || '')}</p>
     </div>
     <div>
       <p class="tiny" style="margin:0 0 14px">Client Authorization</p>
-      <div class="sigline">${signature ? `<img src="${signature}" alt="Client signature">` : ''}</div>
+      <div class="sigline">${signature ? `<img src="${esc(signature)}" alt="Client signature">` : ''}</div>
       <p class="muted" style="margin-top:4px">${clientName}</p>
     </div>
   </div>
@@ -442,8 +448,9 @@ paymentsRouter.post('/receipt', requireAuth, async (req, res) => {
 // Owner/manager only. Card money goes back through Stripe against the recorded
 // PaymentIntents (newest first); cash/check/Zelle is bookkeeping only. Optionally
 // cancels the job so a voided service leaves the revenue books too.
-paymentsRouter.post('/refund', requireAuth, async (req, res) => {
-  if (req.user.role === 'technician') return res.status(403).json({ error: 'Insufficient permissions' });
+// Allowlist, not deny-technician: `accountant` is a real role and must not be able to
+// push money back out through Stripe just by not being a tech.
+paymentsRouter.post('/refund', requireAuth, requireRole('owner', 'manager'), async (req, res) => {
   try {
     const { jobId, amount, cancelJob = false } = req.body || {};
     if (!jobId) return res.status(400).json({ error: 'jobId required' });
@@ -559,57 +566,95 @@ paymentsRouter.post('/webhook', async (req, res) => {
 
   let event;
   try { event = JSON.parse(raw); } catch { return res.status(400).json({ error: 'Invalid JSON' }); }
-  res.sendStatus(200); // ack fast; Stripe retries on non-2xx
 
+  // NOTE: we deliberately do NOT ack before doing the work. Acking first means a DB
+  // blip loses the payment permanently — Stripe considers the event delivered and never
+  // retries, leaving money collected with the job still marked unpaid. Returning 500 on
+  // failure costs a retry; returning 200 early costs the record of a real payment.
+  let job, jobId, amount, total, newPaid, fullyPaid, session;
   try {
-    if (event.type !== 'checkout.session.completed') return;
-    const session = event.data?.object;
-    if (!session || session.payment_status !== 'paid') return;
-    const jobId = session.metadata?.jobId || session.client_reference_id;
-    if (!jobId) return;
+    if (event.type !== 'checkout.session.completed') return res.sendStatus(200);
+    session = event.data?.object;
+    if (!session || session.payment_status !== 'paid') return res.sendStatus(200);
+    jobId = session.metadata?.jobId || session.client_reference_id;
+    if (!jobId) return res.sendStatus(200);
 
-    const { rows } = await db.query('SELECT id, data FROM jobs WHERE id = $1', [jobId]);
-    if (rows.length === 0) { console.warn('[payments] webhook for unknown job', jobId); return; }
-    const job = rows[0].data;
-
-    // Stripe redelivers events — the session id list makes reprocessing a no-op.
-    const seen = Array.isArray(job.stripeSessions) ? job.stripeSessions : [];
-    if (seen.includes(session.id)) return;
-
-    const amount = (session.amount_total || 0) / 100;
-    const now = new Date().toISOString();
-    const total = job.totalAmount || 0;
-    const newPaid = Math.round(((job.paymentStatus === 'partial' ? (job.amountPaid || 0) : 0) + amount) * 100) / 100;
-    const fullyPaid = newPaid >= total - 0.01;
     const intentId = typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id;
 
     // Actual Stripe fee — makes the Accounting ledger match the bank to the cent.
-    // Best-effort: a lookup failure just leaves the fee estimated client-side.
+    // Best-effort: a lookup failure just leaves the fee estimated client-side. Fetched
+    // BEFORE the row lock so an HTTP round-trip never holds the job row open.
     let feeInfo = null;
     if (intentId) {
       try { feeInfo = await getPaymentFee(intentId); }
       catch (e) { console.warn('[payments] fee lookup failed:', e.message); }
     }
 
-    const updated = {
-      ...job,
-      amountPaid: newPaid,
-      paymentStatus: fullyPaid ? 'paid' : 'partial',
-      paymentMethod: 'Card',
-      paidAt: job.paidAt || now,
-      // Collected money must count as revenue — mirror the manual collect flow: a job
-      // still in a pre-sale status gets promoted to 'sold' so the payment shows up in
-      // revenue/A-R/payroll instead of vanishing from the books.
-      status: job.status === 'completed' || job.status === 'sold' ? job.status : 'sold',
-      stripeSessions: [...seen, session.id],
-      // PaymentIntent + amount per charge — what /refund needs to send money back.
-      stripePayments: [
-        ...(Array.isArray(job.stripePayments) ? job.stripePayments : []),
-        ...(intentId ? [{ intent: intentId, amount, ...(feeInfo ? { fee: feeInfo.fee, net: feeInfo.net } : {}), at: now }] : []),
-      ],
-      updatedAt: now,
-    };
-    await db.query('UPDATE jobs SET data = $2, updated_at = NOW() WHERE id = $1', [jobId, JSON.stringify(updated)]);
+    amount = (session.amount_total || 0) / 100;
+    const now = new Date().toISOString();
+
+    // SELECT ... FOR UPDATE: a concurrent client PUT (or a second webhook) must not
+    // read-modify-write this row at the same time and drop the ledger it just wrote.
+    const client = await db.connect();
+    try {
+      await client.query('BEGIN');
+      const { rows } = await client.query('SELECT data FROM jobs WHERE id = $1 FOR UPDATE', [jobId]);
+      if (rows.length === 0) {
+        await client.query('ROLLBACK');
+        console.warn('[payments] webhook for unknown job', jobId);
+        return res.sendStatus(200); // nothing to retry — don't make Stripe redeliver forever
+      }
+      job = rows[0].data;
+
+      // Stripe redelivers events — the session id list makes reprocessing a no-op.
+      const seen = Array.isArray(job.stripeSessions) ? job.stripeSessions : [];
+      if (seen.includes(session.id)) {
+        await client.query('ROLLBACK');
+        return res.sendStatus(200);
+      }
+
+      total = job.totalAmount || 0;
+      // Always ADD to what was already collected. Keying the base off `paymentStatus`
+      // meant a second checkout on an already-'paid' job reset the total to zero, so a
+      // customer charged twice showed one payment and could not be refunded in full.
+      newPaid = Math.round(((job.amountPaid || 0) + amount) * 100) / 100;
+      fullyPaid = newPaid >= total - 0.01;
+
+      const updated = {
+        ...job,
+        amountPaid: newPaid,
+        paymentStatus: fullyPaid ? 'paid' : 'partial',
+        paymentMethod: 'Card',
+        paidAt: job.paidAt || now,
+        // Collected money must count as revenue — mirror the manual collect flow: a job
+        // still in a pre-sale status gets promoted to 'sold' so the payment shows up in
+        // revenue/A-R/payroll instead of vanishing from the books.
+        status: job.status === 'completed' || job.status === 'sold' ? job.status : 'sold',
+        stripeSessions: [...seen, session.id],
+        // PaymentIntent + amount per charge — what /refund needs to send money back.
+        stripePayments: [
+          ...(Array.isArray(job.stripePayments) ? job.stripePayments : []),
+          ...(intentId ? [{ intent: intentId, amount, ...(feeInfo ? { fee: feeInfo.fee, net: feeInfo.net } : {}), at: now }] : []),
+        ],
+        updatedAt: now,
+      };
+      await client.query('UPDATE jobs SET data = $2, updated_at = NOW() WHERE id = $1', [jobId, JSON.stringify(updated)]);
+      await client.query('COMMIT');
+    } catch (e) {
+      await client.query('ROLLBACK').catch(() => {});
+      throw e;
+    } finally {
+      client.release();
+    }
+  } catch (err) {
+    // 5xx → Stripe retries with backoff, so the payment is not lost.
+    console.error('[payments] webhook processing error:', err.message);
+    return res.status(500).json({ error: 'Could not record payment' });
+  }
+
+  res.sendStatus(200);
+
+  try {
     console.log(`[payments] ${money(amount)} received on job ${job.jobNumber || jobId} (${fullyPaid ? 'paid in full' : `balance ${money(Math.max(0, total - newPaid))}`})`);
 
     // Thank-you + receipt link to the payer — once per checkout session even if
@@ -628,7 +673,8 @@ paymentsRouter.post('/webhook', async (req, res) => {
       data: { type: 'payment', jobId, url: '/' },
     }).catch(() => {});
   } catch (err) {
-    console.error('[payments] webhook processing error:', err.message);
+    // The payment is already recorded and acked — only the notifications failed.
+    console.error('[payments] webhook notification error:', err.message);
   }
 });
 

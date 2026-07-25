@@ -12,6 +12,12 @@ dist
 dist-ssr
 *.local
 
+# Secrets. `.env.local` is already covered by *.local, but a rename to .env or
+# .env.production would otherwise be committed on the next `git add -A`.
+.env
+.env.*
+!.env.example
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

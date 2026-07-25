@@ -178,7 +178,17 @@ export const Accounting: React.FC<{ onJobSelect?: (job: Job) => void }> = ({ onJ
     { gross: 0, fees: 0, refunds: 0, net: 0 }
   ), [cardLedger]);
 
-  const netProfit = summary.grossProfit - totalCommission - totalExpenses - summary.estimatedTax - cardTotals.fees;
+  // Stock purchases are capitalised into each part's cost and then expensed again as
+  // COGS (summary.partsCost) when the part is billed on a job. Receiving stock also
+  // auto-logs a "Keys & Stock" expense, so counting it here subtracts the same dollars
+  // twice and understates profit by the COGS of everything consumed that period.
+  const overheadExpenses = useMemo(
+    () => periodExpenses.filter(e => e.category !== 'Keys & Stock').reduce((s, e) => s + e.amount, 0),
+    [periodExpenses]
+  );
+  // grossRevenue is already net of refunds (accountingSummary), so refunds are not
+  // subtracted again here.
+  const netProfit = summary.grossProfit - totalCommission - overheadExpenses - summary.estimatedTax - cardTotals.fees;
   const netMarginPct = summary.grossRevenue > 0 ? (netProfit / summary.grossRevenue) * 100 : 0;
 
   const receivables = useMemo(() => accountsReceivable(jobs), [jobs]);
@@ -290,7 +300,7 @@ export const Accounting: React.FC<{ onJobSelect?: (job: Job) => void }> = ({ onJ
               { label: 'Gross Revenue', value: summary.grossRevenue, sign: '' },
               { label: 'Parts (COGS)', value: summary.partsCost, sign: '−' },
               { label: 'Technician Commissions', value: totalCommission, sign: '−' },
-              { label: 'Expenses', value: totalExpenses, sign: '−' },
+              { label: 'Overhead Expenses', value: overheadExpenses, sign: '−' },
               ...(cardTotals.fees > 0 ? [{ label: 'Card Processing Fees (Stripe)', value: cardTotals.fees, sign: '−' }] : []),
               { label: `Est. Sales Tax (${taxRate}%)`, value: summary.estimatedTax, sign: '−' },
             ].map(r => (

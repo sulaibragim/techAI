@@ -31,6 +31,15 @@ function localNow() {
 const daysBetween = (isoThen, isoNow) =>
   Math.floor((new Date(isoNow) - new Date(isoThen)) / 86400000);
 
+// The business-timezone calendar day of a UTC instant. completedAt is stored as
+// toISOString(), so slicing it gives the UTC day — in Arizona that rolls over at 5pm
+// local and files every evening job under tomorrow. The digest compares against a
+// BUSINESS_TZ date, so it has to convert the same way.
+const localDay = (iso) => {
+  const d = new Date(iso);
+  return isNaN(d.getTime()) ? '' : new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(d);
+};
+
 const money = (n) => `$${(Math.round(n * 100) / 100).toLocaleString('en-US')}`;
 
 async function companyInfo() {
@@ -44,8 +53,14 @@ async function companyInfo() {
 // ─── Payment reminders ─────────────────────────────────────────────────────────
 
 const balanceOf = (j) => {
-  const total = j.totalAmount || 0;
-  const paid = j.paymentStatus === 'paid' ? total : j.paymentStatus === 'partial' ? (j.amountPaid || 0) : 0;
+  // A refund shrinks the invoice. The refund route already nets the money out of
+  // amountPaid, so without this the job looks unpaid again and we would text a customer
+  // we just refunded asking them to pay.
+  const refunded = (j.refunds || []).reduce((s, r) => s + (r.amount || 0), 0);
+  const total = Math.max(0, (j.totalAmount || 0) - refunded);
+  // Trust the collected amount over the 'paid' label — an invoice raised after payment
+  // keeps the label and would otherwise hide a real balance from the reminders.
+  const paid = j.paymentStatus === 'paid' ? (j.amountPaid ?? j.totalAmount ?? 0) : j.paymentStatus === 'partial' ? (j.amountPaid || 0) : 0;
   return Math.max(0, total - paid);
 };
 
@@ -54,11 +69,18 @@ async function runPaymentReminders() {
   if (hour < REMINDER_WINDOW.from || hour >= REMINDER_WINDOW.to) return;
   if (!(await clientSmsEnabled('reminders'))) return; // owner-controlled; off by default
 
+  // Exclude jobs that already got both nudges IN SQL, not after the LIMIT. Without the
+  // predicate, written-off debtors keep matching forever; once 200 of them accumulate
+  // they fill the window and no new customer is ever reminded again — silently. Oldest
+  // first so the queue drains in a predictable order. Photos are base64 data URLs living
+  // in the same JSONB blob, so strip them or a few hundred jobs pull hundreds of MB.
   const { rows } = await db.query(
-    `SELECT id, data FROM jobs
+    `SELECT id, data - 'photos' AS data FROM jobs
       WHERE data->>'status' = 'completed'
         AND data->>'paymentStatus' IN ('unpaid', 'partial')
         AND data->>'completedAt' IS NOT NULL
+        AND COALESCE(jsonb_array_length(data->'paymentReminders'), 0) < ${REMINDER_DAYS.length}
+      ORDER BY data->>'completedAt' ASC
       LIMIT 200`
   );
   const now = new Date().toISOString();
@@ -102,8 +124,19 @@ async function runPaymentReminders() {
     if (!ok) continue; // OpenPhone hiccup — retry next tick, don't stamp
 
     // Stamp the reminder (and freshness) so restarts/other devices never double-send.
-    const updated = { ...j, paymentReminders: [...sent, now], updatedAt: now };
-    await db.query('UPDATE jobs SET data = $2, updated_at = NOW() WHERE id = $1', [row.id, JSON.stringify(updated)]);
+    // Append in SQL rather than writing the whole blob back: the row we read is a
+    // projection (no photos) and may be seconds stale, so a full replace would delete
+    // the job's photos and clobber whatever the tech saved while the SMS was in flight.
+    await db.query(
+      `UPDATE jobs SET
+         data = jsonb_set(
+           jsonb_set(COALESCE(data, '{}'::jsonb), '{paymentReminders}',
+                     COALESCE(data->'paymentReminders', '[]'::jsonb) || to_jsonb($2::text)),
+           '{updatedAt}', to_jsonb($2::text)),
+         updated_at = NOW()
+       WHERE id = $1`,
+      [row.id, now]
+    );
     console.log(`[scheduler] payment reminder #${sent.length + 1} → job ${j.jobNumber || row.id} (${money(balance)})`);
   }
 }
@@ -114,20 +147,25 @@ async function runEveningDigest() {
   const { date, hour } = localNow();
   if (hour < DIGEST_HOUR) return;
 
-  // Once per local day, survives restarts via a settings stamp.
-  const { rows: stamp } = await db.query("SELECT value FROM settings WHERE key = 'digest-last'");
-  if (stamp[0]?.value === date) return;
-  await db.query(
+  // Once per local day. Claim the day ATOMICALLY: a rolling Railway deploy runs the old
+  // and new containers side by side for a while, and a read-then-write check lets both
+  // pass and text the owner twice. Only the writer that actually changes the row wins.
+  const claim = await db.query(
     `INSERT INTO settings (key, value, updated_at) VALUES ('digest-last', $1, NOW())
-     ON CONFLICT (key) DO UPDATE SET value = $1, updated_at = NOW()`,
+     ON CONFLICT (key) DO UPDATE SET value = $1, updated_at = NOW()
+     WHERE settings.value IS DISTINCT FROM $1`,
     [date]
   );
+  if (claim.rowCount === 0) return; // another instance already sent today's digest
 
-  const { rows } = await db.query('SELECT id, data FROM jobs');
+  // Photos are base64 data URLs in the same blob — pulling every job's would OOM the
+  // container as the archive grows. The digest only needs the scalar fields.
+  const { rows } = await db.query("SELECT id, data - 'photos' AS data FROM jobs");
   const jobs = rows.map(r => r.data);
 
+  // completedAt is UTC; `date` is business-local. Compare like for like.
   const doneToday = jobs.filter(j =>
-    (j.status === 'completed' || j.status === 'sold') && (j.completedAt || '').slice(0, 10) === date);
+    (j.status === 'completed' || j.status === 'sold') && localDay(j.completedAt || '') === date);
   const revenueToday = doneToday.reduce((s, j) => s + (j.totalAmount || 0), 0);
   const outstanding = jobs
     .filter(j => (j.status === 'completed' || j.status === 'sold'))

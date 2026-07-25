@@ -18,6 +18,11 @@ interface Props {
   address: string;
   zip: string;
   precision?: GeoPrecision;
+  // The currently pinned coordinates, so editing an unrelated field (the ZIP) can hand
+  // them straight back instead of silently dropping them.
+  lat?: number;
+  lng?: number;
+  placeId?: string;
   onChange: (v: AddressPick) => void;
   autoFocus?: boolean;
 }
@@ -29,7 +34,7 @@ const field = 'w-full bg-transparent border-none text-sm font-semibold text-whit
 // Address field with ZIP-biased autocomplete + a verification badge. The customer's ZIP
 // narrows the suggestion radius (enter it first for the tightest match), and once a real
 // address is picked we keep its exact coordinates so map links and ETAs hit the right pin.
-export const AddressAutocomplete: React.FC<Props> = ({ address, zip, precision, onChange, autoFocus }) => {
+export const AddressAutocomplete: React.FC<Props> = ({ address, zip, precision, lat, lng, placeId, onChange, autoFocus }) => {
   const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -90,7 +95,11 @@ export const AddressAutocomplete: React.FC<Props> = ({ address, zip, precision, 
           inputMode="numeric"
           className={field}
           value={zip}
-          onChange={(e) => onChange({ address, zip: e.target.value, precision })}
+          // Carry the pinned coordinates through. Emitting only {address, zip, precision}
+          // set lat/lng/placeId to undefined in the consumer while leaving the badge on
+          // "Address verified — exact location pinned", so the job saved with no pin and
+          // the map link and SMS ETA quietly fell back to fuzzy text geocoding.
+          onChange={(e) => onChange({ address, zip: e.target.value, precision, lat, lng, placeId })}
           placeholder="33139"
         />
         <p className="text-[10px] text-slate-500 mt-1.5 leading-snug">Enter first — narrows the address search.</p>

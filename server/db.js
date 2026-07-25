@@ -22,6 +22,11 @@ export const dbReady = () => connected;
 export async function initDB() {
   const client = await pool.connect();
   try {
+    // Serialize schema setup across containers. Railway keeps the old instance serving
+    // while the new one boots, so two initDB() runs can overlap — and concurrent
+    // CREATE TABLE / ALTER TABLE is NOT race-safe in Postgres even with IF NOT EXISTS
+    // (it raises duplicate-key on pg_type). Here that would be a fatal boot.
+    await client.query('SELECT pg_advisory_lock(778901234)');
     await client.query(`
       CREATE TABLE IF NOT EXISTS users (
         id TEXT PRIMARY KEY,
@@ -122,9 +127,13 @@ export async function initDB() {
     const { rows } = await client.query('SELECT COUNT(*) FROM users');
     if (parseInt(rows[0].count) === 0) {
       const initial = (process.env.OWNER_INITIAL_PASSWORD || '').trim() || crypto.randomBytes(9).toString('base64url');
+      // ON CONFLICT: two containers booting against an empty DB (the very first deploy)
+      // both see COUNT = 0, and a bare INSERT makes the loser blow up the whole initDB
+      // transaction — which is a fatal boot in production.
       await client.query(`
         INSERT INTO users (id, name, email, password, role, active, commission_rate)
         VALUES ('u-owner', 'Sultan', 'owner@trustkey.az', $1, 'owner', true, 0)
+        ON CONFLICT (id) DO NOTHING
       `, [bcrypt.hashSync(initial, 10)]);
       if (process.env.OWNER_INITIAL_PASSWORD) {
         console.log('[DB] Seeded owner account owner@trustkey.az with OWNER_INITIAL_PASSWORD');
@@ -141,6 +150,7 @@ export async function initDB() {
     if (parseInt(settingsCheck.rows[0].count) === 0) {
       await client.query(`
         INSERT INTO settings (key, value) VALUES ('company', $1)
+        ON CONFLICT (key) DO NOTHING
       `, [JSON.stringify({
         technicianName: '',
         companyName: '',
@@ -162,6 +172,7 @@ export async function initDB() {
     connected = true;
     console.log('[DB] Tables initialized');
   } finally {
+    await client.query('SELECT pg_advisory_unlock(778901234)').catch(() => {});
     client.release();
   }
 }

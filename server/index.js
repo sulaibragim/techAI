@@ -16,7 +16,7 @@ import { placesRouter } from './routes/places.js';
 import { dispatchRouter } from './routes/dispatch.js';
 import { pushRouter } from './routes/push.js';
 import { paymentsRouter, payPagesRouter } from './routes/payments.js';
-import { initDB } from './db.js';
+import { initDB, db } from './db.js';
 import { startScheduler } from './services/scheduler.js';
 import { isProd } from './config.js';
 
@@ -162,9 +162,37 @@ async function start() {
     console.log('[DB] No DATABASE_URL — running without database');
   }
 
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`TrustKey backend running on port ${PORT}`);
   });
+
+  // Railway sends SIGTERM on every deploy. Without this, Node dies mid-request — and the
+  // request most likely to be in flight during a redeploy is a Stripe webhook writing a
+  // payment. Drain connections first, then close the pool.
+  let closing = false;
+  const shutdown = (signal) => {
+    if (closing) return;
+    closing = true;
+    console.log(`[BOOT] ${signal} received — draining connections`);
+    server.close(async () => {
+      try { await db.end(); } catch { /* pool already gone */ }
+      process.exit(0);
+    });
+    // Don't hang forever on a stuck keep-alive socket.
+    setTimeout(() => process.exit(0), 10000).unref();
+  };
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
 }
+
+// Without these, an unhandled rejection anywhere kills the process with no log line and
+// the restart looks like a mystery crash. Log loudly; let the platform restart us.
+process.on('unhandledRejection', (reason) => {
+  console.error('[FATAL] Unhandled promise rejection:', reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error('[FATAL] Uncaught exception:', err);
+  process.exit(1);
+});
 
 start();

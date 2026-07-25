@@ -370,6 +370,9 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
                 address={client.address || ''}
                 zip={client.zip || ''}
                 precision={client.geoPrecision}
+                lat={client.lat}
+                lng={client.lng}
+                placeId={client.placeId}
                 onChange={(v) => setClient(prev => ({
                   ...prev,
                   address: v.address,
@@ -482,7 +485,9 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
                   {photos.map((p, i) => (
                     <div key={i} className="relative w-20 h-20 rounded-2xl overflow-hidden border border-white/10 group">
                       <img src={p} className="w-full h-full object-cover" alt="Job" />
-                      <button onClick={() => setPhotos(prev => prev.filter((_, idx) => idx !== i))} className="absolute top-1 right-1 p-1 bg-red-600 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={10} /></button>
+                      {/* Visible on touch — a mis-shot photo was otherwise impossible to
+                          remove before creating the job. */}
+                      <button aria-label="Remove photo" onClick={() => setPhotos(prev => prev.filter((_, idx) => idx !== i))} className="absolute top-1 right-1 p-1.5 bg-red-600 rounded-lg opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"><Trash2 size={12} /></button>
                     </div>
                   ))}
                 </div>

@@ -147,11 +147,14 @@ const KanbanCard: React.FC<{ job: Job; onSelect: () => void; onDragStart: (e: Re
       </div>
       {job.isNewLead ? (
         <span className="bg-amber-500/15 text-amber-400 px-2 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-wider">🌐 Web</span>
-      ) : (
-        <div className="bg-white/5 px-2 py-1 rounded-lg text-xs font-medium text-slate-300">{job.distance || '2.1'} mi</div>
-      )}
+      ) : job.distance ? (
+        // Only render a distance we actually have. The old `job.distance || '2.1'`
+        // fallback printed an invented number on every card, and dispatch sequenced the
+        // day off it — `distance` is never assigned anywhere in the app.
+        <div className="bg-white/5 px-2 py-1 rounded-lg text-xs font-medium text-slate-300">{job.distance} mi</div>
+      ) : null}
     </div>
-    <p className="text-xs font-medium text-slate-300 mb-3 truncate">{job.isNewLead ? (job.complaint || 'New website lead') : `${job.lockDetails.type} — ${job.lockDetails.brand || 'Elite'}`}</p>
+    <p className="text-xs font-medium text-slate-300 mb-3 truncate">{job.isNewLead ? (job.complaint || 'New website lead') : [job.lockDetails.type, job.lockDetails.brand].filter(Boolean).join(' — ')}</p>
 
     <div className="mb-3">
       {tech ? (

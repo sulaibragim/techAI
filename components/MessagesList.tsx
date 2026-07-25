@@ -67,7 +67,9 @@ export const MessagesList: React.FC<MessagesListProps> = ({ onJobSelect }) => {
   }, [jobs]);
 
   const sendReply = async (to: string) => {
-    if (!replyText.trim()) return;
+    // `sending` guard lives here, not only on the button: the textarea's Enter handler
+    // calls this directly, so two quick Enters used to bill two SMS.
+    if (sending || !replyText.trim()) return;
     setSending(true);
     try {
       const res = await fetch(`${API_BASE}/api/openphone/messages/send`, {

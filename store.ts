@@ -35,6 +35,10 @@ const INITIAL_INVENTORY: Part[] = [];
 // PUT/DELETE lands. Entries auto-expire after PENDING_WRITE_TTL_MS.
 const PENDING_WRITE_TTL_MS = 12000;
 const pendingJobWrites = new Map<string, number>();
+
+// Consecutive failed server contacts. One blip on a phone in a parking garage is normal;
+// two in a row means we should stop pretending the numbers on screen are current.
+let serverMissCount = 0;
 export function markJobPending(id: string) { pendingJobWrites.set(id, Date.now()); }
 export function hasPendingJobWrite(id: string): boolean {
   const t = pendingJobWrites.get(id);
@@ -108,6 +112,9 @@ interface AppState {
   clearMissed: (id: string) => void;
   syncJobs: () => Promise<void>;
   syncInventory: () => Promise<void>;
+  /** False once the server has failed us repeatedly. Never persisted. */
+  serverReachable: boolean;
+  reportServerContact: (ok: boolean) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -138,7 +145,9 @@ export const useAppStore = create<AppState>()(
     // can't close a job until the money has actually landed (paymentStatus 'paid').
     const auth = useAuthStore.getState();
     const actorRole = auth.users.find(u => u.id === auth.currentUserId)?.role;
-    if (actorRole === 'technician' && prev && next.status === 'completed' && prev.status !== 'completed' && next.paymentStatus !== 'paid') {
+    // …unless there is nothing to collect: a $0 warranty callback must still be closeable.
+    if (actorRole === 'technician' && prev && next.status === 'completed' && prev.status !== 'completed'
+        && next.paymentStatus !== 'paid' && (next.totalAmount || 0) > 0.01) {
       next.status = prev.status;
     }
     const gotPaid = (next.paymentStatus === 'paid' || next.paymentStatus === 'partial') &&
@@ -164,7 +173,8 @@ export const useAppStore = create<AppState>()(
       const auth = useAuthStore.getState();
       const actorRole = auth.users.find(u => u.id === auth.currentUserId)?.role;
       const job = get().jobs.find(j => j.id === id);
-      if (actorRole === 'technician' && job && job.paymentStatus !== 'paid') return;
+      // A $0 invoice has nothing outstanding — don't trap the tech on it.
+      if (actorRole === 'technician' && job && job.paymentStatus !== 'paid' && (job.totalAmount || 0) > 0.01) return;
     }
     set((state) => ({ jobs: state.jobs.map(j => {
       if (j.id !== id) return j;
@@ -298,6 +308,19 @@ export const useAppStore = create<AppState>()(
         if (serverJobs.length > 0) set({ jobs: serverJobs });
       }
     } catch {}
+  },
+  // Connection health. Every screen reads from the local store, so when the backend is
+  // unreachable the money tabs happily render "$0 / 0 jobs" — indistinguishable from a
+  // quiet day. Two consecutive failures flip this so the UI can say so out loud.
+  serverReachable: true,
+  reportServerContact: (ok) => {
+    if (ok) {
+      serverMissCount = 0;
+      if (!get().serverReachable) set({ serverReachable: true });
+      return;
+    }
+    serverMissCount += 1;
+    if (serverMissCount >= 2 && get().serverReachable) set({ serverReachable: false });
   },
   syncInventory: async () => {
     try {

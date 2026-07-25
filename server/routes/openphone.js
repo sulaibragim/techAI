@@ -2,7 +2,7 @@ import { Router } from 'express';
 import crypto from 'node:crypto';
 import { processTranscriptWithAI } from '../services/gemini.js';
 import { toE164, sendSMS } from '../services/openphone.js';
-import { requireAuth } from '../middleware/auth.js';
+import { requireAuth, requireRole } from '../middleware/auth.js';
 import { sendPushToRoles } from '../services/push.js';
 import { geocode, drivingRoute, etaPhrase } from '../services/geo.js';
 import { getClientLang, setClientLang, isSpanishOptIn, t } from '../services/messages.js';
@@ -163,7 +163,9 @@ openphoneRouter.post('/webhook', async (req, res) => {
       recentMessages.unshift(msg);
       if (recentMessages.length > MAX_STORE) recentMessages.pop();
       dbSaveMessage(msg);
-      console.log('[OpenPhone] Incoming SMS from', obj.from, ':', msg.body);
+      // Log the shape, not the content — Railway retains stdout, and this is a client's
+      // phone number and the body of their message.
+      console.log('[OpenPhone] Incoming SMS from ***%s (%d chars)', last10(obj.from).slice(-4), String(msg.body || '').length);
 
       // Ping the dispatchers' phones so a client reply isn't missed.
       const who = obj.contact?.name || obj.from || 'a client';
@@ -261,20 +263,44 @@ openphoneRouter.get('/client-lang', requireAuth, async (req, res) => {
 });
 
 // ─── GET recent calls (from webhook store, not REST API) ─────────────────────
-openphoneRouter.get('/calls', requireAuth, (_req, res) => {
+// Company-wide communication history — the same owner/manager gate the UI applies
+// (authStore `viewCalls`/`viewMessages`), enforced here so a tech token can't read it.
+openphoneRouter.get('/calls', requireAuth, requireRole('owner', 'manager'), (_req, res) => {
   res.json({ data: recentCalls, totalItems: recentCalls.length });
 });
 
 // ─── GET recent messages (from webhook store) ─────────────────────────────────
-openphoneRouter.get('/messages', requireAuth, (_req, res) => {
+openphoneRouter.get('/messages', requireAuth, requireRole('owner', 'manager'), (_req, res) => {
   res.json({ data: recentMessages, totalItems: recentMessages.length });
 });
+
+// A technician may text only the clients they are actually working for. Owners and
+// managers dispatch freely. Without this, any tech token (or the AI assistant acting
+// on injected text) could send anything to anyone from the company number.
+async function techMaySendTo(userId, toAddr) {
+  const key = last10(toAddr);
+  if (!key) return false;
+  const { rows } = await db.query(
+    "SELECT data->'client'->>'phone' AS phone FROM jobs WHERE data->>'assignedTo' = $1",
+    [userId]
+  );
+  return rows.some(r => last10(r.phone || '') === key);
+}
 
 // ─── POST send SMS ────────────────────────────────────────────────────────────
 openphoneRouter.post('/messages/send', requireAuth, async (req, res) => {
   try {
     const { to, content, phoneNumberId } = req.body;
+    if (typeof content !== 'string' || !content.trim()) {
+      return res.status(400).json({ error: 'Message body required' });
+    }
     const toAddr = toE164(to); // OpenPhone rejects non-E.164 numbers — coerce first
+    if (!/^\+\d{10,15}$/.test(toAddr)) {
+      return res.status(400).json({ error: 'Invalid recipient phone number' });
+    }
+    if (req.user.role === 'technician' && !(await techMaySendTo(req.user.id, toAddr))) {
+      return res.status(403).json({ error: 'You can only message clients on your own jobs' });
+    }
     // Sender identity comes from SERVER env, not the browser. Prefer the OpenPhone number
     // (from), exactly like the proven sendSMS() helper; fall back to the server's own
     // phoneNumberId; only then the client-supplied one. Never let a hardcoded browser
@@ -328,11 +354,13 @@ openphoneRouter.get('/phone-numbers', requireAuth, async (_req, res) => {
 });
 
 // ─── Pending job suggestions (from AI-processed transcripts) ─────────────────
-openphoneRouter.get('/pending-jobs', requireAuth, (_req, res) => {
+// Suggestions carry the full call transcript and AI-extracted client details — dispatch
+// data, not something a technician needs (or has a UI for).
+openphoneRouter.get('/pending-jobs', requireAuth, requireRole('owner', 'manager'), (_req, res) => {
   res.json(Array.from(pendingJobSuggestions.values()));
 });
 
-openphoneRouter.delete('/pending-jobs/:callId', requireAuth, (req, res) => {
+openphoneRouter.delete('/pending-jobs/:callId', requireAuth, requireRole('owner', 'manager'), (req, res) => {
   pendingJobSuggestions.delete(req.params.callId);
   dbDeletePending(req.params.callId);
   res.sendStatus(204);

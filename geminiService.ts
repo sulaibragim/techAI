@@ -700,6 +700,7 @@ export async function handleAITool(name: string, args: any): Promise<any> {
     }
 
     case 'get_calls': {
+      if (isTech) return { status: 'error', message: 'The call log is visible to owner/manager only' };
       try {
         const res = await fetch(`${API_BASE}/api/openphone/calls`, { headers: { ...authHeaders() } });
         if (!res.ok) return { status: 'error', message: 'Failed to fetch calls' };
@@ -711,6 +712,10 @@ export async function handleAITool(name: string, args: any): Promise<any> {
     }
 
     case 'get_messages': {
+      // The company inbox contains every client's messages — the same owner/manager gate
+      // the Messages tab has. It is also the main path by which customer-authored text
+      // (i.e. untrusted input) reaches the model, so it stays away from the tech role.
+      if (isTech) return { status: 'error', message: 'The client inbox is visible to owner/manager only' };
       try {
         const res = await fetch(`${API_BASE}/api/openphone/messages`, { headers: { ...authHeaders() } });
         if (!res.ok) return { status: 'error', message: 'Failed to fetch messages' };
@@ -722,6 +727,17 @@ export async function handleAITool(name: string, args: any): Promise<any> {
     }
 
     case 'send_sms': {
+      // Only ever text a number that belongs to a client we actually have on file. The
+      // model reads customer-authored text (inbound SMS, job notes, lead names), so an
+      // arbitrary `to` is a path from "customer writes something" to "our number texts a
+      // stranger". The server enforces this too for technicians.
+      const target = String(args.to || '').replace(/\D/g, '').slice(-10);
+      const known = target.length === 10 && visibleJobs.some(
+        j => (j.client?.phone || '').replace(/\D/g, '').slice(-10) === target
+      );
+      if (!known) {
+        return { status: 'error', message: 'I can only text a phone number that belongs to a client on a job. Open the job and send it from there.' };
+      }
       try {
         const res = await fetch(`${API_BASE}/api/openphone/messages/send`, {
           method: 'POST',

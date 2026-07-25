@@ -78,7 +78,11 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
   const hasPayment = (localJob.amountPaid || 0) > 0 || localJob.paymentStatus === 'paid' || localJob.paymentStatus === 'partial';
   const techItemsLocked = role === 'technician' && (jobIsClosed || hasPayment);
   const techInvoiceFrozen = role === 'technician' && (jobIsClosed || localJob.paymentStatus === 'paid');
-  const techCompleteBlocked = role === 'technician' && localJob.paymentStatus !== 'paid';
+  // A $0 invoice (warranty callback, courtesy visit) has nothing to collect — blocking it
+  // on paymentStatus left the tech unable to close the job at all.
+  const techCompleteBlocked = role === 'technician'
+    && localJob.paymentStatus !== 'paid'
+    && (localJob.totalAmount || 0) > 0.01;
   const techCancelBlocked = role === 'technician' && hasPayment;
 
   // Swipe right anywhere on the card to go back — the top "back" button sits under the
@@ -1311,6 +1315,9 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                   address={localJob.client.address || ''}
                   zip={localJob.client.zip || ''}
                   precision={localJob.client.geoPrecision}
+                  lat={localJob.client.lat}
+                  lng={localJob.client.lng}
+                  placeId={localJob.client.placeId}
                   onChange={(v) => handleClientChange({
                     address: v.address,
                     zip: v.zip,
@@ -2018,9 +2025,12 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                       <Phone size={13} className="text-blue-500 shrink-0" />
                       <span className="text-xs font-semibold text-white">{formatPhone(localJob.client.phone)}</span>
                     </div>
-                    <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => window.location.href = `tel:${localJob.client.phone}`} className="p-1.5 text-slate-400 hover:text-blue-400 transition-colors"><Phone size={12} /></button>
-                      <button onClick={() => copyToClipboard(localJob.client.phone)} className="p-1.5 text-slate-400 hover:text-blue-400 transition-colors"><Copy size={12} /></button>
+                    {/* Always visible on touch: `opacity-0 group-hover` meant the only way
+                        to dial the client from a job card did not exist on a phone, which
+                        is where every technician uses this screen. */}
+                    <div className="flex space-x-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                      <button aria-label="Call client" onClick={() => window.location.href = `tel:${localJob.client.phone}`} className="p-2.5 text-slate-300 md:text-slate-400 hover:text-blue-400 transition-colors"><Phone size={14} /></button>
+                      <button aria-label="Copy phone number" onClick={() => copyToClipboard(localJob.client.phone)} className="p-2.5 text-slate-300 md:text-slate-400 hover:text-blue-400 transition-colors"><Copy size={14} /></button>
                     </div>
                   </div>
                   <div className="flex items-center justify-between py-2.5 border-b border-slate-700/50 group">
@@ -2028,7 +2038,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                       <Mail size={13} className="text-blue-500 shrink-0" />
                       <span className="text-xs font-semibold text-white truncate max-w-[200px]">{localJob.client.email}</span>
                     </div>
-                    <button onClick={() => copyToClipboard(localJob.client.email)} className="p-1.5 text-slate-400 hover:text-blue-400 transition-colors opacity-0 group-hover:opacity-100"><Copy size={12} /></button>
+                    <button aria-label="Copy email" onClick={() => copyToClipboard(localJob.client.email)} className="p-2.5 text-slate-300 md:text-slate-400 hover:text-blue-400 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100"><Copy size={14} /></button>
                   </div>
                   <div className="flex items-center justify-between py-2.5 group">
                     <div className="flex items-center space-x-3">

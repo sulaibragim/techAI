@@ -45,7 +45,16 @@ export const isRevenueJob = (j: Job) => REVENUE_STATUSES.has(j.status);
 // it was first scheduled. A job booked June 30 but completed July 2 belongs to July
 // (matters for monthly revenue, targets, and technician commission/payroll). `sold`
 // jobs carry no completedAt, so fall back to the scheduled date.
-const revenueDateStr = (j: Job): string => (j.completedAt ? j.completedAt.slice(0, 10) : j.scheduledDate);
+// completedAt is a UTC instant (`new Date().toISOString()`), so slicing it gives the
+// UTC calendar day — which is TOMORROW for anything finished after 5pm in Arizona.
+// Evening lockouts are the highest-ticket work there is, so that quietly moved money,
+// commission and day-of-week stats into the wrong day (and the wrong month on the 31st).
+// Format in the device's own timezone instead; the crew works one metro.
+const localDayOf = (iso: string): string => {
+  const d = new Date(iso);
+  return isNaN(d.getTime()) ? iso.slice(0, 10) : d.toLocaleDateString('en-CA'); // en-CA → YYYY-MM-DD
+};
+const revenueDateStr = (j: Job): string => (j.completedAt ? localDayOf(j.completedAt) : j.scheduledDate);
 
 // A "sale" is any revenue job that actually produced billable money (service call,
 // labor, parts — anything > $0), not just labor/part line items.
@@ -615,13 +624,29 @@ export function revenueByHourDow(jobs: Job[], year: number, month: number, month
 
 /** How much has actually been collected on a job. */
 export const collectedAmount = (j: Job): number => {
-  if (j.paymentStatus === 'paid') return j.totalAmount;
+  // Prefer the recorded amount over the 'paid' label: raising a paid invoice (a
+  // forgotten part added afterwards) leaves the label at 'paid' while the extra was
+  // never collected, and reading totalAmount here booked money that never arrived and
+  // hid the balance from A/R. Rows predating amountPaid fall back to the total.
+  if (j.paymentStatus === 'paid') return j.amountPaid ?? j.totalAmount;
   if (j.paymentStatus === 'partial') return j.amountPaid || 0;
   return 0;
 };
 
+/** Money sent back to the client. The refund route already nets this out of amountPaid. */
+export const refundedAmount = (j: Job): number =>
+  (j.refunds || []).reduce((s, r) => s + (r.amount || 0), 0);
+
+/**
+ * Invoice total net of refunds — what the sale is actually worth now.
+ * Without this a refunded job kept its full totalAmount while amountPaid dropped to 0,
+ * so it reappeared as an open invoice: the owner saw phantom A/R, and the scheduler
+ * texted a customer we had just refunded to ask them to pay.
+ */
+export const netRevenueAmount = (j: Job): number => Math.max(0, (j.totalAmount || 0) - refundedAmount(j));
+
 /** Outstanding balance still owed on a job. */
-export const outstandingAmount = (j: Job): number => Math.max(0, j.totalAmount - collectedAmount(j));
+export const outstandingAmount = (j: Job): number => Math.max(0, netRevenueAmount(j) - collectedAmount(j));
 
 export interface AccountingSummary {
   grossRevenue: number;
@@ -636,7 +661,8 @@ export interface AccountingSummary {
 /** Period accounting summary (revenue jobs in the month). */
 export function accountingSummary(jobs: Job[], year: number, month: number, taxRate = 0): AccountingSummary {
   const inMonth = completedJobsInMonth(jobs, year, month);
-  const grossRevenue = inMonth.reduce((s, j) => s + j.totalAmount, 0);
+  // Net of refunds: money handed back is not revenue, and taxing/commissioning it is worse.
+  const grossRevenue = inMonth.reduce((s, j) => s + netRevenueAmount(j), 0);
   const collected = inMonth.reduce((s, j) => s + collectedAmount(j), 0);
   const outstanding = inMonth.reduce((s, j) => s + outstandingAmount(j), 0);
   const partsCost = inMonth.reduce(
