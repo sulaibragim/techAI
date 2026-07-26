@@ -1,6 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ListChecks, ChevronDown, AlertTriangle, Hash, MapPin, Clock, Wrench } from 'lucide-react';
-import { findProcedure } from '../vehicleKeyLookup';
+import { findProcedure, type KeyProcedure } from '../vehicleKeyLookup';
 
 const StepRow: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
   <div className="space-y-0.5">
@@ -12,7 +12,15 @@ const StepRow: React.FC<{ label: string; children: React.ReactNode }> = ({ label
 // Expandable "how to program" panel for a vehicle. Pulls from the separate
 // procedures dataset; renders nothing if there's no match.
 export const ProcedureBlock: React.FC<{ make?: string; model?: string; year?: number | null }> = ({ make, model, year }) => {
-  const proc = useMemo(() => (make ? findProcedure(make, model, year ?? null) : null), [make, model, year]);
+  // The procedures dataset is fetched on demand, so this resolves a tick after mount.
+  // `alive` guards against a stale answer landing after the vehicle changed.
+  const [proc, setProc] = useState<KeyProcedure | null>(null);
+  useEffect(() => {
+    let alive = true;
+    if (!make) { setProc(null); return; }
+    findProcedure(make, model, year ?? null).then(p => { if (alive) setProc(p); });
+    return () => { alive = false; };
+  }, [make, model, year]);
   const [open, setOpen] = useState(false);
   if (!proc) return null;
   const weak = proc.confidence && proc.confidence !== 'verified';

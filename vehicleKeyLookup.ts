@@ -1,6 +1,31 @@
-import { VEHICLE_KEYS } from './data/vehicleKeys';
-import { PROCEDURES, type KeyProcedure } from './data/procedures';
+import type { KeyProcedure } from './data/procedures';
 import type { VehicleKeyProfile, Part } from './types';
+
+export type { KeyProcedure };
+
+// The car-key dataset is 1.2 MB of bundled JSON (~155 kB gzip). Imported statically it
+// rode along with anything that touched this module — and geminiService does, which the
+// always-mounted voice assistant pulls in, so EVERY cold app open downloaded the whole
+// reference before showing a single job. Load it the first time someone actually looks a
+// key up instead. Cached after that, and the two datasets load independently.
+let keysPromise: Promise<VehicleKeyProfile[]> | null = null;
+let procsPromise: Promise<KeyProcedure[]> | null = null;
+
+const keys = (): Promise<VehicleKeyProfile[]> =>
+  (keysPromise ??= import('./data/vehicleKeys').then((m) => m.VEHICLE_KEYS));
+
+const procs = (): Promise<KeyProcedure[]> =>
+  (procsPromise ??= import('./data/procedures').then((m) => m.PROCEDURES));
+
+/**
+ * Warm the dataset ahead of use — call it when a screen that will need keys mounts, so
+ * the fetch overlaps with the user typing instead of stalling the first lookup.
+ * Safe to call repeatedly.
+ */
+export function preloadVehicleKeys(): void {
+  void keys();
+  void procs();
+}
 
 // Free, no-key VIN decoder (US gov). Returns make/model/year — NOT key data
 // (no VIN encodes that). We join the decode to our own key dataset by make+model+year.
@@ -57,12 +82,12 @@ export interface KeyQuery {
 
 // Find matching key profiles. Make must match; model is fuzzy (contains either way,
 // so "Wrangler JL" matches "Wrangler"); year must fall in the row's span.
-export function findKeyProfiles(q: KeyQuery): VehicleKeyProfile[] {
+export async function findKeyProfiles(q: KeyQuery): Promise<VehicleKeyProfile[]> {
   const make = norm(q.make);
   const model = q.model ? norm(q.model) : '';
   const year = q.year ?? null;
   if (!make) return [];
-  return VEHICLE_KEYS.filter((p) => {
+  return (await keys()).filter((p) => {
     if (norm(p.make) !== make) return false;
     if (model) {
       const pm = norm(p.model);
@@ -77,12 +102,14 @@ export function findKeyProfiles(q: KeyQuery): VehicleKeyProfile[] {
 }
 
 // Dropdown/datalist helpers for manual entry.
-export const KNOWN_MAKES = Array.from(new Set(VEHICLE_KEYS.map((p) => p.make))).sort();
+export async function knownMakes(): Promise<string[]> {
+  return Array.from(new Set((await keys()).map((p) => p.make))).sort();
+}
 
-export function modelsForMake(make: string): string[] {
+export async function modelsForMake(make: string): Promise<string[]> {
   const m = norm(make);
   return Array.from(
-    new Set(VEHICLE_KEYS.filter((p) => norm(p.make) === m).map((p) => p.model))
+    new Set((await keys()).filter((p) => norm(p.make) === m).map((p) => p.model))
   ).sort();
 }
 
@@ -101,11 +128,11 @@ export function stockForKeyway(keyway: string | undefined, inventory: Part[]): P
 // Reverse lookup: tech has a mystery fob / blank in hand — type its FCC ID, OEM part
 // number, blade (Ilco/Silca/JMA) or keyway and find every car it fits. Great for using
 // up old stock and for "what is this key I just found".
-export function reverseLookup(query: string): VehicleKeyProfile[] {
+export async function reverseLookup(query: string): Promise<VehicleKeyProfile[]> {
   const q = norm(query);
   if (q.length < 3) return [];
   const hit = (s?: string) => (s ? norm(s).includes(q) : false);
-  return VEHICLE_KEYS.filter((p) =>
+  return (await keys()).filter((p) =>
     (p.variants || []).some(
       (v) =>
         hit(v.fccId) || hit(v.partNumber) || hit(v.bladeIlco) ||
@@ -115,12 +142,12 @@ export function reverseLookup(query: string): VehicleKeyProfile[] {
 }
 
 // Join a step-by-step programming procedure to a vehicle (make + model + year).
-export function findProcedure(make: string, model?: string, year?: number | null): KeyProcedure | null {
+export async function findProcedure(make: string, model?: string, year?: number | null): Promise<KeyProcedure | null> {
   const m = norm(make);
   const md = model ? norm(model) : '';
   const y = year ?? null;
   if (!m) return null;
-  const matches = PROCEDURES.filter((p) => {
+  const matches = (await procs()).filter((p) => {
     if (norm(p.make) !== m) return false;
     if (md) {
       const pm = norm(p.model);

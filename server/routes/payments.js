@@ -496,29 +496,41 @@ paymentsRouter.post('/receipt', requireAuth, async (req, res) => {
 // Allowlist, not deny-technician: `accountant` is a real role and must not be able to
 // push money back out through Stripe just by not being a tech.
 paymentsRouter.post('/refund', requireAuth, requireRole('owner', 'manager'), async (req, res) => {
-  // The read (how much is refundable), the Stripe calls and the ledger write all run
-  // under one row lock. Unlocked, two managers hitting Refund at the same moment both
-  // read "collected $500", both pass the ceiling check, and the customer gets $500 back
-  // twice while the books record one refund.
+  // Concurrency here is guarded by an ADVISORY lock, not a row lock held across the
+  // Stripe call. Two managers hitting Refund at the same moment must not both read
+  // "collected $500", both pass the ceiling check, and send the customer $500 twice —
+  // but the earlier fix (BEGIN … FOR UPDATE … Stripe … COMMIT) locked the job ROW for
+  // the whole network round-trip, which also blocks the payment webhook and the tech's
+  // job save on that same job. This key only ever contends with another refund on the
+  // same job, holds no open transaction, and refuses rather than queues.
   const client = await db.connect();
-  let updated, refundAmount, newRefunds, job, jobId, cancelJob;
+  let updated, refundAmount, newRefunds, job, jobId, cancelJob, locked = false;
   try {
     ({ jobId, cancelJob = false } = req.body || {});
     const { amount } = req.body || {};
-    if (!jobId) { client.release(); return res.status(400).json({ error: 'jobId required' }); }
+    // These return through the `finally` below, which releases the client — so they must
+    // NOT release it themselves.
+    if (!jobId) return res.status(400).json({ error: 'jobId required' });
     refundAmount = Math.round(Number(amount) * 100) / 100;
-    if (!Number.isFinite(refundAmount) || refundAmount < 0.01) { client.release(); return res.status(400).json({ error: 'Invalid amount' }); }
+    if (!Number.isFinite(refundAmount) || refundAmount < 0.01) return res.status(400).json({ error: 'Invalid amount' });
 
-    await client.query('BEGIN');
-    const { rows } = await client.query('SELECT data FROM jobs WHERE id = $1 FOR UPDATE', [jobId]);
-    if (rows.length === 0) { await client.query('ROLLBACK'); client.release(); return res.status(404).json({ error: 'Job not found' }); }
+    // try_ rather than a blocking wait: if another refund on this job is mid-flight,
+    // telling the operator to retry beats silently queueing behind a network call.
+    const { rows: lockRows } = await client.query(
+      'SELECT pg_try_advisory_lock(hashtext($1)::bigint) AS got', [`refund:${jobId}`]
+    );
+    if (!lockRows[0]?.got) {
+      return res.status(409).json({ error: 'Another refund on this job is already being processed. Try again in a moment.' });
+    }
+    locked = true;
+
+    const { rows } = await client.query('SELECT data FROM jobs WHERE id = $1', [jobId]);
+    if (rows.length === 0) { throw Object.assign(new Error('Job not found'), { httpStatus: 404 }); }
     job = rows[0].data;
 
     const paid = paidOf(job);
     if (refundAmount > paid + 0.005) {
-      await client.query('ROLLBACK');
-      client.release();
-      return res.status(400).json({ error: `Refund exceeds collected amount (${money(paid)})` });
+      throw Object.assign(new Error(`Refund exceeds collected amount (${money(paid)})`), { httpStatus: 400 });
     }
 
     // Card charges on file: recorded by the webhook, or recovered from legacy
@@ -545,7 +557,7 @@ paymentsRouter.post('/refund', requireAuth, requireRole('owner', 'manager'), asy
     let remaining = refundAmount;
 
     if (payments.length > 0) {
-      if (!stripeConfigured()) { await client.query('ROLLBACK'); client.release(); return res.status(503).json({ error: 'Card payments not configured (STRIPE_SECRET_KEY)' }); }
+      if (!stripeConfigured()) throw Object.assign(new Error('Card payments not configured (STRIPE_SECRET_KEY)'), { httpStatus: 503 });
       for (const p of payments.reverse()) { // newest charge first
         if (remaining < 0.01) break;
         const alreadyOnIntent = refundedByIntent.get(p.intent) || 0;
@@ -570,24 +582,49 @@ paymentsRouter.post('/refund', requireAuth, requireRole('owner', 'manager'), asy
       newRefunds.push({ id: `manual-${Date.now()}`, amount: refundAmount, at: now, by: req.user.id, method: 'manual' });
     }
 
-    const newPaid = Math.max(0, Math.round((paid - refundAmount) * 100) / 100);
-    updated = {
-      ...job,
-      amountPaid: newPaid,
-      paymentStatus: newPaid < 0.01 ? 'unpaid' : newPaid >= (job.totalAmount || 0) - 0.01 ? 'paid' : 'partial',
-      refunds: [...priorRefunds, ...newRefunds],
-      ...(cancelJob ? { status: 'cancelled' } : {}),
-      updatedAt: now,
-    };
-    await client.query('UPDATE jobs SET data = $2, updated_at = NOW() WHERE id = $1', [jobId, JSON.stringify(updated)]);
-    await client.query('COMMIT');
+    // Money has moved. Now write the ledger in a SHORT transaction, re-reading the row
+    // first: the Stripe round-trip took real time, and a payment webhook or a tech's save
+    // may have landed on this job meanwhile. Merging onto the fresh copy — rather than
+    // writing back the snapshot we read before calling Stripe — keeps that work.
+    await client.query('BEGIN');
+    try {
+      const { rows: freshRows } = await client.query('SELECT data FROM jobs WHERE id = $1 FOR UPDATE', [jobId]);
+      const fresh = freshRows[0]?.data || job;
+      const freshPaid = paidOf(fresh);
+      const newPaid = Math.max(0, Math.round((freshPaid - refundAmount) * 100) / 100);
+      updated = {
+        ...fresh,
+        amountPaid: newPaid,
+        paymentStatus: newPaid < 0.01 ? 'unpaid' : newPaid >= (fresh.totalAmount || 0) - 0.01 ? 'paid' : 'partial',
+        refunds: [...(Array.isArray(fresh.refunds) ? fresh.refunds : priorRefunds), ...newRefunds],
+        ...(cancelJob ? { status: 'cancelled' } : {}),
+        updatedAt: now,
+      };
+      await client.query('UPDATE jobs SET data = $2, updated_at = NOW() WHERE id = $1', [jobId, JSON.stringify(updated)]);
+      await client.query('COMMIT');
+    } catch (e) {
+      await client.query('ROLLBACK').catch(() => {});
+      // The refund already went through at Stripe — say so loudly, because the books and
+      // the processor now disagree and someone has to reconcile by hand.
+      console.error('[payments] REFUND SENT BUT NOT RECORDED for job', jobId, '-', e.message);
+      throw Object.assign(new Error('Refund was issued at Stripe but could not be recorded. Check the job before retrying.'), { httpStatus: 500 });
+    }
   } catch (err) {
-    await client.query('ROLLBACK').catch(() => {});
-    client.release();
     console.error('[payments] refund error:', err.message);
-    return res.status(502).json({ error: err.message || 'Could not process refund' });
+    return res.status(err.httpStatus || 502).json({ error: err.message || 'Could not process refund' });
+  } finally {
+    // The advisory lock is session-scoped, so it lives on this pooled connection. If the
+    // unlock fails we must DISCARD the connection rather than hand it back still holding
+    // the lock — otherwise every future refund on this job would 409 forever.
+    let unlocked = true;
+    if (locked) {
+      unlocked = await client
+        .query('SELECT pg_advisory_unlock(hashtext($1)::bigint)', [`refund:${jobId}`])
+        .then(() => true)
+        .catch(() => false);
+    }
+    client.release(unlocked ? undefined : new Error('refund lock could not be released'));
   }
-  client.release();
 
   try {
     console.log(`[payments] refunded ${money(refundAmount)} on job ${job.jobNumber || jobId} (${newRefunds.map(r => r.method).join('+')})${cancelJob ? ' — job cancelled' : ''}`);

@@ -24,24 +24,41 @@ export const ExcelImport: React.FC<ExcelImportProps> = ({ existing, onCancel, on
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
+  /**
+   * Hand the file to a throwaway worker and wait for rows back. The worker is terminated
+   * on success, failure and timeout alike — a hostile file that sends the parser into a
+   * catastrophic regex spins that thread, not the app, and gets killed after 30s.
+   */
+  const parseSpreadsheet = (file: File): Promise<SheetData[]> => new Promise(async (resolve, reject) => {
+    const worker = new Worker(new URL('../excelParser.worker.ts', import.meta.url));
+    const done = (fn: () => void) => { clearTimeout(timer); worker.terminate(); fn(); };
+    const timer = setTimeout(
+      () => done(() => reject(new Error('файл слишком сложный или повреждён (превышено время разбора)'))),
+      30_000
+    );
+    worker.onmessage = (e: MessageEvent<{ ok: boolean; sheets?: SheetData[]; error?: string }>) =>
+      done(() => (e.data.ok ? resolve((e.data.sheets || []) as SheetData[]) : reject(new Error(e.data.error || 'ошибка разбора'))));
+    worker.onerror = (e) => done(() => reject(new Error(e.message || 'ошибка разбора')));
+
+    const isCsv = /\.csv$/i.test(file.name) || (file.type || '').includes('csv');
+    if (isCsv) worker.postMessage({ kind: 'csv', text: await file.text() });
+    else {
+      const buffer = await file.arrayBuffer();
+      worker.postMessage({ kind: 'binary', buffer }, [buffer]); // transfer, don't copy
+    }
+  });
+
   const sheet = sheets?.find(s => s.name === sheetName) || null;
   const header: any[] = sheet && sheet.rows[headerIdx] ? sheet.rows[headerIdx] : [];
 
-  // Read the file with SheetJS (loaded on demand — keeps it out of the main bundle).
+  // Parsing happens in a worker (see excelParser.worker.ts): SheetJS on npm is stuck on
+  // a version with an unpatched prototype-pollution and ReDoS advisory, and a worker's
+  // separate global scope contains the damage while keeping the UI responsive on big
+  // files. The parser is also still loaded on demand, so it stays out of the main bundle.
   const handleFile = async (file: File) => {
     setError(''); setBusy(true);
     try {
-      const XLSX = await import('xlsx');
-      // CSV: decode as UTF-8 text (File.text() is always UTF-8) so Cyrillic survives —
-      // a raw byte read misreads UTF-8 as Latin-1. XLSX files carry their own encoding.
-      const isCsv = /\.csv$/i.test(file.name) || (file.type || '').includes('csv');
-      const wb = isCsv
-        ? XLSX.read(await file.text(), { type: 'string' })
-        : XLSX.read(await file.arrayBuffer(), { type: 'array' });
-      const parsed: SheetData[] = wb.SheetNames.map(name => ({
-        name,
-        rows: XLSX.utils.sheet_to_json(wb.Sheets[name], { header: 1, defval: '' }) as any[][],
-      })).filter(s => s.rows.length > 0);
+      const parsed = await parseSpreadsheet(file);
       if (parsed.length === 0) { setError('В файле нет данных.'); setBusy(false); return; }
       // Default to the sheet that looks most like stock (most mapped columns).
       const scored = parsed.map(s => {

@@ -10,6 +10,23 @@ import { jwtSecret } from '../config.js';
 const SKEY = (process.env.STRIPE_SECRET_KEY || '').trim();
 const WHSEC = (process.env.STRIPE_WEBHOOK_SECRET || '').trim();
 
+// Never wait on Stripe forever. A hung request would otherwise pin a database client
+// (and, for refunds, a lock) for as long as the socket stays open.
+const STRIPE_TIMEOUT_MS = 20_000;
+
+async function stripeFetch(url, init = {}) {
+  const ctl = new AbortController();
+  const t = setTimeout(() => ctl.abort(), STRIPE_TIMEOUT_MS);
+  try {
+    return await fetch(url, { ...init, signal: ctl.signal });
+  } catch (e) {
+    if (e.name === 'AbortError') throw new Error(`Stripe did not respond within ${STRIPE_TIMEOUT_MS / 1000}s`);
+    throw e;
+  } finally {
+    clearTimeout(t);
+  }
+}
+
 export const stripeConfigured = () => !!SKEY;
 export const webhookConfigured = () => !!WHSEC;
 
@@ -58,7 +75,7 @@ export async function createCheckoutSession({ jobId, jobNumber, amountCents, com
   if (customerEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) {
     body.set('customer_email', customerEmail);
   }
-  const r = await fetch('https://api.stripe.com/v1/checkout/sessions', {
+  const r = await stripeFetch('https://api.stripe.com/v1/checkout/sessions', {
     method: 'POST',
     headers: { Authorization: `Bearer ${SKEY}`, 'Content-Type': 'application/x-www-form-urlencoded' },
     body,
@@ -73,7 +90,7 @@ export async function createCheckoutSession({ jobId, jobNumber, amountCents, com
 // Best-effort: an already-paid or already-expired session just reports not-open.
 export async function expireCheckoutSession(sessionId) {
   if (!SKEY || !sessionId) return false;
-  const r = await fetch(
+  const r = await stripeFetch(
     `https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(sessionId)}/expire`,
     { method: 'POST', headers: { Authorization: `Bearer ${SKEY}` } }
   );
@@ -94,7 +111,7 @@ export async function createRefund({ paymentIntent, amountCents, idempotencyKey 
   if (amountCents) body.set('amount', String(amountCents));
   const headers = { Authorization: `Bearer ${SKEY}`, 'Content-Type': 'application/x-www-form-urlencoded' };
   if (idempotencyKey) headers['Idempotency-Key'] = idempotencyKey;
-  const r = await fetch('https://api.stripe.com/v1/refunds', { method: 'POST', headers, body });
+  const r = await stripeFetch('https://api.stripe.com/v1/refunds', { method: 'POST', headers, body });
   const data = await r.json();
   if (!r.ok) throw new Error(data?.error?.message || `stripe http ${r.status}`);
   return { id: data.id, amount: data.amount, status: data.status };
@@ -104,7 +121,7 @@ export async function createRefund({ paymentIntent, amountCents, idempotencyKey 
 // charge, but our ledger is keyed by intent.
 export async function getChargeIntent(chargeId) {
   if (!SKEY || !chargeId) return null;
-  const r = await fetch(`https://api.stripe.com/v1/charges/${encodeURIComponent(chargeId)}`, {
+  const r = await stripeFetch(`https://api.stripe.com/v1/charges/${encodeURIComponent(chargeId)}`, {
     headers: { Authorization: `Bearer ${SKEY}` },
   });
   const data = await r.json();
@@ -116,7 +133,7 @@ export async function getChargeIntent(chargeId) {
 // Returns dollars; null when the transaction isn't available yet.
 export async function getPaymentFee(paymentIntent) {
   if (!SKEY) return null;
-  const r = await fetch(
+  const r = await stripeFetch(
     `https://api.stripe.com/v1/payment_intents/${encodeURIComponent(paymentIntent)}?expand[]=latest_charge.balance_transaction`,
     { headers: { Authorization: `Bearer ${SKEY}` } }
   );
@@ -130,7 +147,7 @@ export async function getPaymentFee(paymentIntent) {
 // started recording stripePayments on the webhook.
 export async function getSessionPayment(sessionId) {
   if (!SKEY) throw new Error('Stripe not configured');
-  const r = await fetch(`https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(sessionId)}`, {
+  const r = await stripeFetch(`https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(sessionId)}`, {
     headers: { Authorization: `Bearer ${SKEY}` },
   });
   const data = await r.json();

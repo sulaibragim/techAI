@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { KeyRound, AlertTriangle, CircleCheck, Bot, Gauge, Plus, BadgeCheck } from 'lucide-react';
 import { findKeyProfiles, stockForKeyway } from '../vehicleKeyLookup';
 import { useAppStore } from '../store';
@@ -40,10 +40,15 @@ export const AutoKeyPanel: React.FC<Props> = ({ make, modelOrYear, onAddToInvoic
   const ownedProgrammers = useVehicleKeyStore((s) => s.ownedProgrammers);
   const confirmations = useVehicleKeyStore((s) => s.confirmations);
   const { year, model } = useMemo(() => parseModelYear(modelOrYear), [modelOrYear]);
-  const profiles = useMemo(
-    () => (make ? findKeyProfiles({ make, model: model || undefined, year }) : []),
-    [make, model, year]
-  );
+  // Key data loads on first use rather than riding along with the app bundle, so this
+  // arrives a tick after mount. `alive` drops a stale answer if the vehicle changed.
+  const [profiles, setProfiles] = useState<VehicleKeyProfile[]>([]);
+  useEffect(() => {
+    let alive = true;
+    if (!make) { setProfiles([]); return; }
+    findKeyProfiles({ make, model: model || undefined, year }).then(p => { if (alive) setProfiles(p); });
+    return () => { alive = false; };
+  }, [make, model, year]);
 
   if (!make) {
     return (
