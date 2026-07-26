@@ -44,7 +44,12 @@ async function companyName() {
 // ─── Client receipt link ───────────────────────────────────────────────────────
 // Stateless secret URL: HMAC of the job id, so no token storage and no way to
 // enumerate other jobs' receipts. The page itself is public (the payer isn't a user).
-const RECEIPT_SECRET = jwtSecret();
+// Deliberately its OWN secret, falling back to the JWT one only when unset. Sharing
+// jwtSecret() meant rotating JWT_SECRET — the standard response to a leaked token —
+// silently 404'd every receipt link already texted to a customer. Set RECEIPT_SECRET
+// on Railway so the two can be rotated independently; leaving it unset keeps existing
+// links working exactly as before.
+const RECEIPT_SECRET = (process.env.RECEIPT_SECRET || '').trim() || jwtSecret();
 const receiptSig = (jobId) => crypto.createHmac('sha256', RECEIPT_SECRET).update(`receipt:${jobId}`).digest('hex').slice(0, 20);
 const receiptUrlFor = (base, jobId) => (base ? `${base}/pay/receipt/${encodeURIComponent(jobId)}/${receiptSig(jobId)}` : '');
 
