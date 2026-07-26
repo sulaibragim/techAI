@@ -875,6 +875,14 @@ export function technicianDay(
   };
 }
 
+/** CSV of the open-invoice rows actually shown in the A/R table. */
+export function receivablesToCSV(rows: ReceivableRow[]): string {
+  const header = ['Job', 'Client', 'Date', 'Total', 'Paid', 'Balance', 'Status'];
+  const body = rows.map(r => [r.jobNumber, r.client, r.date, r.total.toFixed(2), r.paid.toFixed(2), r.balance.toFixed(2), r.status]);
+  const totals = ['TOTAL', '', '', '', '', rows.reduce((s, r) => s + r.balance, 0).toFixed(2), ''];
+  return [header, ...body, totals].map(r => r.map(csvEsc).join(',')).join('\n');
+}
+
 /** Payroll CSV for a period's technician earnings. */
 export function payrollToCSV(rows: TechnicianEarnings[]): string {
   const esc = (v: unknown) => {

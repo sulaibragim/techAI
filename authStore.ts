@@ -46,7 +46,8 @@ interface AuthState {
   changeOwnPassword: (currentPassword: string, newPassword: string) => Promise<string | null>;
   syncUsers: () => Promise<void>;
 
-  addUser: (user: Omit<User, 'id' | 'createdAt'>) => void;
+  /** Returns null on success, or a message to show the owner. */
+  addUser: (user: Omit<User, 'id' | 'createdAt'>) => Promise<string | null>;
   updateUser: (user: User, currentPassword?: string) => void;
   removeUser: (id: string) => void;
 
@@ -125,10 +126,15 @@ export const useAuthStore = create<AuthState>()(
         await syncUsersFromServer(set);
       },
 
-      addUser: (userData) => {
+      // Returns null on success, or a message. The account is added optimistically but
+      // REMOVED again if the server refuses: it used to stay in the list either way, so
+      // a duplicate email or a rejected password left the owner handing out credentials
+      // for an account that does not exist, and nothing said otherwise until next login.
+      addUser: async (userData) => {
         const newUser: User = { ...userData, id: `u-${Date.now()}`, createdAt: new Date().toISOString() };
         set((state) => ({ users: [...state.users, newUser] }));
-        api('/users', {
+        const drop = () => set((state) => ({ users: state.users.filter(u => u.id !== newUser.id) }));
+        return api('/users', {
           method: 'POST',
           body: JSON.stringify({
             name: userData.name,
@@ -146,8 +152,15 @@ export const useAuthStore = create<AuthState>()(
             set((state) => ({
               users: state.users.map(u => u.id === newUser.id ? serverUser : u),
             }));
+            return null;
           }
-        }).catch(() => {});
+          drop();
+          const detail = await res.json().catch(() => null);
+          return detail?.error || 'The server rejected this account.';
+        }).catch(() => {
+          drop();
+          return 'No connection to the server — the account was not created.';
+        });
       },
 
       // `currentPassword` is required by the server when someone changes their OWN

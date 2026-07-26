@@ -97,6 +97,7 @@ export const PendingJobSuggestions: React.FC<{ onJobCreated?: (job: import('../t
   const [selectedTech, setSelectedTech] = useState<Record<string, string>>({});
   // Editable client fields, so a caller the AI couldn't identify can be named before creating.
   const [editFields, setEditFields] = useState<Record<string, { name?: string; phone?: string; address?: string }>>({});
+  const [dismissError, setDismissError] = useState('');
   const setField = (callId: string, key: 'name' | 'phone' | 'address', value: string) =>
     setEditFields(prev => ({ ...prev, [callId]: { ...prev[callId], [key]: value } }));
   const seenRef = useRef<Set<string>>(new Set());
@@ -128,11 +129,26 @@ export const PendingJobSuggestions: React.FC<{ onJobCreated?: (job: import('../t
     }
   }, [pending]);
 
-  const dismiss = async (callId: string) => {
+  /**
+   * Remove the suggestion locally ONLY if the server accepted the delete. fetch doesn't
+   * reject on 4xx/5xx and the status was never read, so a failed delete still cleared
+   * the card — then the 10s poll brought it back and the dispatcher created a second job
+   * for the same call. 404 counts as success: it's already gone.
+   */
+  const dismiss = async (callId: string): Promise<boolean> => {
     try {
-      await fetch(`${API_BASE}/api/openphone/pending-jobs/${callId}`, { method: 'DELETE', headers: { ...authHeaders() } });
-    } catch {}
+      const res = await fetch(`${API_BASE}/api/openphone/pending-jobs/${callId}`, { method: 'DELETE', headers: { ...authHeaders() } });
+      if (!res.ok && res.status !== 404) {
+        setDismissError('Could not remove this suggestion — it may come back. Try again.');
+        return false;
+      }
+    } catch {
+      setDismissError('No connection — this suggestion was not removed.');
+      return false;
+    }
+    setDismissError('');
     setPending(p => p.filter(x => x.callId !== callId));
+    return true;
   };
 
   const approve = async (pj: PendingJob) => {
@@ -214,6 +230,19 @@ export const PendingJobSuggestions: React.FC<{ onJobCreated?: (job: import('../t
     setCreating(pj.callId);
     const s = pj.suggestion;
     const summary = s?.callSummary || pj.openPhoneSummary || '';
+    // The corrections typed above — the client's real name/phone/address — and the
+    // technician picked on this card were read only by approve(). Attaching to an
+    // existing job silently discarded all of it, so the dispatcher's edits vanished
+    // with no sign they had been ignored. Carry them onto the job being attached to.
+    const edited = editFields[pj.callId] || {};
+    const assignedTechId = selectedTech[pj.callId] || undefined;
+    const [firstName, ...restName] = (edited.name || '').trim().split(/\s+/).filter(Boolean);
+    const client = {
+      ...job.client,
+      ...(firstName ? { firstName, lastName: restName.join(' ') || job.client.lastName } : {}),
+      ...(edited.phone?.trim() ? { phone: edited.phone.trim() } : {}),
+      ...(edited.address?.trim() ? { address: edited.address.trim() } : {}),
+    };
     const note: Message = {
       id: `msg-${Date.now()}`,
       timestamp: new Date().toISOString(),
@@ -223,6 +252,10 @@ export const PendingJobSuggestions: React.FC<{ onJobCreated?: (job: import('../t
     };
     updateJob({
       ...job,
+      client,
+      // Only fills an EMPTY assignee — attaching a follow-up call must not silently
+      // reassign a job that already belongs to someone.
+      assignedTo: job.assignedTo || assignedTechId,
       callSummary: job.callSummary || summary || undefined,
       callQuality: job.callQuality || s?.callQuality || undefined,
       callTranscript: pj.transcript || job.callTranscript,
@@ -244,6 +277,12 @@ export const PendingJobSuggestions: React.FC<{ onJobCreated?: (job: import('../t
         </span>
         <div className="flex-1 h-px bg-violet-500/20" />
       </div>
+
+      {dismissError && (
+        <p className="text-[11px] font-semibold text-amber-300 bg-amber-500/10 border border-amber-500/25 rounded-lg px-3 py-2">
+          {dismissError}
+        </p>
+      )}
 
       {pending.map((pj) => {
         const s = pj.suggestion;

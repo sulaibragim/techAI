@@ -8,7 +8,7 @@ import { useAppStore, useVisibleJobs } from '../store';
 import { useAuthStore, useCurrentUser } from '../authStore';
 import { useSettingsStore } from '../settingsStore';
 import {
-  accountingSummary, paymentMethodBreakdown, revenueByTechnician, accountsReceivable,
+  accountingSummary, paymentMethodBreakdown, revenueByTechnician, accountsReceivable, receivablesToCSV,
   jobsForTechnician, payrollToCSV, jobsToCSV, jobsInMonths, collectedAmount,
   monthsInPeriod, expensesInMonths, expensesByCategory, expensesToCSV,
   PeriodMode, TechnicianEarnings, MONTH_FULL,
@@ -648,8 +648,17 @@ export const Accounting: React.FC<{ onJobSelect?: (job: Job) => void }> = ({ onJ
       {/* ACCOUNTS RECEIVABLE */}
       <div className="bg-slate-900 border border-white/10 rounded-2xl p-6 shadow-lg">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center"><Receipt size={16} className="mr-2 text-amber-500" /> Outstanding Invoices (A/R) · {fmt$(totalReceivable)}</h3>
-          <button onClick={() => downloadCSV(`transactions-${fileTag}.csv`, jobsToCSV(jobsInMonths(jobs, span)))} className="flex items-center gap-1.5 text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors"><Download size={13} /> {periodLabel} CSV</button>
+          {/* Says "all time" out loud. This block, its aging chips and its total are NOT
+              period-scoped, unlike every other card on the page — including the
+              "Outstanding · this period" figure above it. Both were correct under their
+              own definition and read as the same metric, so May's $700 debt was missing
+              from one and present in the other with nothing to explain the gap. */}
+          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center">
+            <Receipt size={16} className="mr-2 text-amber-500" /> Open invoices · all time · {fmt$(totalReceivable)}
+          </h3>
+          {/* Exports the debtor rows shown below, not every revenue job in the period —
+              the button sat on this card but downloaded something else entirely. */}
+          <button onClick={() => downloadCSV(`open-invoices-${fileTag}.csv`, receivablesToCSV(receivables))} className="flex items-center gap-1.5 text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors"><Download size={13} /> CSV</button>
         </div>
 
         {receivables.length > 0 && (

@@ -693,6 +693,7 @@ const TeamSection: React.FC = () => {
   const { users, addUser, updateUser, removeUser, changeOwnPassword } = useAuthStore();
   const currentUser = useCurrentUser();
   const [showAdd, setShowAdd] = useState(false);
+  const [adding, setAdding] = useState(false);
   const [draft, setDraft] = useState({ name: '', email: '', password: '', phone: '', role: 'technician' as Role, commissionRate: 30 });
   const [err, setErr] = useState('');
   const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
@@ -762,14 +763,19 @@ const TeamSection: React.FC = () => {
     setNewPhone('');
   };
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (!draft.name.trim() || !draft.email.trim() || !draft.password.trim()) { setErr('Name, email and password are required.'); return; }
     // Validation used to be presence-only, so email: "bob" and a 1-character password
     // both went through — and email IS the login identifier.
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(draft.email.trim())) { setErr('That does not look like a valid email address.'); return; }
     if (draft.password.length < MIN_PASSWORD_LENGTH) { setErr(`Password must be at least ${MIN_PASSWORD_LENGTH} characters.`); return; }
     if (users.some(u => u.email.trim().toLowerCase() === draft.email.trim().toLowerCase())) { setErr('That email is already in use.'); return; }
-    addUser({
+    // Only clear the form and close once the SERVER has accepted it. Previously the
+    // panel closed regardless, so a rejected account still appeared in the list and the
+    // owner handed out a password for something that didn't exist.
+    setErr('');
+    setAdding(true);
+    const failure = await addUser({
       name: draft.name.trim(),
       email: draft.email.trim(),
       password: draft.password,
@@ -778,8 +784,9 @@ const TeamSection: React.FC = () => {
       commissionRate: draft.role === 'technician' ? draft.commissionRate : undefined,
       active: true,
     });
+    setAdding(false);
+    if (failure) { setErr(failure); return; }
     setDraft({ name: '', email: '', password: '', phone: '', role: 'technician', commissionRate: 30 });
-    setErr('');
     setShowAdd(false);
   };
 
@@ -827,7 +834,7 @@ const TeamSection: React.FC = () => {
           {err && <p className="text-xs font-semibold text-red-400">{err}</p>}
           <div className="flex gap-3">
             <button onClick={() => { setShowAdd(false); setErr(''); }} className="flex-1 py-2.5 bg-white/5 border border-white/10 rounded-xl text-slate-300 text-xs font-bold uppercase tracking-wider hover:bg-white/10 transition-all">Cancel</button>
-            <button onClick={handleAdd} className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-500 rounded-xl text-white text-xs font-bold uppercase tracking-wider transition-all">Create Account</button>
+            <button onClick={handleAdd} disabled={adding} className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 rounded-xl text-white text-xs font-bold uppercase tracking-wider transition-all">{adding ? 'Creating…' : 'Create Account'}</button>
           </div>
         </div>
       )}
