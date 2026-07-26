@@ -783,6 +783,50 @@ export function jobsForTechnician(jobs: Job[], techId: string, year: number, mon
     .sort((a, b) => a.scheduledDate.localeCompare(b.scheduledDate));
 }
 
+/** Company revenue recognised on a single local day (YYYY-MM-DD), net of refunds and tips. */
+export function revenueOnDay(jobs: Job[], dayStr: string): number {
+  return round2(
+    jobs
+      .filter(j => isRevenueJob(j) && revenueDateStr(j) === dayStr)
+      .reduce((s, j) => s + netRevenueAmount(j), 0)
+  );
+}
+
+/**
+ * What one technician did TODAY and what they are owed for it. The crew used to have to
+ * ask the owner; this is the same arithmetic payroll uses, scoped to a single local day.
+ * `dayStr` is a local YYYY-MM-DD, matching how revenue is recognised everywhere else.
+ */
+export interface TechDay {
+  jobsDone: number;
+  revenue: number;     // company revenue on their closed jobs — net of refunds, no tips
+  commission: number;
+  tips: number;
+  payout: number;      // commission + tips
+  stillOpen: number;   // jobs assigned to them today that aren't closed yet
+}
+
+export function technicianDay(
+  jobs: Job[],
+  userId: string,
+  commissionRate: number,
+  dayStr: string
+): TechDay {
+  const mine = jobs.filter(j => j.assignedTo === userId);
+  const closed = mine.filter(j => isRevenueJob(j) && revenueDateStr(j) === dayStr);
+  const revenue = closed.reduce((s, j) => s + netRevenueAmount(j), 0);
+  const tips = closed.reduce((s, j) => s + tipAmount(j), 0);
+  const commission = round2(revenue * ((commissionRate || 0) / 100));
+  return {
+    jobsDone: closed.length,
+    revenue: round2(revenue),
+    commission,
+    tips: round2(tips),
+    payout: round2(commission + tips),
+    stillOpen: mine.filter(j => j.scheduledDate === dayStr && !isRevenueJob(j) && j.status !== 'cancelled').length,
+  };
+}
+
 /** Payroll CSV for a period's technician earnings. */
 export function payrollToCSV(rows: TechnicianEarnings[]): string {
   const esc = (v: unknown) => {

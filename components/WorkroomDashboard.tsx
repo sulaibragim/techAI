@@ -4,13 +4,13 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   DollarSign, Clock, Target,
   AlertCircle, Activity, Plus, ChevronLeft, ChevronRight,
-  ArrowLeft, Zap, Shield, Bell, Phone, MapPin, Globe, User, MoveRight, X
+  ArrowLeft, Zap, Shield, Bell, Phone, MapPin, Globe, User, MoveRight, X, Wallet
 } from 'lucide-react';
 import { useAppStore, useVisibleJobs } from '../store';
-import { useAuthStore } from '../authStore';
+import { useAuthStore, useCurrentUser } from '../authStore';
 import { useSettingsStore } from '../settingsStore';
 import { Job, JobStatus, STATUS_COLORS } from '../types';
-import { calculateFinancialMetrics } from '../financialUtils';
+import { calculateFinancialMetrics, revenueOnDay, technicianDay, accountsReceivable } from '../financialUtils';
 import { PendingJobSuggestions } from './PendingJobSuggestions';
 
 // Short two-note chime via Web Audio (no asset file). Best-effort — silent if the browser blocks it.
@@ -202,7 +202,9 @@ const KanbanCard: React.FC<{
 
 export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAddJob: () => void }> = ({ onJobSelect, onAddJob }) => {
   const { updateJobStatus, updateJob } = useAppStore();
-  const isTechUser = useAuthStore(s => s.users.find(u => u.id === s.currentUserId)?.role === 'technician');
+  const currentUser = useCurrentUser();
+  const isTechUser = currentUser?.role === 'technician';
+  const setActiveTab = useAppStore(s => s.setActiveTab);
   const jobs = useVisibleJobs();
   const { monthlyRevenueTarget, monthlyTargets, dailyRevenueTarget } = useSettingsStore();
   const nowRef = new Date();
@@ -330,7 +332,28 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
 
   const todayStr = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`;
   const todaysJobs = jobs.filter(j => j.scheduledDate === todayStr);
-  const todaysRevenue = todaysJobs.filter(j => j.status === 'completed' || j.status === 'sold').reduce((s, j) => s + (j.totalAmount || 0), 0);
+  // Recognise today's money the same way every other screen does — on the day the work
+  // was FINISHED. Keyed to scheduledDate, a job booked yesterday and closed today was
+  // counted on neither day: yesterday it wasn't complete, today it isn't scheduled. The
+  // daily target tracker reads this, so it silently never saw that revenue at all.
+  const todaysRevenue = revenueOnDay(jobs, todayStr);
+
+  // A tech's own numbers for today; the owner's view of who owes money.
+  const myDay = useMemo(
+    () => (isTechUser && currentUser ? technicianDay(jobs, currentUser.id, currentUser.commissionRate ?? 0, todayStr) : null),
+    [isTechUser, currentUser, jobs, todayStr]
+  );
+  const debtors = useMemo(() => {
+    const rows = accountsReceivable(jobs);
+    const dayMs = 86400000;
+    const age = (d: string) => (d ? Math.max(0, Math.floor((Date.now() - new Date(d).getTime()) / dayMs)) : 0);
+    return {
+      total: Math.round(rows.reduce((s, r) => s + r.balance, 0)),
+      count: rows.length,
+      oldestDays: rows.reduce((m, r) => Math.max(m, age(r.date)), 0),
+      top: [...rows].sort((a, b) => b.balance - a.balance).slice(0, 3),
+    };
+  }, [jobs]);
 
   return (
     <div className="space-y-6 pb-32 animate-in fade-in duration-700">
@@ -512,6 +535,66 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
         </div>
 
         <div className="lg:col-span-4 flex flex-col gap-5">
+
+          {/* A technician's own day. They used to have to ask the owner what they'd
+              earned; this is the same arithmetic payroll uses, for today only. */}
+          {isTechUser && myDay && (
+            <div className="bg-gradient-to-br from-emerald-900/30 to-slate-900 p-5 rounded-2xl border border-emerald-500/25 shadow-2xl">
+              <h3 className="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-4 flex items-center">
+                <Wallet size={14} className="mr-2" /> Your day
+              </h3>
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <p className="text-2xl font-bold text-white tabular-nums">{myDay.jobsDone}</p>
+                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">Closed</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-white tabular-nums">${myDay.revenue.toLocaleString()}</p>
+                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">Billed</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-emerald-400 tabular-nums">${myDay.payout.toLocaleString()}</p>
+                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">Yours</p>
+                </div>
+              </div>
+              <p className="text-[11px] text-slate-400 mt-3 leading-snug">
+                {myDay.tips > 0
+                  ? `Commission $${myDay.commission.toLocaleString()} + tips $${myDay.tips.toLocaleString()}.`
+                  : `Commission at ${currentUser?.commissionRate ?? 0}%.`}
+                {myDay.stillOpen > 0 && ` ${myDay.stillOpen} job${myDay.stillOpen > 1 ? 's' : ''} still open today.`}
+              </p>
+            </div>
+          )}
+
+          {/* Money owed, on the first screen. It was only visible buried in Accounting,
+              mixed in with period figures, so nobody looked at it daily. */}
+          {!isTechUser && debtors.count > 0 && (
+            <div className="bg-gradient-to-br from-amber-900/25 to-slate-900 p-5 rounded-2xl border border-amber-500/25 shadow-2xl">
+              <button
+                onClick={() => setActiveTab('accounting')}
+                className="w-full text-left group"
+              >
+                <h3 className="text-xs font-bold text-amber-400 uppercase tracking-widest mb-3 flex items-center justify-between">
+                  <span className="flex items-center"><AlertCircle size={14} className="mr-2" /> Owed to you</span>
+                  <ChevronRight size={14} className="opacity-50 group-hover:opacity-100 transition-opacity" />
+                </h3>
+                <p className="text-3xl font-bold text-white tabular-nums">${debtors.total.toLocaleString()}</p>
+                <p className="text-[11px] text-slate-400 mt-1">
+                  {debtors.count} unpaid invoice{debtors.count > 1 ? 's' : ''}
+                  {debtors.oldestDays > 0 && ` · oldest ${debtors.oldestDays} days`}
+                </p>
+              </button>
+              <div className="mt-3 pt-3 border-t border-white/10 space-y-1.5">
+                {debtors.top.map(d => (
+                  <div key={d.id} className="flex items-center justify-between gap-2 text-xs">
+                    <span className="text-slate-300 truncate">{d.client}</span>
+                    <span className="font-bold text-amber-300 tabular-nums shrink-0">${d.balance.toFixed(0)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="bg-slate-900 p-5 rounded-2xl border border-white/10 shadow-[0_0_30px_rgba(0,0,0,0.5)] relative overflow-hidden">
             <h3 className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-4 flex items-center">
               <Activity size={14} className="mr-2 text-blue-400" /> Today

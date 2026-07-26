@@ -95,6 +95,65 @@ function tipFor(isCar: boolean, w: Weather | null): string {
 
 // Build the full "on my way" SMS: greeting + ETA + a "reply to check ETA" invite, in the
 // client's language. English messages also carry the one-time "responda SÍ" Spanish invite.
+/**
+ * One-tap messages for the things a technician types over and over. Same bilingual
+ * handling as the On-My-Way text, so a Spanish-speaking client gets Spanish here too.
+ *
+ * `label` is what the tech sees on the button (short, so several fit on a phone);
+ * `build` produces the text the client receives.
+ */
+export interface QuickReply {
+  id: string;
+  label: string;
+  build: (opts: { firstName?: string; techName: string; companyName: string; lang: ClientLang }) => string;
+}
+
+const who = (firstName: string | undefined, lang: ClientLang) =>
+  (firstName || '').trim() || (lang === 'es' ? 'hola' : 'there');
+
+export const QUICK_REPLIES: QuickReply[] = [
+  {
+    id: 'eta15',
+    label: '15 min out',
+    build: ({ firstName, techName, companyName, lang }) =>
+      lang === 'es'
+        ? `Hola ${who(firstName, lang)}, soy ${techName} de ${companyName}. Llego en unos 15 minutos.`
+        : `Hi ${who(firstName, lang)}, this is ${techName} from ${companyName}. I'm about 15 minutes out.`,
+  },
+  {
+    id: 'running-late',
+    label: 'Running late',
+    build: ({ firstName, techName, companyName, lang }) =>
+      lang === 'es'
+        ? `Hola ${who(firstName, lang)}, soy ${techName} de ${companyName}. Voy con unos 10–15 minutos de retraso — disculpe la espera. Sigo en camino.`
+        : `Hi ${who(firstName, lang)}, this is ${techName} from ${companyName}. I'm running about 10–15 minutes behind — sorry for the wait. Still on my way.`,
+  },
+  {
+    id: 'outside',
+    label: 'I’m outside',
+    build: ({ firstName, techName, companyName, lang }) =>
+      lang === 'es'
+        ? `Hola ${who(firstName, lang)}, soy ${techName} de ${companyName}. Ya estoy afuera — avíseme cómo entrar.`
+        : `Hi ${who(firstName, lang)}, this is ${techName} from ${companyName}. I'm outside now — let me know how to reach you.`,
+  },
+  {
+    id: 'no-answer',
+    label: 'No answer',
+    build: ({ firstName, techName, companyName, lang }) =>
+      lang === 'es'
+        ? `Hola ${who(firstName, lang)}, soy ${techName} de ${companyName}. Estoy en el sitio pero no logro contactarle. Llámeme cuando pueda, por favor.`
+        : `Hi ${who(firstName, lang)}, this is ${techName} from ${companyName}. I'm at the address but can't reach you. Please call me when you get this.`,
+  },
+  {
+    id: 'done',
+    label: 'All done',
+    build: ({ firstName, techName, companyName, lang }) =>
+      lang === 'es'
+        ? `Hola ${who(firstName, lang)}, el trabajo está terminado. Gracias por elegir ${companyName}. — ${techName}`
+        : `Hi ${who(firstName, lang)}, the job is finished. Thanks for choosing ${companyName}. — ${techName}`,
+  },
+];
+
 export function buildOnMyWayMessage(opts: {
   firstName?: string;
   techName: string;

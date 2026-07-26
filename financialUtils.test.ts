@@ -10,6 +10,8 @@ import {
   accountingSummary,
   revenueByTechnician,
   accountsReceivable,
+  revenueOnDay,
+  technicianDay,
 } from './financialUtils';
 import { Job, LineItem, User } from './types';
 
@@ -133,6 +135,54 @@ describe('revenue lands on the local calendar day, not the UTC one', () => {
     const users = [{ id: 'u-tech', name: 'Tech', role: 'technician', commissionRate: 25 }] as User[];
     expect(revenueByTechnician([evening], 2026, 5, users)[0].commission).toBe(212.5);
     expect(revenueByTechnician([evening], 2026, 6, users)[0].commission).toBe(0);
+  });
+});
+
+describe('a single day', () => {
+  const local = (y: number, m: number, d: number, h: number) => new Date(y, m, d, h, 0, 0).toISOString();
+
+  it('counts a job on the day it was FINISHED, not the day it was booked', () => {
+    // The Workroom used to key today's revenue off scheduledDate, so a job booked
+    // yesterday and closed today was counted on neither day — and the daily target
+    // tracker, which reads it, never saw the money at all.
+    const j = job({
+      lineItems: [li('labor', 600)],
+      scheduledDate: '2026-07-24',
+      completedAt: local(2026, 6, 25, 10),
+      paymentStatus: 'paid', amountPaid: 600, assignedTo: 'u-tech',
+    });
+    expect(revenueOnDay([j], '2026-07-25')).toBe(600);
+    expect(revenueOnDay([j], '2026-07-24')).toBe(0);
+  });
+
+  it("gives a technician their own day: billed, commission, tips and what's still open", () => {
+    const closed = job({
+      lineItems: [li('labor', 400), li('tip', 50)],
+      completedAt: local(2026, 6, 25, 14),
+      paymentStatus: 'paid', amountPaid: 450, assignedTo: 'u-tech',
+    });
+    const stillOpen = job({
+      lineItems: [li('labor', 200)],
+      scheduledDate: '2026-07-25', status: 'onSite', completedAt: undefined, assignedTo: 'u-tech',
+    });
+    const someoneElse = job({
+      lineItems: [li('labor', 900)],
+      completedAt: local(2026, 6, 25, 15),
+      paymentStatus: 'paid', amountPaid: 900, assignedTo: 'u-other',
+    });
+
+    const d = technicianDay([closed, stillOpen, someoneElse], 'u-tech', 40, '2026-07-25');
+    expect(d.jobsDone).toBe(1);
+    expect(d.revenue).toBe(400);      // company revenue, tip excluded
+    expect(d.commission).toBe(160);   // 40% of 400
+    expect(d.tips).toBe(50);
+    expect(d.payout).toBe(210);       // 160 + 50, not 40% of 450
+    expect(d.stillOpen).toBe(1);
+  });
+
+  it('shows nothing for a day the technician did not close anything', () => {
+    const d = technicianDay([], 'u-tech', 40, '2026-07-25');
+    expect(d).toMatchObject({ jobsDone: 0, revenue: 0, commission: 0, tips: 0, payout: 0, stillOpen: 0 });
   });
 });
 
