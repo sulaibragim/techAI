@@ -86,20 +86,15 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
   return (
     <div className="space-y-5 pb-24 relative">
 
-      {/* Reschedule Overlay */}
-      <AnimatePresence>
+      {/* Reschedule Overlay — CSS animation, no AnimatePresence. These three overlays
+          cover the whole screen, and a JS exit animation that never finishes leaves one
+          mounted with dead handlers, which reads as the app freezing. */}
       {reschedulingId && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[200] flex items-center justify-center p-6"
+        <div
+          className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[200] flex items-center justify-center p-6 animate-in fade-in duration-150"
         >
-           <motion.div
-             initial={{ scale: 0.9, opacity: 0 }}
-             animate={{ scale: 1, opacity: 1 }}
-             exit={{ scale: 0.9, opacity: 0 }}
-             className="bg-slate-900 w-full max-w-[280px] rounded-2xl border border-blue-500/20 p-5 shadow-[0_0_40px_rgba(0,229,255,0.15)] space-y-4"
+           <div
+             className="bg-slate-900 w-full max-w-[280px] rounded-2xl border border-blue-500/20 p-5 shadow-[0_0_40px_rgba(0,229,255,0.15)] space-y-4 animate-in zoom-in-95 duration-200"
            >
               <div className="flex justify-between items-center">
                  <h3 className="text-xs font-semibold uppercase tracking-widest text-blue-400">Reschedule</h3>
@@ -127,10 +122,9 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
                     ))}
                  </div>
               </div>
-           </motion.div>
-        </motion.div>
+           </div>
+        </div>
       )}
-      </AnimatePresence>
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -295,15 +289,12 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
       </div>
 
       {/* CANCEL CONFIRMATION */}
-      <AnimatePresence>
-        {cancelingId && (
-          <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-md z-[300] flex items-center justify-center p-6"
+      {cancelingId && (
+          <div
+            className="fixed inset-0 bg-black/80 backdrop-blur-md z-[300] flex items-center justify-center p-6 animate-in fade-in duration-150"
           >
-            <motion.div
-              initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}
-              className="bg-slate-900 w-full max-w-sm rounded-2xl border border-amber-500/20 p-8 shadow-2xl space-y-6 text-center"
+            <div
+              className="bg-slate-900 w-full max-w-sm rounded-2xl border border-amber-500/20 p-8 shadow-2xl space-y-6 text-center animate-in zoom-in-95 duration-200"
             >
               <div className="w-16 h-16 bg-amber-500/10 rounded-2xl flex items-center justify-center mx-auto">
                 <AlertCircle size={28} className="text-amber-400" />
@@ -316,21 +307,17 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
                 <button onClick={() => setCancelingId(null)} className="flex-1 py-3.5 rounded-xl bg-white/5 hover:bg-white/10 text-white font-bold text-xs uppercase tracking-widest">Keep Job</button>
                 <button onClick={() => handleCancel(cancelingId)} className="flex-1 py-3.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs uppercase tracking-widest active:scale-95">Cancel Job</button>
               </div>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         )}
-      </AnimatePresence>
 
       {/* DELETE CONFIRMATION */}
-      <AnimatePresence>
-        {deletingId && (
-          <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-md z-[300] flex items-center justify-center p-6"
+      {deletingId && (
+          <div
+            className="fixed inset-0 bg-black/80 backdrop-blur-md z-[300] flex items-center justify-center p-6 animate-in fade-in duration-150"
           >
-            <motion.div
-              initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}
-              className="bg-slate-900 w-full max-w-sm rounded-2xl border border-red-500/20 p-8 shadow-2xl space-y-6 text-center"
+            <div
+              className="bg-slate-900 w-full max-w-sm rounded-2xl border border-red-500/20 p-8 shadow-2xl space-y-6 text-center animate-in zoom-in-95 duration-200"
             >
               <div className="w-16 h-16 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto">
                 <Trash2 size={28} className="text-red-500" />
@@ -343,10 +330,9 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
                 <button onClick={() => setDeletingId(null)} className="flex-1 py-3.5 rounded-xl bg-white/5 hover:bg-white/10 text-white font-bold text-xs uppercase tracking-widest">Cancel</button>
                 <button onClick={() => { removeJob(deletingId); setDeletingId(null); }} className="flex-1 py-3.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs uppercase tracking-widest active:scale-95 shadow-lg shadow-red-500/20">Delete</button>
               </div>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         )}
-      </AnimatePresence>
     </div>
   );
 };

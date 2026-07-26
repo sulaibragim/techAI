@@ -497,13 +497,14 @@ export const Inventory: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* EDITOR MODAL */}
-      <AnimatePresence>
-        {isEditing && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-            <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }}
-              className="bg-slate-900 border border-white/10 p-5 rounded-2xl w-full max-w-lg shadow-2xl relative max-h-[90vh] overflow-y-auto">
+      {/* EDITOR MODAL — CSS animation rather than AnimatePresence: this covers the whole
+          screen, and an exit animation that never completes leaves it mounted with dead
+          handlers, which looks like the app has frozen. */}
+      {isEditing && (
+          <div
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150">
+            <div
+              className="bg-slate-900 border border-white/10 p-5 rounded-2xl w-full max-w-lg shadow-2xl relative max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200">
               <button onClick={() => setIsEditing(false)} className="absolute top-6 right-6 text-slate-400 hover:text-white"><X size={20} /></button>
               <h3 className="text-xl font-bold mb-6">{editingPart.id ? 'Edit Item' : 'New Item'}</h3>
 
@@ -608,10 +609,9 @@ export const Inventory: React.FC = () => {
                 <button onClick={() => setIsEditing(false)} className="flex-1 px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white font-bold">Cancel</button>
                 <button onClick={handleSave} className="flex-1 px-4 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-500/20 text-white font-bold active:scale-95">Save</button>
               </div>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         )}
-      </AnimatePresence>
     </div>
   );
 };

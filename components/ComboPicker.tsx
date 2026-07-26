@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { AnimatePresence, motion } from 'motion/react';
 import { Search, X, Check, ChevronDown, CornerDownLeft } from 'lucide-react';
 
 interface ComboPickerProps {
@@ -75,19 +74,16 @@ export const ComboPicker: React.FC<ComboPickerProps> = ({
         <ChevronDown size={16} className="text-slate-500 shrink-0" />
       </button>
 
-      {typeof document !== 'undefined' && createPortal(
-        <AnimatePresence>
-          {open && (
-            <motion.div
-              className="fixed inset-0 z-[850] flex items-end sm:items-center justify-center"
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            >
+      {/* Animated with CSS, not AnimatePresence. This sheet covers the whole screen; if a
+          JS exit animation never completes (a stalled frame loop, a backgrounded tab) the
+          overlay stays mounted with dead handlers and the app looks frozen. A CSS entry
+          animation has no unmount gate, so closing is unconditional. */}
+      {typeof document !== 'undefined' && open && createPortal(
+        <div className="fixed inset-0 z-[850] flex items-end sm:items-center justify-center animate-in fade-in duration-150">
               <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setOpen(false)} />
 
-              <motion.div
-                initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-                transition={{ type: 'spring', damping: 30, stiffness: 320 }}
-                className="relative w-full sm:max-w-md bg-slate-900 border border-white/10 rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col max-h-[85vh] sm:max-h-[70vh] sm:m-4 overflow-hidden"
+              <div
+                className="relative w-full sm:max-w-md bg-slate-900 border border-white/10 rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col max-h-[85vh] sm:max-h-[70vh] sm:m-4 overflow-hidden animate-in slide-in-from-bottom-8 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200"
               >
                 {/* grab handle (mobile) */}
                 <div className="sm:hidden flex justify-center pt-3 pb-1 shrink-0">
@@ -157,10 +153,8 @@ export const ComboPicker: React.FC<ComboPickerProps> = ({
                     })
                   )}
                 </div>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>,
+              </div>
+        </div>,
         document.body,
       )}
     </>
