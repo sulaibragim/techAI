@@ -178,13 +178,61 @@ export function revenueByJobType(jobs: Job[], year: number, month: number) {
   for (const j of completed) {
     const t = j.lockDetails?.type || 'Other';
     const cur = map.get(t) || { revenue: 0, count: 0 };
-    cur.revenue += j.totalAmount;
+    cur.revenue += netRevenueAmount(j);
     cur.count += 1;
     map.set(t, cur);
   }
   return [...map.entries()]
     .map(([type, v]) => ({ type, ...v }))
     .sort((a, b) => b.revenue - a.revenue);
+}
+
+export interface JobTypeProfit {
+  type: string;
+  count: number;
+  revenue: number;      // net of refunds, tips excluded
+  partsCost: number;    // COGS from the unitCost snapshot on part lines
+  profit: number;       // revenue − parts
+  marginPct: number;
+  avgTicket: number;
+  avgProfit: number;    // profit per job — the number that decides where to push
+}
+
+/**
+ * Profit by kind of work, not just revenue. Revenue alone hides that a car lockout with
+ * no parts can out-earn a bigger install that ate $200 of hardware, so it is the wrong
+ * signal for deciding what work to chase. Parts cost is the only per-job cost we hold, so
+ * this is gross profit — commissions and overhead are company-wide, not per-type.
+ */
+export function profitByJobType(jobs: Job[], year: number, month: number): JobTypeProfit[] {
+  const completed = completedJobsInMonth(jobs, year, month);
+  const map = new Map<string, { revenue: number; partsCost: number; count: number; sales: number }>();
+  for (const j of completed) {
+    const t = j.lockDetails?.type || 'Other';
+    const cur = map.get(t) || { revenue: 0, partsCost: 0, count: 0, sales: 0 };
+    cur.revenue += netRevenueAmount(j);
+    cur.partsCost += (j.lineItems || [])
+      .filter(i => i.type === 'part')
+      .reduce((s, i) => s + (i.unitCost ?? 0) * i.quantity, 0);
+    cur.count += 1;
+    if (isSale(j)) cur.sales += 1;
+    map.set(t, cur);
+  }
+  return [...map.entries()]
+    .map(([type, v]) => {
+      const profit = v.revenue - v.partsCost;
+      return {
+        type,
+        count: v.count,
+        revenue: round2(v.revenue),
+        partsCost: round2(v.partsCost),
+        profit: round2(profit),
+        marginPct: v.revenue > 0 ? (profit / v.revenue) * 100 : 0,
+        avgTicket: v.sales > 0 ? round2(v.revenue / v.sales) : 0,
+        avgProfit: v.count > 0 ? round2(profit / v.count) : 0,
+      };
+    })
+    .sort((a, b) => b.profit - a.profit);
 }
 
 /** Revenue & job count grouped by service area (ZIP, falling back to a city guess from the
