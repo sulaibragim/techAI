@@ -5,6 +5,10 @@ import { API_BASE } from './backendUrl';
 import { setToken, authHeaders } from './apiClient';
 import { resetWriteQueue } from './writeQueue';
 
+/** Must match MIN_PASSWORD_LENGTH in server/routes/auth.js — the server is the authority;
+ *  this exists so the UI can say so before making a round-trip. */
+export const MIN_PASSWORD_LENGTH = 10;
+
 const DEFAULT_USERS: User[] = [
   { id: 'u-owner', name: 'Sultan',     email: 'owner@trustkey.az',   role: 'owner',      active: true, createdAt: new Date().toISOString() },
   { id: 'u-mgr',   name: 'Manager',    email: 'manager@trustkey.az', role: 'manager',    active: true, createdAt: new Date().toISOString() },
@@ -36,11 +40,14 @@ interface AuthState {
   login: (email: string, password: string) => Promise<boolean>;
   loginAs: (userId: string) => void;
   logout: () => void;
-  masterReset: () => Promise<string | null>;
+  /** Owner-only. Returns one freshly generated password PER account, keyed by email. */
+  masterReset: () => Promise<Record<string, string> | null>;
+  /** Returns null on success, or a message to show the user. */
+  changeOwnPassword: (currentPassword: string, newPassword: string) => Promise<string | null>;
   syncUsers: () => Promise<void>;
 
   addUser: (user: Omit<User, 'id' | 'createdAt'>) => void;
-  updateUser: (user: User) => void;
+  updateUser: (user: User, currentPassword?: string) => void;
   removeUser: (id: string) => void;
 
   setTechStatus: (userId: string, status: TechStatus) => void;
@@ -105,13 +112,13 @@ export const useAuthStore = create<AuthState>()(
       // Deliberately does NOT touch `active`: the server doesn't either, and flipping it
       // here would silently re-hire anyone the owner had deactivated.
       masterReset: async () => {
-        let password: string | null = null;
+        let passwords: Record<string, string> | null = null;
         try {
           const res = await api('/master-reset', { method: 'POST', body: JSON.stringify({ confirm: 'RESET-ALL-PASSWORDS' }) });
-          if (res.ok) password = (await res.json())?.password ?? null;
+          if (res.ok) passwords = (await res.json())?.passwords ?? null;
         } catch {}
         set({ currentUserId: null });
-        return password;
+        return passwords;
       },
 
       syncUsers: async () => {
@@ -143,7 +150,9 @@ export const useAuthStore = create<AuthState>()(
         }).catch(() => {});
       },
 
-      updateUser: (user) => {
+      // `currentPassword` is required by the server when someone changes their OWN
+      // password, so it must be threaded through — it is never stored, only forwarded.
+      updateUser: (user, currentPassword) => {
         set((state) => ({
           users: state.users.map(u => u.id === user.id ? user : u),
         }));
@@ -153,6 +162,7 @@ export const useAuthStore = create<AuthState>()(
             name: user.name,
             email: user.email,
             password: user.password,
+            ...(currentPassword ? { currentPassword } : {}),
             role: user.role,
             phone: user.phone,
             commissionRate: user.commissionRate,
@@ -163,6 +173,27 @@ export const useAuthStore = create<AuthState>()(
             signature: user.signature,
           }),
         }).catch(() => {});
+      },
+
+      /**
+       * Change your own password. Unlike updateUser this REPORTS the outcome, because a
+       * wrong current password must not look like success — the old flow wrote the new
+       * password locally and the server silently kept the old one.
+       */
+      changeOwnPassword: async (currentPassword, newPassword) => {
+        const id = get().currentUserId;
+        if (!id) return 'Not signed in.';
+        try {
+          const res = await api(`/users/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify({ password: newPassword, currentPassword }),
+          });
+          if (res.ok) return null;
+          const detail = await res.json().catch(() => null);
+          return detail?.error || 'Could not change the password.';
+        } catch {
+          return 'No connection to the server — password not changed.';
+        }
       },
 
       removeUser: (id) => {

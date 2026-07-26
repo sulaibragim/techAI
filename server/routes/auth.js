@@ -9,6 +9,12 @@ export const authRouter = Router();
 
 const looksHashed = (s) => typeof s === 'string' && s.startsWith('$2');
 
+// The floor used to be 4, which permitted a genuinely guessable owner credential. The
+// only guard against grinding one is a per-IP login limiter, so length is doing real
+// work here. Applies to account creation, owner-set passwords and self-service changes
+// alike; the seeded/generated ones are far longer.
+const MIN_PASSWORD_LENGTH = 10;
+
 // Login — verifies bcrypt hash, migrates legacy plaintext, issues a JWT.
 authRouter.post('/login', async (req, res) => {
   try {
@@ -78,8 +84,8 @@ authRouter.post('/users', requireAuth, requireRole('owner'), async (req, res) =>
     if (!name || !email) return res.status(400).json({ error: 'Name and email required' });
     // No silent default password — a missing/blank password used to become '1234',
     // which meant an account could exist with a guessable credential nobody chose.
-    if (typeof password !== 'string' || password.length < 4) {
-      return res.status(400).json({ error: 'Password of at least 4 characters is required' });
+    if (typeof password !== 'string' || password.length < MIN_PASSWORD_LENGTH) {
+      return res.status(400).json({ error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters` });
     }
     if (role && !['owner', 'manager', 'technician', 'accountant'].includes(role)) {
       return res.status(400).json({ error: 'Invalid role' });
@@ -107,7 +113,7 @@ authRouter.put('/users/:id', requireAuth, async (req, res) => {
     const isSelf = req.user.id === req.params.id;
     if (!isOwner && !isSelf) return res.status(403).json({ error: 'Insufficient permissions' });
 
-    let { name, email, password, role, phone, commissionRate, active, techStatus, photo, lastLocation, skills, signature } = req.body;
+    let { name, email, password, currentPassword, role, phone, commissionRate, active, techStatus, photo, lastLocation, skills, signature } = req.body;
 
     // Non-owners cannot change privileged fields (no role/commission/active escalation).
     if (!isOwner) {
@@ -119,6 +125,26 @@ authRouter.put('/users/:id', requireAuth, async (req, res) => {
     }
     if (role && !['owner', 'manager', 'technician', 'accountant'].includes(role)) {
       return res.status(400).json({ error: 'Invalid role' });
+    }
+
+    if (password !== undefined) {
+      if (typeof password !== 'string' || password.length < MIN_PASSWORD_LENGTH) {
+        return res.status(400).json({ error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters` });
+      }
+      // Changing your OWN password requires proving you know the current one. Without
+      // this, anyone holding a borrowed phone or a lifted 30-day token could set a new
+      // password and lock the real user out permanently — temporary access became
+      // permanent takeover. The owner resetting someone else's password is a separate,
+      // deliberate act and is exempt.
+      if (isSelf) {
+        const { rows: me } = await db.query('SELECT password FROM users WHERE id = $1', [req.params.id]);
+        if (me.length === 0) return res.status(404).json({ error: 'User not found' });
+        const stored = me[0].password || '';
+        // Legacy rows may still hold a plaintext password (see the login upgrade path).
+        const ok = typeof currentPassword === 'string' && currentPassword.length > 0 &&
+          (stored.startsWith('$2') ? await bcrypt.compare(currentPassword, stored) : currentPassword === stored);
+        if (!ok) return res.status(403).json({ error: 'Current password is incorrect' });
+      }
     }
 
     const hashedPassword = password ? await bcrypt.hash(password, 10) : undefined;
@@ -182,12 +208,31 @@ authRouter.post('/master-reset', requireAuth, requireRole('owner'), async (req, 
     if (req.body?.confirm !== 'RESET-ALL-PASSWORDS') {
       return res.status(400).json({ error: "Confirmation required: send { confirm: 'RESET-ALL-PASSWORDS' }" });
     }
-    const password = crypto.randomBytes(6).toString('base64url');
-    const hash = await bcrypt.hash(password, 10);
-    // Reset passwords ONLY — do not touch `active`, or this silently un-deactivates
-    // (re-hires) anyone the owner has disabled.
-    await db.query('UPDATE users SET password = $1', [hash]);
-    res.json({ ok: true, password });
+    // A DISTINCT password per account. One shared password meant every technician,
+    // manager and accountant held the same credential — and so did owner@, so anyone
+    // who was handed the reset password could sign in as the owner. Returned once,
+    // keyed by email, for the owner to distribute individually.
+    const { rows: users } = await db.query('SELECT id, email FROM users ORDER BY email');
+    const issued = {};
+    const client = await db.connect();
+    try {
+      await client.query('BEGIN');
+      for (const u of users) {
+        const password = crypto.randomBytes(9).toString('base64url');
+        // Reset passwords ONLY — do not touch `active`, or this silently un-deactivates
+        // (re-hires) anyone the owner has disabled.
+        await client.query('UPDATE users SET password = $1 WHERE id = $2', [await bcrypt.hash(password, 10), u.id]);
+        issued[u.email] = password;
+      }
+      await client.query('COMMIT');
+    } catch (e) {
+      await client.query('ROLLBACK').catch(() => {});
+      throw e;
+    } finally {
+      client.release();
+    }
+    console.warn(`[AUTH] master reset: ${users.length} passwords regenerated by ${req.user.id}`);
+    res.json({ ok: true, passwords: issued, count: users.length });
   } catch (err) {
     console.error('[AUTH] master reset error:', err);
     res.status(500).json({ error: 'Internal server error' });
