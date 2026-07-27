@@ -13,7 +13,7 @@ import { useAppStore, useVisibleJobs } from '../store';
 import { useSettingsStore } from '../settingsStore';
 import { useAuthStore, useCurrentUser } from '../authStore';
 import {
-  calculatePeriodMetrics, buildMonthlyTrend, buildYearlyTrend, revenueByJobType,
+  calculatePeriodMetrics, buildMonthlyTrend, buildYearlyTrend, revenueByJobType, profitByJobType,
   topClients, revenueByArea, revenueByDayOfWeek, computeRecords, coffeeAnalysis, availableMonths,
   revenueByTechnician, periodJobsToCSV, yearPlanning, revenueByHourDow, HOUR_SLOT_LABELS,
   callQualityStats, MONTH_FULL, MONTH_LABELS, FinancialMetrics, fraudWatch
@@ -124,6 +124,7 @@ export const Dashboard: React.FC = () => {
   const trend = useMemo(() => buildMonthlyTrend(jobs, viewYear, viewMonth), [jobs, viewYear, viewMonth]);
   const yearly = useMemo(() => buildYearlyTrend(jobs, viewYear), [jobs, viewYear]);
   const byType = useMemo(() => revenueByJobType(jobs, viewYear, viewMonth), [jobs, viewYear, viewMonth]);
+  const typeProfit = useMemo(() => profitByJobType(jobs, viewYear, viewMonth), [jobs, viewYear, viewMonth]);
   const clients = useMemo(() => topClients(jobs, viewYear, viewMonth), [jobs, viewYear, viewMonth]);
   const byArea = useMemo(() => revenueByArea(jobs, viewYear, viewMonth), [jobs, viewYear, viewMonth]);
   const dow = useMemo(() => revenueByDayOfWeek(jobs, viewYear, viewMonth), [jobs, viewYear, viewMonth]);
@@ -566,6 +567,56 @@ export const Dashboard: React.FC = () => {
               )}
             </Card>
 
+            {/* Profit, not revenue, by kind of work. Revenue alone hides that a car
+                lockout with no parts can out-earn a bigger install that ate $200 of
+                hardware — so it's the wrong signal for deciding what work to chase.
+                Sorted by total profit; "per job" is what actually settles the argument. */}
+            <Card title="Profit by Job Type" icon={Wallet}>
+              {typeProfit.length === 0 ? (
+                <p className="text-sm text-slate-500 py-8 text-center">No completed jobs this period.</p>
+              ) : (
+                <div className="overflow-x-auto -mx-1">
+                  <table className="w-full text-left min-w-[380px]">
+                    <thead>
+                      <tr className="text-[10px] uppercase tracking-widest text-slate-500 font-bold border-b border-white/5">
+                        <th className="py-2 pr-2">Type</th>
+                        <th className="py-2 px-2 text-right">Jobs</th>
+                        <th className="py-2 px-2 text-right">Revenue</th>
+                        <th className="py-2 px-2 text-right">Parts</th>
+                        <th className="py-2 px-2 text-right">Profit</th>
+                        <th className="py-2 pl-2 text-right">Per job</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5">
+                      {typeProfit.map(t => (
+                        <tr key={t.type}>
+                          <td className="py-2.5 pr-2 text-xs font-semibold text-white">
+                            <span className="inline-flex items-center gap-2">
+                              <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: TYPE_COLORS[t.type] || '#64748B' }} />
+                              {t.type}
+                            </span>
+                          </td>
+                          <td className="py-2.5 px-2 text-right text-xs text-slate-300 tabular-nums">{t.count}</td>
+                          <td className="py-2.5 px-2 text-right text-xs text-slate-300 tabular-nums">{fmt$(t.revenue)}</td>
+                          <td className="py-2.5 px-2 text-right text-xs text-red-300 tabular-nums">{t.partsCost > 0 ? `−${fmt$(t.partsCost)}` : '—'}</td>
+                          <td className="py-2.5 px-2 text-right text-xs font-bold text-white tabular-nums">
+                            {fmt$(t.profit)} <span className="text-slate-500 font-semibold">{t.marginPct.toFixed(0)}%</span>
+                          </td>
+                          <td className="py-2.5 pl-2 text-right text-xs font-bold text-green-400 tabular-nums">{fmt$(t.avgProfit)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <p className="text-[10px] text-slate-500 mt-3">
+                    Gross profit — revenue net of refunds (tips excluded) minus the recorded cost of parts used.
+                    Commissions and overhead are company-wide, not per type.
+                  </p>
+                </div>
+              )}
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             <Card title="Top Clients" icon={Users}>
               {clients.length === 0 ? (
                 <p className="text-sm text-slate-500 py-8 text-center">No completed jobs this period.</p>

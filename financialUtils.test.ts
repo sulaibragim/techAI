@@ -10,6 +10,9 @@ import {
   accountingSummary,
   revenueByTechnician,
   accountsReceivable,
+  revenueOnDay,
+  technicianDay,
+  profitByJobType,
 } from './financialUtils';
 import { Job, LineItem, User } from './types';
 
@@ -133,6 +136,97 @@ describe('revenue lands on the local calendar day, not the UTC one', () => {
     const users = [{ id: 'u-tech', name: 'Tech', role: 'technician', commissionRate: 25 }] as User[];
     expect(revenueByTechnician([evening], 2026, 5, users)[0].commission).toBe(212.5);
     expect(revenueByTechnician([evening], 2026, 6, users)[0].commission).toBe(0);
+  });
+});
+
+describe('a single day', () => {
+  const local = (y: number, m: number, d: number, h: number) => new Date(y, m, d, h, 0, 0).toISOString();
+
+  it('counts a job on the day it was FINISHED, not the day it was booked', () => {
+    // The Workroom used to key today's revenue off scheduledDate, so a job booked
+    // yesterday and closed today was counted on neither day — and the daily target
+    // tracker, which reads it, never saw the money at all.
+    const j = job({
+      lineItems: [li('labor', 600)],
+      scheduledDate: '2026-07-24',
+      completedAt: local(2026, 6, 25, 10),
+      paymentStatus: 'paid', amountPaid: 600, assignedTo: 'u-tech',
+    });
+    expect(revenueOnDay([j], '2026-07-25')).toBe(600);
+    expect(revenueOnDay([j], '2026-07-24')).toBe(0);
+  });
+
+  it("gives a technician their own day: billed, commission, tips and what's still open", () => {
+    const closed = job({
+      lineItems: [li('labor', 400), li('tip', 50)],
+      completedAt: local(2026, 6, 25, 14),
+      paymentStatus: 'paid', amountPaid: 450, assignedTo: 'u-tech',
+    });
+    const stillOpen = job({
+      lineItems: [li('labor', 200)],
+      scheduledDate: '2026-07-25', status: 'onSite', completedAt: undefined, assignedTo: 'u-tech',
+    });
+    const someoneElse = job({
+      lineItems: [li('labor', 900)],
+      completedAt: local(2026, 6, 25, 15),
+      paymentStatus: 'paid', amountPaid: 900, assignedTo: 'u-other',
+    });
+
+    const d = technicianDay([closed, stillOpen, someoneElse], 'u-tech', 40, '2026-07-25');
+    expect(d.jobsDone).toBe(1);
+    expect(d.revenue).toBe(400);      // company revenue, tip excluded
+    expect(d.commission).toBe(160);   // 40% of 400
+    expect(d.tips).toBe(50);
+    expect(d.payout).toBe(210);       // 160 + 50, not 40% of 450
+    expect(d.stillOpen).toBe(1);
+  });
+
+  it('shows nothing for a day the technician did not close anything', () => {
+    const d = technicianDay([], 'u-tech', 40, '2026-07-25');
+    expect(d).toMatchObject({ jobsDone: 0, revenue: 0, commission: 0, tips: 0, payout: 0, stillOpen: 0 });
+  });
+});
+
+describe('profit by job type', () => {
+  const ofType = (type: string, items: LineItem[]) =>
+    job({ lineItems: items, lockDetails: { type } as any, paymentStatus: 'paid', amountPaid: items.reduce((s, i) => s + i.unitPrice * i.quantity, 0) });
+
+  it('ranks by profit, not revenue — the whole point of the card', () => {
+    // The install bills twice as much but eats $260 of hardware; the lockout is pure
+    // labour. Revenue says install, profit says lockout — and profit is the truth.
+    const install = ofType('Residential', [li('labor', 150), li('part', 300, 1, 260)]);
+    const lockout = ofType('Automotive', [li('labor', 220)]);
+
+    const rows = profitByJobType([install, lockout], 2026, 5);
+    expect(rows.map(r => r.type)).toEqual(['Automotive', 'Residential']); // profit order
+    expect(rows[0]).toMatchObject({ revenue: 220, partsCost: 0, profit: 220, avgProfit: 220 });
+    expect(rows[1]).toMatchObject({ revenue: 450, partsCost: 260, profit: 190 });
+    // …and by revenue alone the install would have looked like the better work.
+    expect(rows[1].revenue).toBeGreaterThan(rows[0].revenue);
+  });
+
+  it('averages profit per job and reports margin', () => {
+    const a = ofType('Automotive', [li('labor', 100)]);
+    const b = ofType('Automotive', [li('labor', 200), li('part', 100, 1, 50)]);
+    const [row] = profitByJobType([a, b], 2026, 5);
+    expect(row.count).toBe(2);
+    expect(row.revenue).toBe(400);
+    expect(row.partsCost).toBe(50);
+    expect(row.profit).toBe(350);
+    expect(row.avgProfit).toBe(175);
+    expect(row.marginPct).toBeCloseTo(87.5, 1);
+  });
+
+  it('excludes tips and refunds from the profit of a type', () => {
+    const j = job({
+      lineItems: [li('labor', 300), li('tip', 40)],
+      lockDetails: { type: 'Commercial' } as any,
+      paymentStatus: 'partial', amountPaid: 240,
+      refunds: [{ id: 'r', intent: 'pi', amount: 100, at: new Date(2026, 5, 16).toISOString(), method: 'card' as const }],
+    });
+    const [row] = profitByJobType([j], 2026, 5);
+    expect(row.revenue).toBe(200); // 340 total − 100 refunded − 40 tip
+    expect(row.profit).toBe(200);
   });
 });
 

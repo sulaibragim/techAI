@@ -27,7 +27,7 @@ import { isRevenueJob } from '../financialUtils';
 import { translateCallSummary } from '../translateService';
 import { geocodeAddress } from '../geocoding';
 import { haversineMiles, approxEtaMinutes, formatMiles, LatLng } from '../geoUtils';
-import { getDriveEta, getRouteInfo, getWeather, buildOnMyWayMessage, getClientLang } from '../dispatchMessage';
+import { getDriveEta, getRouteInfo, getWeather, buildOnMyWayMessage, getClientLang, QUICK_REPLIES, type QuickReply } from '../dispatchMessage';
 import { AutoKeyPanel } from './AutoKeyPanel';
 import { AddressAutocomplete } from './AddressAutocomplete';
 import { useSwipeBack } from '../useSwipeBack';
@@ -216,6 +216,34 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
   const [routeToClient, setRouteToClient] = useState<{ miles: number; minutes: number } | null>(null);
 
   const [msgSending, setMsgSending] = useState(false);
+
+  /** Send a canned message, then log it to the thread — but only if it actually sent. */
+  const sendQuickReply = async (q: QuickReply) => {
+    const phone = (localJob.client?.phone || '').trim();
+    if (!phone || msgSending) return;
+    setMsgSending(true);
+    try {
+      const lang = await getClientLang(phone);
+      const text = q.build({
+        firstName: localJob.client.firstName,
+        techName: users.find(u => u.id === localJob.assignedTo)?.name || technicianName,
+        companyName,
+        lang,
+      });
+      const ok = await sendSms(phone, text);
+      if (!ok) { alert('Message failed to send. Check the number or try again.'); return; }
+      const smsMsg: Message = {
+        id: Math.random().toString(36).slice(2),
+        sender: 'technician', content: text,
+        timestamp: new Date().toISOString(), method: 'sms',
+      };
+      const withMsg: Job = { ...localJob, messages: [...(localJob.messages || []), smsMsg] };
+      setLocalJob(withMsg);
+      commitJob(withMsg);
+    } finally {
+      setMsgSending(false);
+    }
+  };
 
   const handleSendMessage = async () => {
     const text = draftMessage.trim();
@@ -2362,7 +2390,24 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                     </div>
                   )}
                 </div>
-                <div className="mt-6 pt-6 border-t border-white/10">
+                <div className="mt-6 pt-6 border-t border-white/10 space-y-3">
+                   {/* One tap instead of typing the same five sentences all day. Sends in
+                       the client's language and only logs to the thread once the message
+                       actually went out. */}
+                   {(localJob.client.phone || '').trim() && (
+                     <div className="flex flex-wrap gap-2">
+                       {QUICK_REPLIES.map(q => (
+                         <button
+                           key={q.id}
+                           onClick={() => sendQuickReply(q)}
+                           disabled={msgSending}
+                           className="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-[11px] font-semibold text-slate-300 hover:bg-blue-600/20 hover:text-blue-200 hover:border-blue-500/40 active:scale-95 transition-all disabled:opacity-40"
+                         >
+                           {q.label}
+                         </button>
+                       ))}
+                     </div>
+                   )}
                    <div className="bg-white/5 rounded-2xl p-4 flex items-center">
                       <input
                         className="flex-1 bg-transparent text-sm font-medium text-white outline-none placeholder:text-slate-500 disabled:opacity-50"

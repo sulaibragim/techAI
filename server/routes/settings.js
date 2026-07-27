@@ -10,6 +10,30 @@ export const settingsRouter = Router();
 // the owner's books and must not ship to every tech's phone just because they hold a token.
 const TECH_HIDDEN_KEYS = ['expenses', 'stockMovements', 'monthlyTargets', 'aiMemories'];
 
+// Client profiles are keyed by the last 10 digits of the phone number.
+const last10 = (p) => String(p || '').replace(/\D/g, '').slice(-10);
+
+/** Narrow the client-profile map to the customers on this technician's own jobs. */
+async function profilesForTech(userId, profiles) {
+  if (!profiles || typeof profiles !== 'object') return profiles;
+  try {
+    const { rows } = await db.query(
+      "SELECT data->'client'->>'phone' AS phone FROM jobs WHERE data->>'assignedTo' = $1",
+      [userId]
+    );
+    const mine = new Set(rows.map(r => last10(r.phone)).filter(Boolean));
+    const out = {};
+    for (const [key, profile] of Object.entries(profiles)) {
+      if (mine.has(last10(key))) out[key] = profile;
+    }
+    return out;
+  } catch (e) {
+    // Can't prove which are theirs — send none rather than the whole book.
+    console.error('[SETTINGS] client profile scoping failed:', e.message);
+    return {};
+  }
+}
+
 // Get settings — any authenticated user. The Gemini key is never returned to any client;
 // it lives only in the server env (GEMINI_API_KEY). Any legacy key still in the DB is stripped.
 settingsRouter.get('/', requireAuth, async (req, res) => {
@@ -25,6 +49,10 @@ settingsRouter.get('/', requireAuth, async (req, res) => {
         const own = value.techTargets[req.user.id];
         value.techTargets = own !== undefined ? { [req.user.id]: own } : {};
       }
+      // Client profiles carry reputation tags and a field documented as a "private
+      // manager note" — for the WHOLE customer base. A technician needs the profile of
+      // the people they are actually visiting, not everyone the company has ever served.
+      value.clientProfiles = await profilesForTech(req.user.id, value.clientProfiles);
     }
     res.json(value);
   } catch (err) {

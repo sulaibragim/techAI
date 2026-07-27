@@ -178,13 +178,61 @@ export function revenueByJobType(jobs: Job[], year: number, month: number) {
   for (const j of completed) {
     const t = j.lockDetails?.type || 'Other';
     const cur = map.get(t) || { revenue: 0, count: 0 };
-    cur.revenue += j.totalAmount;
+    cur.revenue += netRevenueAmount(j);
     cur.count += 1;
     map.set(t, cur);
   }
   return [...map.entries()]
     .map(([type, v]) => ({ type, ...v }))
     .sort((a, b) => b.revenue - a.revenue);
+}
+
+export interface JobTypeProfit {
+  type: string;
+  count: number;
+  revenue: number;      // net of refunds, tips excluded
+  partsCost: number;    // COGS from the unitCost snapshot on part lines
+  profit: number;       // revenue − parts
+  marginPct: number;
+  avgTicket: number;
+  avgProfit: number;    // profit per job — the number that decides where to push
+}
+
+/**
+ * Profit by kind of work, not just revenue. Revenue alone hides that a car lockout with
+ * no parts can out-earn a bigger install that ate $200 of hardware, so it is the wrong
+ * signal for deciding what work to chase. Parts cost is the only per-job cost we hold, so
+ * this is gross profit — commissions and overhead are company-wide, not per-type.
+ */
+export function profitByJobType(jobs: Job[], year: number, month: number): JobTypeProfit[] {
+  const completed = completedJobsInMonth(jobs, year, month);
+  const map = new Map<string, { revenue: number; partsCost: number; count: number; sales: number }>();
+  for (const j of completed) {
+    const t = j.lockDetails?.type || 'Other';
+    const cur = map.get(t) || { revenue: 0, partsCost: 0, count: 0, sales: 0 };
+    cur.revenue += netRevenueAmount(j);
+    cur.partsCost += (j.lineItems || [])
+      .filter(i => i.type === 'part')
+      .reduce((s, i) => s + (i.unitCost ?? 0) * i.quantity, 0);
+    cur.count += 1;
+    if (isSale(j)) cur.sales += 1;
+    map.set(t, cur);
+  }
+  return [...map.entries()]
+    .map(([type, v]) => {
+      const profit = v.revenue - v.partsCost;
+      return {
+        type,
+        count: v.count,
+        revenue: round2(v.revenue),
+        partsCost: round2(v.partsCost),
+        profit: round2(profit),
+        marginPct: v.revenue > 0 ? (profit / v.revenue) * 100 : 0,
+        avgTicket: v.sales > 0 ? round2(v.revenue / v.sales) : 0,
+        avgProfit: v.count > 0 ? round2(profit / v.count) : 0,
+      };
+    })
+    .sort((a, b) => b.profit - a.profit);
 }
 
 /** Revenue & job count grouped by service area (ZIP, falling back to a city guess from the
@@ -781,6 +829,58 @@ export function jobsForTechnician(jobs: Job[], techId: string, year: number, mon
   return completedJobsInMonth(jobs, year, month)
     .filter(j => j.assignedTo === techId)
     .sort((a, b) => a.scheduledDate.localeCompare(b.scheduledDate));
+}
+
+/** Company revenue recognised on a single local day (YYYY-MM-DD), net of refunds and tips. */
+export function revenueOnDay(jobs: Job[], dayStr: string): number {
+  return round2(
+    jobs
+      .filter(j => isRevenueJob(j) && revenueDateStr(j) === dayStr)
+      .reduce((s, j) => s + netRevenueAmount(j), 0)
+  );
+}
+
+/**
+ * What one technician did TODAY and what they are owed for it. The crew used to have to
+ * ask the owner; this is the same arithmetic payroll uses, scoped to a single local day.
+ * `dayStr` is a local YYYY-MM-DD, matching how revenue is recognised everywhere else.
+ */
+export interface TechDay {
+  jobsDone: number;
+  revenue: number;     // company revenue on their closed jobs — net of refunds, no tips
+  commission: number;
+  tips: number;
+  payout: number;      // commission + tips
+  stillOpen: number;   // jobs assigned to them today that aren't closed yet
+}
+
+export function technicianDay(
+  jobs: Job[],
+  userId: string,
+  commissionRate: number,
+  dayStr: string
+): TechDay {
+  const mine = jobs.filter(j => j.assignedTo === userId);
+  const closed = mine.filter(j => isRevenueJob(j) && revenueDateStr(j) === dayStr);
+  const revenue = closed.reduce((s, j) => s + netRevenueAmount(j), 0);
+  const tips = closed.reduce((s, j) => s + tipAmount(j), 0);
+  const commission = round2(revenue * ((commissionRate || 0) / 100));
+  return {
+    jobsDone: closed.length,
+    revenue: round2(revenue),
+    commission,
+    tips: round2(tips),
+    payout: round2(commission + tips),
+    stillOpen: mine.filter(j => j.scheduledDate === dayStr && !isRevenueJob(j) && j.status !== 'cancelled').length,
+  };
+}
+
+/** CSV of the open-invoice rows actually shown in the A/R table. */
+export function receivablesToCSV(rows: ReceivableRow[]): string {
+  const header = ['Job', 'Client', 'Date', 'Total', 'Paid', 'Balance', 'Status'];
+  const body = rows.map(r => [r.jobNumber, r.client, r.date, r.total.toFixed(2), r.paid.toFixed(2), r.balance.toFixed(2), r.status]);
+  const totals = ['TOTAL', '', '', '', '', rows.reduce((s, r) => s + r.balance, 0).toFixed(2), ''];
+  return [header, ...body, totals].map(r => r.map(csvEsc).join(',')).join('\n');
 }
 
 /** Payroll CSV for a period's technician earnings. */
