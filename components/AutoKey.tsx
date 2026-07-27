@@ -16,6 +16,7 @@ import {
   preloadVehicleKeys, type DecodedVin,
 } from '../vehicleKeyLookup';
 import type { VehicleKeyProfile, KeyConfidence, KeyVariant, Part } from '../types';
+import { isStockPart } from '../types';
 
 const CONFIDENCE: Record<KeyConfidence, { label: string; cls: string; Icon: React.ComponentType<{ size?: number }> }> = {
   verified:        { label: 'Verified · 2+ sources', cls: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30', Icon: CircleCheck },
@@ -212,7 +213,7 @@ const ProfileCard: React.FC<{ p: VehicleKeyProfile; inventory: Part[] }> = ({ p,
 };
 
 export const AutoKey: React.FC = () => {
-  const inventory = useAppStore((s) => s.inventory);
+  const inventory = useAppStore((s) => s.inventory).filter(isStockPart);
   const ownedProgrammers = useVehicleKeyStore((s) => s.ownedProgrammers);
   const toggleProgrammer = useVehicleKeyStore((s) => s.toggleProgrammer);
   const [mode, setMode] = useState<'vin' | 'manual' | 'fob'>('vin');

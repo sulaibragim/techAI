@@ -8,7 +8,7 @@ import { authHeaders } from './apiClient';
 import { buildClients, clientScore, clientFlags, normalizePhone } from './clientUtils';
 import { findKeyProfiles, findProcedure, decodeVin, reverseLookup, stockForKeyway } from './vehicleKeyLookup';
 import { accountsReceivable } from './financialUtils';
-import { LineItem } from './types';
+import { LineItem, isStockPart } from './types';
 
 const CHAT_MODEL = 'gemini-2.5-flash';
 
@@ -766,7 +766,7 @@ export async function handleAITool(name: string, args: any): Promise<any> {
 
     case 'search_inventory': {
       const q = (args.query || '').toLowerCase();
-      const results = store.inventory.filter(p =>
+      const results = store.inventory.filter(isStockPart).filter(p =>
         p.name.toLowerCase().includes(q) ||
         p.sku.toLowerCase().includes(q) ||
         p.category.toLowerCase().includes(q)
@@ -855,7 +855,7 @@ export async function handleAITool(name: string, args: any): Promise<any> {
 
     case 'adjust_inventory': {
       const q = (args.query || '').toLowerCase();
-      const part = store.inventory.find(p =>
+      const part = store.inventory.filter(isStockPart).find(p =>
         p.id === args.query || p.sku.toLowerCase() === q || p.name.toLowerCase().includes(q)
       );
       if (!part) return { status: 'error', message: `Part "${args.query}" not found` };
@@ -967,7 +967,7 @@ export async function handleAITool(name: string, args: any): Promise<any> {
       const p = profiles[0];
       const proc = await findProcedure(make, model, year);
       const keyway = p.variants?.[0]?.keyway;
-      const inStock = stockForKeyway(keyway, store.inventory);
+      const inStock = stockForKeyway(keyway, store.inventory.filter(isStockPart));
 
       return {
         status: 'success',
@@ -1030,6 +1030,7 @@ export async function handleAITool(name: string, args: any): Promise<any> {
 
     case 'get_reorder_list': {
       const low = store.inventory
+        .filter(isStockPart)
         .filter(p => p.stock <= p.reorderPoint)
         .map(p => ({ name: p.name, sku: p.sku, category: p.category, stock: p.stock, reorderPoint: p.reorderPoint, deficit: p.reorderPoint - p.stock, price: p.price }))
         .sort((a, b) => b.deficit - a.deficit);

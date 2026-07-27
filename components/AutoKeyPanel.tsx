@@ -6,6 +6,7 @@ import { useVehicleKeyStore, profileKey } from '../vehicleKeyStore';
 import { ProcedureBlock } from './ProcedureBlock';
 import { GatedCodesBlock } from './GatedCodesBlock';
 import type { VehicleKeyProfile } from '../types';
+import { isStockPart } from '../types';
 
 // Embeddable compact key card for a job's vehicle. Lives in the Job Wizard (preview)
 // and Job Detail (with "add to invoice"). Derives the lookup from the job's brand +
@@ -35,7 +36,7 @@ interface Props {
 }
 
 export const AutoKeyPanel: React.FC<Props> = ({ make, modelOrYear, onAddToInvoice }) => {
-  const inventory = useAppStore((s) => s.inventory);
+  const inventory = useAppStore((s) => s.inventory).filter(isStockPart);
   const programmingFee = useVehicleKeyStore((s) => s.programmingFee);
   const ownedProgrammers = useVehicleKeyStore((s) => s.ownedProgrammers);
   const confirmations = useVehicleKeyStore((s) => s.confirmations);

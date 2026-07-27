@@ -3,19 +3,33 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   Package, Search, Plus, AlertCircle, RefreshCw, X, Minus, Trash2,
   Truck, ClipboardList, ChevronDown, Camera, ArrowDownLeft, ArrowUpRight, Pencil, TriangleAlert,
-  ScanLine, Copy, CheckCircle2, ClipboardCheck, PieChart, Barcode, FileSpreadsheet,
+  ScanLine, Copy, CheckCircle2, ClipboardCheck, PieChart, Barcode, FileSpreadsheet, Wrench,
 } from 'lucide-react';
 import { useAppStore } from '../store';
 import { useSettingsStore } from '../settingsStore';
 import { useCurrentUser, can } from '../authStore';
-import { Part, StockMovement, MOVEMENT_META, PART_CATEGORY_SUGGESTIONS } from '../types';
+import { Part, StockMovement, MOVEMENT_META, PART_CATEGORY_SUGGESTIONS, PART_GROUP_SUGGESTIONS, isStockPart, ExpenseCategory } from '../types';
 import { InvoiceImportModal, ReviewLine } from './InvoiceImport';
 import { ExcelImport } from './ExcelImport';
-import type { ImportRow } from '../inventoryExcel';
+import type { ImportRow, ImportTarget } from '../inventoryExcel';
 import { StocktakeModal, InsightsModal } from './StockTools';
 import { BarcodeScanner } from './BarcodeScanner';
 
 const uniqSorted = (arr: string[]) => [...new Set(arr.filter(Boolean))].sort((a, b) => a.localeCompare(b));
+
+// A hand-kept purchase log names its own categories ('Инструмент', 'Заготовки', 'Налог').
+// Map them onto the accounting categories the app reports on, rather than inventing an
+// eighth bucket nobody's charts read.
+const expenseCategoryFor = (raw: string): ExpenseCategory => {
+  const s = (raw || '').toLowerCase();
+  if (/инструм|оборудован|tool|equip/.test(s)) return 'Tools & Equipment';
+  if (/реклам|marketing|ad/.test(s)) return 'Advertising';
+  if (/топлив|бензин|fuel|gas/.test(s)) return 'Fuel';
+  if (/аренд|rent/.test(s)) return 'Rent';
+  if (/связ|софт|подписк|phone|software/.test(s)) return 'Phone & Software';
+  if (/ключ|заготов|расходн|запчаст|key|stock|part/.test(s)) return 'Keys & Stock';
+  return 'Other'; // скидка, налог, всё прочее
+};
 
 // Russian count agreement: 1 позиция / 2 позиции / 5 позиций.
 const plural = (n: number, one: string, few: string, many: string) => {
@@ -99,6 +113,8 @@ export const Inventory: React.FC = () => {
 
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<string>('All');
+  const [groupFilter, setGroupFilter] = useState<string>('All');
+  const [view, setView] = useState<'stock' | 'tools' | 'planned'>('stock');
 
   const [isEditing, setIsEditing] = useState(false);
   const [editingPart, setEditingPart] = useState<Partial<Part>>({});
@@ -176,18 +192,49 @@ export const Inventory: React.FC = () => {
     setScanOpen(false);
   };
 
-  // Excel import confirmed: create new parts, then receive (+) or set the stock per the
-  // chosen mode. 'receive' logs ONE combined Keys & Stock expense (real money out);
-  // 'set' is a stocktake correction and logs no expense.
-  const handleExcelConfirm = (rows: ImportRow[], mode: 'receive' | 'set') => {
+  // Excel import confirmed. Three different sheets, three different consequences:
+  //
+  //  'expenses' — a purchase log. Money only. It must NOT move stock: the stock sheet
+  //     already carries today's shelf counts, so receiving the log on top would double
+  //     every quantity and double the spend.
+  //  'tools'    — equipment. Recorded as parts with kind 'tool' so they can never be billed
+  //     to a client or counted as sellable stock, and rows that aren't marked bought land as
+  //     a purchase plan (owned: false), not as something we have.
+  //  'stock'    — consumables. 'set' overwrites the count (a shelf census, no expense);
+  //     'receive' adds to it and logs ONE combined Keys & Stock expense.
+  const handleExcelConfirm = (rows: ImportRow[], mode: 'receive' | 'set', target: ImportTarget) => {
+    if (target === 'expenses') {
+      const seen = new Set<string>();
+      for (const r of rows) {
+        const amount = Math.round((r.cost || 0) * Math.max(1, r.stock) * 100) / 100;
+        if (!amount) continue;
+        addExpense({
+          date: /^\d{4}-\d{2}-\d{2}$/.test(r.date) ? r.date : new Date().toISOString().split('T')[0],
+          category: expenseCategoryFor(r.category),
+          amount,
+          note: [r.name, r.supplier, r.sku ? `инвойс ${r.sku}` : ''].filter(Boolean).join(' · '),
+          createdBy: currentUser?.id,
+        });
+        if (r.sku) seen.add(r.sku);
+      }
+      // Stamp the invoice numbers so an AI scan of the same paper invoice later warns
+      // instead of silently receiving it a second time.
+      seen.forEach(inv => markInvoiceImported(inv));
+      setExcelOpen(false);
+      return;
+    }
+
     let spend = 0;
     for (const r of rows) {
+      const isTool = target === 'tools';
       let partId = r.matchId;
       if (r.createNew) {
         const created = addInventoryItemStore({
           name: r.name,
           sku: (r.sku || `NEW-${Math.random().toString(36).slice(2, 7)}`).toUpperCase(),
           category: r.category || 'Прочее',
+          group: r.group || undefined,
+          kind: isTool ? 'tool' : 'stock',
           stock: 0,
           reorderPoint: r.reorderPoint,
           price: r.price,
@@ -195,6 +242,13 @@ export const Inventory: React.FC = () => {
           brand: r.brand || undefined,
           upc: r.barcode || undefined,
           location: 'shop',
+          ...(isTool ? {
+            owned: r.owned,
+            serial: r.sku || undefined,
+            warranty: r.warranty || undefined,
+            purchasedAt: /^\d{4}-\d{2}-\d{2}$/.test(r.date) ? r.date : undefined,
+            note: r.note || undefined,
+          } : {}),
         });
         partId = created.id;
       } else if (partId) {
@@ -207,18 +261,23 @@ export const Inventory: React.FC = () => {
             cost: r.cost || existing.cost,
             brand: r.brand || existing.brand,
             category: r.category || existing.category,
+            group: r.group || existing.group,
+            ...(isTool ? { kind: 'tool' as const, owned: r.owned, warranty: r.warranty || existing.warranty, note: r.note || existing.note } : {}),
           });
         }
       }
       if (!partId) continue;
-      if (mode === 'set') {
-        adjustStockTo(partId, r.stock, { note: 'Excel import (установка остатка)' });
+      // A tool we don't own yet is a plan — it must not appear as a unit on the shelf.
+      if (isTool && !r.owned) { adjustStockTo(partId, 0, { note: 'План закупки (не куплено)' }); continue; }
+      if (isTool || mode === 'set') {
+        adjustStockTo(partId, r.stock, { note: isTool ? 'Импорт оборудования' : 'Excel import (установка остатка)' });
       } else if (r.stock > 0) {
         receiveStock(partId, r.stock, r.cost, { supplierName: r.supplier || undefined, note: 'Excel import (приход)', logExpense: false });
         spend += r.stock * (r.cost || 0);
       }
     }
-    if (mode === 'receive' && spend > 0) {
+    // Equipment money already sits in the purchase log — logging it here would double it.
+    if (target === 'stock' && mode === 'receive' && spend > 0) {
       addExpense({
         date: new Date().toISOString().split('T')[0],
         category: 'Keys & Stock',
@@ -230,26 +289,40 @@ export const Inventory: React.FC = () => {
     setExcelOpen(false);
   };
 
-  // Category chips are derived from what's actually in stock (+ a few suggestions), so
-  // imported types like "транспондер" appear automatically without a fixed list.
+  // Consumables, equipment and a shopping list are three different things and never mix:
+  // stock value, the reorder list, the stocktake and the invoice picker all read `stockParts`.
+  const stockParts = useMemo(() => inventory.filter(isStockPart), [inventory]);
+  const toolParts = useMemo(() => inventory.filter(p => p.kind === 'tool' && p.owned !== false), [inventory]);
+  const plannedParts = useMemo(() => inventory.filter(p => p.kind === 'tool' && p.owned === false), [inventory]);
+  const shelf = view === 'stock' ? stockParts : view === 'tools' ? toolParts : plannedParts;
+
+  // Chips are derived from what's actually on the shelf (+ a few suggestions), so an
+  // imported type like "транспондер" or platform like "Ford" appears without a fixed list.
   const categoryOptions = useMemo(
     () => uniqSorted([...inventory.map(p => p.category), ...PART_CATEGORY_SUGGESTIONS]),
     [inventory]
   );
-  const filterChips = useMemo(() => uniqSorted(inventory.map(p => p.category)), [inventory]);
+  const groupOptions = useMemo(
+    () => uniqSorted([...inventory.map(p => p.group || ''), ...PART_GROUP_SUGGESTIONS]),
+    [inventory]
+  );
+  const filterChips = useMemo(() => uniqSorted(shelf.map(p => p.category)), [shelf]);
+  const groupChips = useMemo(() => uniqSorted(shelf.map(p => p.group || '')), [shelf]);
 
-  const filteredInventory = inventory.filter((part: Part) => {
+  const filteredInventory = shelf.filter((part: Part) => {
     if (filter !== 'All' && part.category !== filter) return false;
+    if (groupFilter !== 'All' && (part.group || '') !== groupFilter) return false;
     if (search) {
       const q = search.toLowerCase();
-      const hit = [part.name, part.sku, part.brand, part.mpn, part.upc].some(v => v?.toLowerCase().includes(q));
+      const hit = [part.name, part.sku, part.brand, part.mpn, part.upc, part.group].some(v => v?.toLowerCase().includes(q));
       if (!hit) return false;
     }
     return true;
   });
 
-  const inventoryAtCost = inventory.reduce((a, p) => a + p.stock * (p.cost ?? 0), 0);
-  const lowCount = inventory.filter(p => p.stock <= p.reorderPoint).length;
+  const inventoryAtCost = stockParts.reduce((a, p) => a + p.stock * (p.cost ?? 0), 0);
+  const toolsAtCost = toolParts.reduce((a, p) => a + Math.max(1, p.stock) * (p.cost ?? 0), 0);
+  const lowCount = stockParts.filter(p => p.stock <= p.reorderPoint).length;
   const lossThisMonth = useMemo(() => {
     const mk = monthKey();
     return movements
@@ -327,8 +400,11 @@ export const Inventory: React.FC = () => {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-slate-900 border border-white/10 rounded-2xl p-5 relative overflow-hidden shadow-lg">
           <div className="absolute top-0 right-0 p-4 opacity-5"><Package size={40} /></div>
-          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Inventory at cost</p>
+          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Склад по закупке</p>
           <p className="text-2xl font-black text-white">{money(inventoryAtCost)}</p>
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mt-0.5">
+            {stockParts.length} позиц. · {stockParts.reduce((a, b) => a + b.stock, 0)} шт
+          </p>
         </div>
         <button onClick={() => lowCount > 0 && setReorderOpen(true)} className={`bg-amber-500/10 border border-amber-500/20 rounded-2xl p-5 relative overflow-hidden shadow-lg text-left transition-all ${lowCount > 0 ? 'hover:bg-amber-500/15 active:scale-[0.98] cursor-pointer' : 'cursor-default'}`}>
           <div className="absolute top-0 right-0 p-4 opacity-10 text-amber-500"><AlertCircle size={40} /></div>
@@ -341,25 +417,57 @@ export const Inventory: React.FC = () => {
           <p className="text-red-400 text-xs font-bold uppercase tracking-widest mb-1">Loss this month</p>
           <p className="text-2xl font-black text-red-400">{money(lossThisMonth)}</p>
         </div>
-        <div className="bg-slate-900 border border-white/10 rounded-2xl p-5 relative overflow-hidden shadow-lg">
-          <div className="absolute top-0 right-0 p-4 opacity-5"><Package size={40} /></div>
-          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Total units</p>
-          <p className="text-2xl font-black text-white">{inventory.reduce((a, b) => a + b.stock, 0)}</p>
-        </div>
+        {/* Equipment is an asset, not sellable stock — it gets its own number so it can
+            never inflate what the shelf is worth. */}
+        <button onClick={() => setView(view === 'tools' ? 'stock' : 'tools')}
+          className={`bg-slate-900 border rounded-2xl p-5 relative overflow-hidden shadow-lg text-left transition-all ${view === 'tools' ? 'border-blue-500/50' : 'border-white/10 hover:bg-white/5'}`}>
+          <div className="absolute top-0 right-0 p-4 opacity-5"><Wrench size={40} /></div>
+          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Оборудование</p>
+          <p className="text-2xl font-black text-white">{money(toolsAtCost)}</p>
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mt-0.5">
+            {toolParts.length} ед.{plannedParts.length > 0 && ` · ${plannedParts.length} в плане`}
+          </p>
+        </button>
       </div>
 
       {/* TABLE */}
       <div className="bg-slate-900 rounded-2xl border border-white/10 overflow-hidden shadow-xl">
+        {/* Which of the three shelves we're looking at. Kept above the filters because it
+            changes what the filters even contain. */}
+        <div className="px-6 pt-5 flex gap-2 overflow-x-auto hide-scrollbar">
+          {([
+            { key: 'stock' as const, label: 'Расходники', n: stockParts.length },
+            { key: 'tools' as const, label: 'Инструмент', n: toolParts.length },
+            { key: 'planned' as const, label: 'План закупок', n: plannedParts.length },
+          ]).map(v => (
+            <button key={v.key} onClick={() => { setView(v.key); setFilter('All'); setGroupFilter('All'); }}
+              className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap border transition-all ${view === v.key ? 'bg-white/10 border-white/20 text-white' : 'bg-transparent border-white/10 text-slate-400 hover:text-white'}`}>
+              {v.label} <span className="text-slate-500">{v.n}</span>
+            </button>
+          ))}
+        </div>
         <div className="p-6 border-b border-white/10 flex flex-col md:flex-row gap-4 justify-between">
-          <div className="flex bg-slate-950 border border-white/10 rounded-xl overflow-hidden p-1 w-full md:w-auto overflow-x-auto hide-scrollbar">
-            {['All', ...filterChips].map(c => (
-              <button key={c} onClick={() => setFilter(c)}
-                className={`px-4 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${filter === c ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}>
-                {c}
-              </button>
-            ))}
+          <div className="space-y-2 min-w-0 flex-1">
+            {groupChips.length > 1 && (
+              <div className="flex bg-slate-950 border border-white/10 rounded-xl overflow-hidden p-1 w-full overflow-x-auto hide-scrollbar">
+                {['All', ...groupChips].map(g => (
+                  <button key={g} onClick={() => setGroupFilter(g)}
+                    className={`px-4 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${groupFilter === g ? 'bg-purple-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}>
+                    {g}
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className="flex bg-slate-950 border border-white/10 rounded-xl overflow-hidden p-1 w-full overflow-x-auto hide-scrollbar">
+              {['All', ...filterChips].map(c => (
+                <button key={c} onClick={() => setFilter(c)}
+                  className={`px-4 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${filter === c ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}>
+                  {c}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="relative w-full md:w-64">
+          <div className="relative w-full md:w-64 md:self-start">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
             <input type="text" placeholder="Search name, SKU, barcode…" value={search} onChange={(e) => setSearch(e.target.value)}
               className="w-full bg-slate-950 border border-white/10 rounded-xl pl-10 pr-11 py-2.5 text-sm font-semibold text-white outline-none focus:border-blue-500/50 transition-colors" />
@@ -375,16 +483,17 @@ export const Inventory: React.FC = () => {
             <thead>
               <tr className="bg-slate-950/50 border-b border-white/5 uppercase text-[10px] tracking-widest text-slate-500 font-bold">
                 <th className="p-4 pl-6">Item</th>
-                <th className="p-4 hidden md:table-cell">Category</th>
-                <th className="p-4 text-right">Stock</th>
+                <th className="p-4 hidden md:table-cell">{view === 'stock' ? 'Марка / Тип' : 'Категория'}</th>
+                <th className="p-4 text-right">{view === 'stock' ? 'Stock' : 'Кол-во'}</th>
                 <th className="p-4 text-right hidden sm:table-cell">Cost</th>
-                <th className="p-4 text-right">Price</th>
-                <th className="p-4 pr-6 text-right">Margin</th>
+                <th className="p-4 text-right">{view === 'stock' ? 'Price' : 'Гарантия'}</th>
+                <th className="p-4 pr-6 text-right">{view === 'stock' ? 'Margin' : 'Куплено'}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
               {filteredInventory.map((item: Part) => {
-                const isLow = item.stock <= item.reorderPoint;
+                const isStock = isStockPart(item);
+                const isLow = isStock && item.stock <= item.reorderPoint;
                 const mp = marginPct(item.price, item.cost);
                 return (
                   <motion.tr initial={{ opacity: 0 }} animate={{ opacity: 1 }} key={item.id}
@@ -401,16 +510,30 @@ export const Inventory: React.FC = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="p-4 hidden md:table-cell"><span className="bg-slate-800 text-slate-300 px-2.5 py-1 rounded-md text-xs font-bold">{item.category}</span></td>
+                    <td className="p-4 hidden md:table-cell">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {item.group && <span className="bg-purple-500/15 text-purple-300 px-2.5 py-1 rounded-md text-xs font-bold">{item.group}</span>}
+                        <span className="bg-slate-800 text-slate-300 px-2.5 py-1 rounded-md text-xs font-bold">{item.category}</span>
+                      </div>
+                    </td>
                     <td className="p-4 text-right">
-                      <span className={`font-mono text-sm ${isLow ? 'text-amber-500 font-bold' : 'text-slate-300'}`}>{item.stock}</span>
-                      <span className="text-[11px] text-slate-600 font-mono"> / {item.reorderPoint}</span>
+                      <span className={`font-mono text-sm ${isStock && isLow ? 'text-amber-500 font-bold' : 'text-slate-300'}`}>{item.stock}</span>
+                      {isStock && <span className="text-[11px] text-slate-600 font-mono"> / {item.reorderPoint}</span>}
                     </td>
                     <td className="p-4 text-right font-mono text-sm text-slate-400 hidden sm:table-cell">{item.cost != null ? money(item.cost) : '—'}</td>
-                    <td className="p-4 text-right font-mono text-sm text-slate-300">{money(item.price)}</td>
-                    <td className="p-4 pr-6 text-right font-mono text-sm">
-                      {mp != null ? <span className={mp >= 0 ? 'text-green-400' : 'text-red-400'}>{mp}%</span> : <span className="text-slate-600">—</span>}
-                    </td>
+                    {isStock ? (
+                      <>
+                        <td className="p-4 text-right font-mono text-sm text-slate-300">{money(item.price)}</td>
+                        <td className="p-4 pr-6 text-right font-mono text-sm">
+                          {mp != null ? <span className={mp >= 0 ? 'text-green-400' : 'text-red-400'}>{mp}%</span> : <span className="text-slate-600">—</span>}
+                        </td>
+                      </>
+                    ) : (
+                      <>
+                        <td className="p-4 text-right text-xs text-slate-400 max-w-[160px] truncate">{item.warranty || '—'}</td>
+                        <td className="p-4 pr-6 text-right text-xs font-mono text-slate-400">{item.purchasedAt || (item.owned === false ? <span className="text-amber-400 font-bold">план</span> : '—')}</td>
+                      </>
+                    )}
                   </motion.tr>
                 );
               })}
@@ -510,7 +633,7 @@ export const Inventory: React.FC = () => {
       <AnimatePresence>
         {stocktakeOpen && (
           <StocktakeModal
-            inventory={inventory}
+            inventory={stockParts}
             onClose={() => setStocktakeOpen(false)}
             onApply={(changes) => changes.forEach(c => adjustStockTo(c.partId, c.actual, { type: 'adjust', note: 'Stocktake' }))}
           />
@@ -520,7 +643,7 @@ export const Inventory: React.FC = () => {
       {/* INSIGHTS — ABC + dead stock */}
       <AnimatePresence>
         {insightsOpen && (
-          <InsightsModal inventory={inventory} movements={movements} onClose={() => setInsightsOpen(false)} />
+          <InsightsModal inventory={stockParts} movements={movements} onClose={() => setInsightsOpen(false)} />
         )}
       </AnimatePresence>
 
@@ -549,7 +672,7 @@ export const Inventory: React.FC = () => {
       <AnimatePresence>
         {reorderOpen && (
           <ReorderModal
-            inventory={inventory}
+            inventory={stockParts}
             movements={movements}
             canEdit={canEdit}
             onClose={() => setReorderOpen(false)}
@@ -562,7 +685,7 @@ export const Inventory: React.FC = () => {
       <AnimatePresence>
         {receiveOpen && (
           <ReceiveModal
-            inventory={inventory}
+            inventory={stockParts}
             initialPartId={drawerPart?.id}
             initialRows={receiveSeed ?? undefined}
             knownSuppliers={knownSuppliers}
@@ -612,12 +735,22 @@ export const Inventory: React.FC = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className={labelCls}>Category</label>
+                    <label className={labelCls}>Марка / Платформа</label>
+                    <input type="text" list="part-groups" value={editingPart.group || ''} onChange={e => setEditingPart({ ...editingPart, group: e.target.value })} className={inputCls} placeholder="Ford / Toyota / Универсал…" />
+                    <datalist id="part-groups">
+                      {groupOptions.map(g => <option key={g} value={g} />)}
+                    </datalist>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className={labelCls}>Тип (категория)</label>
                     <input type="text" list="part-categories" value={editingPart.category || ''} onChange={e => setEditingPart({ ...editingPart, category: e.target.value })} className={inputCls} placeholder="заготовка / транспондер / flip…" />
                     <datalist id="part-categories">
                       {categoryOptions.map(c => <option key={c} value={c} />)}
                     </datalist>
                   </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className={labelCls}>Location</label>
                     <input type="text" list="stock-locations" value={editingPart.location || ''} onChange={e => setEditingPart({ ...editingPart, location: e.target.value })} className={inputCls} placeholder="shop / van" />

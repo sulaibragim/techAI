@@ -3,15 +3,23 @@ import { motion } from 'motion/react';
 import { X, FileSpreadsheet, Upload, Check, Plus, RefreshCw, AlertTriangle } from 'lucide-react';
 import { Part } from '../types';
 import {
-  SheetData, ColumnMap, MAP_FIELDS, MapField,
-  findHeaderIdx, autoMap, buildRows, ImportRow,
+  SheetData, ColumnMap, MAP_FIELDS_BY_TARGET, MapField, ImportTarget,
+  findHeaderIdx, autoMap, buildRows, guessTarget, ImportRow,
 } from '../inventoryExcel';
 
 interface ExcelImportProps {
   existing: Part[];
   onCancel: () => void;
-  onConfirm: (rows: ImportRow[], mode: 'receive' | 'set') => void;
+  onConfirm: (rows: ImportRow[], mode: 'receive' | 'set', target: ImportTarget) => void;
 }
+
+// What each target does, spelled out — picking the wrong one is the difference between
+// "$950 Lishi set is equipment" and "$950 Lishi set is on a client's invoice".
+const TARGETS: { key: ImportTarget; label: string; hint: string }[] = [
+  { key: 'stock',    label: 'Склад',     hint: 'Расходники, которые продаём и списываем на заявках: заготовки, транспондеры, пульты, чипы.' },
+  { key: 'tools',    label: 'Инструмент', hint: 'Оборудование — программаторы, Lishi, станки. В счёт клиенту не попадает и в стоимость склада не входит. Строки без «Куплено = Да» лягут в план закупок, а не в наличие.' },
+  { key: 'expenses', label: 'Расходы',   hint: 'Лог закупок: только деньги в бухгалтерию. Остатки на складе не меняются — иначе количество удвоится.' },
+];
 
 const inputCls = 'bg-slate-950 border border-white/10 rounded-lg px-2.5 py-1.5 text-sm text-white outline-none focus:border-blue-500/50 [&>option]:bg-slate-900';
 
@@ -20,6 +28,7 @@ export const ExcelImport: React.FC<ExcelImportProps> = ({ existing, onCancel, on
   const [sheetName, setSheetName] = useState('');
   const [headerIdx, setHeaderIdx] = useState(0);
   const [map, setMap] = useState<ColumnMap | null>(null);
+  const [target, setTarget] = useState<ImportTarget>('stock');
   const [mode, setMode] = useState<'receive' | 'set'>('receive');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -30,7 +39,13 @@ export const ExcelImport: React.FC<ExcelImportProps> = ({ existing, onCancel, on
    * catastrophic regex spins that thread, not the app, and gets killed after 30s.
    */
   const parseSpreadsheet = (file: File): Promise<SheetData[]> => new Promise(async (resolve, reject) => {
-    const worker = new Worker(new URL('../excelParser.worker.ts', import.meta.url));
+    // A MODULE worker, and it has to be: the dev server serves the worker's TypeScript as an
+    // ES module, so a classic worker died on its `import` with "Cannot use import statement
+    // outside a module" — every spreadsheet in dev looked like a corrupt file. The options
+    // object must be a static literal (Vite parses it at build time), so this can't be
+    // conditional on the environment. Module workers need Safari 15+, which costs nothing
+    // here: the app's push notifications already require iOS 16.4+.
+    const worker = new Worker(new URL('../excelParser.worker.ts', import.meta.url), { type: 'module' });
     const done = (fn: () => void) => { clearTimeout(timer); worker.terminate(); fn(); };
     const timer = setTimeout(
       () => done(() => reject(new Error('файл слишком сложный или повреждён (превышено время разбора)'))),
@@ -68,10 +83,16 @@ export const ExcelImport: React.FC<ExcelImportProps> = ({ existing, onCancel, on
         return { s, hi, mapped };
       }).sort((a, b) => b.mapped - a.mapped);
       const pickSheet = scored[0];
+      const pickHeader = pickSheet.s.rows[pickSheet.hi] || [];
       setSheets(parsed);
       setSheetName(pickSheet.s.name);
       setHeaderIdx(pickSheet.hi);
-      setMap(autoMap(pickSheet.s.rows[pickSheet.hi] || []));
+      setMap(autoMap(pickHeader));
+      // A sheet of equipment and a sheet of consumables need different handling; guess
+      // from the sheet's own name and headers, and let the user correct it.
+      const t = guessTarget(pickSheet.s.name, pickHeader);
+      setTarget(t);
+      setMode(t === 'stock' ? 'set' : 'receive');
     } catch (e: any) {
       setError('Не удалось прочитать файл: ' + (e?.message || 'ошибка'));
     } finally {
@@ -83,9 +104,13 @@ export const ExcelImport: React.FC<ExcelImportProps> = ({ existing, onCancel, on
     const s = sheets?.find(x => x.name === name);
     if (!s) return;
     const hi = findHeaderIdx(s.rows);
+    const h = s.rows[hi] || [];
     setSheetName(name);
     setHeaderIdx(hi);
-    setMap(autoMap(s.rows[hi] || []));
+    setMap(autoMap(h));
+    const t = guessTarget(name, h);
+    setTarget(t);
+    setMode(t === 'stock' ? 'set' : 'receive');
   };
 
   const rows: ImportRow[] = useMemo(() => {
@@ -96,13 +121,16 @@ export const ExcelImport: React.FC<ExcelImportProps> = ({ existing, onCancel, on
   const included = rows.filter(r => r.include);
   const newCount = included.filter(r => r.createNew).length;
   const matchCount = included.length - newCount;
+  const plannedCount = target === 'tools' ? included.filter(r => !r.owned).length : 0;
+  const money = included.reduce((a, r) => a + (r.cost || 0) * (target === 'expenses' ? Math.max(1, r.stock) : r.stock), 0);
+  const fields = MAP_FIELDS_BY_TARGET[target];
 
   const setField = (field: MapField, col: number) => setMap(m => (m ? { ...m, [field]: col } : m));
 
   const confirm = () => {
     if (!map || included.length === 0) return;
     if (map.name < 0) { setError('Укажите колонку «Название».'); return; }
-    onConfirm(included, mode);
+    onConfirm(included, mode, target);
   };
 
   return (
@@ -154,11 +182,25 @@ export const ExcelImport: React.FC<ExcelImportProps> = ({ existing, onCancel, on
                 </div>
               </div>
 
+              {/* What this sheet IS */}
+              <div>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Что в этом листе</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {TARGETS.map(t => (
+                    <button key={t.key} onClick={() => setTarget(t.key)}
+                      className={`py-2.5 rounded-xl border text-sm font-bold transition-all ${target === t.key ? 'bg-blue-600 border-blue-400 text-white' : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'}`}>
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[11px] text-slate-500 mt-1.5">{TARGETS.find(t => t.key === target)?.hint}</p>
+              </div>
+
               {/* Column mapping */}
               <div>
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Сопоставление колонок</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {MAP_FIELDS.map(f => (
+                  {fields.map(f => (
                     <div key={f.key} className="flex items-center gap-2">
                       <span className="text-xs text-slate-300 w-32 shrink-0">{f.label}{f.required && <span className="text-red-400"> *</span>}</span>
                       <select value={map ? map[f.key] : -1} onChange={e => setField(f.key, Number(e.target.value))} className={`flex-1 min-w-0 ${inputCls}`}>
@@ -170,8 +212,8 @@ export const ExcelImport: React.FC<ExcelImportProps> = ({ existing, onCancel, on
                 </div>
               </div>
 
-              {/* Mode */}
-              <div>
+              {/* Mode — only stock has a quantity that can be added or overwritten. */}
+              <div className={target === 'stock' ? '' : 'hidden'}>
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Что делать с количеством</p>
                 <div className="grid grid-cols-2 gap-2">
                   <button onClick={() => setMode('receive')} className={`flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-bold transition-all ${mode === 'receive' ? 'bg-green-600 border-green-400 text-white' : 'bg-white/5 border-white/10 text-slate-300'}`}>
@@ -193,7 +235,10 @@ export const ExcelImport: React.FC<ExcelImportProps> = ({ existing, onCancel, on
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Предпросмотр</p>
                   <p className="text-xs text-slate-400">
-                    <span className="text-green-400 font-bold">{newCount}</span> новых · <span className="text-blue-400 font-bold">{matchCount}</span> обновление
+                    {target === 'expenses'
+                      ? <>на <span className="text-white font-bold">${money.toFixed(2)}</span> расходов</>
+                      : <><span className="text-green-400 font-bold">{newCount}</span> новых · <span className="text-blue-400 font-bold">{matchCount}</span> обновление
+                        {plannedCount > 0 && <> · <span className="text-amber-400 font-bold">{plannedCount}</span> в план</>}</>}
                   </p>
                 </div>
                 <div className="overflow-x-auto rounded-xl border border-white/10">
@@ -201,10 +246,11 @@ export const ExcelImport: React.FC<ExcelImportProps> = ({ existing, onCancel, on
                     <thead>
                       <tr className="text-[10px] font-bold uppercase tracking-wider text-slate-500 bg-white/5">
                         <th className="text-left py-2 px-2">Название</th>
-                        <th className="text-left py-2 px-2">SKU</th>
-                        <th className="text-left py-2 px-2">Категория</th>
+                        <th className="text-left py-2 px-2">{target === 'expenses' ? 'Инвойс' : 'SKU'}</th>
+                        <th className="text-left py-2 px-2">{target === 'stock' ? 'Марка' : target === 'expenses' ? 'Дата' : 'Категория'}</th>
+                        <th className="text-left py-2 px-2">{target === 'expenses' ? 'Поставщик' : 'Тип'}</th>
                         <th className="text-right py-2 px-2">Кол-во</th>
-                        <th className="text-right py-2 px-2">Закуп</th>
+                        <th className="text-right py-2 px-2">{target === 'expenses' ? 'Сумма' : 'Закуп'}</th>
                         <th className="text-center py-2 px-2">Статус</th>
                       </tr>
                     </thead>
@@ -213,13 +259,22 @@ export const ExcelImport: React.FC<ExcelImportProps> = ({ existing, onCancel, on
                         <tr key={i} className={`border-t border-white/5 ${r.include ? '' : 'opacity-40'}`}>
                           <td className="py-1.5 px-2 text-slate-200 max-w-[220px] truncate">{r.name}</td>
                           <td className="py-1.5 px-2 text-slate-400 tabular-nums">{r.sku || '—'}</td>
-                          <td className="py-1.5 px-2 text-purple-300">{r.category || '—'}</td>
+                          <td className="py-1.5 px-2 text-slate-300">{(target === 'stock' ? r.group : target === 'expenses' ? r.date : r.category) || '—'}</td>
+                          <td className="py-1.5 px-2 text-purple-300">{(target === 'expenses' ? r.supplier : target === 'stock' ? r.category : r.brand) || '—'}</td>
                           <td className="py-1.5 px-2 text-right text-white tabular-nums">{r.stock}</td>
-                          <td className="py-1.5 px-2 text-right text-slate-400 tabular-nums">{r.cost ? `$${r.cost}` : '—'}</td>
+                          <td className="py-1.5 px-2 text-right text-slate-400 tabular-nums">
+                            {target === 'expenses'
+                              ? `$${((r.cost || 0) * Math.max(1, r.stock)).toFixed(2)}`
+                              : r.cost ? `$${r.cost}` : '—'}
+                          </td>
                           <td className="py-1.5 px-2 text-center">
-                            {r.createNew
-                              ? <span className="text-[10px] font-bold text-green-400">новый</span>
-                              : <span className="text-[10px] font-bold text-blue-400">есть</span>}
+                            {target === 'tools' && !r.owned
+                              ? <span className="text-[10px] font-bold text-amber-400">план</span>
+                              : target === 'expenses'
+                                ? <span className="text-[10px] font-bold text-slate-500">расход</span>
+                                : r.createNew
+                                  ? <span className="text-[10px] font-bold text-green-400">новый</span>
+                                  : <span className="text-[10px] font-bold text-blue-400">есть</span>}
                           </td>
                         </tr>
                       ))}

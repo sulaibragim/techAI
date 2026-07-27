@@ -14,7 +14,7 @@ import {
   Car, Home, ChevronDown, Lock, Printer, History, ThumbsUp, ThumbsDown, Minus, Star, AlertTriangle, Ban, RotateCcw, Megaphone
 } from 'lucide-react';
 import { useSettingsStore } from '../settingsStore';
-import { Job, LineItem, STATUS_COLORS, LockDetails, JobStatus, Client, Message, CLIENT_TAGS, ClientRating, NEGATIVE_TAGS, LeadChannel, LEAD_CHANNELS, LEAD_CHANNEL_LABELS } from '../types';
+import { Job, LineItem, STATUS_COLORS, LockDetails, JobStatus, Client, Message, CLIENT_TAGS, ClientRating, NEGATIVE_TAGS, LeadChannel, LEAD_CHANNELS, LEAD_CHANNEL_LABELS, isStockPart } from '../types';
 import { useAppStore } from '../store';
 import { useAuthStore, useCurrentUser, can } from '../authStore';
 import { BRANDS, LOCK_TYPES as LOCK_ICONS } from '../constants';
@@ -1253,7 +1253,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                 })()}
                 {billingPrompt.type === 'part' && billingPrompt.desc && !billingPrompt.partId && (
                   <div className="absolute top-full left-0 right-0 mt-2 bg-slate-800 border border-white/10 rounded-xl shadow-2xl z-50 max-h-40 overflow-y-auto">
-                    {inventory.filter(p => p.name.toLowerCase().includes(billingPrompt.desc.toLowerCase()) || p.sku.toLowerCase().includes(billingPrompt.desc.toLowerCase())).map(part => (
+                    {inventory.filter(isStockPart).filter(p => p.name.toLowerCase().includes(billingPrompt.desc.toLowerCase()) || p.sku.toLowerCase().includes(billingPrompt.desc.toLowerCase())).map(part => (
                       <button 
                         key={part.id}
                         onClick={() => setBillingPrompt({ ...billingPrompt, desc: part.name, price: part.price.toString(), partId: part.id, unitCost: part.cost })}

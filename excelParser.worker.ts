@@ -17,9 +17,8 @@
 //   • as a bonus, a 300-row import no longer freezes the app while it parses.
 
 // Imported statically ON PURPOSE: the worker script itself is only fetched when someone
-// actually imports a spreadsheet, so this still keeps SheetJS out of the app bundle —
-// and a static import means the worker needs no code-splitting, so it can stay a classic
-// worker and work on older mobile Safari too.
+// actually imports a spreadsheet, so this still keeps SheetJS out of the app bundle.
+// The caller constructs this as a module worker — see the note in ExcelImport.tsx.
 import * as XLSX from 'xlsx';
 
 export interface ParsedSheet {

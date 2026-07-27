@@ -31,20 +31,36 @@ export interface AuditEntry {
   jobId?: string;
 }
 
-// Category is free-form: it holds whatever "type" the business uses (e.g. 'заготовка',
-// 'транспондер', or the legacy 'Key Blanks'). The Inventory filter chips are derived
-// from the categories actually present, so importing new types just works.
+// Two free-form levels, both taken from how the business already keeps its own sheet:
+//   group    — the platform the item belongs to ('Ford', 'Toyota', 'Универсал', 'Дома / Kwikset')
+//   category — what kind of thing it is ('заготовка', 'транспондер', 'smart', 'fobik')
+// Both filter rows in the Inventory tab are derived from the values actually present, so
+// importing a platform or type nobody thought of just works. Nothing is hard-coded.
+export const PART_GROUP_SUGGESTIONS = [
+  'Ford', 'RAM/Dodge/Jeep', 'GM/Chevy', 'Toyota', 'Honda', 'Nissan', 'Hyundai/Kia',
+  'Универсал', 'Дома / Kwikset', 'Дома / Schlage',
+];
+
 export const PART_CATEGORY_SUGGESTIONS = [
   'заготовка', 'транспондер', 'remote', 'remote head', 'flip', 'smart', 'fobik',
   'чип', 'shell', 'батарейка', 'universal',
-  'Key Blanks', 'Remotes', 'Cylinders', 'Hardware', 'Tools',
 ];
+
+// Consumables and equipment are different animals and must never be mixed:
+//  - 'stock' is bought to be resold — it decrements on a job, carries a sell price and a
+//    reorder point, and belongs in stock value, the reorder list and the invoice picker.
+//  - 'tool' is equipment we own — a programmator, a Lishi set. It has a serial and a
+//    warranty, is never billed to a client, and must stay out of every stock number.
+//    `owned: false` means it is still only a purchase plan, not something we have.
+export type PartKind = 'stock' | 'tool';
 
 export interface Part {
   id: string;
   name: string;
   sku: string;              // our internal code, we choose it
-  category: string;         // free-form type/group (see PART_CATEGORY_SUGGESTIONS)
+  category: string;         // what kind of thing (see PART_CATEGORY_SUGGESTIONS)
+  group?: string;           // platform it serves (see PART_GROUP_SUGGESTIONS)
+  kind?: PartKind;          // undefined = 'stock' (every part predates this field)
   stock: number;
   reorderPoint: number;
   price: number;            // sell price charged to the client
@@ -54,7 +70,18 @@ export interface Part {
   upc?: string;             // barcode (штрихкод) — scannable, universal
   photo?: string;           // small base64 thumbnail so techs recognise it on the phone
   location?: string;        // where this stock lives — 'shop' for now; per-van is the Wave 3 hook
+  // ── tool-only ──
+  owned?: boolean;          // false = план закупки, not in hand. Only read when kind === 'tool'.
+  serial?: string;          // серийный номер
+  warranty?: string;        // '1 год обновлений', 'подписка $600/год'
+  purchasedAt?: string;     // YYYY-MM-DD
+  note?: string;            // free note from the sheet ('заказ #169133')
 }
+
+/** Consumable stock: everything the shelf sells. Equipment is excluded. */
+export const isStockPart = (p: Part) => (p.kind ?? 'stock') === 'stock';
+/** Equipment we actually own — a purchase plan is not equipment yet. */
+export const isOwnedTool = (p: Part) => p.kind === 'tool' && p.owned !== false;
 
 // Every change to stock is a recorded movement. Current stock = sum of movements.
 // No one edits the number by hand — it's derived, and the log is the audit trail.
