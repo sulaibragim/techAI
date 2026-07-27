@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { db } from '../db.js';
 import { requireAuth, requireRole } from '../middleware/auth.js';
+import { sendPushToRoles } from '../services/push.js';
+import { toE164, sendSMS } from '../services/openphone.js';
 
 export const inventoryRouter = Router();
 
@@ -92,6 +94,57 @@ inventoryRouter.delete('/', requireAuth, requireRole('owner'), async (req, res) 
     res.status(500).json({ error: 'Internal server error' });
   } finally {
     client.release();
+  }
+});
+
+// "Нужно купить" — the кладовщик can see the shortage but not spend the money, so this
+// hands the list to whoever does. Human-initiated (a button, not an automation), so it is
+// not gated behind the staffNotify switches — same rule as the manual receipt button.
+// Push reaches the owner in-app; the SMS is the fallback for when the phone is in a pocket.
+inventoryRouter.post('/reorder-request', requireAuth, requireRole('owner', 'manager', 'warehouse'), async (req, res) => {
+  try {
+    const lines = Array.isArray(req.body?.lines) ? req.body.lines.slice(0, 200) : [];
+    if (lines.length === 0) return res.status(400).json({ error: 'Nothing to order' });
+
+    const clean = lines
+      .map(l => ({ name: String(l?.name || '').slice(0, 80), qty: Math.max(0, Math.round(Number(l?.qty) || 0)) }))
+      .filter(l => l.name);
+    if (clean.length === 0) return res.status(400).json({ error: 'Nothing to order' });
+
+    const from = req.user.name || req.user.email || 'склад';
+    const top = clean.slice(0, 3).map(l => `${l.qty}× ${l.name}`).join(', ');
+    const tail = clean.length > 3 ? ` и ещё ${clean.length - 3}` : '';
+    const title = `Нужно закупить: ${clean.length} позиц.`;
+    const body = `${top}${tail}`;
+
+    sendPushToRoles(['owner'], {
+      title,
+      body: `${body} — от ${from}`,
+      tag: 'reorder-request',
+      data: { type: 'reorder', url: '/' },
+    }).catch(e => console.error('[INVENTORY] reorder push error:', e.message));
+
+    // Text every active owner who has a number on file.
+    let texted = 0;
+    try {
+      const { rows } = await db.query("SELECT phone FROM users WHERE role = 'owner' AND active = true AND phone IS NOT NULL");
+      for (const row of rows) {
+        const to = toE164(row.phone);
+        if (!to) continue;
+        // sendSMS returns null on a bad number or missing OpenPhone config — count what
+        // actually went out, so the button can't claim a text nobody received.
+        const sent = await sendSMS(to, `${title} (от ${from}): ${body}`);
+        if (sent) texted += 1;
+      }
+    } catch (e) {
+      console.error('[INVENTORY] reorder SMS error:', e.message);
+    }
+
+    console.log(`[INVENTORY] reorder request from ${from} — ${clean.length} lines, ${texted} SMS`);
+    res.json({ ok: true, lines: clean.length, texted });
+  } catch (err) {
+    console.error('[INVENTORY] reorder-request error:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

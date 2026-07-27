@@ -3,9 +3,11 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   Package, Search, Plus, AlertCircle, RefreshCw, X, Minus, Trash2,
   Truck, ClipboardList, ChevronDown, Camera, ArrowDownLeft, ArrowUpRight, Pencil, TriangleAlert,
-  ScanLine, Copy, CheckCircle2, ClipboardCheck, PieChart, Barcode, FileSpreadsheet, Wrench,
+  ScanLine, Copy, CheckCircle2, ClipboardCheck, PieChart, Barcode, FileSpreadsheet, Wrench, Send,
 } from 'lucide-react';
 import { useAppStore } from '../store';
+import { API_BASE } from '../backendUrl';
+import { authHeaders } from '../apiClient';
 import { useSettingsStore } from '../settingsStore';
 import { useCurrentUser, can, useAuthStore } from '../authStore';
 import { Part, StockMovement, MOVEMENT_META, PART_CATEGORY_SUGGESTIONS, PART_GROUP_SUGGESTIONS, isStockPart, shelfQty, heldOf, heldTotal } from '../types';
@@ -687,6 +689,7 @@ export const Inventory: React.FC = () => {
             inventory={stockParts}
             movements={movements}
             canEdit={canEdit}
+            canAsk={canEdit && !isOwner}
             onClose={() => setReorderOpen(false)}
             onReceive={(rows) => { setReorderOpen(false); setReceiveSeed(rows); setReceiveOpen(true); }}
           />
@@ -1042,10 +1045,13 @@ const ReorderModal: React.FC<{
   inventory: Part[];
   movements: StockMovement[];
   canEdit: boolean;
+  canAsk: boolean;
   onClose: () => void;
   onReceive: (rows: { partId: string; qty: string; cost: string }[]) => void;
-}> = ({ inventory, movements, canEdit, onClose, onReceive }) => {
+}> = ({ inventory, movements, canEdit, canAsk, onClose, onReceive }) => {
   const [copied, setCopied] = useState(false);
+  const [asking, setAsking] = useState(false);
+  const [asked, setAsked] = useState<{ ok: boolean; text: string } | null>(null);
   // Weekly sales rate per part over the trailing 90 days — the smarter reorder signal.
   const cutoff = Date.now() - 90 * 86400000;
   const weeklyRate = new Map<string, number>();
@@ -1066,6 +1072,30 @@ const ReorderModal: React.FC<{
       return { part: p, suggested, rate, lastSupplier: lastReceive?.supplierName || '' };
     })
     .sort((a, b) => (a.part.stock - a.part.reorderPoint) - (b.part.stock - b.part.reorderPoint));
+
+  // The кладовщик sees the shortage but can't spend the money — this is how the list
+  // reaches whoever does, instead of another phone call.
+  const askOwner = async () => {
+    setAsking(true);
+    setAsked(null);
+    try {
+      const res = await fetch(`${API_BASE}/api/inventory/reorder-request`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({ lines: low.map(l => ({ name: l.part.name, qty: l.suggested })) }),
+      });
+      if (!res.ok) {
+        setAsked({ ok: false, text: res.status === 404 ? 'Сервер ещё не обновлён — попробуй через минуту.' : 'Не отправилось. Попробуй ещё раз.' });
+      } else {
+        const body = await res.json().catch(() => ({}));
+        setAsked({ ok: true, text: body?.texted > 0 ? 'Отправлено владельцу — пуш и SMS.' : 'Отправлено владельцу.' });
+      }
+    } catch {
+      setAsked({ ok: false, text: 'Нет связи с сервером — список не ушёл.' });
+    } finally {
+      setAsking(false);
+    }
+  };
 
   const copyList = () => {
     const text = low.map(l =>
@@ -1100,7 +1130,17 @@ const ReorderModal: React.FC<{
           ))}
         </div>
 
-        <div className="mt-5 flex gap-3">
+        {canAsk && low.length > 0 && (
+          <div className="mt-5">
+            <button onClick={askOwner} disabled={asking}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 font-bold text-sm hover:bg-amber-500/25 active:scale-95 disabled:opacity-50">
+              <Send size={15} /> {asking ? 'Отправляю…' : 'Отправить владельцу'}
+            </button>
+            {asked && <p className={`text-xs font-semibold mt-2 text-center ${asked.ok ? 'text-green-400' : 'text-red-400'}`}>{asked.text}</p>}
+          </div>
+        )}
+
+        <div className="mt-3 flex gap-3">
           <button onClick={copyList} className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold text-sm active:scale-95">
             {copied ? <><CheckCircle2 size={15} className="text-emerald-400" /> Copied</> : <><Copy size={15} /> Copy list</>}
           </button>
