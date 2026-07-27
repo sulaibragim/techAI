@@ -32,12 +32,14 @@ export interface SettingsState {
   staffNotify: StaffNotifySettings; // owner switches for automatic messages to US, not clients
   onboardingComplete: boolean;
   aiAvailable: boolean; // runtime flag: is GEMINI_API_KEY configured on the server?
-  updateSettings: (patch: Partial<Omit<SettingsState, 'updateSettings' | 'resetSettings' | 'setMonthlyTarget' | 'setTechTarget' | 'addExpense' | 'removeExpense' | 'addStockMovement' | 'addServiceRate' | 'updateServiceRate' | 'removeServiceRate' | 'upsertClientProfile' | 'addAiMemory' | 'removeAiMemory' | 'syncSettings' | 'checkAiAvailable' | 'aiAvailable'>>) => void;
+  updateSettings: (patch: Partial<Omit<SettingsState, 'updateSettings' | 'resetSettings' | 'setMonthlyTarget' | 'setTechTarget' | 'addExpense' | 'removeExpense' | 'addStockMovement' | 'clearStockLedger' | 'addServiceRate' | 'updateServiceRate' | 'removeServiceRate' | 'upsertClientProfile' | 'addAiMemory' | 'removeAiMemory' | 'syncSettings' | 'checkAiAvailable' | 'aiAvailable'>>) => void;
   setMonthlyTarget: (monthKey: string, value: number) => void;
   setTechTarget: (userId: string, value: number) => void;
   addExpense: (expense: Omit<Expense, 'id'>) => void;
   removeExpense: (id: string) => void;
   addStockMovement: (movement: Omit<StockMovement, 'id'>) => void;
+  /** Local half of a catalog wipe. The server clears its own copy in DELETE /api/inventory. */
+  clearStockLedger: () => void;
   addServiceRate: (rate: Omit<ServiceRate, 'id'>) => void;
   updateServiceRate: (rate: ServiceRate) => void;
   removeServiceRate: (id: string) => void;
@@ -181,6 +183,10 @@ export const useSettingsStore = create<SettingsState>()(
         set((state) => ({ stockMovements: [entry, ...state.stockMovements].slice(0, 2000) }));
         pushToServer({ stockMovements: [entry] });
       },
+
+      // No pushToServer here: settings writes are deltas that the server UNIONS in, so an
+      // empty array would be a no-op. The wipe endpoint clears the server ledger itself.
+      clearStockLedger: () => set({ stockMovements: [] }),
 
       addServiceRate: (rate) => {
         const entry: ServiceRate = { ...rate, id: `rate-${Date.now()}-${Math.random().toString(36).slice(2, 7)}` };

@@ -121,6 +121,8 @@ interface AppState {
   clearMissed: (id: string) => void;
   syncJobs: () => Promise<void>;
   syncInventory: () => Promise<void>;
+  /** Owner-only: delete every part on the server + locally, and clear the stock ledger. */
+  wipeInventory: () => Promise<{ ok: boolean; deleted?: number; error?: string }>;
   /** False once the server has failed us repeatedly. Never persisted. */
   serverReachable: boolean;
   reportServerContact: (ok: boolean) => void;
@@ -347,30 +349,44 @@ export const useAppStore = create<AppState>()(
     serverMissCount += 1;
     if (serverMissCount >= 2 && get().serverReachable) set({ serverReachable: false });
   },
+  // The server is the source of truth, full stop — including when it says the shelf is
+  // empty. This used to push the local catalog up whenever the server had no parts, which
+  // meant one browser holding stale demo stock in localStorage re-seeded the company
+  // catalog with invented quantities, and every other device then downloaded them as fact.
+  // Stock now only ever enters through a receipt: manual add, invoice scan, or Excel import.
   syncInventory: async () => {
     try {
       const res = await fetch(`${API_BASE}/api/inventory`, { headers: { ...authHeaders() } });
       if (!res.ok) return;
       const serverParts: Part[] = await res.json();
-      if (serverParts.length > 0) {
-        // Server is the source of truth once it has data.
-        set({ inventory: serverParts });
-      } else {
-        // Server empty — seed it from the local default catalog.
-        const local = get().inventory;
-        if (local.length > 0) {
-          const seed = await fetch(`${API_BASE}/api/inventory/sync`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', ...authHeaders() },
-            body: JSON.stringify(local),
-          });
-          if (seed.ok) {
-            const merged: Part[] = await seed.json();
-            if (merged.length > 0) set({ inventory: merged });
-          }
-        }
-      }
+      set({ inventory: serverParts });
     } catch {}
+  },
+  // Owner-only hard reset of the catalog: server rows, this device's cache, and the stock
+  // ledger. Returns the outcome instead of firing into the write queue — the caller is a
+  // human staring at a confirmation dialog who needs to know whether it actually happened.
+  wipeInventory: async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/inventory?confirm=WIPE`, {
+        method: 'DELETE',
+        headers: { ...authHeaders() },
+      });
+      if (!res.ok) {
+        const status = res.status;
+        return {
+          ok: false,
+          error: status === 403 ? 'Только владелец может обнулить склад.'
+            : status === 404 ? 'Сервер ещё не обновлён — подожди минуту после деплоя и попробуй снова.'
+            : 'Сервер отказался обнулять склад. Попробуй ещё раз.',
+        };
+      }
+      const body = await res.json().catch(() => ({}));
+      set({ inventory: [] });
+      useSettingsStore.getState().clearStockLedger();
+      return { ok: true, deleted: Number(body?.deleted) || 0 };
+    } catch {
+      return { ok: false, error: 'Нет связи с сервером — склад не тронут.' };
+    }
   },
     }),
     {

@@ -57,6 +57,44 @@ inventoryRouter.post('/sync', requireAuth, requireRole('owner', 'manager'), asyn
   }
 });
 
+// Wipe the whole catalog — owner only, and never reachable by accident: the client must
+// send ?confirm=WIPE. The stock ledger goes with it, because a movement log pointing at
+// parts that no longer exist reads as history the shelf can't back up.
+//
+// This exists because the catalog could be poisoned from the outside: an old browser with
+// demo parts in localStorage seeded them into this table (see syncInventory), and from then
+// on every device downloaded invented stock as the truth. Deleting parts one at a time
+// couldn't keep up with that.
+inventoryRouter.delete('/', requireAuth, requireRole('owner'), async (req, res) => {
+  if (req.query.confirm !== 'WIPE') {
+    return res.status(400).json({ error: 'Refusing to wipe without ?confirm=WIPE' });
+  }
+  const client = await db.connect();
+  try {
+    await client.query('BEGIN');
+    const del = await client.query('DELETE FROM inventory');
+    // Settings is a single JSON blob in a TEXT column — read, drop the ledger, write back.
+    const { rows } = await client.query("SELECT value FROM settings WHERE key = 'company' FOR UPDATE");
+    if (rows.length > 0) {
+      const value = JSON.parse(rows[0].value);
+      value.stockMovements = [];
+      await client.query(
+        "UPDATE settings SET value = $1, updated_at = NOW() WHERE key = 'company'",
+        [JSON.stringify(value)]
+      );
+    }
+    await client.query('COMMIT');
+    console.log(`[INVENTORY] catalog wiped by ${req.user.email || req.user.id} — ${del.rowCount} parts removed`);
+    res.json({ deleted: del.rowCount });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('[INVENTORY] wipe error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  } finally {
+    client.release();
+  }
+});
+
 // Apply a signed stock DELTA. Two problems this solves:
 //
 //  1. A technician billing a part on their own job used to PUT the whole part, which is

@@ -15,8 +15,15 @@ import type { ImportRow } from '../inventoryExcel';
 import { StocktakeModal, InsightsModal } from './StockTools';
 import { BarcodeScanner } from './BarcodeScanner';
 
-const CATEGORIES = ['Key Blanks', 'Remotes', 'Cylinders', 'Hardware', 'Tools'] as const;
 const uniqSorted = (arr: string[]) => [...new Set(arr.filter(Boolean))].sort((a, b) => a.localeCompare(b));
+
+// Russian count agreement: 1 позиция / 2 позиции / 5 позиций.
+const plural = (n: number, one: string, few: string, many: string) => {
+  const m10 = n % 10, m100 = n % 100;
+  if (m10 === 1 && m100 !== 11) return one;
+  if (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return few;
+  return many;
+};
 
 const money = (n: number) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 const marginPct = (price: number, cost?: number) => (cost && cost > 0 && price > 0 ? Math.round(((price - cost) / price) * 100) : null);
@@ -53,7 +60,7 @@ const labelCls = 'text-xs font-bold text-slate-400 uppercase tracking-widest pl-
 export const Inventory: React.FC = () => {
   const {
     inventory, addInventoryItem, updateInventoryItem, removeInventoryItem,
-    syncInventory, receiveStock, adjustStockTo,
+    syncInventory, receiveStock, adjustStockTo, wipeInventory,
   } = useAppStore();
   const movements = useSettingsStore(s => s.stockMovements);
   const addExpense = useSettingsStore(s => s.addExpense);
@@ -66,9 +73,29 @@ export const Inventory: React.FC = () => {
 
   const currentUser = useCurrentUser();
   const canEdit = currentUser ? can.editInventory(currentUser.role) : false;
+  const isOwner = currentUser?.role === 'owner';
 
   const [syncing, setSyncing] = useState(false);
   const handleSync = async () => { setSyncing(true); try { await syncInventory(); } finally { setSyncing(false); } };
+
+  const [wipeOpen, setWipeOpen] = useState(false);
+  const [wipeConfirm, setWipeConfirm] = useState('');
+  const [wiping, setWiping] = useState(false);
+  const [wipeResult, setWipeResult] = useState<{ ok: boolean; text: string } | null>(null);
+
+  const handleWipe = async () => {
+    if (wipeConfirm.trim().toUpperCase() !== 'ОБНУЛИТЬ') return;
+    setWiping(true);
+    setWipeResult(null);
+    const res = await wipeInventory();
+    setWiping(false);
+    if (res.ok) {
+      setWipeResult({ ok: true, text: `Готово — склад пустой. Удалено позиций: ${res.deleted ?? 0}.` });
+      setTimeout(() => setWipeOpen(false), 1600);
+    } else {
+      setWipeResult({ ok: false, text: res.error || 'Не получилось. Склад не тронут.' });
+    }
+  };
 
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<string>('All');
@@ -394,6 +421,69 @@ export const Inventory: React.FC = () => {
           </table>
         </div>
       </div>
+
+      {/* WIPE — owner only, and deliberately parked at the very bottom, far from the
+          everyday buttons. Needed because the catalog could be poisoned from outside
+          (a stale browser once seeded invented parts into the company database). */}
+      {isOwner && inventory.length > 0 && (
+        <div className="bg-red-500/[0.06] border border-red-500/20 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <p className="text-sm font-bold text-red-300">Обнулить склад</p>
+            <p className="text-xs text-slate-400 mt-1 max-w-xl">
+              Удаляет все позиции ({inventory.length}) и журнал движений — на сервере и на всех устройствах.
+              Задания, клиенты и деньги не тронутся. Дальше склад наполняется только приходом:
+              фото чека, Excel или вручную.
+            </p>
+          </div>
+          <button onClick={() => { setWipeConfirm(''); setWipeResult(null); setWipeOpen(true); }}
+            className="shrink-0 flex items-center justify-center gap-2 bg-red-600/15 border border-red-500/40 text-red-300 px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-red-600/25 transition-colors active:scale-95">
+            <Trash2 size={16} />
+            <span>Обнулить склад</span>
+          </button>
+        </div>
+      )}
+
+      <AnimatePresence>
+        {wipeOpen && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <motion.div initial={{ scale: 0.95, y: 12 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 12 }}
+              className="bg-slate-900 border border-red-500/30 rounded-3xl w-full max-w-md p-6 shadow-2xl">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-xl bg-red-500/15 border border-red-500/30 flex items-center justify-center shrink-0">
+                  <TriangleAlert size={18} className="text-red-400" />
+                </div>
+                <h3 className="text-lg font-bold text-white">Обнулить склад</h3>
+              </div>
+              <p className="text-sm text-slate-400 mb-1">
+                Будет удалено: <span className="font-bold text-white">{inventory.length}</span>
+                {' '}{plural(inventory.length, 'позиция', 'позиции', 'позиций')}
+                {' '}(<span className="font-bold text-white">{inventory.reduce((a, b) => a + b.stock, 0)}</span> шт)
+                и <span className="font-bold text-white">{movements.length}</span>
+                {' '}{plural(movements.length, 'запись', 'записи', 'записей')} журнала. Это не откатить.
+              </p>
+              <p className="text-xs text-slate-500 mb-5">Задания, клиенты, выручка и цены услуг остаются на месте.</p>
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-widest pl-1">Впиши ОБНУЛИТЬ</label>
+              <input autoFocus value={wipeConfirm} onChange={e => setWipeConfirm(e.target.value)}
+                placeholder="ОБНУЛИТЬ"
+                className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 mt-2 text-sm font-bold text-white outline-none focus:border-red-500/50" />
+              {wipeResult && (
+                <p className={`text-xs font-semibold mt-3 ${wipeResult.ok ? 'text-green-400' : 'text-red-400'}`}>{wipeResult.text}</p>
+              )}
+              <div className="flex gap-3 mt-5">
+                <button onClick={() => setWipeOpen(false)}
+                  className="flex-1 bg-white/5 border border-white/10 py-3 rounded-xl text-sm font-bold text-slate-300 hover:bg-white/10 transition-colors">
+                  Отмена
+                </button>
+                <button onClick={handleWipe} disabled={wipeConfirm.trim().toUpperCase() !== 'ОБНУЛИТЬ' || wiping}
+                  className="flex-1 bg-red-600 py-3 rounded-xl text-sm font-bold text-white hover:bg-red-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                  {wiping ? 'Обнуляю…' : 'Обнулить'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* PART DRAWER — details + movement ledger + actions */}
       <AnimatePresence>
