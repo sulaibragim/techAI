@@ -6,7 +6,7 @@ import { jwtSecret } from '../config.js';
 import { sendSMS } from '../services/openphone.js';
 import { sendPushToRoles } from '../services/push.js';
 import { getClientLang, t, claimOnce } from '../services/messages.js';
-import { clientSmsEnabled } from '../services/businessSettings.js';
+import { clientSmsEnabled, staffNotifyEnabled } from '../services/businessSettings.js';
 import { sendEmail, emailConfigured } from '../services/email.js';
 import { stripeConfigured, webhookConfigured, createCheckoutSession, createRefund, getSessionPayment, getPaymentFee, verifyStripeSignature, publicBase, expireCheckoutSession, getChargeIntent, paySig, payUrlFor } from '../services/stripe.js';
 
@@ -646,12 +646,12 @@ paymentsRouter.post('/refund', requireAuth, requireRole('owner', 'manager'), asy
       })).catch(() => {});
     }
     const who = [job.client?.firstName, job.client?.lastName].filter(Boolean).join(' ');
-    sendPushToRoles(['owner', 'manager'], {
+    staffNotifyEnabled('refund').then(on => on && sendPushToRoles(['owner', 'manager'], {
       title: `Refund issued — ${money(refundAmount)}`,
       body: `Job #${job.jobNumber || jobId}${who ? ` · ${who}` : ''}${cancelJob ? ' (job cancelled)' : ''}.`,
       tag: `refund-${jobId}-${Date.now()}`,
       data: { type: 'refund', jobId, url: '/' },
-    }).catch(() => {});
+    })).catch(() => {});
 
   } catch (err) {
     // Money already moved and the ledger already committed — only notifications failed.
@@ -728,12 +728,12 @@ async function recordExternalReversal(event) {
     await client.query('COMMIT');
 
     console.log(`[payments] ${isDispute ? 'DISPUTE' : 'external refund'} ${money(delta)} on job ${job.jobNumber || jobId}`);
-    sendPushToRoles(['owner', 'manager'], {
+    staffNotifyEnabled('refund').then(on => on && sendPushToRoles(['owner', 'manager'], {
       title: isDispute ? `⚠ Chargeback — ${money(delta)}` : `Refund recorded — ${money(delta)}`,
       body: `Job #${job.jobNumber || jobId}${isDispute ? ' is being disputed by the cardholder.' : ' was refunded from the Stripe dashboard.'}`,
       tag: `rev-${entry.id}`,
       data: { type: 'refund', jobId, url: '/' },
-    }).catch(() => {});
+    })).catch(() => {});
   } catch (e) {
     await client.query('ROLLBACK').catch(() => {});
     throw e;
@@ -872,12 +872,12 @@ paymentsRouter.post('/webhook', async (req, res) => {
     }
 
     const who = [job.client?.firstName, job.client?.lastName].filter(Boolean).join(' ');
-    sendPushToRoles(['owner', 'manager'], {
+    staffNotifyEnabled('paymentReceived').then(on => on && sendPushToRoles(['owner', 'manager'], {
       title: `Payment received — ${money(amount)}`,
       body: `Job #${job.jobNumber || jobId}${who ? ` · ${who}` : ''} paid by card${fullyPaid ? ' (settled in full)' : ''}.`,
       tag: `pay-${session.id}`,
       data: { type: 'payment', jobId, url: '/' },
-    }).catch(() => {});
+    })).catch(() => {});
   } catch (err) {
     // The payment is already recorded and acked — only the notifications failed.
     console.error('[payments] webhook notification error:', err.message);

@@ -362,6 +362,47 @@ export const CLIENT_SMS_META: { key: keyof ClientSmsSettings; label: string; des
   { key: 'refund',    label: 'Refund notice',        desc: '“We issued a refund of …” when you refund a card', stage: 'Payment' },
 ];
 
+// Automatic messages sent to STAFF (you and the crew), not to clients. These had no
+// switches at all — the only off-button was SCHEDULER_DISABLED, which also stopped the
+// payment reminders going to customers.
+export interface StaffNotifySettings {
+  dailyDigest: boolean;     // 20:00 "daily wrap" SMS + push to owners
+  jobAssigned: boolean;     // the tech is told a job landed on them
+  techEnRoute: boolean;     // dispatchers told a tech is on the way
+  techAccepted: boolean;    // dispatchers told a tech accepted
+  techDeclined: boolean;    // dispatchers told a tech DECLINED
+  newLead: boolean;         // website lead arrived
+  clientReply: boolean;     // a client texted us back
+  paymentReceived: boolean; // card payment landed
+  refund: boolean;          // refund issued / chargeback opened
+}
+
+// Must match STAFF_NOTIFY_DEFAULTS on the server. The digest is off by default: it is a
+// nightly text nobody asked for, and everything in it is on the dashboard already.
+export const STAFF_NOTIFY_DEFAULTS: StaffNotifySettings = {
+  dailyDigest: false,
+  jobAssigned: true,
+  techEnRoute: true,
+  techAccepted: true,
+  techDeclined: true,
+  newLead: true,
+  clientReply: true,
+  paymentReceived: true,
+  refund: true,
+};
+
+export const STAFF_NOTIFY_META: { key: keyof StaffNotifySettings; label: string; desc: string; who: string }[] = [
+  { key: 'dailyDigest',     label: 'Daily wrap-up',        desc: 'One text at 20:00: today’s revenue, unpaid count, tomorrow’s bookings', who: 'You' },
+  { key: 'newLead',         label: 'New website lead',     desc: 'A lead came in from the website form', who: 'Dispatch' },
+  { key: 'clientReply',     label: 'Client texted back',   desc: 'Push when a customer replies to us', who: 'Dispatch' },
+  { key: 'jobAssigned',     label: 'Job assigned',         desc: 'The technician is told a job landed on them', who: 'Technician' },
+  { key: 'techEnRoute',     label: 'Tech on the way',      desc: 'A technician set a job to En Route', who: 'Dispatch' },
+  { key: 'techAccepted',    label: 'Tech accepted',        desc: 'A technician accepted a job', who: 'Dispatch' },
+  { key: 'techDeclined',    label: 'Tech declined',        desc: 'A technician declined — the job needs reassigning', who: 'Dispatch' },
+  { key: 'paymentReceived', label: 'Payment received',     desc: 'Push when a card payment lands', who: 'You' },
+  { key: 'refund',          label: 'Refund / chargeback',  desc: 'Push when money goes back out, or a card is disputed', who: 'You' },
+];
+
 export interface Expense {
   id: string;
   date: string; // YYYY-MM-DD

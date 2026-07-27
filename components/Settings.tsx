@@ -1,12 +1,12 @@
 import React, { useRef, useState } from 'react';
 import { motion } from 'motion/react';
-import { User, Target, Key, RotateCcw, Save, Upload, Info, Building2, AlertTriangle, Users, Plus, Trash2, ShieldCheck, History, Lock, Pencil, Check, X, Tag, BrainCircuit, MessageSquare } from 'lucide-react';
+import { User, Target, Key, RotateCcw, Save, Upload, Info, Building2, AlertTriangle, Users, Plus, Trash2, ShieldCheck, History, Lock, Pencil, Check, X, Tag, BrainCircuit, MessageSquare, BellRing } from 'lucide-react';
 import { useSettingsStore, SETTINGS_DEFAULTS, settingsStorageIsEphemeral } from '../settingsStore';
 import { useAuthStore, useCurrentUser, can, ROLE_LABELS, MIN_PASSWORD_LENGTH } from '../authStore';
 import { useAppStore } from '../store';
 import { API_BASE } from '../backendUrl';
 import { authHeaders } from '../apiClient';
-import { Role, TECH_SKILLS, SERVICE_CATEGORIES, CLIENT_SMS_META, CLIENT_SMS_DEFAULTS } from '../types';
+import { Role, TECH_SKILLS, SERVICE_CATEGORIES, CLIENT_SMS_META, CLIENT_SMS_DEFAULTS, STAFF_NOTIFY_META, STAFF_NOTIFY_DEFAULTS } from '../types';
 import { PushNotificationsCard } from './PushNotificationsCard';
 import { LaunchReadinessCard } from './LaunchReadinessCard';
 
@@ -337,6 +337,41 @@ export const Settings: React.FC = () => {
                     onClick={() => {
                       const cur = settings.clientSms || CLIENT_SMS_DEFAULTS;
                       settings.updateSettings({ clientSms: { ...cur, [m.key]: !cur[m.key] } });
+                    }}
+                    className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${on ? 'bg-blue-600' : 'bg-slate-600'}`}
+                  >
+                    <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${on ? 'translate-x-5' : ''}`} />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </Section>}
+
+        {currentUser && currentUser.role !== 'technician' && <Section icon={BellRing} title="Notifications to us">
+          <p className="text-xs text-slate-400 -mt-1">
+            Automatic messages the <span className="text-white font-semibold">team</span> receives — not the customer. Turning one off stops that alert for everyone; nothing here changes what clients get.
+          </p>
+          <div className="space-y-2">
+            {STAFF_NOTIFY_META.map(m => {
+              const on = (settings.staffNotify || STAFF_NOTIFY_DEFAULTS)[m.key];
+              return (
+                <div key={m.key} className="flex items-center gap-4 p-3 rounded-xl bg-white/5 border border-white/10">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-semibold text-white">{m.label}</span>
+                      <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 bg-white/5 border border-white/10 rounded px-1.5 py-0.5">{m.who}</span>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-0.5">{m.desc}</p>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={on}
+                    aria-label={m.label}
+                    onClick={() => {
+                      const cur = settings.staffNotify || STAFF_NOTIFY_DEFAULTS;
+                      settings.updateSettings({ staffNotify: { ...cur, [m.key]: !cur[m.key] } });
                     }}
                     className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${on ? 'bg-blue-600' : 'bg-slate-600'}`}
                   >

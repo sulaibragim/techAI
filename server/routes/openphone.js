@@ -10,7 +10,7 @@ import {
   isStopKeyword, isStartKeyword, setOptOut, clearOptOut, OPT_OUT_CONFIRM, OPT_IN_CONFIRM,
 } from '../services/messages.js';
 import { sendEtaToClient, requestFreshEta } from '../services/etaRequests.js';
-import { clientSmsEnabled } from '../services/businessSettings.js';
+import { clientSmsEnabled, staffNotifyEnabled } from '../services/businessSettings.js';
 import { db } from '../db.js';
 
 export const openphoneRouter = Router();
@@ -172,12 +172,12 @@ openphoneRouter.post('/webhook', async (req, res) => {
 
       // Ping the dispatchers' phones so a client reply isn't missed.
       const who = obj.contact?.name || obj.from || 'a client';
-      sendPushToRoles(['owner', 'manager'], {
+      staffNotifyEnabled('clientReply').then(on => on && sendPushToRoles(['owner', 'manager'], {
         title: `New message from ${who}`,
         body: (msg.body || '').slice(0, 140) || 'Open the inbox to read it.',
         tag: `msg-${obj.from || obj.id}`,
         data: { type: 'message', from: obj.from || null, url: '/' },
-      }).catch(e => console.error('[OpenPhone] push error', e.message));
+      })).catch(e => console.error('[OpenPhone] push error', e.message));
 
       // STOP / START. Carriers require this on automated traffic, and it has to win over
       // every other reply handler — a client texting "CANCEL" is opting out, not asking

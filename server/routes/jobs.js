@@ -4,7 +4,7 @@ import { requireAuth, requireRole } from '../middleware/auth.js';
 import { sendSMS } from '../services/openphone.js';
 import { sendPushToUser } from '../services/push.js';
 import { getClientLang, claimOnce, t, SPANISH_INVITE } from '../services/messages.js';
-import { clientSmsEnabled } from '../services/businessSettings.js';
+import { clientSmsEnabled, staffNotifyEnabled } from '../services/businessSettings.js';
 import { voidOpenSessions } from './payments.js';
 
 export const jobsRouter = Router();
@@ -15,6 +15,7 @@ const isTech = (req) => req.user.role === 'technician';
 // Skips self-assignment (a tech picking up their own job shouldn't text themselves).
 async function notifyAssignedTech(assigneeId, job, actingUserId) {
   if (!assigneeId || assigneeId === actingUserId) return;
+  if (!(await staffNotifyEnabled('jobAssigned'))) return;
   const c = job.client || {};
   const name = [c.firstName, c.lastName].filter(Boolean).join(' ');
   const when = [job.scheduledDate, job.scheduledTime].filter(Boolean).join(' ');
@@ -109,8 +110,9 @@ async function notifyBookingConfirmed(job, jobId) {
 // Alert the dispatchers (active owners/managers with a phone, plus LEAD_NOTIFY_PHONE)
 // about a tech lifecycle milestone. Best-effort SMS; skips the acting user so nobody
 // texts themselves.
-async function notifyDispatchers(text, excludeUserId) {
+async function notifyDispatchers(text, excludeUserId, kind) {
   try {
+    if (kind && !(await staffNotifyEnabled(kind))) return;
     const recipients = new Set();
     if (process.env.LEAD_NOTIFY_PHONE) recipients.add(process.env.LEAD_NOTIFY_PHONE.trim());
     const { rows } = await db.query(
@@ -426,9 +428,9 @@ jobsRouter.put('/:id', requireAuth, async (req, res) => {
         const label = `#${data.jobNumber || req.params.id}`;
         const who = [data.client?.firstName, data.client?.lastName].filter(Boolean).join(' ');
         const suffix = who ? ` — ${who}` : '';
-        if (wentEnRoute) await notifyDispatchers(`${actor} is on the way to job ${label}${suffix}`, req.user.id);
-        else if (justAccepted) await notifyDispatchers(`${actor} accepted job ${label}${suffix}`, req.user.id);
-        if (justDeclined) await notifyDispatchers(`${actor} DECLINED job ${label}${suffix} — needs reassignment`, req.user.id);
+        if (wentEnRoute) await notifyDispatchers(`${actor} is on the way to job ${label}${suffix}`, req.user.id, 'techEnRoute');
+        else if (justAccepted) await notifyDispatchers(`${actor} accepted job ${label}${suffix}`, req.user.id, 'techAccepted');
+        if (justDeclined) await notifyDispatchers(`${actor} DECLINED job ${label}${suffix} — needs reassignment`, req.user.id, 'techDeclined');
       })().catch(e => console.error('[JOBS] lifecycle notify error:', e));
     }
 

@@ -31,3 +31,26 @@ export async function clientSmsEnabled(kind) {
   const v = cfg[kind];
   return typeof v === 'boolean' ? v : (CLIENT_SMS_DEFAULTS[kind] ?? true);
 }
+
+// Automatic messages sent to STAFF (owner, managers, technicians) rather than clients.
+// These had no switches at all — the only way to stop any of them was SCHEDULER_DISABLED,
+// which also killed the payment reminders. Keys mirror types.ts StaffNotifySettings.
+const STAFF_NOTIFY_DEFAULTS = {
+  dailyDigest: false,     // 20:00 "daily wrap" SMS + push to owners — off by request
+  jobAssigned: true,      // tech is told a job landed on them (SMS + push)
+  techEnRoute: true,      // dispatchers told a tech is on the way
+  techAccepted: true,     // dispatchers told a tech accepted
+  techDeclined: true,     // dispatchers told a tech DECLINED — needs reassigning
+  newLead: true,          // website lead arrived
+  clientReply: true,      // a client texted us back (push)
+  paymentReceived: true,  // card payment landed (push)
+  refund: true,           // refund issued / chargeback opened (push)
+};
+
+/** Is a given automatic STAFF notification enabled? Stored boolean wins. */
+export async function staffNotifyEnabled(kind) {
+  const s = await getCompanySettings();
+  const cfg = (s && typeof s.staffNotify === 'object' && s.staffNotify) || {};
+  const v = cfg[kind];
+  return typeof v === 'boolean' ? v : (STAFF_NOTIFY_DEFAULTS[kind] ?? true);
+}

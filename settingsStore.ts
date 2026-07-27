@@ -3,7 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { API_BASE } from './backendUrl';
 import { authHeaders } from './apiClient';
 import { sendWrite } from './writeQueue';
-import { Expense, ClientProfile, StockMovement, ServiceRate, AiMemory, ClientSmsSettings, CLIENT_SMS_DEFAULTS } from './types';
+import { Expense, ClientProfile, StockMovement, ServiceRate, AiMemory, ClientSmsSettings, CLIENT_SMS_DEFAULTS, StaffNotifySettings, STAFF_NOTIFY_DEFAULTS } from './types';
 import { PRICE_BOOK_SEED } from './priceBook';
 
 export interface SettingsState {
@@ -29,6 +29,7 @@ export interface SettingsState {
   importedInvoices: string[]; // supplier invoice numbers already received — duplicate-import guard (capped)
   taxRate: number; // sales-tax percent applied to taxable revenue (0 = none)
   clientSms: ClientSmsSettings; // owner switches for automatic client-facing texts
+  staffNotify: StaffNotifySettings; // owner switches for automatic messages to US, not clients
   onboardingComplete: boolean;
   aiAvailable: boolean; // runtime flag: is GEMINI_API_KEY configured on the server?
   updateSettings: (patch: Partial<Omit<SettingsState, 'updateSettings' | 'resetSettings' | 'setMonthlyTarget' | 'setTechTarget' | 'addExpense' | 'removeExpense' | 'addStockMovement' | 'addServiceRate' | 'updateServiceRate' | 'removeServiceRate' | 'upsertClientProfile' | 'addAiMemory' | 'removeAiMemory' | 'syncSettings' | 'checkAiAvailable' | 'aiAvailable'>>) => void;
@@ -78,6 +79,7 @@ export const SETTINGS_DEFAULTS = {
   importedInvoices: [] as string[],
   taxRate: 0,
   clientSms: { ...CLIENT_SMS_DEFAULTS },
+  staffNotify: { ...STAFF_NOTIFY_DEFAULTS },
   onboardingComplete: false,
 };
 

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import express from 'express';
 import { db } from '../db.js';
 import { sendSMS, toE164 } from '../services/openphone.js';
+import { staffNotifyEnabled } from '../services/businessSettings.js';
 
 export const leadsRouter = Router();
 
@@ -145,6 +146,7 @@ function deriveChannel({ channelRaw, attribution }) {
 // A fresh lead isn't assigned to anyone yet, so it goes to whoever dispatches:
 // every active owner/manager with a phone, plus an optional LEAD_NOTIFY_PHONE override.
 async function notifyDispatchers(job) {
+  if (!(await staffNotifyEnabled('newLead'))) return;
   const recipients = new Set();
   if (process.env.LEAD_NOTIFY_PHONE) recipients.add(process.env.LEAD_NOTIFY_PHONE.trim());
   try {

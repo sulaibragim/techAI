@@ -3,7 +3,7 @@ import { sendSMS } from './openphone.js';
 import { sendPushToRoles } from './push.js';
 import { stripeConfigured, publicBase, payUrlFor } from './stripe.js';
 import { getClientLang, t, isOptedOut, OPT_OUT_NOTE } from './messages.js';
-import { clientSmsEnabled } from './businessSettings.js';
+import { clientSmsEnabled, staffNotifyEnabled } from './businessSettings.js';
 
 // Time-based automations that need a clock, not a request:
 //   • payment reminders — completed-but-unpaid jobs get a polite SMS at 3 and 10 days
@@ -167,6 +167,10 @@ async function runPaymentReminders() {
 async function runEveningDigest() {
   const { date, hour } = localNow();
   if (hour < DIGEST_HOUR) return;
+  // Owner-controlled, and OFF by default. Until now the only way to stop this nightly
+  // text was SCHEDULER_DISABLED, which also killed the payment reminders. Checked before
+  // the day is claimed so turning it back on later still sends that evening.
+  if (!(await staffNotifyEnabled('dailyDigest'))) return;
 
   // Once per local day. Claim the day ATOMICALLY: a rolling Railway deploy runs the old
   // and new containers side by side for a while, and a read-then-write check lets both
