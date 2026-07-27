@@ -15,8 +15,8 @@ inventoryRouter.get('/', requireAuth, async (_req, res) => {
   }
 });
 
-// Bulk sync — owner/manager only. Transactional. Replaces the full catalog (deletes removed items).
-inventoryRouter.post('/sync', requireAuth, requireRole('owner', 'manager'), async (req, res) => {
+// Bulk sync — owner/manager/кладовщик. Transactional. Replaces the full catalog (deletes removed items).
+inventoryRouter.post('/sync', requireAuth, requireRole('owner', 'manager', 'warehouse'), async (req, res) => {
   const items = req.body;
   if (!Array.isArray(items)) return res.status(400).json({ error: 'Expected array of parts' });
 
@@ -95,6 +95,53 @@ inventoryRouter.delete('/', requireAuth, requireRole('owner'), async (req, res) 
   }
 });
 
+// Hand stock to a technician, or take it back (negative qty). The company still owns the
+// same number of units — only their location changes — so `stock` is untouched and only
+// data.held[userId] moves. The arithmetic runs in SQL for the same reason /movement does:
+// two people handing out parts from stale screens must add up instead of overwriting.
+inventoryRouter.post('/:id/transfer', requireAuth, requireRole('owner', 'manager', 'warehouse'), async (req, res) => {
+  try {
+    const qty = Number(req.body?.qty);
+    const toUserId = String(req.body?.toUserId || '');
+    if (!toUserId) return res.status(400).json({ error: 'toUserId is required' });
+    if (!Number.isFinite(qty) || qty === 0) return res.status(400).json({ error: 'qty must be a non-zero number' });
+    if (Math.abs(qty) > 10000) return res.status(400).json({ error: 'Implausible quantity' });
+
+    const client = await db.connect();
+    try {
+      await client.query('BEGIN');
+      const { rows } = await client.query('SELECT data FROM inventory WHERE id = $1 FOR UPDATE', [req.params.id]);
+      if (rows.length === 0) {
+        await client.query('ROLLBACK');
+        return res.status(404).json({ error: 'Part not found' });
+      }
+      const data = rows[0].data || {};
+      const held = { ...(data.held || {}) };
+      const total = Number(data.stock) || 0;
+      const current = Number(held[toUserId]) || 0;
+      const others = Object.entries(held).reduce((a, [k, v]) => a + (k === toUserId ? 0 : Number(v) || 0), 0);
+
+      // Can't hand out what isn't on the shelf, and can't take back more than he holds.
+      const next = Math.max(0, Math.min(current + qty, Math.max(0, total - others)));
+      if (next === 0) delete held[toUserId]; else held[toUserId] = next;
+
+      const updated = { ...data, held };
+      await client.query('UPDATE inventory SET data = $2, updated_at = NOW() WHERE id = $1',
+        [req.params.id, JSON.stringify(updated)]);
+      await client.query('COMMIT');
+      res.json({ id: req.params.id, ...updated, moved: next - current });
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
+    }
+  } catch (err) {
+    console.error('[INVENTORY] transfer error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Apply a signed stock DELTA. Two problems this solves:
 //
 //  1. A technician billing a part on their own job used to PUT the whole part, which is
@@ -132,6 +179,22 @@ inventoryRouter.post('/:id/movement', requireAuth, async (req, res) => {
       [req.params.id, delta]
     );
     if (rows.length === 0) return res.status(404).json({ error: 'Part not found' });
+
+    // A technician spends what they are carrying, not what's on the shop shelf — so the
+    // same delta has to come off their own van count, or the shelf would appear to fall
+    // while their van stayed full forever. Same statement shape for a return (+).
+    if (req.user.role === 'technician') {
+      const { rows: after } = await db.query(
+        `UPDATE inventory
+            SET data = jsonb_set(data, '{held}',
+                  COALESCE(data->'held', '{}'::jsonb) || jsonb_build_object($2::text,
+                    GREATEST(0, COALESCE((data->'held'->>$2)::numeric, 0) + $3::numeric)))
+          WHERE id = $1
+        RETURNING id, data`,
+        [req.params.id, req.user.id, delta]
+      );
+      if (after.length > 0) return res.json({ id: after[0].id, ...after[0].data });
+    }
     res.json({ id: rows[0].id, ...rows[0].data });
   } catch (err) {
     console.error('[INVENTORY] movement error:', err);
@@ -140,7 +203,7 @@ inventoryRouter.post('/:id/movement', requireAuth, async (req, res) => {
 });
 
 // Upsert a single part — owner/manager only.
-inventoryRouter.put('/:id', requireAuth, requireRole('owner', 'manager'), async (req, res) => {
+inventoryRouter.put('/:id', requireAuth, requireRole('owner', 'manager', 'warehouse'), async (req, res) => {
   try {
     const { id: _id, ...data } = req.body;
     await db.query(
@@ -156,7 +219,7 @@ inventoryRouter.put('/:id', requireAuth, requireRole('owner', 'manager'), async 
 });
 
 // Delete a part — owner/manager only.
-inventoryRouter.delete('/:id', requireAuth, requireRole('owner', 'manager'), async (req, res) => {
+inventoryRouter.delete('/:id', requireAuth, requireRole('owner', 'manager', 'warehouse'), async (req, res) => {
   try {
     const result = await db.query('DELETE FROM inventory WHERE id = $1', [req.params.id]);
     if (result.rowCount === 0) return res.status(404).json({ error: 'Part not found' });

@@ -87,7 +87,7 @@ authRouter.post('/users', requireAuth, requireRole('owner'), async (req, res) =>
     if (typeof password !== 'string' || password.length < MIN_PASSWORD_LENGTH) {
       return res.status(400).json({ error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters` });
     }
-    if (role && !['owner', 'manager', 'technician', 'accountant'].includes(role)) {
+    if (role && !['owner', 'manager', 'technician', 'accountant', 'warehouse'].includes(role)) {
       return res.status(400).json({ error: 'Invalid role' });
     }
     const id = `u-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -123,7 +123,7 @@ authRouter.put('/users/:id', requireAuth, async (req, res) => {
       email = undefined;
       skills = undefined;
     }
-    if (role && !['owner', 'manager', 'technician', 'accountant'].includes(role)) {
+    if (role && !['owner', 'manager', 'technician', 'accountant', 'warehouse'].includes(role)) {
       return res.status(400).json({ error: 'Invalid role' });
     }
 

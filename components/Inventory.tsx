@@ -7,8 +7,8 @@ import {
 } from 'lucide-react';
 import { useAppStore } from '../store';
 import { useSettingsStore } from '../settingsStore';
-import { useCurrentUser, can } from '../authStore';
-import { Part, StockMovement, MOVEMENT_META, PART_CATEGORY_SUGGESTIONS, PART_GROUP_SUGGESTIONS, isStockPart, ExpenseCategory } from '../types';
+import { useCurrentUser, can, useAuthStore } from '../authStore';
+import { Part, StockMovement, MOVEMENT_META, PART_CATEGORY_SUGGESTIONS, PART_GROUP_SUGGESTIONS, isStockPart, shelfQty, heldOf, heldTotal } from '../types';
 import { InvoiceImportModal, ReviewLine } from './InvoiceImport';
 import { ExcelImport } from './ExcelImport';
 import type { ImportRow, ImportTarget } from '../inventoryExcel';
@@ -16,20 +16,6 @@ import { StocktakeModal, InsightsModal } from './StockTools';
 import { BarcodeScanner } from './BarcodeScanner';
 
 const uniqSorted = (arr: string[]) => [...new Set(arr.filter(Boolean))].sort((a, b) => a.localeCompare(b));
-
-// A hand-kept purchase log names its own categories ('Инструмент', 'Заготовки', 'Налог').
-// Map them onto the accounting categories the app reports on, rather than inventing an
-// eighth bucket nobody's charts read.
-const expenseCategoryFor = (raw: string): ExpenseCategory => {
-  const s = (raw || '').toLowerCase();
-  if (/инструм|оборудован|tool|equip/.test(s)) return 'Tools & Equipment';
-  if (/реклам|marketing|ad/.test(s)) return 'Advertising';
-  if (/топлив|бензин|fuel|gas/.test(s)) return 'Fuel';
-  if (/аренд|rent/.test(s)) return 'Rent';
-  if (/связ|софт|подписк|phone|software/.test(s)) return 'Phone & Software';
-  if (/ключ|заготов|расходн|запчаст|key|stock|part/.test(s)) return 'Keys & Stock';
-  return 'Other'; // скидка, налог, всё прочее
-};
 
 // Russian count agreement: 1 позиция / 2 позиции / 5 позиций.
 const plural = (n: number, one: string, few: string, many: string) => {
@@ -74,7 +60,7 @@ const labelCls = 'text-xs font-bold text-slate-400 uppercase tracking-widest pl-
 export const Inventory: React.FC = () => {
   const {
     inventory, addInventoryItem, updateInventoryItem, removeInventoryItem,
-    syncInventory, receiveStock, adjustStockTo, wipeInventory,
+    syncInventory, receiveStock, adjustStockTo, wipeInventory, transferToTech,
   } = useAppStore();
   const movements = useSettingsStore(s => s.stockMovements);
   const addExpense = useSettingsStore(s => s.addExpense);
@@ -88,6 +74,14 @@ export const Inventory: React.FC = () => {
   const currentUser = useCurrentUser();
   const canEdit = currentUser ? can.editInventory(currentUser.role) : false;
   const isOwner = currentUser?.role === 'owner';
+  const canHandOut = currentUser ? can.handOutStock(currentUser.role) : false;
+  const isTech = currentUser?.role === 'technician';
+  // Only active technicians can be handed stock — nobody else drives to a job with it.
+  const users = useAuthStore(s => s.users);
+  const techs = useMemo(
+    () => users.filter(u => u.role === 'technician' && u.active !== false).map(u => ({ id: u.id, name: u.name })),
+    [users]
+  );
 
   const [syncing, setSyncing] = useState(false);
   const handleSync = async () => { setSyncing(true); try { await syncInventory(); } finally { setSyncing(false); } };
@@ -114,7 +108,7 @@ export const Inventory: React.FC = () => {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<string>('All');
   const [groupFilter, setGroupFilter] = useState<string>('All');
-  const [view, setView] = useState<'stock' | 'tools' | 'planned'>('stock');
+  const [view, setView] = useState<'stock' | 'tools' | 'mine'>(isTech ? 'mine' : 'stock');
 
   const [isEditing, setIsEditing] = useState(false);
   const [editingPart, setEditingPart] = useState<Partial<Part>>({});
@@ -194,36 +188,12 @@ export const Inventory: React.FC = () => {
 
   // Excel import confirmed. Three different sheets, three different consequences:
   //
-  //  'expenses' — a purchase log. Money only. It must NOT move stock: the stock sheet
-  //     already carries today's shelf counts, so receiving the log on top would double
-  //     every quantity and double the spend.
   //  'tools'    — equipment. Recorded as parts with kind 'tool' so they can never be billed
   //     to a client or counted as sellable stock, and rows that aren't marked bought land as
   //     a purchase plan (owned: false), not as something we have.
   //  'stock'    — consumables. 'set' overwrites the count (a shelf census, no expense);
   //     'receive' adds to it and logs ONE combined Keys & Stock expense.
   const handleExcelConfirm = (rows: ImportRow[], mode: 'receive' | 'set', target: ImportTarget) => {
-    if (target === 'expenses') {
-      const seen = new Set<string>();
-      for (const r of rows) {
-        const amount = Math.round((r.cost || 0) * Math.max(1, r.stock) * 100) / 100;
-        if (!amount) continue;
-        addExpense({
-          date: /^\d{4}-\d{2}-\d{2}$/.test(r.date) ? r.date : new Date().toISOString().split('T')[0],
-          category: expenseCategoryFor(r.category),
-          amount,
-          note: [r.name, r.supplier, r.sku ? `инвойс ${r.sku}` : ''].filter(Boolean).join(' · '),
-          createdBy: currentUser?.id,
-        });
-        if (r.sku) seen.add(r.sku);
-      }
-      // Stamp the invoice numbers so an AI scan of the same paper invoice later warns
-      // instead of silently receiving it a second time.
-      seen.forEach(inv => markInvoiceImported(inv));
-      setExcelOpen(false);
-      return;
-    }
-
     let spend = 0;
     for (const r of rows) {
       const isTool = target === 'tools';
@@ -292,9 +262,12 @@ export const Inventory: React.FC = () => {
   // Consumables, equipment and a shopping list are three different things and never mix:
   // stock value, the reorder list, the stocktake and the invoice picker all read `stockParts`.
   const stockParts = useMemo(() => inventory.filter(isStockPart), [inventory]);
-  const toolParts = useMemo(() => inventory.filter(p => p.kind === 'tool' && p.owned !== false), [inventory]);
-  const plannedParts = useMemo(() => inventory.filter(p => p.kind === 'tool' && p.owned === false), [inventory]);
-  const shelf = view === 'stock' ? stockParts : view === 'tools' ? toolParts : plannedParts;
+  const allTools = useMemo(() => inventory.filter(p => p.kind === 'tool'), [inventory]);
+  const toolParts = useMemo(() => allTools.filter(p => p.owned !== false), [allTools]);
+  const plannedParts = useMemo(() => allTools.filter(p => p.owned === false), [allTools]);
+  const myId = currentUser?.id || '';
+  const myParts = useMemo(() => stockParts.filter(p => (heldOf(p)[myId] || 0) > 0), [stockParts, myId]);
+  const shelf = view === 'mine' ? myParts : view === 'stock' ? stockParts : allTools;
 
   // Chips are derived from what's actually on the shelf (+ a few suggestions), so an
   // imported type like "транспондер" or platform like "Ford" appears without a fixed list.
@@ -436,9 +409,9 @@ export const Inventory: React.FC = () => {
             changes what the filters even contain. */}
         <div className="px-6 pt-5 flex gap-2 overflow-x-auto hide-scrollbar">
           {([
-            { key: 'stock' as const, label: 'Расходники', n: stockParts.length },
-            { key: 'tools' as const, label: 'Инструмент', n: toolParts.length },
-            { key: 'planned' as const, label: 'План закупок', n: plannedParts.length },
+            ...(isTech ? [{ key: 'mine' as const, label: 'У меня', n: myParts.length }] : []),
+            { key: 'stock' as const, label: isTech ? 'Весь склад' : 'Расходники', n: stockParts.length },
+            { key: 'tools' as const, label: 'Инструмент', n: allTools.length },
           ]).map(v => (
             <button key={v.key} onClick={() => { setView(v.key); setFilter('All'); setGroupFilter('All'); }}
               className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap border transition-all ${view === v.key ? 'bg-white/10 border-white/20 text-white' : 'bg-transparent border-white/10 text-slate-400 hover:text-white'}`}>
@@ -493,6 +466,8 @@ export const Inventory: React.FC = () => {
             <tbody className="divide-y divide-white/5">
               {filteredInventory.map((item: Part) => {
                 const isStock = isStockPart(item);
+                const mine = heldOf(item)[myId] || 0;
+                const handed = heldTotal(item);
                 const isLow = isStock && item.stock <= item.reorderPoint;
                 const mp = marginPct(item.price, item.cost);
                 return (
@@ -519,6 +494,12 @@ export const Inventory: React.FC = () => {
                     <td className="p-4 text-right">
                       <span className={`font-mono text-sm ${isStock && isLow ? 'text-amber-500 font-bold' : 'text-slate-300'}`}>{item.stock}</span>
                       {isStock && <span className="text-[11px] text-slate-600 font-mono"> / {item.reorderPoint}</span>}
+                      {isStock && mine > 0 && (
+                        <p className="text-[10px] font-bold text-blue-300 uppercase tracking-wider">у меня {mine}</p>
+                      )}
+                      {isStock && !isTech && handed > 0 && (
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">на полке {shelfQty(item)}</p>
+                      )}
                     </td>
                     <td className="p-4 text-right font-mono text-sm text-slate-400 hidden sm:table-cell">{item.cost != null ? money(item.cost) : '—'}</td>
                     {isStock ? (
@@ -622,6 +603,9 @@ export const Inventory: React.FC = () => {
             onCount={(actual) => adjustStockTo(drawerPart.id, actual, { type: 'adjust', note: 'Stocktake' })}
             onLoss={(qty, note) => adjustStockTo(drawerPart.id, drawerPart.stock - qty, { type: 'loss', note: note || 'Loss / broken' })}
             onDelete={() => { removeInventoryItem(drawerPart.id); setDrawerId(null); }}
+            canHandOut={canHandOut && isStockPart(drawerPart)}
+            techs={techs}
+            onTransfer={(toUserId, qty) => transferToTech(drawerPart.id, toUserId, qty)}
           />
         )}
       </AnimatePresence>
@@ -850,10 +834,16 @@ const PartDrawer: React.FC<{
   onCount: (actual: number) => void;
   onLoss: (qty: number, note?: string) => void;
   onDelete: () => void;
-}> = ({ part, movements, canEdit, onClose, onEdit, onReceive, onCount, onLoss, onDelete }) => {
+  canHandOut: boolean;
+  techs: { id: string; name: string }[];
+  onTransfer: (toUserId: string, qty: number) => void;
+}> = ({ part, movements, canEdit, onClose, onEdit, onReceive, onCount, onLoss, onDelete, canHandOut, techs, onTransfer }) => {
   const [countVal, setCountVal] = useState('');
   const [lossVal, setLossVal] = useState('');
+  const [handTo, setHandTo] = useState('');
+  const [handQty, setHandQty] = useState('');
   const mp = marginPct(part.price, part.cost);
+  const handedOut = heldTotal(part);
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -885,11 +875,62 @@ const PartDrawer: React.FC<{
 
         {/* stats */}
         <div className="grid grid-cols-4 gap-2 text-center">
-          <div className="bg-slate-950 rounded-xl p-3 border border-white/5"><p className="text-[10px] text-slate-500 uppercase font-bold">Stock</p><p className={`text-lg font-black ${part.stock <= part.reorderPoint ? 'text-amber-500' : 'text-white'}`}>{part.stock}</p></div>
+          <div className="bg-slate-950 rounded-xl p-3 border border-white/5">
+            <p className="text-[10px] text-slate-500 uppercase font-bold">Всего</p>
+            <p className={`text-lg font-black ${part.stock <= part.reorderPoint ? 'text-amber-500' : 'text-white'}`}>{part.stock}</p>
+            {handedOut > 0 && <p className="text-[10px] font-bold text-slate-500">на полке {shelfQty(part)}</p>}
+          </div>
           <div className="bg-slate-950 rounded-xl p-3 border border-white/5"><p className="text-[10px] text-slate-500 uppercase font-bold">Cost</p><p className="text-lg font-black text-amber-400">{part.cost != null ? money(part.cost) : '—'}</p></div>
           <div className="bg-slate-950 rounded-xl p-3 border border-white/5"><p className="text-[10px] text-slate-500 uppercase font-bold">Price</p><p className="text-lg font-black text-green-400">{money(part.price)}</p></div>
           <div className="bg-slate-950 rounded-xl p-3 border border-white/5"><p className="text-[10px] text-slate-500 uppercase font-bold">Margin</p><p className="text-lg font-black text-white">{mp != null ? `${mp}%` : '—'}</p></div>
         </div>
+
+        {(handedOut > 0 || canHandOut) && (
+          <div className="bg-slate-950 border border-white/10 rounded-xl p-3 space-y-2">
+            <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">У кого на руках</p>
+            {handedOut === 0
+              ? <p className="text-sm text-slate-500">Всё на полке — никому не выдано.</p>
+              : (
+                <div className="flex flex-wrap gap-1.5">
+                  {Object.entries(heldOf(part)).filter(([, n]) => n > 0).map(([uid, n]) => (
+                    <span key={uid} className="flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-lg px-2.5 py-1 text-xs font-bold text-slate-200">
+                      {techs.find(t => t.id === uid)?.name || uid}
+                      <span className="text-blue-300 font-mono">{n}</span>
+                      {canHandOut && (
+                        <button onClick={() => onTransfer(uid, -1)} title="Вернуть 1 на склад"
+                          className="text-slate-500 hover:text-red-400 -mr-0.5">
+                          <Minus size={12} />
+                        </button>
+                      )}
+                    </span>
+                  ))}
+                </div>
+              )}
+            {canHandOut && techs.length > 0 && (
+              <div className="flex gap-1.5 pt-1">
+                <select value={handTo} onChange={e => setHandTo(e.target.value)}
+                  className="flex-1 min-w-0 bg-slate-900 border border-white/10 rounded-lg px-2.5 py-2 text-sm text-white outline-none focus:border-blue-500/50 [&>option]:bg-slate-900">
+                  <option value="">Кому выдать…</option>
+                  {techs.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                </select>
+                <input value={handQty} onChange={e => setHandQty(e.target.value)} type="number" min={1} placeholder="Кол-во"
+                  className="w-20 bg-slate-900 border border-white/10 rounded-lg px-2.5 py-2 text-sm text-white outline-none focus:border-blue-500/50" />
+                <button
+                  onClick={() => { const n = parseInt(handQty, 10); if (handTo && n > 0) { onTransfer(handTo, n); setHandQty(''); } }}
+                  disabled={!handTo || !(parseInt(handQty, 10) > 0) || shelfQty(part) <= 0}
+                  className="px-3 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed">
+                  Выдать
+                </button>
+              </div>
+            )}
+            {canHandOut && techs.length === 0 && (
+              <p className="text-[11px] text-slate-500">Некому выдавать — в команде нет активных техников.</p>
+            )}
+            {canHandOut && techs.length > 0 && shelfQty(part) <= 0 && handedOut > 0 && (
+              <p className="text-[11px] text-amber-400/80">На полке пусто — всё на руках у техников.</p>
+            )}
+          </div>
+        )}
 
         {canEdit && (
           <div className="space-y-3">

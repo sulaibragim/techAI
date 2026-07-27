@@ -283,7 +283,9 @@ export const can = {
   viewAccounting: (r: Role) => r === 'owner' || r === 'manager' || r === 'accountant',
   viewCalls:      (r: Role) => r === 'owner' || r === 'manager',
   viewMessages:   (r: Role) => r === 'owner' || r === 'manager',
-  editInventory:  (r: Role) => r === 'owner' || r === 'manager',
+  editInventory:  (r: Role) => r === 'owner' || r === 'manager' || r === 'warehouse',
+  // Handing stock to a technician is a warehouse job, not a money or client job.
+  handOutStock:   (r: Role) => r === 'owner' || r === 'manager' || r === 'warehouse',
   viewAudit:      (r: Role) => r === 'owner',
   useAIBrain:     (r: Role) => r === 'owner' || r === 'manager',
 };
@@ -292,6 +294,8 @@ export const can = {
 export const visibleTabsFor = (r: Role): string[] => {
   if (r === 'technician') return ['calendar', 'jobs', 'autokey', 'inventory', 'settings'];
   if (r === 'accountant') return ['accounting', 'analytics', 'settings'];
+  // The кладовщик lives on one screen: the shelf. No clients, no money, no messages.
+  if (r === 'warehouse')  return ['inventory', 'settings'];
   if (r === 'manager')    return ['calendar', 'jobs', 'messages', 'calls', 'clients', 'analytics', 'accounting', 'marketing', 'autokey', 'inventory', 'brain', 'settings'];
   return ['calendar', 'jobs', 'messages', 'calls', 'clients', 'analytics', 'accounting', 'marketing', 'autokey', 'inventory', 'brain', 'settings'];
 };
@@ -301,4 +305,5 @@ export const ROLE_LABELS: Record<Role, string> = {
   manager: 'Manager',
   technician: 'Technician',
   accountant: 'Accountant',
+  warehouse: 'Кладовщик',
 };

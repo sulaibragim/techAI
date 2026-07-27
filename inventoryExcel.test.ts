@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { autoMap, buildRows, findHeaderIdx, guessTarget } from './inventoryExcel';
+import { autoMap, buildRows, findHeaderIdx, guessTarget, looksLikePurchaseLog } from './inventoryExcel';
 import type { Part } from './types';
 
 // The headers and rows below are copied verbatim from the real "Локсмит_Склад.xlsx" the
@@ -38,10 +38,19 @@ const mapOf = (sheet: any[][]) => {
 };
 
 describe('guessTarget', () => {
-  it('tells the three sheets of a real locksmith workbook apart', () => {
+  it('tells consumables from equipment', () => {
     expect(guessTarget('Ключи — склад', KEYS_SHEET[2])).toBe('stock');
     expect(guessTarget('Инструменты', TOOLS_SHEET[2])).toBe('tools');
-    expect(guessTarget('Лог закупок', LOG_SHEET[2])).toBe('expenses');
+  });
+});
+
+describe('looksLikePurchaseLog', () => {
+  // The money log is refused rather than imported: its quantities are everything ever
+  // bought, so importing it as stock would add years of purchases to today's shelf.
+  it('recognises the purchase log and nothing else', () => {
+    expect(looksLikePurchaseLog('Лог закупок', LOG_SHEET[2])).toBe(true);
+    expect(looksLikePurchaseLog('Ключи — склад', KEYS_SHEET[2])).toBe(false);
+    expect(looksLikePurchaseLog('Инструменты', TOOLS_SHEET[2])).toBe(false);
   });
 });
 
@@ -108,17 +117,11 @@ describe('tools sheet', () => {
   });
 });
 
-describe('purchase log', () => {
-  it('maps the invoice number, keeps a negative discount, and drops the totals row', () => {
+describe('totals rows', () => {
+  it('drops a trailing ИТОГО line, which has no position and no code', () => {
     const { hi, map } = mapOf(LOG_SHEET);
-    expect(map.sku).toBe(2);      // Инвойс №
-    expect(map.name).toBe(3);     // Позиция
-    expect(map.cost).toBe(5);     // Цена ед $
-    expect(map.category).toBe(7);
-
     const rows = buildRows(LOG_SHEET, hi, map, []);
-    expect(rows).toHaveLength(2); // the ИТОГО line has no position and no invoice
-    expect(rows[0]).toMatchObject({ name: 'Autel XP400 Pro EEPROM/ECU', sku: '169133', cost: 335 });
-    expect(rows[1].cost).toBeCloseTo(-136.86);
+    expect(rows).toHaveLength(2);
+    expect(rows.some(r => /ИТОГО/i.test(r.name))).toBe(false);
   });
 });

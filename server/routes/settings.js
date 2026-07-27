@@ -10,6 +10,10 @@ export const settingsRouter = Router();
 // the owner's books and must not ship to every tech's phone just because they hold a token.
 const TECH_HIDDEN_KEYS = ['expenses', 'stockMovements', 'monthlyTargets', 'aiMemories'];
 
+// The кладовщик works the shelf: he needs the stock ledger (it IS his work) but has no
+// business holding the expense book, revenue targets or the customer base.
+const WAREHOUSE_HIDDEN_KEYS = ['expenses', 'monthlyTargets', 'techTargets', 'aiMemories'];
+
 // Client profiles are keyed by the last 10 digits of the phone number.
 const last10 = (p) => String(p || '').replace(/\D/g, '').slice(-10);
 
@@ -53,6 +57,10 @@ settingsRouter.get('/', requireAuth, async (req, res) => {
       // manager note" — for the WHOLE customer base. A technician needs the profile of
       // the people they are actually visiting, not everyone the company has ever served.
       value.clientProfiles = await profilesForTech(req.user.id, value.clientProfiles);
+    }
+    if (req.user.role === 'warehouse') {
+      for (const k of WAREHOUSE_HIDDEN_KEYS) delete value[k];
+      value.clientProfiles = {};
     }
     res.json(value);
   } catch (err) {

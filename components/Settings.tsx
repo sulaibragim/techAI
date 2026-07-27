@@ -244,7 +244,7 @@ export const Settings: React.FC = () => {
           {currentUser && <SignaturePad />}
         </Section>
 
-        {currentUser && currentUser.role !== 'technician' && <Section icon={Building2} title="Company Info">
+        {currentUser && isBackOffice(currentUser.role) && <Section icon={Building2} title="Company Info">
           <div>
             <label className={labelCls}>Street Address</label>
             <input
@@ -313,7 +313,7 @@ export const Settings: React.FC = () => {
           </div>
         </Section>}
 
-        {currentUser && currentUser.role !== 'technician' && <Section icon={MessageSquare} title="Client Messages">
+        {currentUser && isBackOffice(currentUser.role) && <Section icon={MessageSquare} title="Client Messages">
           <p className="text-xs text-slate-400 -mt-1">
             Automatic texts the customer receives. Turn off anything you don’t want them to get — manual buttons (On My Way, pay link, receipt, review) are never affected.
           </p>
@@ -348,7 +348,7 @@ export const Settings: React.FC = () => {
           </div>
         </Section>}
 
-        {currentUser && currentUser.role !== 'technician' && <Section icon={BellRing} title="Notifications to us">
+        {currentUser && isBackOffice(currentUser.role) && <Section icon={BellRing} title="Notifications to us">
           <p className="text-xs text-slate-400 -mt-1">
             Automatic messages the <span className="text-white font-semibold">team</span> receives — not the customer. Turning one off stops that alert for everyone; nothing here changes what clients get.
           </p>
@@ -383,7 +383,7 @@ export const Settings: React.FC = () => {
           </div>
         </Section>}
 
-        {currentUser && currentUser.role !== 'technician' && <Section icon={Target} title="Business Targets">
+        {currentUser && isBackOffice(currentUser.role) && <Section icon={Target} title="Business Targets">
           <div>
             <label className={labelCls}>Monthly Revenue Target ($)</label>
             <input
@@ -415,7 +415,7 @@ export const Settings: React.FC = () => {
 
         {currentUser && (currentUser.role === 'owner' || currentUser.role === 'manager') && <MemoriesSection />}
 
-        {currentUser && currentUser.role !== 'technician' && <Section icon={Key} title="AI Configuration">
+        {currentUser && isBackOffice(currentUser.role) && <Section icon={Key} title="AI Configuration">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-sm font-semibold text-white">AI Brain</p>
@@ -650,7 +650,11 @@ const MemoriesSection: React.FC = () => {
   );
 };
 
-const ROLES: Role[] = ['owner', 'manager', 'technician', 'accountant'];
+const ROLES: Role[] = ['owner', 'manager', 'technician', 'accountant', 'warehouse'];
+
+// Who sees the company-wide sections (identity, targets, AI, automatic texts). A technician
+// and a кладовщик both work one screen and neither runs the business.
+const isBackOffice = (r: Role) => r !== 'technician' && r !== 'warehouse';
 
 // Hand-drawn signature saved to the user's profile — it gets stamped onto the
 // Technician line of every invoice for jobs assigned to them. Until one is drawn,

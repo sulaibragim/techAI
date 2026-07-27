@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { Job, JobStatus, MissedInteraction, Message, CallRecord, LineItem, Part, TabId, StockMovementType } from './types';
+import { Job, JobStatus, MissedInteraction, Message, CallRecord, LineItem, Part, TabId, StockMovementType, nextHeldFor } from './types';
 import { useAuthStore } from './authStore';
 import { useSettingsStore } from './settingsStore';
 import { API_BASE } from './backendUrl';
@@ -117,6 +117,8 @@ interface AppState {
   receiveStock: (partId: string, qty: number, unitCost: number, opts?: { supplierName?: string; location?: string; note?: string; logExpense?: boolean }) => void;
   adjustStockTo: (partId: string, newCount: number, opts?: { type?: 'adjust' | 'loss'; note?: string; location?: string }) => void;
   consumePart: (partId: string, qty: number, jobId?: string) => void;
+  /** Hand parts to a technician (or take them back with a negative qty). Total stock unchanged. */
+  transferToTech: (partId: string, toUserId: string, qty: number) => void;
   returnPart: (partId: string, qty: number, jobId?: string) => void;
   clearMissed: (id: string) => void;
   syncJobs: () => Promise<void>;
@@ -265,11 +267,44 @@ export const useAppStore = create<AppState>()(
       userId: user?.id, userName: user?.name, timestamp: new Date().toISOString(),
     });
   },
+  transferToTech: (partId, toUserId, qty) => {
+    if (!toUserId || !qty) return;
+    const part = get().inventory.find(p => p.id === partId);
+    if (!part) return;
+    const held = { ...(part.held || {}) };
+    const current = held[toUserId] || 0;
+    const next = nextHeldFor(part, toUserId, qty);
+    const moved = next - current;
+    if (moved === 0) return;
+    if (next === 0) delete held[toUserId]; else held[toUserId] = next;
+    set((state) => ({ inventory: state.inventory.map(p => p.id === partId ? { ...p, held } : p) }));
+
+    const auth = useAuthStore.getState();
+    const user = auth.users.find(u => u.id === auth.currentUserId);
+    const target = auth.users.find(u => u.id === toUserId);
+    void sendWrite({
+      url: `/api/inventory/${partId}/transfer`, method: 'POST',
+      body: { toUserId, qty: moved },
+      label: `the handover of ${part.name || part.sku || 'this part'}`,
+    });
+    useSettingsStore.getState().addStockMovement({
+      partId, partName: part.name, type: 'transfer', qty: moved, unitCost: part.cost,
+      location: part.location || 'shop', toUserId, toUserName: target?.name,
+      note: moved > 0 ? `Выдано: ${target?.name || toUserId}` : `Возврат от ${target?.name || toUserId}`,
+      userId: user?.id, userName: user?.name, timestamp: new Date().toISOString(),
+    });
+  },
   consumePart: (partId, qty, jobId) => {
     if (qty <= 0) return;
     const part = get().inventory.find(p => p.id === partId);
     if (!part) return;
-    const updated: Part = { ...part, stock: Math.max(0, (part.stock || 0) - qty) };
+    // Mirror the server: a technician spends out of their own van, so their held count
+    // drops with the total. Anyone else is standing at the shelf.
+    const actor = useAuthStore.getState();
+    const me = actor.users.find(u => u.id === actor.currentUserId);
+    const held = { ...(part.held || {}) };
+    if (me?.role === 'technician' && me.id) held[me.id] = Math.max(0, (held[me.id] || 0) - qty);
+    const updated: Part = { ...part, stock: Math.max(0, (part.stock || 0) - qty), held };
     set((state) => ({ inventory: state.inventory.map(p => p.id === partId ? updated : p) }));
     // Signed delta, not an absolute count: technicians aren't allowed to PUT a whole part
     // (that 403 used to be swallowed, so the shelf count silently drifted high), and a

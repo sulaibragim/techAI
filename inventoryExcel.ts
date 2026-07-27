@@ -33,8 +33,9 @@ export interface ColumnMap {
 export type MapField = keyof ColumnMap;
 
 // What the sheet being imported actually is. Each target reads a different set of columns
-// and has different consequences, so the user picks it explicitly.
-export type ImportTarget = 'stock' | 'tools' | 'expenses';
+// and has different consequences, so the user picks it explicitly. A purchase log is
+// deliberately NOT importable — see looksLikePurchaseLog below.
+export type ImportTarget = 'stock' | 'tools';
 
 const COMMON_FIELDS: { key: MapField; label: string; required?: boolean }[] = [
   { key: 'name', label: 'Название', required: true },
@@ -60,15 +61,6 @@ export const MAP_FIELDS_BY_TARGET: Record<ImportTarget, { key: MapField; label: 
     { key: 'warranty', label: 'Гарантия' },
     { key: 'date', label: 'Дата покупки' },
     { key: 'note', label: 'Заметки' },
-  ],
-  expenses: [
-    { key: 'name', label: 'Позиция', required: true },
-    { key: 'date', label: 'Дата' },
-    { key: 'supplier', label: 'Поставщик' },
-    { key: 'sku', label: 'Инвойс №' },
-    { key: 'category', label: 'Категория' },
-    { key: 'stock', label: 'Кол-во' },
-    { key: 'cost', label: 'Цена за единицу' },
   ],
 };
 
@@ -102,9 +94,17 @@ const KEYWORDS: Record<MapField, RegExp> = {
 export function guessTarget(sheetName: string, header: Grid[number]): ImportTarget {
   const labels = (header || []).map(c => cell(c)).join(' | ');
   const hay = `${sheetName} | ${labels}`;
-  if (/инвойс|invoice|лог\s*закуп|purchase\s*log|сумма/i.test(hay)) return 'expenses';
   if (/инструмент|оборудован|tool|equip|гарант|куплено|серийн/i.test(hay)) return 'tools';
   return 'stock';
+}
+
+// A purchase log is a money document, not a shelf: its quantities are what was bought over
+// time, not what is on hand, so importing it as stock adds every historical purchase to
+// today's count. It also carries discount and tax lines that aren't parts at all. We don't
+// import it — we say so, loudly, when someone picks that sheet.
+export function looksLikePurchaseLog(sheetName: string, header: Grid[number]): boolean {
+  const hay = `${sheetName} | ${(header || []).map(c => cell(c)).join(' | ')}`;
+  return /инвойс|invoice|лог\s*закуп|purchase\s*log|сумма\s*\$/i.test(hay);
 }
 
 const cell = (v: any) => (v === null || v === undefined ? '' : String(v)).trim();

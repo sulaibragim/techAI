@@ -1,6 +1,8 @@
 export type TabId = 'calendar' | 'jobs' | 'messages' | 'calls' | 'clients' | 'analytics' | 'accounting' | 'marketing' | 'autokey' | 'inventory' | 'brain' | 'settings';
 
-export type Role = 'owner' | 'manager' | 'technician' | 'accountant';
+// 'warehouse' = кладовщик. He books purchases into stock and hands parts out to the
+// technicians. Deliberately blind to clients, money and messages — see visibleTabsFor.
+export type Role = 'owner' | 'manager' | 'technician' | 'accountant' | 'warehouse';
 export type TechStatus = 'available' | 'onJob' | 'offDuty';
 
 export interface User {
@@ -69,7 +71,11 @@ export interface Part {
   mpn?: string;             // manufacturer part number (артикул завода)
   upc?: string;             // barcode (штрихкод) — scannable, universal
   photo?: string;           // small base64 thumbnail so techs recognise it on the phone
-  location?: string;        // where this stock lives — 'shop' for now; per-van is the Wave 3 hook
+  location?: string;        // default home of this stock — 'shop' unless it lives in a van
+  // Who is carrying our stock right now: userId → quantity in that technician's van.
+  // `stock` stays the TOTAL we own; what's left on the shelf is stock − sum(held).
+  // Handing a part to a tech doesn't change what the company owns, only where it is.
+  held?: Record<string, number>;
   // ── tool-only ──
   owned?: boolean;          // false = план закупки, not in hand. Only read when kind === 'tool'.
   serial?: string;          // серийный номер
@@ -90,7 +96,8 @@ export type StockMovementType =
   | 'sale'      // sold on a job / расход (−)
   | 'return'    // came back from a job / возврат (+)
   | 'adjust'    // stocktake correction / инвентаризация (±)
-  | 'loss';     // broken, lost, miscut / брак-потеря (−)
+  | 'loss'      // broken, lost, miscut / брак-потеря (−)
+  | 'transfer'; // handed to a tech / выдача в фургон (total unchanged, location moves)
 
 export const MOVEMENT_META: Record<StockMovementType, { label: string; tone: 'in' | 'out' | 'neutral' }> = {
   receive: { label: 'Received',   tone: 'in' },
@@ -98,6 +105,27 @@ export const MOVEMENT_META: Record<StockMovementType, { label: string; tone: 'in
   return:  { label: 'Returned',   tone: 'in' },
   adjust:  { label: 'Adjusted',   tone: 'neutral' },
   loss:    { label: 'Loss',       tone: 'out' },
+  transfer:{ label: 'Выдано',     tone: 'neutral' },
+};
+
+/** Who is carrying this part, always a map (never undefined) so callers can just read it. */
+export const heldOf = (p: Part): Record<string, number> => p.held ?? {};
+/** Total handed out to technicians. */
+export const heldTotal = (p: Part) => Object.values(heldOf(p)).reduce((a, n) => a + (n || 0), 0);
+/** How many units are still on the shelf — the total minus whatever the techs carry. */
+export const shelfQty = (p: Part) => Math.max(0, (p.stock || 0) - heldTotal(p));
+
+/**
+ * What a technician's held count becomes after handing them `qty` (negative = taking it
+ * back). Clamped twice, because both mistakes are easy to make in a hurry: you cannot hand
+ * out what isn't on the shelf, and you cannot take back more than that person is carrying.
+ * The server mirrors this in SQL — see POST /api/inventory/:id/transfer.
+ */
+export const nextHeldFor = (p: Part, userId: string, qty: number): number => {
+  const held = heldOf(p);
+  const current = held[userId] || 0;
+  const others = heldTotal(p) - current;
+  return Math.max(0, Math.min(current + qty, Math.max(0, (p.stock || 0) - others)));
 };
 
 export interface StockMovement {
@@ -109,6 +137,8 @@ export interface StockMovement {
   unitCost?: number;      // cost basis at the time (receive/sale) for valuation
   location?: string;      // van/shop the movement happened at
   jobId?: string;         // set for sale/return
+  toUserId?: string;      // set for transfer — the technician who took it
+  toUserName?: string;
   supplierName?: string;  // set for receive (formal Supplier records come in Wave 2)
   note?: string;
   userId?: string;
