@@ -64,6 +64,7 @@ export const Inventory: React.FC = () => {
   } = useAppStore();
   const movements = useSettingsStore(s => s.stockMovements);
   const addExpense = useSettingsStore(s => s.addExpense);
+  const setMovementDispute = useSettingsStore(s => s.setMovementDispute);
   const supplierAliases = useSettingsStore(s => s.supplierAliases);
   const importedInvoices = useSettingsStore(s => s.importedInvoices);
   const aiAvailable = useSettingsStore(s => s.aiAvailable);
@@ -303,6 +304,8 @@ export const Inventory: React.FC = () => {
       .reduce((a, m) => a + Math.abs(m.qty) * (m.unitCost ?? 0), 0);
   }, [movements]);
 
+  const disputes = useMemo(() => movements.filter(m => m.disputed), [movements]);
+
   const drawerPart = drawerId ? inventory.find(p => p.id === drawerId) ?? null : null;
 
   const openEditor = (part?: Part) => {
@@ -368,6 +371,26 @@ export const Inventory: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* A disputed handover must not need someone to open every part to find it. */}
+      {canHandOut && disputes.length > 0 && (
+        <div className="bg-red-500/[0.07] border border-red-500/25 rounded-2xl p-4 space-y-2">
+          <p className="text-sm font-bold text-red-300 flex items-center gap-2">
+            <TriangleAlert size={15} />
+            Спорные выдачи: {disputes.length}
+          </p>
+          {disputes.slice(0, 4).map(m => (
+            <button key={m.id} onClick={() => setDrawerId(m.partId)}
+              className="w-full text-left text-xs text-slate-300 hover:text-white flex flex-wrap gap-x-2">
+              <span className="font-semibold">{m.disputed?.byName}</span>
+              <span className="text-slate-500">не получал</span>
+              <span className="font-mono text-blue-300">{m.qty}×</span>
+              <span className="truncate">{m.partName}</span>
+              <span className="text-slate-600">{new Date(m.timestamp).toLocaleDateString()}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* METRICS */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -606,6 +629,11 @@ export const Inventory: React.FC = () => {
             canHandOut={canHandOut && isStockPart(drawerPart)}
             techs={techs}
             onTransfer={(toUserId, qty) => transferToTech(drawerPart.id, toUserId, qty)}
+            meId={myId}
+            onDispute={(movementId, disputed) => setMovementDispute(
+              movementId,
+              disputed && currentUser ? { by: currentUser.id, byName: currentUser.name, at: new Date().toISOString() } : undefined
+            )}
           />
         )}
       </AnimatePresence>
@@ -837,13 +865,18 @@ const PartDrawer: React.FC<{
   canHandOut: boolean;
   techs: { id: string; name: string }[];
   onTransfer: (toUserId: string, qty: number) => void;
-}> = ({ part, movements, canEdit, onClose, onEdit, onReceive, onCount, onLoss, onDelete, canHandOut, techs, onTransfer }) => {
+  meId: string;
+  onDispute: (movementId: string, disputed: boolean) => void;
+}> = ({ part, movements, canEdit, onClose, onEdit, onReceive, onCount, onLoss, onDelete, canHandOut, techs, onTransfer, meId, onDispute }) => {
   const [countVal, setCountVal] = useState('');
   const [lossVal, setLossVal] = useState('');
   const [handTo, setHandTo] = useState('');
   const [handQty, setHandQty] = useState('');
   const mp = marginPct(part.price, part.cost);
   const handedOut = heldTotal(part);
+  // Only the person a handover was addressed to can say it never arrived, and only once.
+  const canDispute = (m: StockMovement) =>
+    m.type === 'transfer' && m.qty > 0 && m.toUserId === meId && !m.disputed;
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -968,6 +1001,26 @@ const PartDrawer: React.FC<{
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-white">{meta.label}{detail ? <span className="text-slate-500"> · {detail}</span> : ''}</p>
                     <p className="text-[11px] text-slate-500">{new Date(m.timestamp).toLocaleDateString()}{m.userName ? ` · ${m.userName}` : ''}</p>
+                    {m.disputed && (
+                      <p className="text-[11px] font-bold text-red-400 mt-0.5">
+                        <TriangleAlert size={11} className="inline -mt-0.5 mr-1" />
+                        {m.disputed.byName} не получал
+                      </p>
+                    )}
+                    {canDispute(m) && (
+                      <button onClick={() => onDispute(m.id, true)}
+                        className="text-[11px] font-bold text-slate-500 hover:text-red-400 mt-0.5">
+                        Не получал
+                      </button>
+                    )}
+                    {m.disputed && canHandOut && (
+                      <div className="flex gap-3 mt-1">
+                        <button onClick={() => { onTransfer(m.toUserId || '', -m.qty); onDispute(m.id, false); }}
+                          className="text-[11px] font-bold text-blue-300 hover:text-blue-200">Вернуть на склад</button>
+                        <button onClick={() => onDispute(m.id, false)}
+                          className="text-[11px] font-bold text-slate-500 hover:text-white">Всё верно</button>
+                      </div>
+                    )}
                   </div>
                   <span className={`font-mono text-sm font-bold shrink-0 ${tone}`}>{m.qty >= 0 ? '+' : ''}{m.qty}</span>
                 </div>

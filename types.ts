@@ -139,6 +139,9 @@ export interface StockMovement {
   jobId?: string;         // set for sale/return
   toUserId?: string;      // set for transfer — the technician who took it
   toUserName?: string;
+  // A technician saying "this never reached me". The numbers do NOT move on his word
+  // alone — the flag is a claim, and whoever runs the shelf resolves it.
+  disputed?: { by: string; byName: string; at: string };
   supplierName?: string;  // set for receive (formal Supplier records come in Wave 2)
   note?: string;
   userId?: string;

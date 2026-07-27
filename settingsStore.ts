@@ -32,7 +32,7 @@ export interface SettingsState {
   staffNotify: StaffNotifySettings; // owner switches for automatic messages to US, not clients
   onboardingComplete: boolean;
   aiAvailable: boolean; // runtime flag: is GEMINI_API_KEY configured on the server?
-  updateSettings: (patch: Partial<Omit<SettingsState, 'updateSettings' | 'resetSettings' | 'setMonthlyTarget' | 'setTechTarget' | 'addExpense' | 'removeExpense' | 'addStockMovement' | 'clearStockLedger' | 'addServiceRate' | 'updateServiceRate' | 'removeServiceRate' | 'upsertClientProfile' | 'addAiMemory' | 'removeAiMemory' | 'syncSettings' | 'checkAiAvailable' | 'aiAvailable'>>) => void;
+  updateSettings: (patch: Partial<Omit<SettingsState, 'updateSettings' | 'resetSettings' | 'setMonthlyTarget' | 'setTechTarget' | 'addExpense' | 'removeExpense' | 'addStockMovement' | 'clearStockLedger' | 'setMovementDispute' | 'addServiceRate' | 'updateServiceRate' | 'removeServiceRate' | 'upsertClientProfile' | 'addAiMemory' | 'removeAiMemory' | 'syncSettings' | 'checkAiAvailable' | 'aiAvailable'>>) => void;
   setMonthlyTarget: (monthKey: string, value: number) => void;
   setTechTarget: (userId: string, value: number) => void;
   addExpense: (expense: Omit<Expense, 'id'>) => void;
@@ -40,6 +40,8 @@ export interface SettingsState {
   addStockMovement: (movement: Omit<StockMovement, 'id'>) => void;
   /** Local half of a catalog wipe. The server clears its own copy in DELETE /api/inventory. */
   clearStockLedger: () => void;
+  /** A technician disputes a handover, or the shelf owner clears the flag. */
+  setMovementDispute: (id: string, dispute: StockMovement['disputed']) => void;
   addServiceRate: (rate: Omit<ServiceRate, 'id'>) => void;
   updateServiceRate: (rate: ServiceRate) => void;
   removeServiceRate: (id: string) => void;
@@ -187,6 +189,17 @@ export const useSettingsStore = create<SettingsState>()(
       // No pushToServer here: settings writes are deltas that the server UNIONS in, so an
       // empty array would be a no-op. The wipe endpoint clears the server ledger itself.
       clearStockLedger: () => set({ stockMovements: [] }),
+
+      // Re-pushing an entry under its existing id replaces the server's copy (unionById
+      // takes the incoming one first), so a disputed flag reaches every device.
+      setMovementDispute: (id, dispute) => {
+        const entry = get().stockMovements.find(m => m.id === id);
+        if (!entry) return;
+        const updated: StockMovement = { ...entry, disputed: dispute };
+        if (!dispute) delete updated.disputed;
+        set((state) => ({ stockMovements: state.stockMovements.map(m => m.id === id ? updated : m) }));
+        pushToServer({ stockMovements: [updated] });
+      },
 
       addServiceRate: (rate) => {
         const entry: ServiceRate = { ...rate, id: `rate-${Date.now()}-${Math.random().toString(36).slice(2, 7)}` };
