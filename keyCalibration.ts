@@ -34,8 +34,11 @@ export const KEY_GEOMETRY: Record<MasterKeyBrand, KeyGeometry> = {
   },
 };
 
-/** Blank space left of the shoulder and right of the last cut, as a share of the span. */
-const PAD = 0.12;
+// Asymmetric padding: the bow runs off the left edge anyway, so the room is spent on
+// the right instead — otherwise the tip lands exactly on the frame edge and there is
+// nowhere to draw a tip stop.
+const PAD_LEFT = 0.10;
+const PAD_RIGHT = 0.22;
 
 /** Blade sits a touch above the shallowest cut root — enough to show the uncut edge
  *  without claiming a blade height the spec sheets do not publish. */
@@ -69,9 +72,9 @@ export const overlayGeometry = (
   const spacing = chambers ? geo.spacing.slice(0, chambers) : geo.spacing;
   const lastCut = spacing[spacing.length - 1];
 
-  const span = lastCut * (1 + PAD * 2);
+  const span = lastCut * (1 + PAD_LEFT + PAD_RIGHT);
   const pxPerInch = frameW / span;
-  const shoulderX = lastCut * PAD * pxPerInch;
+  const shoulderX = lastCut * PAD_LEFT * pxPerInch;
 
   const depths = Object.keys(geo.rootDepths).map(Number).sort((a, b) => a - b);
   const shallowest = Math.max(...depths.map(d => geo.rootDepths[d]));

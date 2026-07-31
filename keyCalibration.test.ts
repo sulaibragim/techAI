@@ -133,3 +133,18 @@ describe('ghost blade outline', () => {
     expect(g.baselineY - g.bladeTopY).toBeGreaterThan(range);
   });
 });
+
+describe('tip stop visibility', () => {
+  it('leaves the tip inside the frame so a stop can be drawn on it', () => {
+    for (const b of ['kwikset-kw1', 'schlage-sc1', 'weiser'] as const) {
+      const g = overlayGeometry(b, 1000, 600);
+      expect(g.tipX).toBeLessThan(1000);
+      expect(1000 - g.tipX).toBeGreaterThan(20);
+    }
+  });
+
+  it('keeps the shoulder clear of the left edge for its bracket', () => {
+    const g = overlayGeometry('kwikset-kw1', 1000, 600);
+    expect(g.shoulderX).toBeGreaterThan(20);
+  });
+});
