@@ -31,6 +31,7 @@ const MarketingDashboard = lazy(() => import('./components/MarketingDashboard').
 const Settings = lazy(() => import('./components/Settings').then(m => ({ default: m.Settings })));
 const ClientsList = lazy(() => import('./components/ClientsList').then(m => ({ default: m.ClientsList })));
 const AutoKey = lazy(() => import('./components/AutoKey').then(m => ({ default: m.AutoKey })));
+const MasterKey = lazy(() => import('./components/MasterKey').then(m => ({ default: m.MasterKey })));
 const OnboardingWizard = lazy(() => import('./components/OnboardingWizard').then(m => ({ default: m.OnboardingWizard })));
 
 // Light, centered spinner shown while a code-split screen streams in.
@@ -278,6 +279,7 @@ const App: React.FC = () => {
               case 'accounting': return <Accounting onJobSelect={(job) => setSelectedJobId(job.id)} />;
               case 'marketing': return <MarketingDashboard />;
               case 'autokey': return <AutoKey />;
+              case 'masterkey': return <MasterKey />;
               case 'inventory': return <Inventory />;
               case 'brain': return <AIChat />;
               case 'settings': return <Settings />;

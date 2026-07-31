@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Calendar, Briefcase, BarChart2, Settings, LogOut, BrainCircuit, Phone, MessageSquare, AlertCircle, X, Activity, Package, Users, Receipt, KeyRound, Megaphone } from 'lucide-react';
+import { Calendar, Briefcase, BarChart2, Settings, LogOut, BrainCircuit, Phone, MessageSquare, AlertCircle, X, Activity, Package, Users, Receipt, KeyRound, Megaphone, Building2 } from 'lucide-react';
 import { useAppStore, useVisibleJobs } from '../store';
 import { useAuthStore, useCurrentUser, visibleTabsFor, ROLE_LABELS } from '../authStore';
 import { outstandingAmount } from '../financialUtils';
@@ -66,6 +66,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onTabChange }) => 
     { id: 'accounting', label: 'Accounting', icon: Receipt },
     { id: 'marketing', label: 'Marketing', icon: Megaphone },
     { id: 'autokey', label: 'Auto-Key', icon: KeyRound },
+    { id: 'masterkey', label: 'Master-Key', icon: Building2 },
     { id: 'inventory', label: 'Inventory', icon: Package },
     { id: 'brain', label: 'AI Brain', icon: BrainCircuit },
     { id: 'settings', label: 'Settings', icon: Settings },

@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { Calendar, Briefcase, BarChart2, BrainCircuit, MessageSquare, Phone, Package, Users, Settings, LogOut, Receipt, KeyRound, Megaphone } from 'lucide-react';
+import { Calendar, Briefcase, BarChart2, BrainCircuit, MessageSquare, Phone, Package, Users, Settings, LogOut, Receipt, KeyRound, Megaphone, Building2 } from 'lucide-react';
 import { useAuthStore, useCurrentUser, visibleTabsFor } from '../authStore';
 
 interface NavigationProps {
@@ -19,6 +19,7 @@ const TAB_META: Record<string, { label: string; icon: React.ComponentType<{ size
   accounting: { label: 'Books',    icon: Receipt },
   marketing:  { label: 'Ads',      icon: Megaphone },
   autokey:    { label: 'Keys',     icon: KeyRound },
+  masterkey:  { label: 'Master',   icon: Building2 },
   inventory:  { label: 'Stock',    icon: Package },
   brain:      { label: 'AI',       icon: BrainCircuit },
   settings:   { label: 'Settings', icon: Settings },

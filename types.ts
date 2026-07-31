@@ -1,4 +1,6 @@
-export type TabId = 'calendar' | 'jobs' | 'messages' | 'calls' | 'clients' | 'analytics' | 'accounting' | 'marketing' | 'autokey' | 'inventory' | 'brain' | 'settings';
+import type { MasterKeyBrand } from './masterKeyUtils';
+
+export type TabId = 'calendar' | 'jobs' | 'messages' | 'calls' | 'clients' | 'analytics' | 'accounting' | 'marketing' | 'autokey' | 'masterkey' | 'inventory' | 'brain' | 'settings';
 
 // 'warehouse' = кладовщик. He books purchases into stock and hands parts out to the
 // technicians. Deliberately blind to clients, money and messages — see visibleTabsFor.
@@ -537,4 +539,29 @@ export interface VehicleKeyProfile {
   sources?: string[];
   dataSource?: string;         // provenance label
   lastVerified?: string;       // ISO date
+}
+
+// --- Master-key systems (residential: one master over a flat list of doors) ---
+
+export type MasterKeyDoorStatus = 'planned' | 'inProgress' | 'pinned';
+
+export interface MasterKeyDoor {
+  id: string;
+  name: string;                // 'Кв. 2 — вход'
+  /** null in a slot means that depth has not been gauged yet. */
+  bitting: (number | null)[];
+  status: MasterKeyDoorStatus;
+  note?: string;
+}
+
+export interface MasterKeySystem {
+  id: string;
+  name: string;                // building or client label
+  address?: string;
+  brand: MasterKeyBrand;
+  chambers: number;
+  masterBitting: (number | null)[];
+  doors: MasterKeyDoor[];
+  createdAt: string;
+  updatedAt: string;
 }
