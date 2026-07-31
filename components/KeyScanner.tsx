@@ -33,6 +33,32 @@ const paintOverlay = (
   ctx.font = `${Math.round(13 * scale)}px system-ui, sans-serif`;
   ctx.textBaseline = 'middle';
 
+  // Ghost blade first, so the ruler and ticks read on top of it. Shows at a glance
+  // where the key goes: bottom edge on the baseline, shoulder on the left step.
+  const bowR = (g.baselineY - g.bladeTopY) * 0.85;
+  ctx.beginPath();
+  ctx.moveTo(g.shoulderX, g.bladeTopY);
+  ctx.lineTo(g.tipX - 10 * scale, g.bladeTopY);
+  ctx.lineTo(g.tipX, g.bladeTopY + 9 * scale);
+  ctx.lineTo(g.tipX, g.baselineY);
+  ctx.lineTo(g.shoulderX, g.baselineY);
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(255,255,255,0.07)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.30)';
+  ctx.setLineDash([6 * scale, 5 * scale]);
+  ctx.stroke();
+
+  // A hint of the bow running off the left edge — tells you which way round it goes.
+  ctx.beginPath();
+  ctx.moveTo(g.shoulderX, g.bladeTopY);
+  ctx.lineTo(g.shoulderX, g.baselineY);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(g.shoulderX - bowR * 0.5, (g.bladeTopY + g.baselineY) / 2, bowR, -Math.PI / 2.1, Math.PI / 2.1);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
   for (const { depth, y } of g.depthLines) {
     ctx.strokeStyle = 'rgba(96,165,250,0.55)';
     ctx.beginPath();

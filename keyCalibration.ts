@@ -37,6 +37,12 @@ export const KEY_GEOMETRY: Record<MasterKeyBrand, KeyGeometry> = {
 /** Blank space left of the shoulder and right of the last cut, as a share of the span. */
 const PAD = 0.12;
 
+/** Blade sits a touch above the shallowest cut root — enough to show the uncut edge
+ *  without claiming a blade height the spec sheets do not publish. */
+const BLADE_TOP_MARGIN = 0.012;
+/** How far the blade runs past the last cut before the tip. */
+const TIP_MARGIN = 0.1;
+
 export interface OverlayGeometry {
   pxPerInch: number;
   shoulderX: number;
@@ -44,6 +50,10 @@ export interface OverlayGeometry {
   cutXs: number[];
   /** The blade's bottom edge: everything is measured up from here. */
   baselineY: number;
+  /** Uncut top edge of the blade — the ghost outline's ceiling. */
+  bladeTopY: number;
+  /** Where the blade ends, for the ghost outline. */
+  tipX: number;
   /** Screen y of each depth number's root — the ruler the cut root is read against. */
   depthLines: { depth: number; y: number }[];
 }
@@ -74,6 +84,8 @@ export const overlayGeometry = (
     shoulderX,
     cutXs: spacing.map(s => shoulderX + s * pxPerInch),
     baselineY,
+    bladeTopY: baselineY - (shallowest + BLADE_TOP_MARGIN) * pxPerInch,
+    tipX: Math.min(frameW, shoulderX + (lastCut + TIP_MARGIN) * pxPerInch),
     depthLines: depths.map(d => ({ depth: d, y: baselineY - geo.rootDepths[d] * pxPerInch })),
   };
 };

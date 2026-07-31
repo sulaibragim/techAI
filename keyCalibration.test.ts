@@ -108,3 +108,28 @@ describe('parseKeyScan', () => {
     expect(parseKeyScan('{"depths":[1,1,1,1,1],"unsure":[0,3,99]}', 5).unsure).toEqual([3]);
   });
 });
+
+describe('ghost blade outline', () => {
+  it('puts the uncut top edge above every cut root', () => {
+    const g = overlayGeometry('kwikset-kw1', 1000, 600);
+    for (const l of g.depthLines) expect(g.bladeTopY).toBeLessThan(l.y);
+  });
+
+  it('runs the blade past the last cut but not off the frame', () => {
+    const g = overlayGeometry('kwikset-kw1', 1000, 600);
+    expect(g.tipX).toBeGreaterThan(g.cutXs[g.cutXs.length - 1]);
+    expect(g.tipX).toBeLessThanOrEqual(1000);
+  });
+
+  it('starts the blade at the shoulder, left of the first cut', () => {
+    const g = overlayGeometry('schlage-sc1', 1000, 600);
+    expect(g.shoulderX).toBeGreaterThan(0);
+    expect(g.shoulderX).toBeLessThan(g.cutXs[0]);
+  });
+
+  it('gives the blade a sane height — taller than the depth range it must contain', () => {
+    const g = overlayGeometry('kwikset-kw1', 1000, 600);
+    const range = Math.max(...g.depthLines.map(l => l.y)) - Math.min(...g.depthLines.map(l => l.y));
+    expect(g.baselineY - g.bladeTopY).toBeGreaterThan(range);
+  });
+});
