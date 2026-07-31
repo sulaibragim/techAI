@@ -50,11 +50,15 @@ const paintOverlay = (
   ctx.lineTo(w, g.baselineY);
   ctx.stroke();
 
+  // Ticks must clear the SHALLOWEST line — that is the highest one on screen, and
+  // depthLines is ordered by depth number, so the shallowest sits at index 0.
+  const topLineY = Math.min(...g.depthLines.map(l => l.y));
+
   g.cutXs.forEach((x, i) => {
     ctx.strokeStyle = 'rgba(251,191,36,0.95)';
     ctx.beginPath();
     ctx.moveTo(x, g.baselineY);
-    ctx.lineTo(x, g.depthLines[g.depthLines.length - 1].y - 22 * scale);
+    ctx.lineTo(x, topLineY - 10 * scale);
     ctx.stroke();
     ctx.fillStyle = 'rgba(253,224,71,1)';
     ctx.textAlign = 'center';
