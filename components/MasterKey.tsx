@@ -2,8 +2,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'motion/react';
 import {
   KeyRound, Plus, ChevronLeft, Trash2, AlertTriangle, CircleCheck,
-  Info, Building2, ChevronDown, ChevronRight, DoorClosed, Wand2, Package,
+  Info, Building2, ChevronDown, ChevronRight, DoorClosed, Wand2, Package, Camera,
 } from 'lucide-react';
+import { KeyScanner } from './KeyScanner';
 import { useMasterKeyStore } from '../masterKeyStore';
 import {
   BRAND_PRESETS, presetFor, calcPinning, findInterchange, formatBitting,
@@ -38,9 +39,11 @@ const BittingRow: React.FC<{
   minDepth: number;
   maxDepth: number;
   openIndex: number | null;
+  /** Positions filled by the camera and not yet confirmed against the gauge. */
+  draft?: Set<number>;
   onOpen: (i: number | null) => void;
   onPick: (i: number, d: number | null) => void;
-}> = ({ bitting, minDepth, maxDepth, openIndex, onOpen, onPick }) => {
+}> = ({ bitting, minDepth, maxDepth, openIndex, draft, onOpen, onPick }) => {
   const depths = Array.from({ length: maxDepth - minDepth + 1 }, (_, i) => minDepth + i);
   return (
     <div>
@@ -52,9 +55,11 @@ const BittingRow: React.FC<{
             className={`w-11 h-12 rounded-lg border text-lg font-bold tabular-nums transition-colors ${
               openIndex === i
                 ? 'border-blue-400 bg-blue-500/20 text-blue-300'
-                : d === null
-                  ? 'border-white/10 bg-slate-900/60 text-slate-600'
-                  : 'border-white/15 bg-slate-900/60 text-white'
+                : draft?.has(i)
+                  ? 'border-amber-400/70 bg-amber-500/10 text-amber-300'
+                  : d === null
+                    ? 'border-white/10 bg-slate-900/60 text-slate-600'
+                    : 'border-white/15 bg-slate-900/60 text-white'
             }`}
           >
             {d ?? '·'}
@@ -128,6 +133,17 @@ export const MasterKey: React.FC = () => {
     return () => clearTimeout(t);
   }, [confirmId]);
 
+  // Camera reads land as a draft: amber until each digit is confirmed on the gauge.
+  const [scanning, setScanning] = useState(false);
+  const [draft, setDraft] = useState<Set<number>>(new Set());
+  const [scanUnsure, setScanUnsure] = useState<number[]>([]);
+  const clearDraft = (i: number) => setDraft(prev => {
+    if (!prev.has(i)) return prev;
+    const n = new Set(prev);
+    n.delete(i);
+    return n;
+  });
+
   const [suggestFailed, setSuggestFailed] = useState(false);
   const suggest = () => {
     if (!system || !door || !masterComplete) return;
@@ -195,6 +211,22 @@ export const MasterKey: React.FC = () => {
   // --- Active system -------------------------------------------------------
   return (
     <div className="p-4 md:p-6 max-w-2xl mx-auto space-y-3 pb-24">
+      {scanning && door && (
+        <KeyScanner
+          brand={system.brand}
+          chambers={system.chambers}
+          brandName={`${preset.name} ${preset.keyway}`}
+          onClose={() => setScanning(false)}
+          onResult={(depths, unsure) => {
+            const clamped = depths.map(d => Math.min(preset.maxDepth, Math.max(preset.minDepth, Math.round(d))));
+            setDoorBitting(system.id, door.id, clamped);
+            setDraft(new Set(clamped.map((_, i) => i)));
+            setScanUnsure(unsure);
+            setScanning(false);
+          }}
+        />
+      )}
+
       <div className="flex items-center gap-2">
         <button onClick={() => setActive(null)} className="p-2 -ml-2 text-slate-400 hover:text-white">
           <ChevronLeft size={20} />
@@ -361,9 +393,39 @@ export const MasterKey: React.FC = () => {
               minDepth={preset.minDepth}
               maxDepth={preset.maxDepth}
               openIndex={editing?.target === door.id ? editing.index : null}
+              draft={draft}
               onOpen={i => setEditing(i === null ? null : { target: door.id, index: i })}
-              onPick={(i, d) => setDoorDepth(system.id, door.id, i, d)}
+              onPick={(i, d) => { setDoorDepth(system.id, door.id, i, d); clearDraft(i); }}
             />
+
+            {draft.size > 0 && (
+              <div className="mt-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3">
+                <div className="text-[12.5px] text-amber-300 font-semibold mb-1">
+                  Черновик с камеры — сверь калибром
+                </div>
+                <div className="text-[12px] text-slate-400">
+                  Жёлтые цифры ещё не подтверждены. Проверил позицию — ткни в неё и выбери ту же глубину, подсветка снимется.
+                  {scanUnsure.length > 0 && (
+                    <> Камера сама сомневается в позиц{scanUnsure.length > 1 ? 'иях' : 'ии'} <b className="text-amber-300">{scanUnsure.join(', ')}</b>.</>
+                  )}
+                </div>
+                <button
+                  onClick={() => { setDraft(new Set()); setScanUnsure([]); }}
+                  className="mt-2 px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 text-[12px] font-semibold active:scale-95 transition"
+                >
+                  Сверил всё
+                </button>
+              </div>
+            )}
+
+            <button
+              onClick={() => setScanning(true)}
+              className="flex items-center gap-2 mt-3 mr-2 px-3.5 py-2 rounded-xl bg-slate-900/60 border border-white/10 text-sm text-slate-300 hover:text-white hover:border-blue-500/40 active:scale-95 transition"
+            >
+              <Camera size={15} className="text-blue-400" />
+              Снять камерой
+            </button>
+
             <button
               onClick={suggest}
               disabled={!masterComplete}
