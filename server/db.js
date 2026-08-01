@@ -190,6 +190,18 @@ export async function initDB() {
         sent_at TIMESTAMPTZ DEFAULT NOW(),
         PRIMARY KEY (job_id, kind)
       );
+
+      -- Self-service password reset codes. One live code per user (a fresh request
+      -- overwrites the previous one). Only the bcrypt HASH of the 6-digit code is
+      -- stored, never the code itself; the row is deleted on use or expiry. Keyed by
+      -- user_id with ON DELETE CASCADE so a removed user drops any pending reset.
+      CREATE TABLE IF NOT EXISTS password_resets (
+        user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+        code_hash TEXT NOT NULL,
+        expires_at TIMESTAMPTZ NOT NULL,
+        attempts INTEGER NOT NULL DEFAULT 0,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
     `);
 
     // Seed ONE owner account, never a shared password. The old seed gave all three roles the

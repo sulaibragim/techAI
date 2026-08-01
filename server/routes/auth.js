@@ -2,8 +2,10 @@ import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import crypto from 'node:crypto';
 import { db } from '../db.js';
-import { signToken, requireAuth, requireRole } from '../middleware/auth.js';
+import { signToken, requireAuth, requireRole, invalidateUserCache } from '../middleware/auth.js';
 import { fulfillEtaRequest } from '../services/etaRequests.js';
+import { sendEmail, emailConfigured } from '../services/email.js';
+import { sendSMS } from '../services/openphone.js';
 
 export const authRouter = Router();
 
@@ -46,6 +48,120 @@ authRouter.post('/login', async (req, res) => {
     res.json({ user, token });
   } catch (err) {
     console.error('[AUTH] login error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Self-service password reset — step 1. Anyone can hit it (you're locked out, by
+// definition), so it must NOT reveal whether an email exists: it always returns the same
+// { ok: true } whether or not there's a matching account. If there is one, a fresh 6-digit
+// code is generated, its bcrypt hash stored (never the code), and the code delivered by
+// email if SMTP is configured, otherwise by SMS to the phone on file. Rate-limited in
+// index.js. This is the recovery path when no session exists anywhere and master-reset /
+// Settings → Team (both of which need a login) are unreachable.
+const RESET_CODE_TTL_MS = 15 * 60 * 1000;
+
+authRouter.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email required' });
+
+    const { rows } = await db.query(
+      'SELECT id, email, phone FROM users WHERE LOWER(TRIM(email)) = LOWER(TRIM($1)) AND active = true',
+      [email]
+    );
+    // Same response no matter what — never an account-enumeration oracle.
+    if (rows.length === 0) return res.json({ ok: true });
+    const user = rows[0];
+
+    const code = String(crypto.randomInt(0, 1000000)).padStart(6, '0');
+    const codeHash = await bcrypt.hash(code, 10);
+    const expiresAt = new Date(Date.now() + RESET_CODE_TTL_MS);
+    await db.query(
+      `INSERT INTO password_resets (user_id, code_hash, expires_at, attempts, created_at)
+       VALUES ($1, $2, $3, 0, NOW())
+       ON CONFLICT (user_id) DO UPDATE
+         SET code_hash = EXCLUDED.code_hash, expires_at = EXCLUDED.expires_at, attempts = 0, created_at = NOW()`,
+      [user.id, codeHash, expiresAt]
+    );
+
+    const subject = 'TrustKey password reset code';
+    const html = `<div style="font-family:system-ui,sans-serif;max-width:420px">
+      <h2 style="margin:0 0 8px">Password reset</h2>
+      <p style="color:#334155">Use this code to reset your TrustKey password. It expires in 15 minutes.</p>
+      <p style="font-size:28px;font-weight:700;letter-spacing:6px;margin:16px 0">${code}</p>
+      <p style="color:#64748b;font-size:12px">If you didn't request this, you can ignore this message — your password stays the same.</p>
+    </div>`;
+
+    let delivered = false;
+    if (emailConfigured()) {
+      delivered = await sendEmail({ to: user.email, subject, html });
+    }
+    if (!delivered && user.phone) {
+      const r = await sendSMS(user.phone, `TrustKey password reset code: ${code}. Expires in 15 minutes.`);
+      delivered = !!r;
+    }
+    if (!delivered) {
+      console.warn(`[AUTH] reset code generated for ${user.id} but no channel delivered it (email not configured, no/invalid phone)`);
+    }
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error('[AUTH] forgot-password error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Self-service password reset — step 2. Verifies the code and sets a new password.
+// The code is single-use, expires, and locks after 5 wrong tries. All "no good code"
+// paths return the same generic message so the endpoint reveals nothing.
+authRouter.post('/reset-password', async (req, res) => {
+  try {
+    const { email, code, password } = req.body;
+    if (!email || !code || !password) {
+      return res.status(400).json({ error: 'Email, code and new password are required' });
+    }
+    if (typeof password !== 'string' || password.length < MIN_PASSWORD_LENGTH) {
+      return res.status(400).json({ error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters` });
+    }
+
+    const { rows } = await db.query(
+      'SELECT id FROM users WHERE LOWER(TRIM(email)) = LOWER(TRIM($1)) AND active = true',
+      [email]
+    );
+    if (rows.length === 0) return res.status(400).json({ error: 'Invalid or expired code' });
+    const userId = rows[0].id;
+
+    const { rows: pr } = await db.query(
+      'SELECT code_hash, expires_at, attempts FROM password_resets WHERE user_id = $1',
+      [userId]
+    );
+    if (pr.length === 0) return res.status(400).json({ error: 'Invalid or expired code' });
+    const rec = pr[0];
+
+    if (new Date(rec.expires_at).getTime() < Date.now()) {
+      await db.query('DELETE FROM password_resets WHERE user_id = $1', [userId]);
+      return res.status(400).json({ error: 'Invalid or expired code' });
+    }
+    if (rec.attempts >= 5) {
+      await db.query('DELETE FROM password_resets WHERE user_id = $1', [userId]);
+      return res.status(429).json({ error: 'Too many attempts — request a new code' });
+    }
+
+    const ok = await bcrypt.compare(String(code).trim(), rec.code_hash);
+    if (!ok) {
+      await db.query('UPDATE password_resets SET attempts = attempts + 1 WHERE user_id = $1', [userId]);
+      return res.status(400).json({ error: 'Invalid or expired code' });
+    }
+
+    // Correct code — set the new password, consume the code, and drop any cached session
+    // state so nothing rides the old credential.
+    const hash = await bcrypt.hash(password, 10);
+    await db.query('UPDATE users SET password = $1 WHERE id = $2', [hash, userId]);
+    await db.query('DELETE FROM password_resets WHERE user_id = $1', [userId]);
+    invalidateUserCache(userId);
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error('[AUTH] reset-password error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

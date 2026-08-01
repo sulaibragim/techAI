@@ -99,6 +99,20 @@ const loginLimiter = rateLimit({
 });
 app.use('/api/auth/login', loginLimiter);
 
+// Password reset is unauthenticated (you're locked out by definition), so cap it hard to
+// stop code-guessing and SMS/email-bombing a victim's inbox. Covers both request-a-code
+// and submit-a-code. Per-account throttles (5 wrong codes, single live code) live in the
+// route; this is the per-IP flood guard.
+const resetLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 15,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many password reset attempts, try again later' },
+});
+app.use('/api/auth/forgot-password', resetLimiter);
+app.use('/api/auth/reset-password', resetLimiter);
+
 // Tighter limit on the public lead intake — it's unauthenticated, so cap the flood harder.
 const inboundLimiter = rateLimit({
   windowMs: 60 * 1000,

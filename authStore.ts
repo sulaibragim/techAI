@@ -46,6 +46,11 @@ interface AuthState {
   login: (email: string, password: string) => Promise<boolean>;
   loginAs: (userId: string) => void;
   logout: () => void;
+  /** Step 1 of self-service reset: ask the server to send a code. Returns null on success
+   *  (always, unless the request itself failed), or a message. Never reveals if the email exists. */
+  requestPasswordReset: (email: string) => Promise<string | null>;
+  /** Step 2: submit the emailed/texted code + a new password. Returns null on success, or a message. */
+  resetPassword: (email: string, code: string, newPassword: string) => Promise<string | null>;
   /** Owner-only. Returns one freshly generated password PER account, keyed by email. */
   masterReset: () => Promise<Record<string, string> | null>;
   /** Returns null on success, or a message to show the user. */
@@ -94,6 +99,31 @@ export const useAuthStore = create<AuthState>()(
         } catch {}
         // No offline fallback — authentication requires the server (security).
         return false;
+      },
+
+      requestPasswordReset: async (email) => {
+        try {
+          const res = await api('/forgot-password', { method: 'POST', body: JSON.stringify({ email }) });
+          if (res.ok) return null;
+          const detail = await res.json().catch(() => null);
+          return detail?.error || 'Could not start the password reset.';
+        } catch {
+          return 'No connection to the server — try again.';
+        }
+      },
+
+      resetPassword: async (email, code, newPassword) => {
+        try {
+          const res = await api('/reset-password', {
+            method: 'POST',
+            body: JSON.stringify({ email, code, password: newPassword }),
+          });
+          if (res.ok) return null;
+          const detail = await res.json().catch(() => null);
+          return detail?.error || 'Could not reset the password.';
+        } catch {
+          return 'No connection to the server — try again.';
+        }
       },
 
       loginAs: (userId) => set({ currentUserId: userId }),
