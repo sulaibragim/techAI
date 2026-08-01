@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Building2, Users, Target, ChevronRight, ChevronLeft, Check, Plus, Trash2, KeyRound } from 'lucide-react';
 import { useSettingsStore } from '../settingsStore';
-import { useAuthStore } from '../authStore';
+import { useAuthStore, MIN_PASSWORD_LENGTH } from '../authStore';
 
 type Step = 'company' | 'team' | 'targets';
 
@@ -13,8 +13,16 @@ const STEPS: { id: Step; label: string; icon: React.ReactNode }[] = [
 ];
 
 // Every tech gets their own generated password, shown to the owner to hand over. The wizard
-// used to create all of them with "1234" and print that on screen.
-const generatePassword = () => Math.random().toString(36).slice(2, 6) + Math.random().toString(36).slice(2, 6);
+// used to create all of them with "1234" and print that on screen. Length matters: the old
+// generator produced 8 characters while the server refuses anything under
+// MIN_PASSWORD_LENGTH (10), so every tech account the wizard "created" was silently
+// rejected — the owner handed out passwords for accounts that did not exist.
+const generatePassword = () => {
+  const chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  const buf = new Uint32Array(MIN_PASSWORD_LENGTH + 2);
+  crypto.getRandomValues(buf);
+  return Array.from(buf, n => chars[n % chars.length]).join('');
+};
 
 interface NewTech {
   name: string;
@@ -25,7 +33,7 @@ interface NewTech {
 
 export const OnboardingWizard: React.FC = () => {
   const { updateSettings } = useSettingsStore();
-  const { users, updateUser, addUser, removeUser } = useAuthStore();
+  const { users, updateUser, addUser, removeUser, changeOwnPassword } = useAuthStore();
   const owner = users.find(u => u.role === 'owner');
 
   const [step, setStep] = useState<Step>('company');
@@ -40,12 +48,15 @@ export const OnboardingWizard: React.FC = () => {
 
   const [ownerName, setOwnerName] = useState(owner?.name || '');
   const [ownerEmail, setOwnerEmail] = useState(owner?.email || '');
-  const [ownerPassword, setOwnerPassword] = useState(owner?.password || '');
+  const [ownerPassword, setOwnerPassword] = useState('');
+  const [ownerCurrentPassword, setOwnerCurrentPassword] = useState('');
 
   const [techs, setTechs] = useState<NewTech[]>([{ name: '', email: '', phone: '', password: generatePassword() }]);
 
   const [monthlyTarget, setMonthlyTarget] = useState(5000);
   const [dailyTarget, setDailyTarget] = useState(1500);
+  const [finishing, setFinishing] = useState(false);
+  const [finishError, setFinishError] = useState('');
 
   const addTech = () => setTechs(prev => [...prev, { name: '', email: '', phone: '', password: generatePassword() }]);
   const removeTech = (i: number) => setTechs(prev => prev.filter((_, idx) => idx !== i));
@@ -67,7 +78,74 @@ export const OnboardingWizard: React.FC = () => {
     if (stepIdx > 0) setStep(STEPS[stepIdx - 1].id);
   };
 
-  const finish = () => {
+  // Every server call is awaited and its verdict shown. The old version fired them all
+  // off and marked onboarding complete regardless, so a rejected account (or a rejected
+  // owner-password change) surfaced only at the next failed sign-in.
+  const finish = async () => {
+    setFinishError('');
+    const namedTechs = techs.filter(t => t.name.trim());
+
+    if (ownerPassword) {
+      if (ownerPassword.length < MIN_PASSWORD_LENGTH) {
+        setFinishError(`Your new password must be at least ${MIN_PASSWORD_LENGTH} characters.`);
+        setStep('team');
+        return;
+      }
+      if (!ownerCurrentPassword.trim()) {
+        setFinishError('Enter your current password to set a new one.');
+        setStep('team');
+        return;
+      }
+    }
+    const shortTech = namedTechs.find(t => (t.password || '').length < MIN_PASSWORD_LENGTH);
+    if (shortTech) {
+      setFinishError(`Password for ${shortTech.name.trim()} must be at least ${MIN_PASSWORD_LENGTH} characters.`);
+      setStep('team');
+      return;
+    }
+
+    setFinishing(true);
+    const problems: string[] = [];
+
+    if (owner) {
+      const err = await updateUser({ ...owner, name: ownerName, email: ownerEmail });
+      if (err) problems.push(`Owner account: ${err}`);
+      // Changing your own password requires the current one — routing it through
+      // updateUser (which can't carry it here) was silently 403'd by the server.
+      if (ownerPassword) {
+        const pwErr = await changeOwnPassword(ownerCurrentPassword.trim(), ownerPassword);
+        if (pwErr) problems.push(`Owner password: ${pwErr}`);
+      }
+    }
+
+    // If the owner added real techs, drop the seeded demo technician (weak default
+    // password 1234) so it doesn't linger in the live roster.
+    if (namedTechs.length > 0) {
+      users
+        .filter(u => u.role === 'technician' && u.name === 'Technician' && u.email === 'tech@trustkey.az')
+        .forEach(u => removeUser(u.id));
+    }
+
+    for (const t of namedTechs) {
+      const err = await addUser({
+        name: t.name.trim(),
+        email: t.email.trim() || `${t.name.trim().toLowerCase().replace(/\s+/g, '.')}@${companyName.trim().toLowerCase().replace(/\s+/g, '')}.com`,
+        password: t.password,
+        role: 'technician',
+        phone: t.phone,
+        active: true,
+        techStatus: 'available',
+      });
+      if (err) problems.push(`${t.name.trim()}: ${err}`);
+    }
+
+    setFinishing(false);
+    if (problems.length > 0) {
+      setFinishError(problems.join(' · '));
+      setStep('team');
+      return;
+    }
+
     updateSettings({
       companyName,
       companyPhone,
@@ -79,33 +157,6 @@ export const OnboardingWizard: React.FC = () => {
       monthlyRevenueTarget: monthlyTarget,
       dailyRevenueTarget: dailyTarget,
       onboardingComplete: true,
-    });
-
-    if (owner) {
-      updateUser({ ...owner, name: ownerName, email: ownerEmail, password: ownerPassword || owner.password });
-    }
-
-    // If the owner added real techs, drop the seeded demo technician (weak default
-    // password 1234) so it doesn't linger in the live roster.
-    const addingRealTechs = techs.some(t => t.name.trim());
-    if (addingRealTechs) {
-      users
-        .filter(u => u.role === 'technician' && u.name === 'Technician' && u.email === 'tech@trustkey.az')
-        .forEach(u => removeUser(u.id));
-    }
-
-    techs.forEach(t => {
-      if (t.name.trim()) {
-        addUser({
-          name: t.name.trim(),
-          email: t.email.trim() || `${t.name.trim().toLowerCase().replace(/\s+/g, '.')}@${companyName.trim().toLowerCase().replace(/\s+/g, '')}.com`,
-          password: t.password || generatePassword(),
-          role: 'technician',
-          phone: t.phone,
-          active: true,
-          techStatus: 'available',
-        });
-      }
     });
   };
 
@@ -220,9 +271,15 @@ export const OnboardingWizard: React.FC = () => {
                       </div>
                     </div>
                     <div>
-                      <label className={labelCls}>Password</label>
-                      <input type="password" value={ownerPassword} onChange={e => setOwnerPassword(e.target.value)} placeholder="••••" className={inputCls} />
+                      <label className={labelCls}>New Password</label>
+                      <input type="password" value={ownerPassword} onChange={e => setOwnerPassword(e.target.value)} placeholder={`Leave blank to keep current (${MIN_PASSWORD_LENGTH}+ chars)`} className={inputCls} />
                     </div>
+                    {ownerPassword && (
+                      <div>
+                        <label className={labelCls}>Current Password *</label>
+                        <input type="password" value={ownerCurrentPassword} onChange={e => setOwnerCurrentPassword(e.target.value)} placeholder="Required to change your password" className={inputCls} />
+                      </div>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -249,7 +306,7 @@ export const OnboardingWizard: React.FC = () => {
                         </div>
                       ))}
                     </div>
-                    <p className="text-[10px] text-slate-500">Each tech gets their own password — copy it now and hand it over. You can edit it before finishing.</p>
+                    <p className="text-[10px] text-slate-500">Each tech gets their own password ({MIN_PASSWORD_LENGTH}+ characters) — copy it now and hand it over. You can edit it before finishing.</p>
                   </div>
                 </>
               )}
@@ -286,6 +343,7 @@ export const OnboardingWizard: React.FC = () => {
           </AnimatePresence>
 
           {/* Navigation buttons */}
+          {finishError && <p className="text-xs font-semibold text-red-400 mt-4">{finishError}</p>}
           <div className="flex items-center justify-between mt-6 pt-4 border-t border-white/10">
             <div className="flex items-center gap-2">
               {stepIdx > 0 ? (
@@ -318,9 +376,10 @@ export const OnboardingWizard: React.FC = () => {
             ) : (
               <button
                 onClick={finish}
-                className="flex items-center gap-1.5 bg-green-600 hover:bg-green-500 text-white text-xs font-bold uppercase tracking-wider px-5 py-2.5 rounded-xl transition-all active:scale-95 shadow-lg shadow-green-900/30"
+                disabled={finishing}
+                className="flex items-center gap-1.5 bg-green-600 hover:bg-green-500 disabled:bg-slate-700 disabled:text-slate-500 text-white text-xs font-bold uppercase tracking-wider px-5 py-2.5 rounded-xl transition-all active:scale-95 shadow-lg shadow-green-900/30"
               >
-                <Check size={14} /> Launch TrustKey
+                <Check size={14} /> {finishing ? 'Saving…' : 'Launch TrustKey'}
               </button>
             )}
           </div>

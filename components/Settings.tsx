@@ -742,6 +742,7 @@ const TeamSection: React.FC = () => {
   const [newPassword, setNewPassword] = useState('');
   const [currentPasswordInput, setCurrentPasswordInput] = useState('');
   const [pwError, setPwError] = useState('');
+  const [emailError, setEmailError] = useState('');
   const [newEmail, setNewEmail] = useState('');
   const [newPhone, setNewPhone] = useState('');
 
@@ -771,7 +772,8 @@ const TeamSection: React.FC = () => {
       const err = await changeOwnPassword(currentPasswordInput.trim(), next);
       if (err) { setPwError(err); return; }
     } else {
-      updateUser({ ...u, password: next });
+      const err = await updateUser({ ...u, password: next });
+      if (err) { setPwError(err); return; }
     }
     setEditingPassword(null);
     setNewPassword('');
@@ -781,14 +783,19 @@ const TeamSection: React.FC = () => {
   const startEditEmail = (u: { id: string; email: string }) => {
     setEditingEmail(u.id);
     setNewEmail(u.email);
+    setEmailError('');
   };
 
-  const saveEmail = (u: any) => {
-    if (newEmail.trim() && newEmail.includes('@')) {
-      updateUser({ ...u, email: newEmail.trim() });
-    }
+  // Email IS the login identifier — a silently rejected change (e.g. duplicate email)
+  // left people signing in with an address the server never accepted.
+  const saveEmail = async (u: any) => {
+    const next = newEmail.trim();
+    if (!next || !next.includes('@')) { setEditingEmail(null); setNewEmail(''); setEmailError(''); return; }
+    const err = await updateUser({ ...u, email: next });
+    if (err) { setEmailError(err); return; }
     setEditingEmail(null);
     setNewEmail('');
+    setEmailError('');
   };
 
   const startEditPhone = (u: { id: string; phone?: string }) => {
@@ -900,17 +907,20 @@ const TeamSection: React.FC = () => {
                     {!u.active && <span className="text-[9px] font-bold uppercase tracking-wide text-slate-500 bg-white/5 px-1.5 py-0.5 rounded">Disabled</span>}
                   </p>
                   {isEditingEm ? (
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <input
-                        type="email"
-                        value={newEmail}
-                        onChange={e => setNewEmail(e.target.value)}
-                        onKeyDown={e => e.key === 'Enter' && saveEmail(u)}
-                        autoFocus
-                        className="bg-slate-800 border border-blue-500/50 rounded-lg px-2 py-1 text-xs text-white w-48 focus:outline-none"
-                      />
-                      <button onClick={() => saveEmail(u)} className="text-green-400 hover:text-green-300"><Check size={14} /></button>
-                      <button onClick={() => setEditingEmail(null)} className="text-slate-400 hover:text-white"><X size={14} /></button>
+                    <div className="mt-0.5">
+                      <div className="flex items-center gap-1.5">
+                        <input
+                          type="email"
+                          value={newEmail}
+                          onChange={e => setNewEmail(e.target.value)}
+                          onKeyDown={e => e.key === 'Enter' && saveEmail(u)}
+                          autoFocus
+                          className="bg-slate-800 border border-blue-500/50 rounded-lg px-2 py-1 text-xs text-white w-48 focus:outline-none"
+                        />
+                        <button onClick={() => saveEmail(u)} className="text-green-400 hover:text-green-300"><Check size={14} /></button>
+                        <button onClick={() => { setEditingEmail(null); setEmailError(''); }} className="text-slate-400 hover:text-white"><X size={14} /></button>
+                      </div>
+                      {emailError && <p className="text-[11px] font-semibold text-red-400 mt-1">{emailError}</p>}
                     </div>
                   ) : (
                     <p className="text-xs text-slate-500 truncate flex items-center gap-1.5 group/email">

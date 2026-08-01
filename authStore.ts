@@ -19,6 +19,12 @@ const api = (path: string, opts?: RequestInit) =>
   fetch(`${API_BASE}/api/auth${path}`, {
     ...opts,
     headers: { 'Content-Type': 'application/json', ...authHeaders(), ...opts?.headers },
+  }).then((res) => {
+    // 401 on an authenticated call means the session is dead. The writeQueue already
+    // logs out on that; without the same policy here a Team edit made on an expired
+    // session died silently while the UI kept showing it as saved.
+    if (res.status === 401 && path !== '/login') useAuthStore.getState().logout();
+    return res;
   });
 
 async function syncUsersFromServer(set: (s: Partial<AuthState>) => void) {
@@ -48,7 +54,8 @@ interface AuthState {
 
   /** Returns null on success, or a message to show the owner. */
   addUser: (user: Omit<User, 'id' | 'createdAt'>) => Promise<string | null>;
-  updateUser: (user: User, currentPassword?: string) => void;
+  /** Returns null on success, or a message to show the user. */
+  updateUser: (user: User, currentPassword?: string) => Promise<string | null>;
   removeUser: (id: string) => void;
 
   setTechStatus: (userId: string, status: TechStatus) => void;
@@ -165,27 +172,46 @@ export const useAuthStore = create<AuthState>()(
 
       // `currentPassword` is required by the server when someone changes their OWN
       // password, so it must be threaded through — it is never stored, only forwarded.
-      updateUser: (user, currentPassword) => {
+      // The server's verdict is REPORTED, not swallowed: a rejected edit (expired
+      // session, too-short password, duplicate email…) used to update only the local
+      // list, so a password looked changed until the person tried to sign in with it.
+      updateUser: async (user, currentPassword) => {
         set((state) => ({
           users: state.users.map(u => u.id === user.id ? user : u),
         }));
-        api(`/users/${user.id}`, {
-          method: 'PUT',
-          body: JSON.stringify({
-            name: user.name,
-            email: user.email,
-            password: user.password,
-            ...(currentPassword ? { currentPassword } : {}),
-            role: user.role,
-            phone: user.phone,
-            commissionRate: user.commissionRate,
-            active: user.active,
-            techStatus: user.techStatus,
-            photo: user.photo,
-            skills: user.skills,
-            signature: user.signature,
-          }),
-        }).catch(() => {});
+        try {
+          const res = await api(`/users/${user.id}`, {
+            method: 'PUT',
+            body: JSON.stringify({
+              name: user.name,
+              email: user.email,
+              password: user.password,
+              ...(currentPassword ? { currentPassword } : {}),
+              role: user.role,
+              phone: user.phone,
+              commissionRate: user.commissionRate,
+              active: user.active,
+              techStatus: user.techStatus,
+              photo: user.photo,
+              skills: user.skills,
+              signature: user.signature,
+            }),
+          });
+          if (res.ok) {
+            const serverUser = await res.json();
+            set((state) => ({
+              users: state.users.map(u => u.id === user.id ? serverUser : u),
+            }));
+            return null;
+          }
+          // Refused — restore server truth so the optimistic edit doesn't linger.
+          syncUsersFromServer(set);
+          const detail = await res.json().catch(() => null);
+          return detail?.error || 'The server rejected this change.';
+        } catch {
+          syncUsersFromServer(set);
+          return 'No connection to the server — the change was not saved.';
+        }
       },
 
       /**
