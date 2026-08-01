@@ -1404,10 +1404,24 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                   <label className="text-xs font-bold text-slate-400 uppercase block mb-1">Access Notes</label>
                   <input className="w-full bg-transparent text-white font-bold outline-none text-sm" value={localJob.client.accessNotes || ''} onChange={e => handleClientChange({ accessNotes: e.target.value })} placeholder="Parking, buzzer, dog on site…" />
                 </div>
-                <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
-                  <label className="text-xs font-bold text-slate-400 uppercase block mb-1">Secondary Address</label>
-                  <input className="w-full bg-transparent text-white font-bold outline-none text-sm" value={localJob.client.secondaryAddress || ''} onChange={e => handleClientChange({ secondaryAddress: e.target.value })} />
-                </div>
+                <AddressAutocomplete
+                  title="Secondary Address"
+                  required={false}
+                  address={localJob.client.secondaryAddress || ''}
+                  zip={localJob.client.secondaryZip || ''}
+                  precision={localJob.client.secondaryGeoPrecision}
+                  lat={localJob.client.secondaryLat}
+                  lng={localJob.client.secondaryLng}
+                  placeId={localJob.client.secondaryPlaceId}
+                  onChange={(v) => handleClientChange({
+                    secondaryAddress: v.address,
+                    secondaryZip: v.zip,
+                    secondaryLat: v.lat,
+                    secondaryLng: v.lng,
+                    secondaryPlaceId: v.placeId,
+                    secondaryGeoPrecision: v.precision,
+                  })}
+                />
               </div>
             </div>
             <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
@@ -2163,7 +2177,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                                   </span>
                                 </button>
                                 <button
-                                  onClick={() => { window.open(directionsUrl({ address: secondary })); setNavPickerOpen(false); }}
+                                  onClick={() => { window.open(directionsUrl({ address: secondary, zip: localJob.client.secondaryZip, lat: localJob.client.secondaryLat, lng: localJob.client.secondaryLng, placeId: localJob.client.secondaryPlaceId })); setNavPickerOpen(false); }}
                                   className="w-full flex items-start gap-2 px-3 py-2.5 text-left hover:bg-blue-600/20 transition-colors border-t border-white/5"
                                 >
                                   <Building2 size={13} className="text-blue-400 shrink-0 mt-0.5" />

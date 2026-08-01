@@ -202,7 +202,15 @@ export interface Client {
   unit?: string;        // apartment / suite / unit number
   gateCode?: string;    // gate / callbox / building entry code
   accessNotes?: string; // parking, "buzzer broken", where to meet, etc.
+  // A second location for the same client (e.g. home + office). Autocompleted and pinned
+  // just like the primary, so the "drive to which address?" chooser can route to its exact
+  // spot instead of geocoding raw text.
   secondaryAddress?: string;
+  secondaryZip?: string;
+  secondaryLat?: number;
+  secondaryLng?: number;
+  secondaryPlaceId?: string;
+  secondaryGeoPrecision?: 'exact' | 'approx' | 'none';
   photo?: string;
   notes?: string;
   preferredContact?: 'phone' | 'email' | 'sms';

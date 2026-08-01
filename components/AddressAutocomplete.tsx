@@ -25,6 +25,10 @@ interface Props {
   placeId?: string;
   onChange: (v: AddressPick) => void;
   autoFocus?: boolean;
+  // Label for the address field (default "Service Address") and whether to mark the
+  // fields required with a "*". A secondary address reuses this component but is optional.
+  title?: string;
+  required?: boolean;
 }
 
 const card = 'bg-slate-900 p-4 rounded-2xl border border-white/10';
@@ -34,7 +38,8 @@ const field = 'w-full bg-transparent border-none text-sm font-semibold text-whit
 // Address field with ZIP-biased autocomplete + a verification badge. The customer's ZIP
 // narrows the suggestion radius (enter it first for the tightest match), and once a real
 // address is picked we keep its exact coordinates so map links and ETAs hit the right pin.
-export const AddressAutocomplete: React.FC<Props> = ({ address, zip, precision, lat, lng, placeId, onChange, autoFocus }) => {
+export const AddressAutocomplete: React.FC<Props> = ({ address, zip, precision, lat, lng, placeId, onChange, autoFocus, title = 'Service Address', required = true }) => {
+  const star = required ? ' *' : '';
   const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -90,7 +95,7 @@ export const AddressAutocomplete: React.FC<Props> = ({ address, zip, precision, 
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {/* ZIP first — biases the suggestions below to this postal area */}
       <div className={card}>
-        <label className={label}>ZIP Code *</label>
+        <label className={label}>ZIP Code{star}</label>
         <input
           inputMode="numeric"
           className={field}
@@ -108,7 +113,7 @@ export const AddressAutocomplete: React.FC<Props> = ({ address, zip, precision, 
       <div className="md:col-span-2 relative" ref={boxRef}>
         <div className={card}>
           <label className={`${label} flex items-center gap-1.5`}>
-            <Search size={11} className="text-blue-400" /> Service Address *
+            <Search size={11} className="text-blue-400" /> {title}{star}
           </label>
           <div className="flex items-center gap-2">
             <textarea
