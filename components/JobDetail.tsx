@@ -212,6 +212,8 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
   const [etaUpdState, setEtaUpdState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const [reviewState, setReviewState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const [payLinkState, setPayLinkState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  // Which-address-to-drive-to chooser, shown only when the client has a second address.
+  const [navPickerOpen, setNavPickerOpen] = useState(false);
   const [clientCoords, setClientCoords] = useState<LatLng | null>(null);
   const [routeToClient, setRouteToClient] = useState<{ miles: number; minutes: number } | null>(null);
 
@@ -2127,13 +2129,62 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                     </div>
                     <button aria-label="Copy email" onClick={() => copyToClipboard(localJob.client.email)} className="p-2.5 text-slate-300 md:text-slate-400 hover:text-blue-400 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100"><Copy size={14} /></button>
                   </div>
-                  <div className="flex items-center justify-between py-2.5 group">
-                    <div className="flex items-center space-x-3">
+                  <div className="relative flex items-center justify-between py-2.5 group">
+                    <div className="flex items-center space-x-3 min-w-0">
                       <MapPin size={13} className="text-blue-500 shrink-0" />
                       <span className="text-xs font-semibold text-white truncate max-w-[170px]">{localJob.client.address}</span>
                     </div>
-                    <button onClick={() => window.open(directionsUrl(localJob.client))} title="Get directions" className="p-1.5 bg-blue-600/10 text-blue-400 rounded-lg hover:bg-blue-600 hover:text-white transition-all"><Navigation size={12} /></button>
+                    {(() => {
+                      const secondary = (localJob.client.secondaryAddress || '').trim();
+                      // One address → open directions straight away. Two → let the tech pick
+                      // which one to drive to right now.
+                      if (!secondary) {
+                        return (
+                          <button onClick={() => window.open(directionsUrl(localJob.client))} title="Get directions" className="p-1.5 bg-blue-600/10 text-blue-400 rounded-lg hover:bg-blue-600 hover:text-white transition-all"><Navigation size={12} /></button>
+                        );
+                      }
+                      return (
+                        <>
+                          <button onClick={() => setNavPickerOpen(v => !v)} title="Choose which address to drive to" className="flex items-center gap-1 p-1.5 bg-blue-600/10 text-blue-400 rounded-lg hover:bg-blue-600 hover:text-white transition-all"><Navigation size={12} /><ChevronDown size={11} /></button>
+                          {navPickerOpen && (
+                            <>
+                              {/* Tap-away backdrop */}
+                              <div className="fixed inset-0 z-20" onClick={() => setNavPickerOpen(false)} />
+                              <div className="absolute right-0 top-full mt-1 z-30 w-64 bg-slate-800 border border-white/10 rounded-xl shadow-2xl overflow-hidden">
+                                <p className="px-3 pt-2.5 pb-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">Drive to which address?</p>
+                                <button
+                                  onClick={() => { window.open(directionsUrl(localJob.client)); setNavPickerOpen(false); }}
+                                  className="w-full flex items-start gap-2 px-3 py-2.5 text-left hover:bg-blue-600/20 transition-colors border-t border-white/5"
+                                >
+                                  <Home size={13} className="text-blue-400 shrink-0 mt-0.5" />
+                                  <span className="min-w-0">
+                                    <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Address 1</span>
+                                    <span className="block text-xs font-semibold text-white break-words">{localJob.client.address || '—'}</span>
+                                  </span>
+                                </button>
+                                <button
+                                  onClick={() => { window.open(directionsUrl({ address: secondary })); setNavPickerOpen(false); }}
+                                  className="w-full flex items-start gap-2 px-3 py-2.5 text-left hover:bg-blue-600/20 transition-colors border-t border-white/5"
+                                >
+                                  <Building2 size={13} className="text-blue-400 shrink-0 mt-0.5" />
+                                  <span className="min-w-0">
+                                    <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Address 2</span>
+                                    <span className="block text-xs font-semibold text-white break-words">{secondary}</span>
+                                  </span>
+                                </button>
+                              </div>
+                            </>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
+                  {(localJob.client.secondaryAddress || '').trim() && (
+                    <div className="flex items-center space-x-3 -mt-1 pb-1 pl-0.5 text-slate-400">
+                      <Building2 size={12} className="text-slate-500 shrink-0" />
+                      <span className="text-[11px] font-medium truncate max-w-[200px]">{(localJob.client.secondaryAddress || '').trim()}</span>
+                    </div>
+                  )}
                   {(localJob.client.unit || localJob.client.gateCode || localJob.client.accessNotes) && (
                     <div className="pt-2.5 mt-1 border-t border-slate-700/50 space-y-1.5">
                       {localJob.client.unit && <div className="flex items-center gap-2 text-xs"><span className="text-slate-500 uppercase font-bold w-14 shrink-0">Unit</span><span className="text-white font-semibold">{localJob.client.unit}</span></div>}
