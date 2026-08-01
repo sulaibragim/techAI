@@ -1,4 +1,5 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
+import { lazyWithReload } from './lazyWithReload';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sidebar } from './components/Sidebar';
 import { Navigation } from './components/Navigation';
@@ -17,22 +18,23 @@ import type { TabId } from './types';
 // Heavy / not-immediately-needed screens are code-split so the first paint (Login +
 // Workroom) ships a much smaller bundle. Each loads its own chunk on demand; the
 // Suspense boundaries below show a light spinner while a chunk streams in.
-const Dashboard = lazy(() => import('./components/Dashboard').then(m => ({ default: m.Dashboard })));
-const JobsList = lazy(() => import('./components/JobsList').then(m => ({ default: m.JobsList })));
-const JobWizard = lazy(() => import('./components/JobWizard').then(m => ({ default: m.JobWizard })));
-const VoiceAssistant = lazy(() => import('./components/VoiceAssistant').then(m => ({ default: m.VoiceAssistant })));
-const AIChat = lazy(() => import('./components/AIChat').then(m => ({ default: m.AIChat })));
-const JobDetail = lazy(() => import('./components/JobDetail').then(m => ({ default: m.JobDetail })));
-const MessagesList = lazy(() => import('./components/MessagesList').then(m => ({ default: m.MessagesList })));
-const CallsList = lazy(() => import('./components/CallsList').then(m => ({ default: m.CallsList })));
-const Inventory = lazy(() => import('./components/Inventory').then(m => ({ default: m.Inventory })));
-const Accounting = lazy(() => import('./components/Accounting').then(m => ({ default: m.Accounting })));
-const MarketingDashboard = lazy(() => import('./components/MarketingDashboard').then(m => ({ default: m.MarketingDashboard })));
-const Settings = lazy(() => import('./components/Settings').then(m => ({ default: m.Settings })));
-const ClientsList = lazy(() => import('./components/ClientsList').then(m => ({ default: m.ClientsList })));
-const AutoKey = lazy(() => import('./components/AutoKey').then(m => ({ default: m.AutoKey })));
-const MasterKey = lazy(() => import('./components/MasterKey').then(m => ({ default: m.MasterKey })));
-const OnboardingWizard = lazy(() => import('./components/OnboardingWizard').then(m => ({ default: m.OnboardingWizard })));
+// lazyWithReload recovers from the post-deploy "stale chunk 404" by reloading once.
+const Dashboard = lazyWithReload(() => import('./components/Dashboard').then(m => ({ default: m.Dashboard })), 'Dashboard');
+const JobsList = lazyWithReload(() => import('./components/JobsList').then(m => ({ default: m.JobsList })), 'JobsList');
+const JobWizard = lazyWithReload(() => import('./components/JobWizard').then(m => ({ default: m.JobWizard })), 'JobWizard');
+const VoiceAssistant = lazyWithReload(() => import('./components/VoiceAssistant').then(m => ({ default: m.VoiceAssistant })), 'VoiceAssistant');
+const AIChat = lazyWithReload(() => import('./components/AIChat').then(m => ({ default: m.AIChat })), 'AIChat');
+const JobDetail = lazyWithReload(() => import('./components/JobDetail').then(m => ({ default: m.JobDetail })), 'JobDetail');
+const MessagesList = lazyWithReload(() => import('./components/MessagesList').then(m => ({ default: m.MessagesList })), 'MessagesList');
+const CallsList = lazyWithReload(() => import('./components/CallsList').then(m => ({ default: m.CallsList })), 'CallsList');
+const Inventory = lazyWithReload(() => import('./components/Inventory').then(m => ({ default: m.Inventory })), 'Inventory');
+const Accounting = lazyWithReload(() => import('./components/Accounting').then(m => ({ default: m.Accounting })), 'Accounting');
+const MarketingDashboard = lazyWithReload(() => import('./components/MarketingDashboard').then(m => ({ default: m.MarketingDashboard })), 'MarketingDashboard');
+const Settings = lazyWithReload(() => import('./components/Settings').then(m => ({ default: m.Settings })), 'Settings');
+const ClientsList = lazyWithReload(() => import('./components/ClientsList').then(m => ({ default: m.ClientsList })), 'ClientsList');
+const AutoKey = lazyWithReload(() => import('./components/AutoKey').then(m => ({ default: m.AutoKey })), 'AutoKey');
+const MasterKey = lazyWithReload(() => import('./components/MasterKey').then(m => ({ default: m.MasterKey })), 'MasterKey');
+const OnboardingWizard = lazyWithReload(() => import('./components/OnboardingWizard').then(m => ({ default: m.OnboardingWizard })), 'OnboardingWizard');
 
 // Light, centered spinner shown while a code-split screen streams in.
 const TabLoader: React.FC = () => (
