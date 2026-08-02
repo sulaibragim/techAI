@@ -39,6 +39,9 @@ interface JobWizardProps {
   onCancel: () => void;
   initialPhone?: string;
   initialName?: string;
+  // Opened from a known client (e.g. their chat/call) — fill everything on load instead of
+  // just offering the "returning customer" prompt.
+  autoPrefill?: boolean;
 }
 
 const JOB_TEMPLATES = [
@@ -62,7 +65,7 @@ const PRIORITIES = [
 
 const SpeechRecognition = typeof window !== 'undefined' ? ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition) : null;
 
-export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, initialPhone, initialName }) => {
+export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, initialPhone, initialName, autoPrefill }) => {
   const currentUser = useCurrentUser();
   const allUsers = useAuthStore(s => s.users);
   const technicians = useMemo(() => allUsers.filter(u => u.role === 'technician' && u.active), [allUsers]);
@@ -110,7 +113,10 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
       ...prev,
       firstName: c.firstName || rec.firstName,
       lastName: c.lastName || rec.lastName,
+      phone: c.phone || rec.phone || prev.phone,
+      secondaryPhone: c.secondaryPhone,
       email: c.email || rec.email,
+      secondaryEmail: c.secondaryEmail,
       address: c.address || rec.address,
       zip: c.zip || '',
       lat: c.lat,
@@ -120,10 +126,26 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
       unit: c.unit || '',
       gateCode: c.gateCode || '',
       accessNotes: c.accessNotes || '',
+      // The whole point of a returning customer: carry their second location + its pin too.
+      secondaryAddress: c.secondaryAddress,
+      secondaryZip: c.secondaryZip,
+      secondaryLat: c.secondaryLat,
+      secondaryLng: c.secondaryLng,
+      secondaryPlaceId: c.secondaryPlaceId,
+      secondaryGeoPrecision: c.secondaryGeoPrecision,
     }));
     setPrefilledId(rec.id);
     setMatchedClient(null);
   };
+
+  // Opened from a known client's chat/call → fill everything once on load, so the job
+  // starts with all of their data instead of an empty form + a prompt.
+  const autoPrefilled = useRef(false);
+  useEffect(() => {
+    if (autoPrefilled.current || !autoPrefill) return;
+    const m = findClientByPhone(clients, initialPhone);
+    if (m) { autoPrefilled.current = true; prefillFromClient(m); }
+  }, [autoPrefill, clients, initialPhone]);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);

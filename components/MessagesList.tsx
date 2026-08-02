@@ -1,74 +1,144 @@
-import React, { useMemo, useEffect, useState } from 'react';
-import { useAppStore, useVisibleJobs } from '../store';
-import { formatTimestamp } from '../dateUtils';
-import { MessageSquare, User, Clock, Smartphone, ChevronRight, RefreshCw, Send, Radio } from 'lucide-react';
+import React, { useMemo, useEffect, useState, useCallback } from 'react';
+import { useVisibleJobs } from '../store';
+import { useSettingsStore } from '../settingsStore';
+import {
+  MessageSquare, User, Smartphone, RefreshCw, Send, Radio, ArrowLeft,
+  PhoneIncoming, PhoneOutgoing, PhoneMissed, Phone, CreditCard, Briefcase, ExternalLink,
+} from 'lucide-react';
 import { Job } from '../types';
 import { API_BASE } from '../backendUrl';
 import { authHeaders } from '../apiClient';
+import {
+  buildClients, findClientByPhone, normalizePhone, formatPhone,
+  clientFlags, clientScore, TIER_STYLE, ClientRecord,
+} from '../clientUtils';
 
 const PHONE_NUMBER_ID = 'PNkhFHiD2G';
 
+interface RawMessage {
+  id: string; from: string; to: string; body: string;
+  direction: 'incoming' | 'outgoing'; createdAt: string; contact?: { name?: string };
+}
+interface RawCall {
+  id: string; from: string; to: string; direction?: string; status?: string;
+  duration?: number; createdAt: string; contact?: { name?: string };
+}
+
+type ThreadItem =
+  | { kind: 'sms'; id: string; ts: number; direction: 'in' | 'out'; body: string }
+  | { kind: 'call'; id: string; ts: number; direction: 'in' | 'out' | 'missed'; duration?: number };
+
+interface Thread {
+  key: string;              // normalized phone — the identity
+  phone: string;            // best raw number to display / message
+  contactName?: string;     // name OpenPhone had, if any
+  client?: ClientRecord;    // matched CRM client, if any
+  items: ThreadItem[];      // oldest → newest
+  latest: ThreadItem;
+}
+
 interface MessagesListProps {
-  onJobSelect: (job: Job) => void;
+  onJobSelect?: (job: Job) => void;
+  onClientSelect?: (clientId: string) => void;
+  onCreateJobFromContact?: (phone: string, name?: string) => void;
 }
 
-interface LiveMessage {
-  id: string;
-  from: string;
-  to: string;
-  body: string;
-  direction: 'incoming' | 'outgoing';
-  createdAt: string;
-  contact?: { name?: string };
-}
+const STRIPE_LINK = /(https?:\/\/\S*(?:checkout\.stripe\.com|\/pay\/cs_)\S*)/i;
+const ANY_URL = /(https?:\/\/\S+)/i;
 
-export const MessagesList: React.FC<MessagesListProps> = ({ onJobSelect }) => {
+const fmtTime = (iso: number) =>
+  new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+const fmtDur = (s?: number) => {
+  if (!s) return '';
+  const m = Math.floor(s / 60), r = s % 60;
+  return m > 0 ? `${m}m ${r}s` : `${r}s`;
+};
+
+export const MessagesList: React.FC<MessagesListProps> = ({ onClientSelect, onCreateJobFromContact }) => {
   const jobs = useVisibleJobs();
-  const [liveMessages, setLiveMessages] = useState<LiveMessage[] | null>(null);
+  const clientProfiles = useSettingsStore(s => s.clientProfiles);
+  const clients = useMemo(() => buildClients(jobs, clientProfiles), [jobs, clientProfiles]);
+
+  const [messages, setMessages] = useState<RawMessage[] | null>(null);
+  const [calls, setCalls] = useState<RawCall[] | null>(null);
   const [loading, setLoading] = useState(true);
-  const [backendOnline, setBackendOnline] = useState(false);
-  const [activeTab, setActiveTab] = useState<'live' | 'jobs'>('live');
-  const [replyOpen, setReplyOpen] = useState<string | null>(null);
+  const [online, setOnline] = useState(false);
+  const [openKey, setOpenKey] = useState<string | null>(null);
   const [replyText, setReplyText] = useState('');
   const [sending, setSending] = useState(false);
 
-  const fetchMessages = async (silent = false) => {
+  const fetchAll = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/api/openphone/messages?phoneNumberId=${PHONE_NUMBER_ID}`, { headers: { ...authHeaders() } });
-      if (!res.ok) throw new Error(`${res.status}`);
-      const data = await res.json();
-      setLiveMessages(data.data || []);
-      setBackendOnline(true);
+      const [mRes, cRes] = await Promise.all([
+        fetch(`${API_BASE}/api/openphone/messages?phoneNumberId=${PHONE_NUMBER_ID}`, { headers: { ...authHeaders() } }),
+        fetch(`${API_BASE}/api/openphone/calls?phoneNumberId=${PHONE_NUMBER_ID}`, { headers: { ...authHeaders() } }),
+      ]);
+      if (!mRes.ok) throw new Error(`${mRes.status}`);
+      const m = await mRes.json();
+      setMessages(m.data || []);
+      // Calls are best-effort — a failure there shouldn't blank the whole inbox.
+      if (cRes.ok) { const c = await cRes.json(); setCalls(c.data || []); } else { setCalls([]); }
+      setOnline(true);
     } catch {
-      setLiveMessages(null);
-      setBackendOnline(false);
-      if (!silent) setActiveTab('jobs');
+      setMessages(null); setCalls(null); setOnline(false);
     } finally {
       if (!silent) setLoading(false);
     }
-  };
-
-  // Initial load + silent auto-refresh so new client messages aren't missed.
-  useEffect(() => {
-    fetchMessages();
-    const id = setInterval(() => { if (document.visibilityState === 'visible') fetchMessages(true); }, 15000);
-    return () => clearInterval(id);
   }, []);
 
-  const jobThreads = useMemo(() => {
-    return jobs
-      .filter(j => j.messages && j.messages.length > 0)
-      .map(j => {
-        const sorted = [...(j.messages || [])].sort((a, b) => b.timestamp.localeCompare(a.timestamp));
-        return { job: j, latest: sorted[0] };
-      })
-      .sort((a, b) => b.latest.timestamp.localeCompare(a.latest.timestamp));
-  }, [jobs]);
+  useEffect(() => {
+    fetchAll();
+    const id = setInterval(() => { if (document.visibilityState === 'visible') fetchAll(true); }, 15000);
+    return () => clearInterval(id);
+  }, [fetchAll]);
+
+  // Group every SMS and call into one thread per client, keyed by the OTHER party's
+  // normalized number so "(602) 373-2379", "+16023732379" and "602-373-2379" are one chat.
+  const threads = useMemo<Thread[]>(() => {
+    const map = new Map<string, Thread>();
+    const ensure = (rawPhone: string, name?: string): Thread | null => {
+      const key = normalizePhone(rawPhone);
+      if (!key) return null;
+      let t = map.get(key);
+      if (!t) {
+        t = { key, phone: rawPhone, contactName: name, items: [], latest: undefined as any };
+        map.set(key, t);
+      }
+      if (!t.contactName && name) t.contactName = name;
+      return t;
+    };
+
+    for (const m of messages || []) {
+      const incoming = m.direction === 'incoming';
+      const other = incoming ? m.from : m.to;
+      const t = ensure(other, m.contact?.name);
+      if (!t) continue;
+      t.items.push({ kind: 'sms', id: m.id, ts: new Date(m.createdAt).getTime(), direction: incoming ? 'in' : 'out', body: m.body || '' });
+    }
+    for (const c of calls || []) {
+      const incoming = c.direction === 'inbound' || c.direction === 'incoming';
+      const missed = c.status === 'missed' || c.status === 'no-answer';
+      const other = incoming ? c.from : c.to;
+      const t = ensure(other, c.contact?.name);
+      if (!t) continue;
+      t.items.push({ kind: 'call', id: c.id, ts: new Date(c.createdAt).getTime(), direction: missed ? 'missed' : incoming ? 'in' : 'out', duration: c.duration });
+    }
+
+    const out: Thread[] = [];
+    for (const t of map.values()) {
+      if (!t.items.length) continue;
+      t.items.sort((a, b) => a.ts - b.ts);
+      t.latest = t.items[t.items.length - 1];
+      t.client = findClientByPhone(clients, t.phone);
+      out.push(t);
+    }
+    return out.sort((a, b) => b.latest.ts - a.latest.ts);
+  }, [messages, calls, clients]);
+
+  const open = openKey ? threads.find(t => t.key === openKey) || null : null;
 
   const sendReply = async (to: string) => {
-    // `sending` guard lives here, not only on the button: the textarea's Enter handler
-    // calls this directly, so two quick Enters used to bill two SMS.
     if (sending || !replyText.trim()) return;
     setSending(true);
     try {
@@ -79,8 +149,7 @@ export const MessagesList: React.FC<MessagesListProps> = ({ onJobSelect }) => {
       });
       if (!res.ok) throw new Error('send rejected');
       setReplyText('');
-      setReplyOpen(null);
-      await fetchMessages();
+      await fetchAll(true);
     } catch {
       alert('Send failed — the message was not delivered. Check the number or try again.');
     } finally {
@@ -88,196 +157,192 @@ export const MessagesList: React.FC<MessagesListProps> = ({ onJobSelect }) => {
     }
   };
 
-  const tabs = [
-    { id: 'live' as const, label: 'OpenPhone', count: liveMessages?.length ?? 0, disabled: !backendOnline },
-    { id: 'jobs' as const, label: 'Job Threads', count: jobThreads.length },
-  ];
+  const titleFor = (t: Thread) =>
+    t.client ? `${t.client.firstName} ${t.client.lastName}`.trim() || formatPhone(t.phone)
+    : t.contactName && t.contactName !== t.phone ? t.contactName
+    : formatPhone(t.phone);
+
+  const snippet = (it: ThreadItem) => {
+    if (it.kind === 'call') return it.direction === 'missed' ? 'Missed call' : it.direction === 'in' ? 'Incoming call' : 'Outgoing call';
+    if (STRIPE_LINK.test(it.body)) return `${it.direction === 'out' ? 'You: ' : ''}💳 Payment link`;
+    return `${it.direction === 'out' ? 'You: ' : ''}${it.body}`;
+  };
 
   return (
-    <div className="space-y-5 pb-24 max-w-5xl mx-auto animate-in fade-in duration-700">
+    <div className="space-y-5 pb-24 max-w-5xl mx-auto animate-in fade-in duration-500">
+      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-2">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight text-white leading-none">Client Inbox</h2>
-          <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-2">Communication Stream</p>
+        <div className="flex items-center gap-3">
+          {open && (
+            <button onClick={() => setOpenKey(null)} className="p-2 bg-slate-900 border border-white/10 rounded-xl text-slate-300 hover:text-white transition-all active:scale-95 md:hidden">
+              <ArrowLeft size={16} />
+            </button>
+          )}
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight text-white leading-none">Client Inbox</h2>
+            <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-2">One chat per client · calls, texts & invoices</p>
+          </div>
         </div>
         <div className="flex items-center gap-3">
-          {backendOnline && (
+          {online && (
             <div className="flex items-center space-x-2 text-green-400 bg-green-500/5 px-3 py-2 rounded-xl border border-green-500/20">
               <Radio size={12} className="animate-pulse" />
               <span className="text-xs font-bold uppercase tracking-widest">OpenPhone Live</span>
             </div>
           )}
-          <button
-            onClick={() => fetchMessages()}
-            disabled={loading}
-            className="p-2.5 bg-slate-900 border border-white/10 rounded-xl text-slate-400 hover:text-white hover:border-blue-500/30 transition-all active:scale-95 disabled:opacity-40"
-            title="Refresh"
-          >
+          <button onClick={() => fetchAll()} disabled={loading} className="p-2.5 bg-slate-900 border border-white/10 rounded-xl text-slate-400 hover:text-white hover:border-blue-500/30 transition-all active:scale-95 disabled:opacity-40" title="Refresh">
             <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
           </button>
         </div>
       </div>
 
-      {/* Tab switcher */}
-      <div className="px-2 flex bg-slate-900/60 p-1 rounded-2xl border border-white/10 max-w-xs">
-        {tabs.map(t => (
-          <button
-            key={t.id}
-            onClick={() => !t.disabled && setActiveTab(t.id)}
-            disabled={t.disabled}
-            className={`relative flex-1 py-2 px-3 text-xs font-semibold uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 ${
-              t.disabled ? 'opacity-30 cursor-not-allowed text-slate-500' :
-              activeTab === t.id ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            {t.label}
-            <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold ${activeTab === t.id ? 'bg-white/20' : 'bg-white/5'}`}>
-              {t.count}
-            </span>
-          </button>
-        ))}
-      </div>
-
-      <div className="space-y-3 px-2">
-        {/* OpenPhone live messages */}
-        {activeTab === 'live' && (
-          loading ? (
-            [...Array(4)].map((_, i) => (
-              <div key={i} className="bg-slate-900/80 p-4 rounded-2xl border border-white/10 animate-pulse h-20" />
-            ))
-          ) : !liveMessages || liveMessages.length === 0 ? (
-            <div className="bg-slate-900 rounded-2xl border border-white/10 p-16 flex flex-col items-center justify-center opacity-30 text-center">
-              <Smartphone size={28} className="mb-4 text-blue-500" />
-              <p className="text-base font-bold tracking-tight">No messages yet</p>
-              <p className="text-xs font-semibold text-slate-400 mt-2">OpenPhone messages will appear here</p>
+      <div className="grid md:grid-cols-[minmax(0,360px)_1fr] gap-4 px-2 items-start">
+        {/* ── Thread list ── */}
+        <div className={`space-y-2 ${open ? 'hidden md:block' : ''}`}>
+          {loading ? (
+            [...Array(4)].map((_, i) => <div key={i} className="bg-slate-900/80 p-4 rounded-2xl border border-white/10 animate-pulse h-16" />)
+          ) : !threads.length ? (
+            <div className="bg-slate-900 rounded-2xl border border-white/10 p-12 flex flex-col items-center justify-center opacity-40 text-center">
+              <Smartphone size={26} className="mb-3 text-blue-500" />
+              <p className="text-sm font-bold tracking-tight">{online ? 'No conversations yet' : 'Can’t reach the server'}</p>
+              <p className="text-xs font-semibold text-slate-400 mt-1.5">{online ? 'Client texts & calls will appear here' : 'The inbox is unavailable right now'}</p>
             </div>
           ) : (
-            liveMessages.map((msg) => {
-              const isOut = msg.direction === 'outgoing';
-              const senderName = msg.contact?.name || (isOut ? 'You' : msg.from);
-              const number = isOut ? msg.to : msg.from;
-              const time = new Date(msg.createdAt).toLocaleString('en-US', {
-                month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
-              });
-
+            threads.map(t => {
+              const flags = t.client ? clientFlags(t.client) : null;
+              const tone = flags?.tone === 'danger' ? 'border-red-500/40' : flags?.tone === 'vip' ? 'border-amber-500/40' : 'border-white/10';
+              const active = openKey === t.key;
+              const unread = t.latest.direction === 'in';
               return (
-                <div key={msg.id} className="space-y-2">
-                  <div className={`bg-slate-900 p-4 rounded-2xl border border-white/10 ${isOut ? 'hover:border-blue-500/30' : 'hover:border-green-500/30'} transition-colors shadow-xl relative overflow-hidden`}>
-                    <div className={`absolute top-0 left-0 w-1 h-full ${isOut ? 'bg-blue-600/40' : 'bg-green-500/40'}`} />
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-slate-950 rounded-xl flex items-center justify-center border border-white/10 shrink-0">
-                          <User size={16} className={isOut ? 'text-blue-500' : 'text-green-500'} />
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold text-white leading-none">{senderName}</p>
-                          <p className="text-xs text-slate-500 font-semibold mt-0.5 tracking-widest uppercase">{number}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-1.5 text-slate-500">
-                          <Clock size={10} />
-                          <span className="text-xs font-bold tabular-nums">{time}</span>
-                        </div>
-                        {!isOut && (
-                          <button
-                            onClick={() => setReplyOpen(replyOpen === msg.id ? null : msg.id)}
-                            className="p-2 bg-blue-600/10 text-blue-400 hover:bg-blue-600 hover:text-white rounded-xl transition-all active:scale-90"
-                            title="Reply"
-                          >
-                            <Send size={12} />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                    {/* pl-13 doesn't exist in Tailwind's scale (…12, 14…), so no class was
-                        generated and the message body sat flush left under the avatar. */}
-                    <p className="text-sm text-slate-300 leading-relaxed pl-14">{msg.body}</p>
+                <button
+                  key={t.key}
+                  onClick={() => setOpenKey(t.key)}
+                  className={`w-full text-left bg-slate-900 p-3.5 rounded-2xl border ${active ? 'border-blue-500/60 bg-blue-600/10' : tone} hover:border-blue-500/40 transition-all flex items-center gap-3 shadow-lg`}
+                >
+                  <div className={`w-11 h-11 rounded-xl flex items-center justify-center border shrink-0 ${t.client ? 'bg-blue-600/10 border-blue-500/30 text-blue-300 font-bold' : 'bg-slate-950 border-white/10 text-slate-400'}`}>
+                    {t.client ? `${t.client.firstName[0] || ''}${t.client.lastName[0] || ''}`.toUpperCase() || <User size={18} /> : <User size={18} />}
                   </div>
-
-                  {/* Inline reply box */}
-                  {replyOpen === msg.id && (
-                    <div className="bg-slate-800/80 rounded-xl border border-blue-500/20 p-3 flex gap-2 ml-4">
-                      <input
-                        autoFocus
-                        value={replyText}
-                        onChange={e => setReplyText(e.target.value)}
-                        onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendReply(msg.from)}
-                        placeholder={`Reply to ${msg.from}…`}
-                        className="flex-1 bg-slate-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
-                      />
-                      <button
-                        onClick={() => sendReply(msg.from)}
-                        disabled={sending || !replyText.trim()}
-                        className="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold transition-all active:scale-95 disabled:opacity-40 flex items-center gap-1.5"
-                      >
-                        <Send size={12} />
-                        {sending ? 'Sending…' : 'Send'}
-                      </button>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-bold text-white truncate">{titleFor(t)}</p>
+                      {unread && <span className="w-2 h-2 rounded-full bg-green-400 shrink-0" />}
                     </div>
-                  )}
-                </div>
+                    <p className="text-xs text-slate-400 truncate italic mt-0.5">{snippet(t.latest)}</p>
+                  </div>
+                  <span className="text-[10px] font-bold text-slate-500 tabular-nums shrink-0">{fmtTime(t.latest.ts)}</span>
+                </button>
               );
             })
-          )
-        )}
+          )}
+        </div>
 
-        {/* Job-linked message threads */}
-        {activeTab === 'jobs' && (
-          jobThreads.length === 0 ? (
-            <div className="bg-slate-900 rounded-2xl border border-white/10 p-16 flex flex-col items-center justify-center opacity-30 text-center">
-              <MessageSquare size={28} className="mb-4 text-blue-500" />
-              <p className="text-base font-bold tracking-tight">Inbox Zero</p>
-              <p className="text-xs font-semibold text-slate-400 mt-2">No job-linked messages yet</p>
+        {/* ── Chat panel ── */}
+        <div className={`${open ? '' : 'hidden md:flex'} md:min-h-[60vh]`}>
+          {!open ? (
+            <div className="w-full bg-slate-900/40 rounded-2xl border border-white/10 border-dashed flex flex-col items-center justify-center p-16 opacity-40 text-center">
+              <MessageSquare size={28} className="mb-3 text-blue-500" />
+              <p className="text-sm font-bold">Pick a conversation</p>
+              <p className="text-xs text-slate-400 mt-1.5">Everything with that client — one thread</p>
             </div>
           ) : (
-            jobThreads.map(({ job, latest }) => (
-              <div
-                key={job.id}
-                onClick={() => onJobSelect(job)}
-                className="bg-slate-900 p-4 rounded-2xl border border-white/10 hover:border-blue-500/30 transition-colors cursor-pointer flex items-center justify-between group shadow-xl overflow-hidden relative"
-              >
-                <div className="absolute top-0 left-0 w-1 h-full bg-blue-600/30 group-hover:bg-blue-600 transition-colors" />
+            <ChatPanel
+              thread={open}
+              title={titleFor(open)}
+              sending={sending}
+              replyText={replyText}
+              setReplyText={setReplyText}
+              onSend={() => sendReply(open.phone)}
+              onCall={() => { window.location.href = `tel:${open.phone}`; }}
+              onProfile={open.client && onClientSelect ? () => onClientSelect(open.client!.id) : undefined}
+              onNewJob={onCreateJobFromContact ? () => onCreateJobFromContact(open.phone, titleFor(open)) : undefined}
+            />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
 
-                <div className="flex items-center space-x-5 flex-1 min-w-0">
-                  <div className="w-12 h-12 bg-slate-950 rounded-xl flex items-center justify-center text-blue-500 border border-white/10 shadow-inner relative shrink-0">
-                    <User size={20} />
-                    <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-blue-600 rounded-full border-2 border-slate-900 flex items-center justify-center">
-                      <div className="w-1 h-1 bg-white rounded-full animate-pulse" />
-                    </div>
-                  </div>
+const ChatPanel: React.FC<{
+  thread: Thread; title: string; sending: boolean;
+  replyText: string; setReplyText: (v: string) => void;
+  onSend: () => void; onCall: () => void;
+  onProfile?: () => void; onNewJob?: () => void;
+}> = ({ thread, title, sending, replyText, setReplyText, onSend, onCall, onProfile, onNewJob }) => {
+  const flags = thread.client ? clientFlags(thread.client) : null;
+  const score = thread.client ? clientScore(thread.client) : null;
 
-                  <div className="flex-1 min-w-0 space-y-1">
-                    <div className="flex items-center space-x-2">
-                      <h3 className="text-base font-bold text-white tracking-tight truncate leading-none">
-                        {job.client.firstName} {job.client.lastName}
-                      </h3>
-                      <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">#{job.jobNumber}</span>
-                    </div>
+  return (
+    <div className="w-full bg-slate-900 rounded-2xl border border-white/10 shadow-2xl flex flex-col overflow-hidden">
+      {/* Header */}
+      <div className="p-4 border-b border-white/10 flex items-center gap-3">
+        <div className={`w-11 h-11 rounded-xl flex items-center justify-center border shrink-0 ${thread.client ? 'bg-blue-600/10 border-blue-500/30 text-blue-300 font-bold' : 'bg-slate-950 border-white/10 text-slate-400'}`}>
+          {thread.client ? `${thread.client.firstName[0] || ''}${thread.client.lastName[0] || ''}`.toUpperCase() || <User size={18} /> : <User size={18} />}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <p className="text-base font-bold text-white truncate">{title}</p>
+            {score && <span className={`text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded border ${TIER_STYLE[score.tier]}`}>{score.tier}</span>}
+          </div>
+          <p className="text-xs text-slate-500 tracking-widest">{formatPhone(thread.phone)}</p>
+        </div>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <button onClick={onCall} title="Call" className="p-2.5 bg-white/5 border border-white/10 rounded-xl text-slate-300 hover:text-green-400 transition-all active:scale-95"><Phone size={15} /></button>
+          {onProfile && <button onClick={onProfile} title="Client profile" className="p-2.5 bg-white/5 border border-white/10 rounded-xl text-slate-300 hover:text-blue-400 transition-all active:scale-95"><User size={15} /></button>}
+          {onNewJob && <button onClick={onNewJob} title="New job for this client" className="p-2.5 bg-blue-600/15 border border-blue-500/30 rounded-xl text-blue-300 hover:bg-blue-600 hover:text-white transition-all active:scale-95"><Briefcase size={15} /></button>}
+        </div>
+      </div>
 
-                    <div className="flex items-center space-x-2">
-                      <Smartphone size={11} className="text-blue-500" />
-                      <p className="text-sm font-medium text-slate-300 truncate italic">
-                        {latest.sender === 'technician' ? 'You: ' : ''}
-                        "{latest.content}"
-                      </p>
-                    </div>
-                  </div>
-                </div>
+      {flags?.doNotService && (
+        <div className="px-4 py-2 bg-red-500/10 border-b border-red-500/20 text-[11px] font-bold text-red-300">⚠ Flagged: do not service</div>
+      )}
 
-                <div className="flex flex-col items-end space-y-2 ml-4 shrink-0">
-                  <div className="flex items-center space-x-2 text-slate-500">
-                    <Clock size={11} />
-                    <span className="text-xs font-bold uppercase tracking-widest tabular-nums">{formatTimestamp(latest.timestamp)}</span>
-                  </div>
-                  <div className="p-2 bg-white/5 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition-all">
-                    <ChevronRight size={15} />
-                  </div>
-                </div>
+      {/* Timeline */}
+      <div className="p-4 space-y-2.5 max-h-[52vh] overflow-y-auto scrollbar-hide flex flex-col">
+        {thread.items.map(it => {
+          if (it.kind === 'call') {
+            const Icon = it.direction === 'missed' ? PhoneMissed : it.direction === 'in' ? PhoneIncoming : PhoneOutgoing;
+            const label = it.direction === 'missed' ? 'Missed call' : it.direction === 'in' ? 'Incoming call' : 'Outgoing call';
+            return (
+              <div key={it.id} className="self-center flex items-center gap-2 text-[11px] font-semibold text-slate-400 bg-white/5 border border-white/10 rounded-full px-3 py-1.5">
+                <Icon size={12} className={it.direction === 'missed' ? 'text-red-400' : 'text-slate-400'} />
+                {label}{it.duration ? ` · ${fmtDur(it.duration)}` : ''}
+                <span className="text-slate-600">· {fmtTime(it.ts)}</span>
               </div>
-            ))
-          )
-        )}
+            );
+          }
+          const out = it.direction === 'out';
+          const invoice = STRIPE_LINK.exec(it.body);
+          const url = invoice?.[1] || ANY_URL.exec(it.body)?.[1];
+          return (
+            <div key={it.id} className={`max-w-[85%] ${out ? 'self-end' : 'self-start'}`}>
+              <div className={`rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${out ? 'bg-blue-600 text-white rounded-br-sm' : 'bg-slate-800 text-slate-100 border border-white/10 rounded-bl-sm'}`}>
+                {invoice ? (
+                  <a href={url} target="_blank" rel="noopener noreferrer" className={`flex items-center gap-2 font-semibold ${out ? 'text-white' : 'text-blue-300'}`}>
+                    <CreditCard size={15} /> Payment link <ExternalLink size={12} className="opacity-70" />
+                  </a>
+                ) : (
+                  <span className="whitespace-pre-wrap break-words">{it.body}</span>
+                )}
+              </div>
+              <p className={`text-[10px] text-slate-500 mt-1 ${out ? 'text-right' : 'text-left'}`}>{fmtTime(it.ts)}</p>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Reply */}
+      <div className="p-3 border-t border-white/10 flex gap-2">
+        <input
+          value={replyText}
+          onChange={e => setReplyText(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); onSend(); } }}
+          placeholder="Text the client…"
+          className="flex-1 bg-slate-800 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+        />
+        <button onClick={onSend} disabled={sending || !replyText.trim()} className="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-bold transition-all active:scale-95 disabled:opacity-40 flex items-center gap-1.5">
+          <Send size={14} />{sending ? '…' : 'Send'}
+        </button>
       </div>
     </div>
   );

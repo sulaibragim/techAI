@@ -52,7 +52,7 @@ const App: React.FC = () => {
   const allowedTabs = currentUser ? visibleTabsFor(currentUser.role) : [];
   const effectiveTab = (allowedTabs.includes(activeTab) ? activeTab : (allowedTabs[0] || 'calendar')) as TabId;
   const [isWizardOpen, setIsWizardOpen] = useState(false);
-  const [wizardSeed, setWizardSeed] = useState<{ phone?: string; name?: string }>({});
+  const [wizardSeed, setWizardSeed] = useState<{ phone?: string; name?: string; autoPrefill?: boolean }>({});
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [clientFocusId, setClientFocusId] = useState<string | null>(null);
   const [notification, setNotification] = useState<{msg: string, type: 'info' | 'success'} | null>(null);
@@ -71,10 +71,12 @@ const App: React.FC = () => {
   useEffect(() => { if (currentUser) void flushWrites(); }, [currentUser?.id]);
 
   const openClient = (clientId: string) => { setClientFocusId(clientId); setActiveTab('clients'); };
-  const openWizard = (seed?: { phone?: string; name?: string }) => { setWizardSeed(seed || {}); setIsWizardOpen(true); };
+  const openWizard = (seed?: { phone?: string; name?: string; autoPrefill?: boolean }) => { setWizardSeed(seed || {}); setIsWizardOpen(true); };
   // Caller with no client record yet → start a job prefilled with their number, so
   // one tap turns an unknown call into a saved client + job.
   const newJobFromCall = (phone: string, name?: string) => openWizard({ phone, name });
+  // New job started from a KNOWN client's chat → auto-fill all their data on load.
+  const newJobFromContact = (phone: string, name?: string) => openWizard({ phone, name, autoPrefill: true });
 
   // When a technician marks themselves Available, grab their current GPS so dispatch
   // can rank them by distance to a client. Permission denial / no-GPS just no-ops.
@@ -274,7 +276,7 @@ const App: React.FC = () => {
             switch (effectiveTab) {
               case 'calendar': return <WorkroomDashboard onJobSelect={(j) => setSelectedJobId(j.id)} onAddJob={() => openWizard()} />;
               case 'jobs': return <JobsList jobs={jobs} onAddJob={() => openWizard()} onJobSelect={(job) => setSelectedJobId(job.id)} />;
-              case 'messages': return <MessagesList onJobSelect={(job) => setSelectedJobId(job.id)} />;
+              case 'messages': return <MessagesList onJobSelect={(job) => setSelectedJobId(job.id)} onClientSelect={openClient} onCreateJobFromContact={newJobFromContact} />;
               case 'calls': return <CallsList onClientSelect={openClient} onCreateJobFromCall={newJobFromCall} />;
               case 'clients': return <ClientsList onJobSelect={(job) => setSelectedJobId(job.id)} focusClientId={clientFocusId} onFocusConsumed={() => setClientFocusId(null)} />;
               case 'analytics': return <Dashboard />;
@@ -430,6 +432,7 @@ const App: React.FC = () => {
           <JobWizard
             initialPhone={wizardSeed.phone}
             initialName={wizardSeed.name}
+            autoPrefill={wizardSeed.autoPrefill}
             onCancel={() => { setIsWizardOpen(false); setWizardSeed({}); }}
             onComplete={(job) => { addJob(job); setIsWizardOpen(false); setWizardSeed({}); }}
           />
