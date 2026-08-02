@@ -3,7 +3,7 @@ import { useVisibleJobs } from '../store';
 import { useSettingsStore } from '../settingsStore';
 import {
   MessageSquare, User, Smartphone, RefreshCw, Send, Radio, ArrowLeft,
-  PhoneIncoming, PhoneOutgoing, PhoneMissed, Phone, CreditCard, Briefcase, ExternalLink,
+  PhoneIncoming, PhoneOutgoing, PhoneMissed, Phone, CreditCard, Briefcase, ExternalLink, History,
 } from 'lucide-react';
 import { Job } from '../types';
 import { API_BASE } from '../backendUrl';
@@ -63,6 +63,7 @@ export const MessagesList: React.FC<MessagesListProps> = ({ onClientSelect, onCr
   const [calls, setCalls] = useState<RawCall[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [online, setOnline] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const [openKey, setOpenKey] = useState<string | null>(null);
   const [replyText, setReplyText] = useState('');
   const [sending, setSending] = useState(false);
@@ -91,6 +92,16 @@ export const MessagesList: React.FC<MessagesListProps> = ({ onClientSelect, onCr
     fetchAll();
     const id = setInterval(() => { if (document.visibilityState === 'visible') fetchAll(true); }, 15000);
     return () => clearInterval(id);
+  }, [fetchAll]);
+
+  // Force a full pull of history from OpenPhone (past the server-side throttle), then reload.
+  const syncHistory = useCallback(async () => {
+    setSyncing(true);
+    try {
+      await fetch(`${API_BASE}/api/openphone/sync`, { method: 'POST', headers: { ...authHeaders() } });
+    } catch { /* ignore — the fetch below still shows whatever synced */ }
+    await fetchAll(true);
+    setSyncing(false);
   }, [fetchAll]);
 
   // Group every SMS and call into one thread per client, keyed by the OTHER party's
@@ -190,6 +201,15 @@ export const MessagesList: React.FC<MessagesListProps> = ({ onClientSelect, onCr
               <span className="text-xs font-bold uppercase tracking-widest">OpenPhone Live</span>
             </div>
           )}
+          <button
+            onClick={syncHistory}
+            disabled={syncing}
+            className="flex items-center gap-2 px-3 py-2.5 bg-slate-900 border border-white/10 rounded-xl text-slate-300 hover:text-white hover:border-blue-500/30 transition-all active:scale-95 disabled:opacity-50 text-xs font-bold uppercase tracking-wider"
+            title="Pull the full message & call history from OpenPhone"
+          >
+            <History size={14} className={syncing ? 'animate-spin' : ''} />
+            <span className="hidden sm:inline">{syncing ? 'Syncing…' : 'Sync history'}</span>
+          </button>
           <button onClick={() => fetchAll()} disabled={loading} className="p-2.5 bg-slate-900 border border-white/10 rounded-xl text-slate-400 hover:text-white hover:border-blue-500/30 transition-all active:scale-95 disabled:opacity-40" title="Refresh">
             <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
           </button>

@@ -20,7 +20,11 @@ export const openphoneRouter = Router();
 export const pendingJobSuggestions = new Map();
 export const recentCalls = [];      // [{id, from, to, direction, status, duration, createdAt, ...}]
 export const recentMessages = [];   // [{id, from, to, body, direction, createdAt, contact}]
-const MAX_STORE = 300;
+const MAX_STORE = 300;    // pending job suggestions
+// The inbox now shows FULL history pulled from OpenPhone (not just what the webhook caught
+// live), so these caps hold many conversations' worth, newest kept when trimming.
+const MAX_MESSAGES = 4000;
+const MAX_CALLS = 2000;
 
 // ─── Durable persistence (write-through to Postgres) ─────────────────────────
 const hasDB = () => !!process.env.DATABASE_URL;
@@ -81,6 +85,144 @@ export async function hydrateOpenPhoneStores() {
   }
 }
 
+// ─── Full-history sync from the OpenPhone REST API ───────────────────────────
+// The webhook only captures traffic that arrives WHILE the server is running, so the
+// inbox showed a handful of recent messages, not everything the OpenPhone number ever
+// sent/received. There is no "list all messages" endpoint — you list conversations, then
+// pull each conversation's messages + calls. We do that here, dedupe into the same stores
+// the webhook feeds, and persist to Postgres. Throttled + single-flight so opening the
+// inbox can trigger it cheaply.
+const OP_BASE = 'https://api.openphone.com/v1';
+const opHeaders = () => ({ Authorization: process.env.OPENPHONE_API_KEY });
+const digits10 = (p) => String(p || '').replace(/\D/g, '').slice(-10);
+
+async function opGet(path, params = {}) {
+  const qs = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) {
+    if (v == null) continue;
+    if (Array.isArray(v)) v.forEach(x => qs.append(`${k}[]`, x));
+    else qs.set(k, String(v));
+  }
+  const r = await fetch(`${OP_BASE}${path}?${qs.toString()}`, { headers: opHeaders() });
+  if (!r.ok) throw new Error(`${path} → ${r.status} ${await r.text().catch(() => '')}`.slice(0, 300));
+  return r.json();
+}
+
+// Resolve OUR OpenPhone number + its id once (needed to know the "other party" and to
+// derive from/to on calls, which the REST API returns only as `participants`).
+let ownNumberCache = null;
+async function resolveOwnNumber() {
+  if (ownNumberCache) return ownNumberCache;
+  const envNum = process.env.OPENPHONE_PHONE_NUMBER ? toE164(process.env.OPENPHONE_PHONE_NUMBER) : '';
+  let id = process.env.OPENPHONE_PHONE_NUMBER_ID || '';
+  let e164 = envNum;
+  try {
+    const list = await opGet('/phone-numbers');
+    const nums = list?.data || [];
+    const match = (envNum && nums.find(n => toE164(n.phoneNumber || n.number || '') === envNum)) || nums[0];
+    if (match) { id = id || match.id; e164 = e164 || toE164(match.phoneNumber || match.number || ''); }
+  } catch (e) { console.warn('[OpenPhone] resolveOwnNumber:', e.message); }
+  ownNumberCache = { id, e164 };
+  return ownNumberCache;
+}
+
+let lastSyncAt = 0;
+let syncInFlight = null;
+const SYNC_THROTTLE_MS = 60 * 1000;
+const MAX_CONVERSATIONS = 150; // most-recent conversations to pull history for
+
+// Merge fetched records into a store, dedupe by id, newest-first, capped. Returns how many
+// were NEW (so we can log/skip DB writes for unchanged rows).
+function mergeById(store, incoming, cap, dbSave) {
+  const have = new Set(store.map(x => x.id));
+  let added = 0;
+  for (const rec of incoming) {
+    if (!rec?.id || have.has(rec.id)) continue;
+    store.push(rec); have.add(rec.id); added++;
+    dbSave?.(rec);
+  }
+  if (added) {
+    store.sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+    if (store.length > cap) store.length = cap;
+  }
+  return added;
+}
+
+async function runSync() {
+  if (!process.env.OPENPHONE_API_KEY) { console.warn('[OpenPhone] sync skipped — no API key'); return { skipped: true }; }
+  const { id: phoneNumberId, e164: ownE164 } = await resolveOwnNumber();
+  if (!phoneNumberId) { console.warn('[OpenPhone] sync skipped — could not resolve phoneNumberId'); return { skipped: true }; }
+  const ownKey = digits10(ownE164);
+
+  // 1) List recent conversations for our number (paginated up to the cap).
+  const conversations = [];
+  let pageToken = null;
+  while (conversations.length < MAX_CONVERSATIONS) {
+    const page = await opGet('/conversations', { phoneNumbers: [phoneNumberId], maxResults: 100, pageToken });
+    for (const c of page?.data || []) conversations.push(c);
+    pageToken = page?.nextPageToken || null;
+    if (!pageToken) break;
+  }
+
+  let msgAdded = 0, callAdded = 0;
+  // 2) For each conversation, pull that participant's messages + calls (1 page = last 100).
+  for (const conv of conversations.slice(0, MAX_CONVERSATIONS)) {
+    const others = (conv.participants || []).filter(p => digits10(p) !== ownKey);
+    if (!others.length) continue;
+    const name = conv.name || null;
+    try {
+      const mRes = await opGet('/messages', { phoneNumberId, participants: others, maxResults: 100 });
+      const msgs = (mRes?.data || []).map(m => ({
+        id: m.id,
+        from: m.from,
+        to: Array.isArray(m.to) ? m.to[0] : m.to,
+        body: m.text || m.body || '',
+        direction: m.direction === 'outgoing' ? 'outgoing' : 'incoming',
+        createdAt: m.createdAt || new Date().toISOString(),
+        contact: name ? { name } : null,
+      }));
+      msgAdded += mergeById(recentMessages, msgs, MAX_MESSAGES, dbSaveMessage);
+    } catch (e) { console.warn('[OpenPhone] sync messages', e.message); }
+
+    // Calls are 1:1 only.
+    if (others.length === 1) {
+      try {
+        const cRes = await opGet('/calls', { phoneNumberId, participants: others, maxResults: 100 });
+        const other = others[0];
+        const calls = (cRes?.data || []).map(c => {
+          const incoming = c.direction === 'incoming' || c.direction === 'inbound';
+          return {
+            id: c.id,
+            from: incoming ? other : ownE164,
+            to: incoming ? ownE164 : other,
+            direction: c.direction,
+            status: c.status || null,
+            duration: c.duration || null,
+            createdAt: c.createdAt || new Date().toISOString(),
+            contact: name ? { name } : null,
+          };
+        });
+        callAdded += mergeById(recentCalls, calls, MAX_CALLS, dbSaveCall);
+      } catch (e) { console.warn('[OpenPhone] sync calls', e.message); }
+    }
+  }
+
+  console.log(`[OpenPhone] history sync: ${conversations.length} conversations, +${msgAdded} messages, +${callAdded} calls`);
+  return { conversations: conversations.length, msgAdded, callAdded };
+}
+
+// Throttled + single-flight wrapper. `force` bypasses the throttle (manual "Sync" button).
+export async function syncOpenPhoneHistory({ force = false } = {}) {
+  if (syncInFlight) return syncInFlight;
+  if (!force && Date.now() - lastSyncAt < SYNC_THROTTLE_MS) return { throttled: true };
+  syncInFlight = (async () => {
+    try { return await runSync(); }
+    catch (e) { console.error('[OpenPhone] history sync failed:', e.message); return { error: e.message }; }
+    finally { lastSyncAt = Date.now(); syncInFlight = null; }
+  })();
+  return syncInFlight;
+}
+
 // ─── Webhook auth ─────────────────────────────────────────────────────────────
 // The webhook is public (OpenPhone posts here from the internet), so without a guard
 // anyone can forge call/SMS events and inject attacker text into the AI pipeline.
@@ -137,7 +279,7 @@ openphoneRouter.post('/webhook', async (req, res) => {
       };
       if (idx >= 0) recentCalls[idx] = record;
       else recentCalls.unshift(record);
-      if (recentCalls.length > MAX_STORE) recentCalls.pop();
+      if (recentCalls.length > MAX_CALLS) recentCalls.pop();
       dbSaveCall(record);
     }
 
@@ -164,7 +306,7 @@ openphoneRouter.post('/webhook', async (req, res) => {
         contact: obj.contact || null,
       };
       recentMessages.unshift(msg);
-      if (recentMessages.length > MAX_STORE) recentMessages.pop();
+      if (recentMessages.length > MAX_MESSAGES) recentMessages.pop();
       dbSaveMessage(msg);
       // Log the shape, not the content — Railway retains stdout, and this is a client's
       // phone number and the body of their message.
@@ -289,9 +431,19 @@ openphoneRouter.get('/calls', requireAuth, requireRole('owner', 'manager'), (_re
   res.json({ data: recentCalls, totalItems: recentCalls.length });
 });
 
-// ─── GET recent messages (from webhook store) ─────────────────────────────────
+// ─── GET recent messages (webhook store + full REST history) ──────────────────
+// Opening the inbox kicks a throttled background sync so the FULL history from OpenPhone
+// fills in (not just what the webhook caught live). Returns the current store immediately;
+// the client's auto-refresh picks up the freshly synced rows a moment later.
 openphoneRouter.get('/messages', requireAuth, requireRole('owner', 'manager'), (_req, res) => {
+  syncOpenPhoneHistory().catch(() => {}); // fire-and-forget, throttled
   res.json({ data: recentMessages, totalItems: recentMessages.length });
+});
+
+// Manual "Sync history" — forces a pull past the throttle and reports what it fetched.
+openphoneRouter.post('/sync', requireAuth, requireRole('owner', 'manager'), async (_req, res) => {
+  const result = await syncOpenPhoneHistory({ force: true });
+  res.json({ ok: true, ...result, messages: recentMessages.length, calls: recentCalls.length });
 });
 
 // A technician may text only the clients they are actually working for. Owners and
@@ -353,7 +505,7 @@ openphoneRouter.post('/messages/send', requireAuth, async (req, res) => {
       contact: null,
     };
     recentMessages.unshift(outMsg);
-    if (recentMessages.length > MAX_STORE) recentMessages.pop();
+    if (recentMessages.length > MAX_MESSAGES) recentMessages.pop();
     dbSaveMessage(outMsg);
     res.json(data);
   } catch (err) {

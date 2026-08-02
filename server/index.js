@@ -3,7 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
-import { openphoneRouter, hydrateOpenPhoneStores } from './routes/openphone.js';
+import { openphoneRouter, hydrateOpenPhoneStores, syncOpenPhoneHistory } from './routes/openphone.js';
 import { authRouter } from './routes/auth.js';
 import { settingsRouter } from './routes/settings.js';
 import { aiRouter } from './routes/ai.js';
@@ -156,6 +156,9 @@ async function start() {
       await initDB();
       console.log('[DB] Connected to PostgreSQL');
       await hydrateOpenPhoneStores();
+      // Pull full message/call history from OpenPhone in the background so the inbox shows
+      // everything, not just what the webhook caught since boot. Fire-and-forget.
+      syncOpenPhoneHistory({ force: true }).catch(e => console.error('[OpenPhone] boot sync', e.message));
       startScheduler(); // payment reminders + evening digest (needs the DB)
     } catch (err) {
       console.error('[DB] Failed to connect:', err.message);
