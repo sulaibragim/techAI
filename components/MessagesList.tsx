@@ -180,9 +180,11 @@ export const MessagesList: React.FC<MessagesListProps> = ({ onClientSelect, onCr
   };
 
   return (
-    <div className="space-y-5 pb-24 max-w-5xl mx-auto animate-in fade-in duration-500">
+    // Bounded to the viewport so the LIST and the CHAT scroll inside themselves — the whole
+    // page no longer runs to the bottom when you scroll a long conversation.
+    <div className="flex flex-col h-[calc(100dvh-12rem)] md:h-[calc(100dvh-9rem)] max-w-5xl mx-auto animate-in fade-in duration-500">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-2">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-2 shrink-0 mb-4">
         <div className="flex items-center gap-3">
           {open && (
             <button onClick={() => setOpenKey(null)} className="p-2 bg-slate-900 border border-white/10 rounded-xl text-slate-300 hover:text-white transition-all active:scale-95 md:hidden">
@@ -216,9 +218,9 @@ export const MessagesList: React.FC<MessagesListProps> = ({ onClientSelect, onCr
         </div>
       </div>
 
-      <div className="grid md:grid-cols-[minmax(0,360px)_1fr] gap-4 px-2 items-start">
+      <div className="grid md:grid-cols-[minmax(0,340px)_1fr] gap-4 px-2 flex-1 min-h-0">
         {/* ── Thread list ── */}
-        <div className={`space-y-2 ${open ? 'hidden md:block' : ''}`}>
+        <div className={`space-y-2 min-h-0 overflow-y-auto pr-1 scrollbar-hide ${open ? 'hidden md:block' : ''}`}>
           {loading ? (
             [...Array(4)].map((_, i) => <div key={i} className="bg-slate-900/80 p-4 rounded-2xl border border-white/10 animate-pulse h-16" />)
           ) : !threads.length ? (
@@ -257,9 +259,9 @@ export const MessagesList: React.FC<MessagesListProps> = ({ onClientSelect, onCr
         </div>
 
         {/* ── Chat panel ── */}
-        <div className={`${open ? '' : 'hidden md:flex'} md:min-h-[60vh]`}>
+        <div className={`min-h-0 ${open ? 'flex' : 'hidden md:flex'}`}>
           {!open ? (
-            <div className="w-full bg-slate-900/40 rounded-2xl border border-white/10 border-dashed flex flex-col items-center justify-center p-16 opacity-40 text-center">
+            <div className="w-full h-full bg-slate-900/40 rounded-2xl border border-white/10 border-dashed flex flex-col items-center justify-center p-16 opacity-40 text-center">
               <MessageSquare size={28} className="mb-3 text-blue-500" />
               <p className="text-sm font-bold">Pick a conversation</p>
               <p className="text-xs text-slate-400 mt-1.5">Everything with that client — one thread</p>
@@ -293,7 +295,7 @@ const ChatPanel: React.FC<{
   const score = thread.client ? clientScore(thread.client) : null;
 
   return (
-    <div className="w-full bg-slate-900 rounded-2xl border border-white/10 shadow-2xl flex flex-col overflow-hidden">
+    <div className="w-full h-full bg-slate-900 rounded-2xl border border-white/10 shadow-2xl flex flex-col overflow-hidden">
       {/* Header */}
       <div className="p-4 border-b border-white/10 flex items-center gap-3">
         <div className={`w-11 h-11 rounded-xl flex items-center justify-center border shrink-0 ${thread.client ? 'bg-blue-600/10 border-blue-500/30 text-blue-300 font-bold' : 'bg-slate-950 border-white/10 text-slate-400'}`}>
@@ -318,7 +320,7 @@ const ChatPanel: React.FC<{
       )}
 
       {/* Timeline */}
-      <div className="p-4 space-y-2.5 max-h-[52vh] overflow-y-auto scrollbar-hide flex flex-col">
+      <div className="p-4 space-y-2.5 flex-1 min-h-0 overflow-y-auto scrollbar-hide flex flex-col">
         {thread.items.map(it => {
           if (it.kind === 'call') {
             const Icon = it.direction === 'missed' ? PhoneMissed : it.direction === 'in' ? PhoneIncoming : PhoneOutgoing;
