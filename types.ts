@@ -16,6 +16,11 @@ export interface User {
   phone?: string;
   photo?: string;
   commissionRate?: number; // percent of completed-job revenue, for salary calc
+  // An owner/manager who ALSO works jobs in the field and earns a technician-style
+  // commission on the ones they complete. Purely about pay & assignment — it does NOT
+  // change their role or grant/remove any permission. Technicians are field workers by
+  // definition; this flag lets a non-technician be treated as one for commission/payroll.
+  fieldTech?: boolean;
   skills?: string[];        // technician specialties (TECH_SKILLS) for smart assignment
   signature?: string;       // hand-drawn signature (data URL) stamped onto invoices
   active: boolean;

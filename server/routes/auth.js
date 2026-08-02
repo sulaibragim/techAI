@@ -196,7 +196,7 @@ authRouter.get('/users/:id', requireAuth, async (req, res) => {
 // Create user — owner only.
 authRouter.post('/users', requireAuth, requireRole('owner'), async (req, res) => {
   try {
-    const { name, email, password, role, phone, commissionRate, active, techStatus, skills } = req.body;
+    const { name, email, password, role, phone, commissionRate, fieldTech, active, techStatus, skills } = req.body;
     if (!name || !email) return res.status(400).json({ error: 'Name and email required' });
     // No silent default password — a missing/blank password used to become '1234',
     // which meant an account could exist with a guessable credential nobody chose.
@@ -209,9 +209,9 @@ authRouter.post('/users', requireAuth, requireRole('owner'), async (req, res) =>
     const id = `u-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
     const hash = await bcrypt.hash(password, 10);
     await db.query(
-      `INSERT INTO users (id, name, email, password, role, phone, commission_rate, active, tech_status, skills)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-      [id, name, email, hash, role || 'technician', phone || null, commissionRate || 0, active !== false, techStatus || 'available', Array.isArray(skills) ? JSON.stringify(skills) : null]
+      `INSERT INTO users (id, name, email, password, role, phone, commission_rate, field_tech, active, tech_status, skills)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+      [id, name, email, hash, role || 'technician', phone || null, commissionRate || 0, fieldTech === true, active !== false, techStatus || 'available', Array.isArray(skills) ? JSON.stringify(skills) : null]
     );
     const { rows } = await db.query('SELECT * FROM users WHERE id = $1', [id]);
     res.json(mapUser(rows[0]));
@@ -229,12 +229,14 @@ authRouter.put('/users/:id', requireAuth, async (req, res) => {
     const isSelf = req.user.id === req.params.id;
     if (!isOwner && !isSelf) return res.status(403).json({ error: 'Insufficient permissions' });
 
-    let { name, email, password, currentPassword, role, phone, commissionRate, active, techStatus, photo, lastLocation, skills, signature } = req.body;
+    let { name, email, password, currentPassword, role, phone, commissionRate, fieldTech, active, techStatus, photo, lastLocation, skills, signature } = req.body;
 
-    // Non-owners cannot change privileged fields (no role/commission/active escalation).
+    // Non-owners cannot change privileged fields (no role/commission/active escalation,
+    // and no self-granting a paid field-tech flag).
     if (!isOwner) {
       role = undefined;
       commissionRate = undefined;
+      fieldTech = undefined;
       active = undefined;
       email = undefined;
       skills = undefined;
@@ -278,9 +280,10 @@ authRouter.put('/users/:id', requireAuth, async (req, res) => {
         photo = COALESCE($10, photo),
         last_location = COALESCE($11, last_location),
         skills = COALESCE($12, skills),
-        signature = COALESCE($13, signature)
+        signature = COALESCE($13, signature),
+        field_tech = COALESCE($14, field_tech)
        WHERE id = $1`,
-      [req.params.id, name, email, hashedPassword, role, phone, commissionRate, active, techStatus, photo, lastLocation ? JSON.stringify(lastLocation) : null, skills !== undefined ? JSON.stringify(skills) : null, signature]
+      [req.params.id, name, email, hashedPassword, role, phone, commissionRate, active, techStatus, photo, lastLocation ? JSON.stringify(lastLocation) : null, skills !== undefined ? JSON.stringify(skills) : null, signature, fieldTech === undefined ? null : fieldTech]
     );
     const { rows } = await db.query('SELECT * FROM users WHERE id = $1', [req.params.id]);
     if (rows.length === 0) return res.status(404).json({ error: 'User not found' });
@@ -375,6 +378,7 @@ function mapUser(row, { lite = false } = {}) {
     role: row.role,
     phone: row.phone || undefined,
     commissionRate: row.commission_rate || undefined,
+    fieldTech: row.field_tech || undefined,
     active: row.active,
     techStatus: row.tech_status || undefined,
     lastLocation: row.last_location || undefined,

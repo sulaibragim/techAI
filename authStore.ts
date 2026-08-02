@@ -180,6 +180,7 @@ export const useAuthStore = create<AuthState>()(
             role: userData.role,
             phone: userData.phone,
             commissionRate: userData.commissionRate,
+            fieldTech: userData.fieldTech,
             active: userData.active,
             techStatus: userData.techStatus,
           }),
@@ -220,6 +221,7 @@ export const useAuthStore = create<AuthState>()(
               role: user.role,
               phone: user.phone,
               commissionRate: user.commissionRate,
+              fieldTech: user.fieldTech,
               active: user.active,
               techStatus: user.techStatus,
               photo: user.photo,
@@ -327,6 +329,12 @@ export const useAuthStore = create<AuthState>()(
 // Convenience hook — returns the currently logged-in user object (or null).
 export const useCurrentUser = (): User | null =>
   useAuthStore(s => s.users.find(u => u.id === s.currentUserId) ?? null);
+
+// Works jobs in the field and earns a technician-style commission: every technician,
+// plus any owner/manager flagged as a field tech. This is a PAY/ASSIGNMENT predicate —
+// it never grants or removes a permission (those stay keyed to `role`).
+export const worksField = (u: { role: Role; fieldTech?: boolean }): boolean =>
+  u.role === 'technician' || !!u.fieldTech;
 
 // Permission matrix — single source of truth for what each role may do.
 export const can = {

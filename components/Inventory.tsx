@@ -79,10 +79,11 @@ export const Inventory: React.FC = () => {
   const isOwner = currentUser?.role === 'owner';
   const canHandOut = currentUser ? can.handOutStock(currentUser.role) : false;
   const isTech = currentUser?.role === 'technician';
-  // Only active technicians can be handed stock — nobody else drives to a job with it.
+  // Only active field workers can be handed stock — techs, plus owner/managers who work
+  // jobs (fieldTech). Nobody else drives to a job with it.
   const users = useAuthStore(s => s.users);
   const techs = useMemo(
-    () => users.filter(u => u.role === 'technician' && u.active !== false).map(u => ({ id: u.id, name: u.name })),
+    () => users.filter(u => (u.role === 'technician' || u.fieldTech) && u.active !== false).map(u => ({ id: u.id, name: u.name })),
     [users]
   );
 

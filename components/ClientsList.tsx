@@ -53,7 +53,7 @@ export const ClientsList: React.FC<{
   const clientProfiles = useSettingsStore(s => s.clientProfiles);
   const upsertClientProfile = useSettingsStore(s => s.upsertClientProfile);
   const allUsers = useAuthStore(s => s.users);
-  const technicians = useMemo(() => allUsers.filter(u => u.role === 'technician' && u.active), [allUsers]);
+  const technicians = useMemo(() => allUsers.filter(u => (u.role === 'technician' || u.fieldTech) && u.active), [allUsers]);
 
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<typeof FILTERS[number]>('All');

@@ -363,7 +363,7 @@ export function revenueByTechnician(
   jobs: Job[],
   year: number,
   month: number,
-  users: Pick<User, 'id' | 'name' | 'role' | 'commissionRate'>[]
+  users: Pick<User, 'id' | 'name' | 'role' | 'commissionRate' | 'fieldTech'>[]
 ): TechnicianEarnings[] {
   const completed = completedJobsInMonth(jobs, year, month);
   const byTech = new Map<string, { revenue: number; tips: number; jobCount: number }>();
@@ -376,8 +376,10 @@ export function revenueByTechnician(
     cur.jobCount += 1;
     byTech.set(j.assignedTo, cur);
   }
+  // Technicians AND owner/managers who work in the field (fieldTech): an owner who
+  // completes a job earns the same commission as any tech, on the same ledger.
   return users
-    .filter(u => u.role === 'technician')
+    .filter(u => u.role === 'technician' || u.fieldTech)
     .map(u => {
       const agg = byTech.get(u.id) || { revenue: 0, tips: 0, jobCount: 0 };
       const rate = u.commissionRate ?? 0;
@@ -466,11 +468,11 @@ export function technicianStats(
   jobs: Job[],
   year: number,
   month: number,
-  users: Pick<User, 'id' | 'name' | 'role' | 'commissionRate' | 'active'>[]
+  users: Pick<User, 'id' | 'name' | 'role' | 'commissionRate' | 'active' | 'fieldTech'>[]
 ): TechStats[] {
   const key = monthKey(year, month);
   return users
-    .filter(u => u.role === 'technician')
+    .filter(u => u.role === 'technician' || u.fieldTech)
     .map(u => {
       const mine = jobs.filter(j => j.assignedTo === u.id);
       const completed = mine.filter(j => isRevenueJob(j) && revenueDateStr(j).startsWith(key));
@@ -622,12 +624,12 @@ export function fraudWatch(
   jobs: Job[],
   year: number,
   month: number,
-  users: Pick<User, 'id' | 'name' | 'role' | 'active'>[]
+  users: Pick<User, 'id' | 'name' | 'role' | 'active' | 'fieldTech'>[]
 ): FraudSignal[] {
   const key = monthKey(year, month);
   const out: FraudSignal[] = [];
   for (const u of users) {
-    if (u.role !== 'technician' || !u.active) continue;
+    if (!(u.role === 'technician' || u.fieldTech) || !u.active) continue;
     const mine = jobs.filter(j => j.assignedTo === u.id);
     const completed = mine.filter(j => isRevenueJob(j) && revenueDateStr(j).startsWith(key));
     const soldCount = completed.filter(isSale).length;

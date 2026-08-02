@@ -1,8 +1,8 @@
 import React, { useRef, useState } from 'react';
 import { motion } from 'motion/react';
-import { User, Target, Key, RotateCcw, Save, Upload, Info, Building2, AlertTriangle, Users, Plus, Trash2, ShieldCheck, History, Lock, Pencil, Check, X, Tag, BrainCircuit, MessageSquare, BellRing } from 'lucide-react';
+import { User, Target, Key, RotateCcw, Save, Upload, Info, Building2, AlertTriangle, Users, Plus, Trash2, ShieldCheck, History, Lock, Pencil, Check, X, Tag, BrainCircuit, MessageSquare, BellRing, Wrench } from 'lucide-react';
 import { useSettingsStore, SETTINGS_DEFAULTS, settingsStorageIsEphemeral } from '../settingsStore';
-import { useAuthStore, useCurrentUser, can, ROLE_LABELS, MIN_PASSWORD_LENGTH } from '../authStore';
+import { useAuthStore, useCurrentUser, can, worksField, ROLE_LABELS, MIN_PASSWORD_LENGTH } from '../authStore';
 import { useAppStore } from '../store';
 import { API_BASE } from '../backendUrl';
 import { authHeaders } from '../apiClient';
@@ -1015,7 +1015,21 @@ const TeamSection: React.FC = () => {
                   {ROLES.map(r => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
                 </select>
 
-                {u.role === 'technician' && (
+                {/* Owner/manager who also works jobs. Turning it on lets them be assigned
+                    to jobs and earn a technician-style commission (defaults to 45%) —
+                    without changing their role or any permission. Technicians are field
+                    workers by definition, so the toggle only shows for owner/manager. */}
+                {(u.role === 'owner' || u.role === 'manager') && (
+                  <button
+                    onClick={() => updateUser({ ...u, fieldTech: !u.fieldTech, commissionRate: !u.fieldTech ? (u.commissionRate || 45) : u.commissionRate })}
+                    title="Owner/manager who also works jobs and earns a technician commission"
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wide border transition-all ${u.fieldTech ? 'bg-blue-500/15 border-blue-500/40 text-blue-300' : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'}`}
+                  >
+                    <Wrench size={12} /> Works in field
+                  </button>
+                )}
+
+                {worksField(u) && (
                   <div className="flex items-center gap-1.5 bg-slate-800 border border-white/10 rounded-lg px-3 py-1.5">
                     <span className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Commission</span>
                     <input
@@ -1040,7 +1054,7 @@ const TeamSection: React.FC = () => {
                 )}
               </div>
 
-              {u.role === 'technician' && (
+              {worksField(u) && (
                 <div className="border-t border-white/5 pt-3">
                   <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">Specialties — used to route the right jobs here</p>
                   <div className="flex flex-wrap gap-1.5">

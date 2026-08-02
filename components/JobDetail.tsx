@@ -16,7 +16,7 @@ import {
 import { useSettingsStore } from '../settingsStore';
 import { Job, LineItem, STATUS_COLORS, LockDetails, JobStatus, Client, Message, CLIENT_TAGS, ClientRating, NEGATIVE_TAGS, LeadChannel, LEAD_CHANNELS, LEAD_CHANNEL_LABELS, isStockPart } from '../types';
 import { useAppStore } from '../store';
-import { useAuthStore, useCurrentUser, can } from '../authStore';
+import { useAuthStore, useCurrentUser, can, worksField } from '../authStore';
 import { BRANDS, LOCK_TYPES as LOCK_ICONS } from '../constants';
 import { formatTimestamp, formatDate } from '../dateUtils';
 import { sendSms } from '../smsService';
@@ -66,7 +66,9 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
   const users = useAuthStore(s => s.users);
   const logAudit = useAuthStore(s => s.logAudit);
   const role = currentUser?.role ?? 'technician';
-  const technicians = users.filter(u => u.role === 'technician' && u.active);
+  // Assignable = technicians plus any owner/manager who works in the field (fieldTech),
+  // so an owner-operator can be assigned to a job and earn commission on it.
+  const technicians = users.filter(u => worksField(u) && u.active);
   const jobIsClosed = initialJob.status === 'completed' || initialJob.status === 'cancelled';
   const lockedForTech = role === 'technician' && jobIsClosed; // tech cannot reopen a closed job
   const [localJob, setLocalJob] = useState<Job>({ ...initialJob });

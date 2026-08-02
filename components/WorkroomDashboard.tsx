@@ -7,7 +7,7 @@ import {
   ArrowLeft, Zap, Shield, Bell, Phone, MapPin, Globe, User, MoveRight, X, Wallet
 } from 'lucide-react';
 import { useAppStore, useVisibleJobs } from '../store';
-import { useAuthStore, useCurrentUser } from '../authStore';
+import { useAuthStore, useCurrentUser, worksField } from '../authStore';
 import { useSettingsStore } from '../settingsStore';
 import { Job, JobStatus, STATUS_COLORS } from '../types';
 import { calculateFinancialMetrics, revenueOnDay, technicianDay, accountsReceivable } from '../financialUtils';
@@ -204,6 +204,9 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
   const { updateJobStatus, updateJob } = useAppStore();
   const currentUser = useCurrentUser();
   const isTechUser = currentUser?.role === 'technician';
+  // An owner/manager who works jobs earns commission too, so they get the same
+  // "what I made today" card — WITHOUT taking on any technician view restriction.
+  const earnsCommission = !!currentUser && worksField(currentUser);
   const setActiveTab = useAppStore(s => s.setActiveTab);
   const jobs = useVisibleJobs();
   const { monthlyRevenueTarget, monthlyTargets, dailyRevenueTarget } = useSettingsStore();
@@ -340,8 +343,8 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
 
   // A tech's own numbers for today; the owner's view of who owes money.
   const myDay = useMemo(
-    () => (isTechUser && currentUser ? technicianDay(jobs, currentUser.id, currentUser.commissionRate ?? 0, todayStr) : null),
-    [isTechUser, currentUser, jobs, todayStr]
+    () => (earnsCommission && currentUser ? technicianDay(jobs, currentUser.id, currentUser.commissionRate ?? 0, todayStr) : null),
+    [earnsCommission, currentUser, jobs, todayStr]
   );
   const debtors = useMemo(() => {
     const rows = accountsReceivable(jobs);
@@ -538,7 +541,7 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
 
           {/* A technician's own day. They used to have to ask the owner what they'd
               earned; this is the same arithmetic payroll uses, for today only. */}
-          {isTechUser && myDay && (
+          {myDay && (
             <div className="bg-gradient-to-br from-emerald-900/30 to-slate-900 p-5 rounded-2xl border border-emerald-500/25 shadow-2xl">
               <h3 className="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-4 flex items-center">
                 <Wallet size={14} className="mr-2" /> Your day

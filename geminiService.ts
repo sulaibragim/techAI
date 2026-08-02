@@ -88,7 +88,7 @@ function getBusinessContext(): string {
   const todayRevenue = todaysJobs.filter(j => j.status === 'completed' || j.status === 'sold').reduce((s, j) => s + (j.totalAmount || 0), 0);
   const totalRevenue = completedJobs.reduce((s, j) => s + (j.totalAmount || 0), 0);
 
-  const techs = users.filter(u => u.role === 'technician');
+  const techs = users.filter(u => u.role === 'technician' || u.fieldTech);
   const techList = techs.map(t => `${t.name} (${t.techStatus || 'offDuty'}, ID: ${t.id}${t.skills?.length ? `, specialties: ${t.skills.join('/')}` : ''})`).join(', ');
 
   // Client reputation context — so the AI knows who's a VIP/Gold, who's difficult, and
@@ -677,7 +677,7 @@ export async function handleAITool(name: string, args: any): Promise<any> {
       const totalRevenue = completed.reduce((s, j) => s + (j.totalAmount || 0), 0);
       const techs = isTech && currentUser
         ? auth.users.filter(u => u.id === currentUser.id)
-        : auth.users.filter(u => u.role === 'technician' && u.active);
+        : auth.users.filter(u => (u.role === 'technician' || u.fieldTech) && u.active);
 
       return {
         status: 'success',
@@ -781,7 +781,7 @@ export async function handleAITool(name: string, args: any): Promise<any> {
     case 'get_technicians': {
       const techs = isTech && currentUser
         ? auth.users.filter(u => u.id === currentUser.id)
-        : auth.users.filter(u => u.role === 'technician' && u.active);
+        : auth.users.filter(u => (u.role === 'technician' || u.fieldTech) && u.active);
       return {
         status: 'success',
         technicians: techs.map(t => ({
