@@ -1,5 +1,26 @@
 import { Job, User, Expense, LeadChannel } from './types';
 
+/**
+ * How a job's commission/revenue credit splits across its crew, as [{userId, frac}] with
+ * fractions summing to 1. A job with a `crew` split divides by those percentages (normalized
+ * so they need not total exactly 100); otherwise it's a solo job — 100% to `assignedTo`.
+ * This is the single source of truth every per-technician money calc uses.
+ */
+export function jobCrewShares(job: Job): { userId: string; frac: number }[] {
+  const crew = (job.crew || []).filter(c => c.userId && (c.share || 0) > 0);
+  if (crew.length) {
+    const total = crew.reduce((s, c) => s + c.share, 0);
+    if (total > 0) return crew.map(c => ({ userId: c.userId, frac: c.share / total }));
+  }
+  return job.assignedTo ? [{ userId: job.assignedTo, frac: 1 }] : [];
+}
+
+/** Fraction (0..1) of a job credited to one user — 0 if they weren't on it. */
+export function jobShareFor(job: Job, userId: string): number {
+  const hit = jobCrewShares(job).find(s => s.userId === userId);
+  return hit ? hit.frac : 0;
+}
+
 export interface FinancialMetrics {
   totalRevenue: number;
   totalCount: number;
@@ -368,13 +389,16 @@ export function revenueByTechnician(
   const completed = completedJobsInMonth(jobs, year, month);
   const byTech = new Map<string, { revenue: number; tips: number; jobCount: number }>();
   for (const j of completed) {
-    if (!j.assignedTo) continue;
-    const cur = byTech.get(j.assignedTo) || { revenue: 0, tips: 0, jobCount: 0 };
-    // Commission is earned on company revenue, net of refunds and excluding tips.
-    cur.revenue += netRevenueAmount(j);
-    cur.tips += tipAmount(j);
-    cur.jobCount += 1;
-    byTech.set(j.assignedTo, cur);
+    // Split each job's revenue (and tips) across its crew by their shares. A solo job
+    // credits its one assignee at 100%, exactly as before.
+    for (const { userId, frac } of jobCrewShares(j)) {
+      const cur = byTech.get(userId) || { revenue: 0, tips: 0, jobCount: 0 };
+      // Commission is earned on company revenue, net of refunds and excluding tips.
+      cur.revenue += netRevenueAmount(j) * frac;
+      cur.tips += tipAmount(j) * frac;
+      cur.jobCount += 1; // the job counts for each person who ran it
+      byTech.set(userId, cur);
+    }
   }
   // Technicians AND owner/managers who work in the field (fieldTech): an owner who
   // completes a job earns the same commission as any tech, on the same ledger.
@@ -422,7 +446,7 @@ export interface DayPerf {
  * "great" day means great for this period, not against a fixed dollar amount.
  */
 export function dailyPerformance(jobs: Job[], year: number, month: number, techId?: string): DayPerf[] {
-  const pool = techId ? jobs.filter(j => j.assignedTo === techId) : jobs;
+  const pool = techId ? jobs.filter(j => jobShareFor(j, techId) > 0) : jobs;
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const key = monthKey(year, month);
   const days: DayPerf[] = Array.from({ length: daysInMonth }, (_, i) => ({
@@ -438,8 +462,10 @@ export function dailyPerformance(jobs: Job[], year: number, month: number, techI
     if (idx < 0 || idx >= daysInMonth) continue;
     const bucket = days[idx];
     bucket.jobs.push(j);
+    // Scoped to a tech, credit only their share of a crew job's revenue.
+    const frac = techId ? jobShareFor(j, techId) : 1;
     if (j.status === 'coffee') bucket.coffeeCount += 1;
-    else { bucket.revenue += j.totalAmount; if (isSale(j)) bucket.soldCount += 1; }
+    else { bucket.revenue += j.totalAmount * frac; if (isSale(j)) bucket.soldCount += 1; }
   }
   const active = days.filter(d => d.revenue > 0);
   const avg = active.length ? active.reduce((s, d) => s + d.revenue, 0) / active.length : 0;
@@ -474,18 +500,19 @@ export function technicianStats(
   return users
     .filter(u => u.role === 'technician' || u.fieldTech)
     .map(u => {
-      const mine = jobs.filter(j => j.assignedTo === u.id);
+      // A crew job belongs to everyone on it; revenue/tips are counted at each person's share.
+      const mine = jobs.filter(j => jobShareFor(j, u.id) > 0);
       const completed = mine.filter(j => isRevenueJob(j) && revenueDateStr(j).startsWith(key));
       // Company revenue: net of refunds, tips excluded (they're the tech's, not ours).
-      const revenue = completed.reduce((s, j) => s + netRevenueAmount(j), 0);
-      const tips = completed.reduce((s, j) => s + tipAmount(j), 0);
+      const revenue = completed.reduce((s, j) => s + netRevenueAmount(j) * jobShareFor(j, u.id), 0);
+      const tips = completed.reduce((s, j) => s + tipAmount(j) * jobShareFor(j, u.id), 0);
       const soldCount = completed.filter(isSale).length;
       const coffeeCount = mine.filter(j => j.status === 'coffee' && j.scheduledDate.startsWith(key)).length;
       const opportunities = soldCount + coffeeCount;
       const byDay = new Map<string, number>();
       for (const j of completed) {
         const d = revenueDateStr(j);
-        byDay.set(d, (byDay.get(d) || 0) + netRevenueAmount(j));
+        byDay.set(d, (byDay.get(d) || 0) + netRevenueAmount(j) * jobShareFor(j, u.id));
       }
       let bestDay = { date: '', revenue: 0 };
       for (const [date, rev] of byDay) if (rev > bestDay.revenue) bestDay = { date, revenue: rev };
@@ -515,13 +542,14 @@ export function technicianStats(
 
 /** Revenue + job count for the trailing N months, optionally per technician. */
 export function technicianTrend(jobs: Job[], techId: string | null, year: number, month: number, monthsBack = 6) {
-  const pool = techId ? jobs.filter(j => j.assignedTo === techId) : jobs;
+  const pool = techId ? jobs.filter(j => jobShareFor(j, techId) > 0) : jobs;
   return Array.from({ length: monthsBack }, (_, i) => {
     const d = new Date(year, month - (monthsBack - 1 - i), 1);
     const completed = completedJobsInMonth(pool, d.getFullYear(), d.getMonth());
     return {
       label: `${MONTH_LABELS[d.getMonth()]}${d.getMonth() === 0 ? ` '${String(d.getFullYear()).slice(2)}` : ''}`,
-      revenue: completed.reduce((s, j) => s + j.totalAmount, 0),
+      // Scoped to a tech, count only their share of each crew job's revenue.
+      revenue: completed.reduce((s, j) => s + j.totalAmount * (techId ? jobShareFor(j, techId) : 1), 0),
       count: completed.length,
     };
   });
@@ -829,7 +857,7 @@ export function accountsReceivable(jobs: Job[]): ReceivableRow[] {
 /** Revenue jobs in a period assigned to one technician. */
 export function jobsForTechnician(jobs: Job[], techId: string, year: number, month: number): Job[] {
   return completedJobsInMonth(jobs, year, month)
-    .filter(j => j.assignedTo === techId)
+    .filter(j => jobShareFor(j, techId) > 0)
     .sort((a, b) => a.scheduledDate.localeCompare(b.scheduledDate));
 }
 
@@ -862,10 +890,11 @@ export function technicianDay(
   commissionRate: number,
   dayStr: string
 ): TechDay {
-  const mine = jobs.filter(j => j.assignedTo === userId);
+  // Crew-aware: a job you ran with someone credits you your share of its revenue/tips.
+  const mine = jobs.filter(j => jobShareFor(j, userId) > 0);
   const closed = mine.filter(j => isRevenueJob(j) && revenueDateStr(j) === dayStr);
-  const revenue = closed.reduce((s, j) => s + netRevenueAmount(j), 0);
-  const tips = closed.reduce((s, j) => s + tipAmount(j), 0);
+  const revenue = closed.reduce((s, j) => s + netRevenueAmount(j) * jobShareFor(j, userId), 0);
+  const tips = closed.reduce((s, j) => s + tipAmount(j) * jobShareFor(j, userId), 0);
   const commission = round2(revenue * ((commissionRate || 0) / 100));
   return {
     jobsDone: closed.length,

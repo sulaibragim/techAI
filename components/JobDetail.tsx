@@ -14,7 +14,7 @@ import {
   Car, Home, ChevronDown, Lock, Printer, History, ThumbsUp, ThumbsDown, Minus, Star, AlertTriangle, Ban, RotateCcw, Megaphone
 } from 'lucide-react';
 import { useSettingsStore } from '../settingsStore';
-import { Job, LineItem, STATUS_COLORS, LockDetails, JobStatus, Client, Message, CLIENT_TAGS, ClientRating, NEGATIVE_TAGS, LeadChannel, LEAD_CHANNELS, LEAD_CHANNEL_LABELS, isStockPart } from '../types';
+import { Job, LineItem, STATUS_COLORS, LockDetails, JobStatus, Client, Message, CrewMember, CLIENT_TAGS, ClientRating, NEGATIVE_TAGS, LeadChannel, LEAD_CHANNELS, LEAD_CHANNEL_LABELS, isStockPart } from '../types';
 import { useAppStore } from '../store';
 import { useAuthStore, useCurrentUser, can, worksField } from '../authStore';
 import { BRANDS, LOCK_TYPES as LOCK_ICONS } from '../constants';
@@ -658,6 +658,8 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
     const updated: Job = {
       ...localJob,
       assignedTo,
+      // Changing the lead resets any crew split — the old shares referenced the old lead.
+      crew: undefined,
       // A fresh assignment awaits the tech's acceptance — unless they assigned it to themselves.
       acceptanceStatus: assignedTo ? (isSelf ? 'accepted' : 'pending') : undefined,
       acceptedAt: isSelf ? new Date().toISOString() : undefined,
@@ -668,6 +670,35 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
     const techName = technicians.find(t => t.id === assignedTo)?.name || 'Unassigned';
     logAudit({ action: 'job.assign', detail: `Assigned #${updated.jobNumber} to ${techName}`, jobId: updated.id });
   };
+
+  // ── Crew / "worked with" commission split ──────────────────────────────────
+  // The displayed roster: the stored crew, or the lead alone at 100% for a solo job.
+  const userName = (id: string) => users.find(u => u.id === id)?.name || 'Unknown';
+  const crewMembers: CrewMember[] = (localJob.crew && localJob.crew.length)
+    ? localJob.crew
+    : (localJob.assignedTo ? [{ userId: localJob.assignedTo, share: 100 }] : []);
+  const crewTotal = crewMembers.reduce((s, c) => s + (c.share || 0), 0);
+  const addableTechs = technicians.filter(t => !crewMembers.some(c => c.userId === t.id));
+
+  const commitCrew = (next: CrewMember[]) => {
+    // One member left ⇒ back to a plain solo job (no split stored).
+    const updated: Job = { ...localJob, crew: next.length > 1 ? next : undefined };
+    setLocalJob(updated);
+    commitJob(updated);
+  };
+  const evenShares = (members: CrewMember[]): CrewMember[] => {
+    const n = members.length;
+    const even = Math.floor(100 / n);
+    return members.map((c, i) => ({ ...c, share: i === 0 ? 100 - even * (n - 1) : even }));
+  };
+  const addCrewMember = (userId: string) => {
+    if (!userId || crewMembers.some(c => c.userId === userId)) return;
+    commitCrew(evenShares([...crewMembers, { userId, share: 0 }]));
+  };
+  const setCrewShare = (userId: string, share: number) => {
+    commitCrew(crewMembers.map(c => c.userId === userId ? { ...c, share: Math.max(0, Math.min(100, Math.round(share) || 0)) } : c));
+  };
+  const removeCrewMember = (userId: string) => commitCrew(crewMembers.filter(c => c.userId !== userId));
 
   const acceptJob = () => {
     // Accepting starts the job: it goes En Route (blue). The client heads-up SMS is a
@@ -2327,6 +2358,55 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                     </>
                   ) : (
                     <p className="text-sm font-semibold text-white">{users.find(u => u.id === localJob.assignedTo)?.name || 'Unassigned'}</p>
+                  )}
+
+                  {/* WORKED WITH — crew commission split. Two techs ride together, pick who
+                      you worked with and how the commission divides (default: even). */}
+                  {can.assignJobs(role) && localJob.assignedTo && (
+                    <div className="mt-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Worked with · commission split</p>
+                        {crewMembers.length > 1 && (
+                          <button onClick={() => commitCrew(evenShares(crewMembers))} className="text-[10px] font-bold uppercase tracking-wide text-blue-400 hover:text-blue-300">Split evenly</button>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        {crewMembers.map((c, i) => (
+                          <div key={c.userId} className="flex items-center gap-2 bg-slate-800 border border-white/10 rounded-xl px-3 py-2">
+                            <span className="flex-1 text-sm font-semibold text-white truncate">
+                              {userName(c.userId)}{i === 0 && <span className="ml-1.5 text-[9px] font-bold uppercase tracking-wide text-blue-400">Lead</span>}
+                            </span>
+                            <input
+                              type="number" min={0} max={100} value={c.share}
+                              disabled={crewMembers.length < 2}
+                              onChange={e => setCrewShare(c.userId, Number(e.target.value))}
+                              className="w-14 bg-transparent text-right text-sm font-bold text-white outline-none disabled:opacity-40"
+                            />
+                            <span className="text-sm font-bold text-slate-400">%</span>
+                            {crewMembers.length > 1 && i !== 0 && (
+                              <button onClick={() => removeCrewMember(c.userId)} aria-label="Remove teammate" className="p-1 text-slate-500 hover:text-red-400 transition-colors"><X size={13} /></button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      {addableTechs.length > 0 && (
+                        <select
+                          value=""
+                          onChange={e => { addCrewMember(e.target.value); e.target.value = ''; }}
+                          className="mt-2 w-full bg-slate-800 border border-dashed border-white/15 rounded-xl px-3 py-2 text-xs font-semibold text-slate-300 focus:outline-none focus:border-blue-500/50"
+                        >
+                          <option value="">+ Add teammate you worked with…</option>
+                          {addableTechs.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                        </select>
+                      )}
+                      {crewMembers.length > 1 && (
+                        <p className={`mt-1.5 text-[11px] font-semibold ${crewTotal === 100 ? 'text-slate-500' : 'text-amber-400'}`}>
+                          {crewTotal === 100
+                            ? 'Commission divides by these shares between everyone who worked the job.'
+                            : `Shares total ${crewTotal}% — round to 100 to keep it clear (they're normalized when paid).`}
+                        </p>
+                      )}
+                    </div>
                   )}
 
                   {/* ACCEPTANCE STATUS — so the dispatcher knows the tech responded */}

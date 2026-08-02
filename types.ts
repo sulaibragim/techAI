@@ -342,6 +342,12 @@ export interface LeadAttribution {
   landingPage?: string; // first page URL the visitor hit
 }
 
+// One member of a job's crew and their cut of its commission (percent).
+export interface CrewMember {
+  userId: string;
+  share: number; // percent of the job's commission credited to this person
+}
+
 export interface Job {
   id: string;
   jobNumber: string;
@@ -372,7 +378,11 @@ export interface Job {
   messages?: Message[];
   distance?: number; // Miles for Kanban card
   warranty?: string;
-  assignedTo?: string; // User id of the technician responsible
+  assignedTo?: string; // User id of the technician responsible (the lead on a crew job)
+  // Two (or more) techs who ran the job together, and how its commission splits between
+  // them. Percentages, normalized on read (so they need not sum to exactly 100). Absent /
+  // single-entry ⇒ 100% to `assignedTo` — the ordinary solo job. The lead is included.
+  crew?: CrewMember[];
   acceptanceStatus?: 'pending' | 'accepted' | 'declined'; // tech's response to the assignment
   acceptedAt?: string; // ISO timestamp when the tech accepted
   signature?: string; // PNG data URL of the client's on-site authorization signature

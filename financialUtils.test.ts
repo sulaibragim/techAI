@@ -245,3 +245,37 @@ describe('accounting summary', () => {
     expect(s.jobCount).toBe(0);
   });
 });
+
+describe('crew commission split', () => {
+  const tech = (id: string, name: string): User =>
+    ({ id, name, email: '', role: 'technician', active: true, commissionRate: 45, createdAt: '' } as User);
+  const users = [tech('u1', 'A'), tech('u2', 'B')];
+
+  it('splits revenue and commission 50/50 without changing the company total', () => {
+    const j = job({ lineItems: [li('labor', 200)], paymentStatus: 'paid', amountPaid: 200,
+      assignedTo: 'u1', crew: [{ userId: 'u1', share: 50 }, { userId: 'u2', share: 50 }] });
+    const rows = revenueByTechnician([j], 2026, 5, users);
+    const a = rows.find(r => r.userId === 'u1')!;
+    const b = rows.find(r => r.userId === 'u2')!;
+    expect(a.revenue).toBe(100);
+    expect(b.revenue).toBe(100);
+    expect(a.commission).toBe(45);
+    expect(b.commission).toBe(45);
+    expect(a.commission + b.commission).toBe(90); // same as one person at 45% of $200
+  });
+
+  it('a solo job (no crew) still pays the assignee 100%', () => {
+    const j = job({ lineItems: [li('labor', 200)], paymentStatus: 'paid', amountPaid: 200, assignedTo: 'u1' });
+    const rows = revenueByTechnician([j], 2026, 5, users);
+    expect(rows.find(r => r.userId === 'u1')!.commission).toBe(90);
+    expect(rows.find(r => r.userId === 'u2')!.commission).toBe(0);
+  });
+
+  it('normalizes an uneven split (30/70)', () => {
+    const j = job({ lineItems: [li('labor', 200)], paymentStatus: 'paid', amountPaid: 200,
+      assignedTo: 'u1', crew: [{ userId: 'u1', share: 30 }, { userId: 'u2', share: 70 }] });
+    const rows = revenueByTechnician([j], 2026, 5, users);
+    expect(rows.find(r => r.userId === 'u1')!.revenue).toBe(60);
+    expect(rows.find(r => r.userId === 'u2')!.revenue).toBe(140);
+  });
+});
