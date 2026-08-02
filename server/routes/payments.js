@@ -184,6 +184,9 @@ export function receiptHtml(job, jobId, co, opts = {}) {
   .red{color:#dc2626!important;font-weight:700}
   .meta-bar{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;border-top:1px solid #f1f5f9;border-bottom:1px solid #f1f5f9;padding:14px 0;margin-top:22px}
   .pill{display:inline-block;font-size:10px;font-weight:700;padding:2px 10px;border-radius:999px;border:1px solid #e2e8f0;color:#64748b;background:#f8fafc;margin-right:4px}
+  .pill-paid{background:#dcfce7;border-color:#86efac;color:#15803d}
+  .pill-dim{opacity:.4}
+  .paid-via{font-size:12px;font-weight:800;color:#15803d;margin:0 0 6px}
   .sigs{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:26px}
   .sigline{height:44px;border-bottom:1px solid #cbd5e1;display:flex;align-items:flex-end}
   .sigline img{max-height:60px;margin-bottom:-8px}
@@ -283,8 +286,13 @@ export function receiptHtml(job, jobId, co, opts = {}) {
   <div class="bottom">
   <div class="meta-bar">
     <div>
-      <p class="tiny" style="margin:0 0 6px">Accepted Payment</p>
-      <span class="pill">Cash</span><span class="pill">Card</span><span class="pill">Check</span><span class="pill">Zelle</span>
+      ${(() => {
+        const method = job.paymentMethod;
+        const paidVia = (job.paymentStatus === 'paid' || job.paymentStatus === 'partial') && !!method;
+        return `<p class="tiny" style="margin:0 0 6px">${paidVia ? 'Payment' : 'Accepted Payment'}</p>
+      ${paidVia ? `<p class="paid-via">✓ Paid by ${esc(method)}</p>` : ''}
+      ${['Cash','Card','Check','Zelle'].map(m => `<span class="pill${paidVia && m === method ? ' pill-paid' : (paidVia ? ' pill-dim' : '')}">${paidVia && m === method ? '✓ ' : ''}${m}</span>`).join('')}`;
+      })()}
     </div>
     <div style="text-align:right">
       <p class="tiny" style="margin:0 0 4px">Terms</p>

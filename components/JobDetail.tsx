@@ -997,6 +997,9 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
   .pt{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-top:1px solid #f1f5f9;border-bottom:1px solid #f1f5f9;margin:18px 0;}
   .pmethods{display:flex;gap:6px;margin-top:5px;}
   .pm{font-size:10px;font-weight:700;padding:3px 9px;border-radius:99px;border:1px solid #e2e8f0;color:#64748b;background:#f8fafc;}
+  .pm-paid{background:#dcfce7;border-color:#86efac;color:#15803d;}
+  .pm-dim{opacity:.4;}
+  .paid-via{font-size:12px;font-weight:800;color:#15803d;margin:3px 0 2px;}
   /* Signatures */
   .sigs{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:18px;}
   .sig-box{}
@@ -1086,10 +1089,15 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
   <!-- PAYMENT + TERMS -->
   <div class="pt">
     <div>
-      <div class="sect-label">Accepted Payment Methods</div>
-      <div class="pmethods">
-        <span class="pm">Cash</span><span class="pm">Card</span><span class="pm">Check</span><span class="pm">Zelle</span>
-      </div>
+      ${(() => {
+        const method = localJob.paymentMethod;
+        const paidVia = (isPaid || isPartial) && !!method;
+        return `<div class="sect-label">${paidVia ? 'Payment' : 'Accepted Payment Methods'}</div>
+        ${paidVia ? `<div class="paid-via">✓ Paid by ${esc(method)}</div>` : ''}
+        <div class="pmethods">
+          ${['Cash','Card','Check','Zelle'].map(m => `<span class="pm${paidVia && m === method ? ' pm-paid' : (paidVia ? ' pm-dim' : '')}">${paidVia && m === method ? '✓ ' : ''}${m}</span>`).join('')}
+        </div>`;
+      })()}
     </div>
     <div style="text-align:right;">
       <div class="sect-label">Terms</div>
@@ -1136,6 +1144,12 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
       alert('Your browser blocked the invoice window. Allow pop-ups for this site, then tap Print again.');
     }
   };
+  // How the money actually came in, for the invoice/receipt. Shown only once there's a
+  // payment on file, so the used method (Cash/Card/Check/Zelle) is highlighted instead of
+  // the four just sitting there as a generic "we accept these" list.
+  const paidMethod = localJob.paymentMethod;
+  const showPaidMethod = (localJob.paymentStatus === 'paid' || localJob.paymentStatus === 'partial') && !!paidMethod;
+
   // What's actually being collected now: the outstanding balance (deposits already
   // paid are subtracted). Tips are added as a line item before charging, so this
   // stays the single source of truth for every payment path.
@@ -2650,11 +2664,17 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                     <div className="mt-auto pt-8 flex flex-col gap-6">
                       <div className="flex items-center justify-between py-3 border-y border-slate-100">
                         <div>
-                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Accepted Payment</p>
+                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">{showPaidMethod ? 'Payment' : 'Accepted Payment'}</p>
+                          {showPaidMethod && (
+                            <p className="text-xs font-extrabold text-green-600 mb-1.5 flex items-center gap-1"><CheckCircle2 size={12} /> Paid by {paidMethod}</p>
+                          )}
                           <div className="flex items-center gap-2">
-                            {['Cash', 'Card', 'Check', 'Zelle'].map(m => (
-                              <span key={m} className="text-[10px] font-bold px-2 py-0.5 rounded-full border border-slate-200 text-slate-500 bg-slate-50">{m}</span>
-                            ))}
+                            {(['Cash', 'Card', 'Check', 'Zelle'] as const).map(m => {
+                              const used = showPaidMethod && m === paidMethod;
+                              return (
+                                <span key={m} className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${used ? 'border-green-300 bg-green-100 text-green-700' : showPaidMethod ? 'border-slate-200 text-slate-300 bg-slate-50 opacity-60' : 'border-slate-200 text-slate-500 bg-slate-50'}`}>{used ? '✓ ' : ''}{m}</span>
+                              );
+                            })}
                           </div>
                         </div>
                         <div className="text-right">
@@ -2730,6 +2750,12 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                     <span className="text-xs font-bold text-slate-300 uppercase tracking-widest">Total Due</span>
                     <span className="text-2xl font-extrabold text-white tabular-nums">${subtotal.toFixed(2)}</span>
                   </div>
+                  {showPaidMethod && (
+                    <div className="flex items-center justify-between bg-green-500/10 border border-green-500/20 rounded-2xl px-4 py-3">
+                      <span className="text-xs font-bold text-green-400 uppercase tracking-widest flex items-center gap-2"><CheckCircle2 size={13} /> Paid by {paidMethod}</span>
+                      <span className="text-base font-extrabold text-green-400 tabular-nums">${(localJob.amountPaid ?? subtotal).toFixed(2)}</span>
+                    </div>
+                  )}
                   {(localJob.refunds?.length ?? 0) > 0 && (
                     <div className="flex items-center justify-between bg-amber-500/10 border border-amber-500/20 rounded-2xl px-4 py-3">
                       <span className="text-xs font-bold text-amber-400 uppercase tracking-widest flex items-center gap-2"><RotateCcw size={13} /> Refunded</span>
