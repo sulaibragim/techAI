@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import crypto from 'node:crypto';
 import { processTranscriptWithAI } from '../services/gemini.js';
-import { toE164, sendSMS } from '../services/openphone.js';
+import { toE164, sendSMS, getCallTranscript } from '../services/openphone.js';
 import { requireAuth, requireRole } from '../middleware/auth.js';
 import { sendPushToRoles } from '../services/push.js';
 import { geocode, drivingRoute, etaPhrase } from '../services/geo.js';
@@ -96,6 +96,15 @@ const OP_BASE = 'https://api.openphone.com/v1';
 const opHeaders = () => ({ Authorization: process.env.OPENPHONE_API_KEY });
 const digits10 = (p) => String(p || '').replace(/\D/g, '').slice(-10);
 
+// MMS attachments. OpenPhone shapes media as either bare URL strings or {url, type}
+// objects depending on the surface (webhook vs REST) — normalize to [{url, type}].
+function normalizeMedia(media) {
+  if (!Array.isArray(media)) return [];
+  return media
+    .map(m => (typeof m === 'string' ? { url: m, type: '' } : { url: m?.url || '', type: m?.type || m?.contentType || '' }))
+    .filter(m => m.url);
+}
+
 async function opGet(path, params = {}) {
   const qs = new URLSearchParams();
   for (const [k, v] of Object.entries(params)) {
@@ -177,6 +186,7 @@ async function runSync() {
         from: m.from,
         to: Array.isArray(m.to) ? m.to[0] : m.to,
         body: m.text || m.body || '',
+        media: normalizeMedia(m.media),
         direction: m.direction === 'outgoing' ? 'outgoing' : 'incoming',
         createdAt: m.createdAt || new Date().toISOString(),
         contact: name ? { name } : null,
@@ -301,6 +311,7 @@ openphoneRouter.post('/webhook', async (req, res) => {
         from: obj.from,
         to: obj.to,
         body: obj.body || obj.text || '',
+        media: normalizeMedia(obj.media),
         direction: 'incoming',
         createdAt: obj.createdAt || new Date().toISOString(),
         contact: obj.contact || null,
@@ -429,6 +440,33 @@ openphoneRouter.get('/client-lang', requireAuth, async (req, res) => {
 // (authStore `viewCalls`/`viewMessages`), enforced here so a tech token can't read it.
 openphoneRouter.get('/calls', requireAuth, requireRole('owner', 'manager'), (_req, res) => {
   res.json({ data: recentCalls, totalItems: recentCalls.length });
+});
+
+// ─── GET one call's transcript (fetched live from OpenPhone, cached) ─────────
+// Same owner/manager gate as the call list itself — a transcript is the call's content.
+const transcriptCache = new Map(); // callId -> { dialogue, status }
+openphoneRouter.get('/calls/:id/transcript', requireAuth, requireRole('owner', 'manager'), async (req, res) => {
+  const callId = req.params.id;
+  if (transcriptCache.has(callId)) return res.json(transcriptCache.get(callId));
+  try {
+    const r = await getCallTranscript(callId);
+    const d = r?.data;
+    const out = {
+      status: d?.status || (Array.isArray(d?.dialogue) && d.dialogue.length ? 'completed' : 'absent'),
+      dialogue: (d?.dialogue || []).map(l => ({
+        speaker: l.identifier || l.userId || '',
+        text: l.content || '',
+        start: l.start ?? null,
+      })),
+    };
+    if (out.dialogue.length) {
+      transcriptCache.set(callId, out);
+      if (transcriptCache.size > 500) transcriptCache.delete(transcriptCache.keys().next().value);
+    }
+    res.json(out);
+  } catch (err) {
+    res.status(502).json({ error: err.message });
+  }
 });
 
 // ─── GET recent messages (webhook store + full REST history) ──────────────────

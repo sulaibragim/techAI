@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Calendar, Briefcase, BarChart2, Settings, LogOut, BrainCircuit, Phone, MessageSquare, AlertCircle, X, Activity, Package, Users, Receipt, KeyRound, Megaphone, Building2 } from 'lucide-react';
 import { useAppStore, useVisibleJobs } from '../store';
 import { useAuthStore, useCurrentUser, visibleTabsFor, ROLE_LABELS } from '../authStore';
+import { useInboxUnreadCount } from '../inboxStore';
 import { outstandingAmount } from '../financialUtils';
 
 function formatRelativeTime(isoString: string): string {
@@ -37,6 +38,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onTabChange }) => 
   const logout = useAuthStore(s => s.logout);
   const currentUser = useCurrentUser();
   const lowStockCount = inventory.filter(p => p.stock <= p.reorderPoint).length;
+  const unreadMessages = useInboxUnreadCount();
 
   // Work that needs a human decision now, newest first. Derived from real job state —
   // the old panel read a store field nothing ever writes, so it was always empty.
@@ -110,6 +112,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onTabChange }) => 
               {tab.id === 'inventory' && lowStockCount > 0 && (
                 <span className="relative z-10 bg-amber-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
                   {lowStockCount}
+                </span>
+              )}
+              {tab.id === 'messages' && unreadMessages > 0 && (
+                <span className="relative z-10 bg-blue-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {unreadMessages > 9 ? '9+' : unreadMessages}
                 </span>
               )}
             </button>

@@ -9,6 +9,7 @@ import { useAppStore, useVisibleJobs, hasPendingJobWrite } from './store';
 import { subscribeToWrites, clearWriteError, setSessionExpiredHandler, resetWriteQueue, flushWrites } from './writeQueue';
 import { useSettingsStore } from './settingsStore';
 import { useCurrentUser, useAuthStore, visibleTabsFor, ROLE_LABELS, can } from './authStore';
+import { startInboxPolling, stopInboxPolling } from './inboxStore';
 import { getToken, authHeaders } from './apiClient';
 import { API_BASE } from './backendUrl';
 import type { Job, TechStatus } from './types';
@@ -69,6 +70,15 @@ const App: React.FC = () => {
 
   // Signed in (again) — push anything that piled up while we were logged out or offline.
   useEffect(() => { if (currentUser) void flushWrites(); }, [currentUser?.id]);
+
+  // Poll the OpenPhone inbox app-wide so the nav badge shows unread messages even
+  // before the Messages tab is opened. Owner/manager only — techs get 403 there.
+  useEffect(() => {
+    if (currentUser && (currentUser.role === 'owner' || currentUser.role === 'manager')) {
+      startInboxPolling();
+      return stopInboxPolling;
+    }
+  }, [currentUser?.id, currentUser?.role]);
 
   const openClient = (clientId: string) => { setClientFocusId(clientId); setActiveTab('clients'); };
   const openWizard = (seed?: { phone?: string; name?: string; autoPrefill?: boolean }) => { setWizardSeed(seed || {}); setIsWizardOpen(true); };

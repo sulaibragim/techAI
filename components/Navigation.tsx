@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { Calendar, Briefcase, BarChart2, BrainCircuit, MessageSquare, Phone, Package, Users, Settings, LogOut, Receipt, KeyRound, Megaphone, Building2 } from 'lucide-react';
 import { useAuthStore, useCurrentUser, visibleTabsFor } from '../authStore';
+import { useInboxUnreadCount } from '../inboxStore';
 
 interface NavigationProps {
   currentTab: string;
@@ -32,6 +33,7 @@ const MAX_FIT = 5;
 export const Navigation: React.FC<NavigationProps> = ({ currentTab, onTabChange }) => {
   const logout = useAuthStore(s => s.logout);
   const currentUser = useCurrentUser();
+  const unreadMessages = useInboxUnreadCount();
   const tabs = (currentUser ? visibleTabsFor(currentUser.role) : []).filter(id => TAB_META[id]);
 
   // +1 for the Log out button. ≤5 → stretch evenly; >5 → swipeable scroll strip.
@@ -83,7 +85,14 @@ export const Navigation: React.FC<NavigationProps> = ({ currentTab, onTabChange 
               className={`${itemBase} ${itemSize} ${isActive ? 'text-blue-400 bg-blue-500/10' : 'text-slate-400 hover:text-slate-200'}`}
             >
               {isActive && <span className="absolute top-0 left-1/2 -translate-x-1/2 w-7 h-0.5 rounded-full bg-blue-400" />}
-              <Icon size={20} />
+              <span className="relative">
+                <Icon size={20} />
+                {id === 'messages' && unreadMessages > 0 && (
+                  <span className="absolute -top-1.5 -right-2.5 min-w-[16px] h-4 px-1 bg-blue-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                    {unreadMessages > 9 ? '9+' : unreadMessages}
+                  </span>
+                )}
+              </span>
               <span className="text-[11px] font-semibold leading-none">{label}</span>
             </button>
           );
