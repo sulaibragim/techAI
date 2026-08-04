@@ -465,6 +465,9 @@ openphoneRouter.get('/calls/:id/transcript', requireAuth, requireRole('owner', '
     }
     res.json(out);
   } catch (err) {
+    // No transcript existing for a call (not recorded / plan without transcripts / too old)
+    // is a normal answer, not a server error.
+    if (err.status === 404 || err.status === 400) return res.json({ status: 'absent', dialogue: [] });
     res.status(502).json({ error: err.message });
   }
 });

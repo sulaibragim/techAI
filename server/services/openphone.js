@@ -30,8 +30,16 @@ export async function getPhoneNumbers() {
   return res.json();
 }
 
+// Transcripts are their own resource in the OpenPhone API — /call-transcripts/{id},
+// NOT /calls/{id}/transcript (that path returns an HTML 404 page).
 export async function getCallTranscript(callId) {
-  const res = await fetch(`${BASE}/calls/${callId}/transcript`, { headers: headers() });
+  const res = await fetch(`${BASE}/call-transcripts/${encodeURIComponent(callId)}`, { headers: headers() });
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    const err = new Error(`transcript ${res.status} ${text.slice(0, 120)}`);
+    err.status = res.status;
+    throw err;
+  }
   return res.json();
 }
 

@@ -500,7 +500,7 @@ const ChatPanel: React.FC<{
   const toggleCall = async (id: string) => {
     if (openCallId === id) { setOpenCallId(null); return; }
     setOpenCallId(id);
-    if (transcripts[id]) return;
+    if (transcripts[id] && transcripts[id] !== 'error') return; // errors retry on re-expand
     setTranscripts(p => ({ ...p, [id]: 'loading' }));
     try {
       const r = await fetch(`${API_BASE}/api/openphone/calls/${id}/transcript`, { headers: { ...authHeaders() } });
