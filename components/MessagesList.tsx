@@ -1,9 +1,9 @@
-import React, { useMemo, useEffect, useState, useCallback } from 'react';
+import React, { useMemo, useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
 import { useVisibleJobs } from '../store';
 import { useSettingsStore } from '../settingsStore';
 import {
   MessageSquare, User, Smartphone, RefreshCw, Send, Radio, ArrowLeft,
-  PhoneIncoming, PhoneOutgoing, PhoneMissed, Phone, CreditCard, Briefcase, ExternalLink, History,
+  PhoneIncoming, PhoneOutgoing, PhoneMissed, Phone, CreditCard, Briefcase, ExternalLink, History, Search,
 } from 'lucide-react';
 import { Job } from '../types';
 import { API_BASE } from '../backendUrl';
@@ -48,6 +48,13 @@ const ANY_URL = /(https?:\/\/\S+)/i;
 
 const fmtTime = (iso: number) =>
   new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+
+// Which message in each thread the user has actually SEEN (per device). Without this the
+// green dot just meant "latest is incoming" and never went away.
+const READ_KEY = 'techai-inbox-read-v1';
+const loadReadMap = (): Record<string, number> => {
+  try { return JSON.parse(localStorage.getItem(READ_KEY) || '{}'); } catch { return {}; }
+};
 const fmtDur = (s?: number) => {
   if (!s) return '';
   const m = Math.floor(s / 60), r = s % 60;
@@ -67,6 +74,17 @@ export const MessagesList: React.FC<MessagesListProps> = ({ onClientSelect, onCr
   const [openKey, setOpenKey] = useState<string | null>(null);
   const [replyText, setReplyText] = useState('');
   const [sending, setSending] = useState(false);
+  const [query, setQuery] = useState('');
+  const [readMap, setReadMap] = useState<Record<string, number>>(loadReadMap);
+
+  const markRead = useCallback((key: string, ts: number) => {
+    setReadMap(prev => {
+      if ((prev[key] || 0) >= ts) return prev;
+      const next = { ...prev, [key]: ts };
+      try { localStorage.setItem(READ_KEY, JSON.stringify(next)); } catch { /* quota */ }
+      return next;
+    });
+  }, []);
 
   const fetchAll = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
@@ -149,6 +167,21 @@ export const MessagesList: React.FC<MessagesListProps> = ({ onClientSelect, onCr
 
   const open = openKey ? threads.find(t => t.key === openKey) || null : null;
 
+  // Looking at a thread = having read it, including messages arriving while it's open.
+  useEffect(() => {
+    if (open) markRead(open.key, open.latest.ts);
+  }, [open?.key, open?.latest.ts, markRead]);
+
+  const visibleThreads = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return threads;
+    const qDigits = q.replace(/\D/g, '');
+    return threads.filter(t => {
+      const names = [t.client ? `${t.client.firstName} ${t.client.lastName}` : '', t.contactName || ''].join(' ').toLowerCase();
+      return names.includes(q) || (qDigits.length > 0 && t.key.includes(qDigits));
+    });
+  }, [threads, query]);
+
   const sendReply = async (to: string) => {
     if (sending || !replyText.trim()) return;
     setSending(true);
@@ -227,7 +260,17 @@ export const MessagesList: React.FC<MessagesListProps> = ({ onClientSelect, onCr
 
       <div className="grid md:grid-cols-[minmax(0,340px)_1fr] gap-4 px-2 flex-1 min-h-0">
         {/* ── Thread list ── */}
-        <div className={`space-y-2 min-h-0 overflow-y-auto pr-1 scrollbar-hide ${open ? 'hidden md:block' : ''}`}>
+        <div className={`flex-col min-h-0 ${open ? 'hidden md:flex' : 'flex'}`}>
+          <div className="relative mb-2 shrink-0">
+            <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+            <input
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="Search name or number…"
+              className="w-full bg-slate-900 border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+            />
+          </div>
+          <div className="space-y-2 min-h-0 flex-1 overflow-y-auto pr-1 scrollbar-hide">
           {loading ? (
             [...Array(4)].map((_, i) => <div key={i} className="bg-slate-900/80 p-4 rounded-2xl border border-white/10 animate-pulse h-16" />)
           ) : !threads.length ? (
@@ -236,12 +279,16 @@ export const MessagesList: React.FC<MessagesListProps> = ({ onClientSelect, onCr
               <p className="text-sm font-bold tracking-tight">{online ? 'No conversations yet' : 'Can’t reach the server'}</p>
               <p className="text-xs font-semibold text-slate-400 mt-1.5">{online ? 'Client texts & calls will appear here' : 'The inbox is unavailable right now'}</p>
             </div>
+          ) : !visibleThreads.length ? (
+            <div className="bg-slate-900 rounded-2xl border border-white/10 p-10 text-center opacity-40">
+              <p className="text-sm font-bold">Nothing matches “{query.trim()}”</p>
+            </div>
           ) : (
-            threads.map(t => {
+            visibleThreads.map(t => {
               const flags = t.client ? clientFlags(t.client) : null;
               const tone = flags?.tone === 'danger' ? 'border-red-500/40' : flags?.tone === 'vip' ? 'border-amber-500/40' : 'border-white/10';
               const active = openKey === t.key;
-              const unread = t.latest.direction === 'in';
+              const unread = (t.latest.direction === 'in' || t.latest.direction === 'missed') && t.latest.ts > (readMap[t.key] || 0);
               return (
                 <button
                   key={t.key}
@@ -256,13 +303,14 @@ export const MessagesList: React.FC<MessagesListProps> = ({ onClientSelect, onCr
                       <p className="text-sm font-bold text-white truncate">{titleFor(t)}</p>
                       {unread && <span className="w-2 h-2 rounded-full bg-green-400 shrink-0" />}
                     </div>
-                    <p className="text-xs text-slate-400 truncate italic mt-0.5">{snippet(t.latest)}</p>
+                    <p className={`text-xs truncate mt-0.5 ${unread ? 'text-slate-200 font-semibold' : 'text-slate-400 italic'}`}>{snippet(t.latest)}</p>
                   </div>
                   <span className="text-[10px] font-bold text-slate-500 tabular-nums shrink-0">{fmtTime(t.latest.ts)}</span>
                 </button>
               );
             })
           )}
+          </div>
         </div>
 
         {/* ── Chat panel ── */}
@@ -301,6 +349,17 @@ const ChatPanel: React.FC<{
   const flags = thread.client ? clientFlags(thread.client) : null;
   const score = thread.client ? clientScore(thread.client) : null;
 
+  // Open at the NEWEST message (bottom), like any messenger. Stay pinned to the bottom as
+  // messages arrive — but only if the user hasn't scrolled up to read history.
+  const timelineRef = useRef<HTMLDivElement>(null);
+  const pinnedRef = useRef(true);
+  const scrollToBottom = () => {
+    const el = timelineRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  };
+  useLayoutEffect(() => { pinnedRef.current = true; scrollToBottom(); }, [thread.key]);
+  useLayoutEffect(() => { if (pinnedRef.current) scrollToBottom(); }, [thread.items.length]);
+
   return (
     <div className="w-full h-full bg-slate-900 rounded-2xl border border-white/10 shadow-2xl flex flex-col overflow-hidden">
       {/* Header */}
@@ -327,7 +386,14 @@ const ChatPanel: React.FC<{
       )}
 
       {/* Timeline */}
-      <div className="p-4 space-y-2.5 flex-1 min-h-0 overflow-y-auto scrollbar-hide flex flex-col">
+      <div
+        ref={timelineRef}
+        onScroll={e => {
+          const el = e.currentTarget;
+          pinnedRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 150;
+        }}
+        className="p-4 space-y-2.5 flex-1 min-h-0 overflow-y-auto scrollbar-hide flex flex-col"
+      >
         {thread.items.map(it => {
           if (it.kind === 'call') {
             const Icon = it.direction === 'missed' ? PhoneMissed : it.direction === 'in' ? PhoneIncoming : PhoneOutgoing;
