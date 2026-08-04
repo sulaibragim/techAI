@@ -158,11 +158,18 @@ export const MessagesList: React.FC<MessagesListProps> = ({ onClientSelect, onCr
         headers: { 'Content-Type': 'application/json', ...authHeaders() },
         body: JSON.stringify({ to, content: replyText.trim(), phoneNumberId: PHONE_NUMBER_ID }),
       });
-      if (!res.ok) throw new Error('send rejected');
+      if (!res.ok) {
+        const err = await res.json().catch(() => null);
+        const reason = err?.error || '';
+        if (res.status === 402 || /credit/i.test(reason)) {
+          throw new Error('OpenPhone is out of prepaid SMS credits — top up in OpenPhone → Settings → Billing, then resend.');
+        }
+        throw new Error(reason || 'The message was not delivered. Check the number or try again.');
+      }
       setReplyText('');
       await fetchAll(true);
-    } catch {
-      alert('Send failed — the message was not delivered. Check the number or try again.');
+    } catch (e) {
+      alert(`Send failed — ${e instanceof Error ? e.message : 'the message was not delivered.'}`);
     } finally {
       setSending(false);
     }
