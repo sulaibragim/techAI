@@ -254,7 +254,7 @@ export const Dashboard: React.FC = () => {
         </>
       ) : compareMode ? (
         <CompareView
-          jobs={jobs} months={months} target={targetGoal}
+          jobs={jobs} months={months}
           A={A} B={B} viewYear={viewYear} viewMonth={viewMonth} cmpYear={cmpYear} cmpMonth={cmpMonth}
           setView={(y, m) => { setViewYear(y); setViewMonth(m); }}
           setCmp={(y, m) => { setCmpYear(y); setCmpMonth(m); }}
@@ -931,7 +931,7 @@ export const Dashboard: React.FC = () => {
 // ---- Compare View ------------------------------------------------------------
 
 const CompareView: React.FC<{
-  jobs: any[]; months: { year: number; month: number }[]; target: number;
+  jobs: any[]; months: { year: number; month: number }[];
   A: FinancialMetrics; B: FinancialMetrics;
   viewYear: number; viewMonth: number; cmpYear: number; cmpMonth: number;
   setView: (y: number, m: number) => void; setCmp: (y: number, m: number) => void;

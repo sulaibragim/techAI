@@ -83,7 +83,7 @@ export const MarketingDashboard: React.FC = () => {
     const revenue = rows.reduce((s, r) => s + r.revenue, 0);
     const cogs = rows.reduce((s, r) => s + r.cogs, 0);
     const leads = rows.reduce((s, r) => s + r.leads, 0);
-    const won = rows.reduce((s, r) => s + r.wonJobs, 0);
+    const won = rows.reduce((s, r) => s + r.cohortWon, 0);
     const knownLeads = rows.filter(r => r.channel !== 'unknown').reduce((s, r) => s + r.leads, 0);
     return {
       spend, revenue, cogs, leads, won, knownLeads,
@@ -290,7 +290,7 @@ export const MarketingDashboard: React.FC = () => {
               </table>
             </div>
             <p className="text-[11px] text-slate-500 mt-4 flex items-center gap-1.5">
-              <Info size={12} /> Leads counted when they arrive; revenue when jobs are sold/completed. In a single month they line up; over a quarter or year read close-rate as directional.
+              <Info size={12} /> Won and Close track this period's leads to the sale, whenever it lands; Revenue, ROAS and Profit count money recognized inside the period.
             </p>
           </Card>
         </>
@@ -315,7 +315,7 @@ const ChannelRow: React.FC<{ r: ChannelMetrics }> = ({ r }) => {
         </span>
       </td>
       <td className="text-right py-3 px-2 tabular-nums text-slate-300">{r.leads}</td>
-      <td className="text-right py-3 px-2 tabular-nums text-slate-300">{r.wonJobs}</td>
+      <td className="text-right py-3 px-2 tabular-nums text-slate-300">{r.cohortWon}</td>
       <td className="text-right py-3 px-2 tabular-nums text-slate-400">{r.leads > 0 ? fmtPct(r.closeRate) : '—'}</td>
       <td className="text-right py-3 px-2 tabular-nums font-semibold text-green-400">{fmt$(r.revenue)}</td>
       <td className="text-right py-3 px-2 tabular-nums text-pink-400">{r.spend > 0 ? fmt$(r.spend) : '—'}</td>

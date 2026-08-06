@@ -91,6 +91,8 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
   const [showBrandSearch, setShowBrandSearch] = useState(false);
   const [assignedTo, setAssignedTo] = useState<string>(currentUser?.role === 'technician' ? (currentUser?.id || '') : '');
 
+  const [showSecondAddress, setShowSecondAddress] = useState(false);
+
   // Schedule + priority
   const [scheduleMode, setScheduleMode] = useState<'asap' | 'later'>('asap');
   const [schedDate, setSchedDate] = useState<string>(todayStr());
@@ -405,6 +407,35 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
                   geoPrecision: v.precision,
                 }))}
               />
+
+              {(showSecondAddress || client.secondaryAddress) ? (
+                <AddressAutocomplete
+                  title="Second Address"
+                  required={false}
+                  address={client.secondaryAddress || ''}
+                  zip={client.secondaryZip || ''}
+                  precision={client.secondaryGeoPrecision}
+                  lat={client.secondaryLat}
+                  lng={client.secondaryLng}
+                  placeId={client.secondaryPlaceId}
+                  onChange={(v) => setClient(prev => ({
+                    ...prev,
+                    secondaryAddress: v.address,
+                    secondaryZip: v.zip,
+                    secondaryLat: v.lat,
+                    secondaryLng: v.lng,
+                    secondaryPlaceId: v.placeId,
+                    secondaryGeoPrecision: v.precision,
+                  }))}
+                />
+              ) : (
+                <button
+                  onClick={() => setShowSecondAddress(true)}
+                  className="w-full flex items-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-white/15 text-xs font-bold text-slate-400 hover:text-white hover:border-white/30 transition-all active:scale-[0.99]"
+                >
+                  <MapPin size={13} /> Add a second address (work, other home…)
+                </button>
+              )}
 
               {/* Access details for the tech */}
               <div className={cardCls}>

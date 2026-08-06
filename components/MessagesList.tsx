@@ -40,6 +40,8 @@ const STRIPE_LINK = /(https?:\/\/\S*(?:checkout\.stripe\.com|\/pay\/cs_)\S*)/i;
 const ANY_URL = /(https?:\/\/\S+)/i;
 // A client message with no reply for this long is "needs reply".
 const NEEDS_REPLY_MS = 2 * 60 * 60 * 1000;
+// Draft threads survive a reload (per device), same idea as the read markers.
+const DRAFTS_KEY = 'techai-inbox-drafts-v1';
 
 const fmtTime = (iso: number) =>
   new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
@@ -71,8 +73,14 @@ export const MessagesList: React.FC<MessagesListProps> = ({ onJobSelect, onClien
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<InboxFilter>('all');
   const [composeOpen, setComposeOpen] = useState(false);
-  // Threads started from "New message" that have no OpenPhone history yet.
-  const [drafts, setDrafts] = useState<Record<string, { phone: string; name?: string }>>({});
+  // Threads started from "New message" that have no OpenPhone history yet. Persisted
+  // per device so a reload doesn't lose a chat you opened but haven't texted yet.
+  const [drafts, setDrafts] = useState<Record<string, { phone: string; name?: string }>>(() => {
+    try { return JSON.parse(localStorage.getItem(DRAFTS_KEY) || '{}'); } catch { return {}; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem(DRAFTS_KEY, JSON.stringify(drafts)); } catch { /* quota */ }
+  }, [drafts]);
 
   // The app-level poller keeps the store warm; opening the tab just refreshes once.
   useEffect(() => { fetchAll(messages !== null); }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -135,6 +143,14 @@ export const MessagesList: React.FC<MessagesListProps> = ({ onJobSelect, onClien
     }
     return out.sort((a, b) => (b.latest?.ts ?? Infinity) - (a.latest?.ts ?? Infinity));
   }, [messages, calls, clients, drafts]);
+
+  // A draft that has gained real history is just a thread now — drop the stub.
+  useEffect(() => {
+    const stale = Object.keys(drafts).filter(k => threads.some(t => t.key === k && t.items.length > 0));
+    if (stale.length) {
+      setDrafts(prev => { const next = { ...prev }; for (const k of stale) delete next[k]; return next; });
+    }
+  }, [threads]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const open = openKey ? threads.find(t => t.key === openKey) || null : null;
 

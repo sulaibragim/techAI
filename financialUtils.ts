@@ -1042,13 +1042,14 @@ export interface ChannelMetrics {
   spend: number;        // advertising $ attributed to this channel in the period
   leads: number;        // jobs that came in (createdAt) this period
   wonJobs: number;      // revenue jobs (sold/completed) recognized this period
+  cohortWon: number;    // of this period's leads, how many became revenue jobs (ever)
   revenue: number;      // their total billed
   cogs: number;         // parts cost of those jobs
   profit: number;       // revenue − cogs − spend
-  closeRate: number;    // wonJobs / leads (0..1), same-window approximation
+  closeRate: number;    // cohortWon / leads (0..1) — same cohort, can never exceed 1
   avgTicket: number;    // revenue / wonJobs
   costPerLead: number;  // spend / leads (0 when no spend)
-  cac: number;          // spend / wonJobs (customer acquisition cost)
+  cac: number;          // spend / cohortWon (cost to win one of this period's leads)
   roas: number;         // revenue / spend (0 when no spend)
   isPaid: boolean;      // whether we actually spend on this channel
 }
@@ -1069,12 +1070,16 @@ export function channelMetrics(
   const leadJobs = leadsInMonths(jobs, span);
   const wonJobs = jobsInMonths(jobs, span); // revenue jobs in the span
 
-  type Acc = { leads: number; wonJobs: number; revenue: number; cogs: number };
+  type Acc = { leads: number; wonJobs: number; cohortWon: number; revenue: number; cogs: number };
   const rows = new Map<LeadChannel | 'unknown', Acc>();
   const bucket = (k: LeadChannel | 'unknown') =>
-    rows.get(k) || rows.set(k, { leads: 0, wonJobs: 0, revenue: 0, cogs: 0 }).get(k)!;
+    rows.get(k) || rows.set(k, { leads: 0, wonJobs: 0, cohortWon: 0, revenue: 0, cogs: 0 }).get(k)!;
 
-  for (const j of leadJobs) bucket(channelOf(j)).leads += 1;
+  for (const j of leadJobs) {
+    const b = bucket(channelOf(j));
+    b.leads += 1;
+    if (isRevenueJob(j)) b.cohortWon += 1;
+  }
   for (const j of wonJobs) {
     const b = bucket(channelOf(j));
     b.wonJobs += 1;
@@ -1092,13 +1097,14 @@ export function channelMetrics(
       spend: sp,
       leads: a.leads,
       wonJobs: a.wonJobs,
+      cohortWon: a.cohortWon,
       revenue: round2(a.revenue),
       cogs: round2(a.cogs),
       profit: round2(a.revenue - a.cogs - sp),
-      closeRate: a.leads > 0 ? a.wonJobs / a.leads : 0,
+      closeRate: a.leads > 0 ? a.cohortWon / a.leads : 0,
       avgTicket: a.wonJobs > 0 ? round2(a.revenue / a.wonJobs) : 0,
       costPerLead: sp > 0 && a.leads > 0 ? round2(sp / a.leads) : 0,
-      cac: sp > 0 && a.wonJobs > 0 ? round2(sp / a.wonJobs) : 0,
+      cac: sp > 0 && a.cohortWon > 0 ? round2(sp / a.cohortWon) : 0,
       roas: sp > 0 ? round2(a.revenue / sp) : 0,
       isPaid: channel !== 'unknown' && PAID.has(channel as LeadChannel),
     });
