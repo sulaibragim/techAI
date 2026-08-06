@@ -117,6 +117,10 @@ export async function initDB() {
         created_at TIMESTAMPTZ DEFAULT NOW(),
         updated_at TIMESTAMPTZ DEFAULT NOW()
       );
+      -- The 15-minute scheduler and several routes filter on JSONB fields; expression
+      -- indexes keep those from becoming full-table scans as the archive grows.
+      CREATE INDEX IF NOT EXISTS idx_jobs_status ON jobs ((data->>'status'));
+      CREATE INDEX IF NOT EXISTS idx_jobs_assigned_to ON jobs ((data->>'assignedTo'));
 
       CREATE TABLE IF NOT EXISTS calls (
         id TEXT PRIMARY KEY,

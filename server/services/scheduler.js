@@ -249,7 +249,32 @@ async function runEveningDigest() {
   console.log('[scheduler] evening digest sent:', text);
 }
 
+// ─── Housekeeping ─────────────────────────────────────────────────────────────
+
+// sent_sms is a once-only guard per (job, kind). Rows for year-old jobs can't re-arm
+// anything — the events that consult them (booking webhooks, checkout sessions) only
+// fire on fresh activity — so pruning keeps the table from growing forever.
+async function runRetention() {
+  const { date } = localNow();
+  const claim = await db.query(
+    `INSERT INTO settings (key, value, updated_at) VALUES ('retention-last', $1, NOW())
+     ON CONFLICT (key) DO UPDATE SET value = $1, updated_at = NOW()
+     WHERE settings.value IS DISTINCT FROM $1`,
+    [date]
+  );
+  if (claim.rowCount === 0) return; // already ran today
+  const res = await db.query(`DELETE FROM sent_sms WHERE sent_at < NOW() - INTERVAL '365 days'`);
+  if (res.rowCount > 0) console.log(`[scheduler] retention: pruned ${res.rowCount} sent_sms guard rows older than a year`);
+}
+
 // ─── Tick loop ────────────────────────────────────────────────────────────────
+
+// One replica runs a tick at a time. The digest claims its day atomically, but the
+// reminder pass is read-then-stamp: during a rolling deploy (or if the service is ever
+// scaled) two replicas could both read the same unpaid jobs and both text the client
+// before either stamps. The lock is session-scoped, so it must be taken and released
+// on the SAME pooled connection.
+const TICK_LOCK_KEY = 727001;
 
 export function startScheduler() {
   if (!hasDB()) {
@@ -261,8 +286,23 @@ export function startScheduler() {
     return;
   }
   const tick = async () => {
-    try { await runPaymentReminders(); } catch (e) { console.error('[scheduler] reminders error:', e.message); }
-    try { await runEveningDigest(); } catch (e) { console.error('[scheduler] digest error:', e.message); }
+    let client;
+    try {
+      client = await db.connect();
+      const { rows } = await client.query('SELECT pg_try_advisory_lock($1) AS ok', [TICK_LOCK_KEY]);
+      if (!rows[0]?.ok) return; // another replica holds this tick
+      try {
+        try { await runPaymentReminders(); } catch (e) { console.error('[scheduler] reminders error:', e.message); }
+        try { await runEveningDigest(); } catch (e) { console.error('[scheduler] digest error:', e.message); }
+        try { await runRetention(); } catch (e) { console.error('[scheduler] retention error:', e.message); }
+      } finally {
+        await client.query('SELECT pg_advisory_unlock($1)', [TICK_LOCK_KEY]).catch(() => {});
+      }
+    } catch (e) {
+      console.error('[scheduler] tick error:', e.message);
+    } finally {
+      client?.release();
+    }
   };
   setTimeout(tick, 30 * 1000);            // first pass shortly after boot
   setInterval(tick, 15 * 60 * 1000);      // then every 15 minutes

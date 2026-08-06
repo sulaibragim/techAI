@@ -143,11 +143,22 @@ const MAX_CONVERSATIONS = 150; // most-recent conversations to pull history for
 // Merge fetched records into a store, dedupe by id, newest-first, capped. Returns how many
 // were NEW (so we can log/skip DB writes for unchanged rows).
 function mergeById(store, incoming, cap, dbSave) {
-  const have = new Set(store.map(x => x.id));
+  const have = new Map(store.map(x => [x.id, x]));
   let added = 0;
   for (const rec of incoming) {
-    if (!rec?.id || have.has(rec.id)) continue;
-    store.push(rec); have.add(rec.id); added++;
+    if (!rec?.id) continue;
+    const existing = have.get(rec.id);
+    if (existing) {
+      // Rows written before media capture existed have no attachments while the REST
+      // record does. Graft media onto the stored row so old MMS finally show their
+      // photos — the DB save is an upsert, so the durable copy is fixed too.
+      if (rec.media?.length && !existing.media?.length) {
+        existing.media = rec.media;
+        dbSave?.(existing);
+      }
+      continue;
+    }
+    store.push(rec); have.set(rec.id, rec); added++;
     dbSave?.(rec);
   }
   if (added) {
