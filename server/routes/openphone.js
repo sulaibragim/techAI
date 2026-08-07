@@ -2,6 +2,7 @@ import { Router } from 'express';
 import crypto from 'node:crypto';
 import { processTranscriptWithAI } from '../services/gemini.js';
 import { toE164, sendSMS, getCallTranscript } from '../services/openphone.js';
+import { sanitizeSms } from '../services/smsText.js';
 import { requireAuth, requireRole } from '../middleware/auth.js';
 import { sendPushToRoles } from '../services/push.js';
 import { geocode, drivingRoute, etaPhrase } from '../services/geo.js';
@@ -514,10 +515,12 @@ async function techMaySendTo(userId, toAddr) {
 // ─── POST send SMS ────────────────────────────────────────────────────────────
 openphoneRouter.post('/messages/send', requireAuth, async (req, res) => {
   try {
-    const { to, content, phoneNumberId } = req.body;
-    if (typeof content !== 'string' || !content.trim()) {
+    const { to, content: rawContent, phoneNumberId } = req.body;
+    if (typeof rawContent !== 'string' || !rawContent.trim()) {
       return res.status(400).json({ error: 'Message body required' });
     }
+    // Same cheap-encoding cleanup as the automated senders (see services/smsText.js).
+    const content = sanitizeSms(rawContent);
     const toAddr = toE164(to); // OpenPhone rejects non-E.164 numbers — coerce first
     if (!/^\+\d{10,15}$/.test(toAddr)) {
       return res.status(400).json({ error: 'Invalid recipient phone number' });

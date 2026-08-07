@@ -9,6 +9,8 @@ import { authHeaders } from '../apiClient';
 import { Role, TECH_SKILLS, SERVICE_CATEGORIES, CLIENT_SMS_META, CLIENT_SMS_DEFAULTS, STAFF_NOTIFY_META, STAFF_NOTIFY_DEFAULTS } from '../types';
 import { PushNotificationsCard } from './PushNotificationsCard';
 import { LaunchReadinessCard } from './LaunchReadinessCard';
+import { SMS_TEMPLATES, resolveSmsTemplate, fillSmsTemplate, SmsLang } from '../smsTemplates';
+import { smsInfo, sanitizeSms } from '../smsText';
 
 const VERSION = '1.0.0';
 
@@ -348,6 +350,8 @@ export const Settings: React.FC = () => {
           </div>
         </Section>}
 
+        {currentUser && (currentUser.role === 'owner' || currentUser.role === 'manager') && <SmsTemplatesSection />}
+
         {currentUser && isBackOffice(currentUser.role) && <Section icon={BellRing} title="Notifications to us">
           <p className="text-xs text-slate-400 -mt-1">
             Automatic messages the <span className="text-white font-semibold">team</span> receives — not the customer. Turning one off stops that alert for everyone; nothing here changes what clients get.
@@ -606,6 +610,106 @@ const RatesSection: React.FC = () => {
         );
       })}
       <button onClick={() => addServiceRate({ name: 'New service', category: 'Lockout', price: 0, type: 'labor' })} className="flex items-center gap-1.5 text-blue-400 text-sm font-bold"><Plus size={15} /> Add rate</button>
+    </Section>
+  );
+};
+
+// Owner-editable texts behind the one-tap client SMS buttons (On my way, ETA update…).
+// The counter previews the real cost with sample values: 1 SMS is the goal — an emoji
+// or a long edit silently makes every send 2-3x pricier, so the price is shown here too.
+const SmsTemplatesSection: React.FC = () => {
+  const overrides = useSettingsStore(s => s.smsTemplates);
+  const companyName = useSettingsStore(s => s.companyName);
+  const setSmsTemplate = useSettingsStore(s => s.setSmsTemplate);
+  const resetSmsTemplate = useSettingsStore(s => s.resetSmsTemplate);
+
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [draftEn, setDraftEn] = useState('');
+  const [draftEs, setDraftEs] = useState('');
+
+  const sample = { name: 'John', tech: 'Alex', company: companyName || 'TrustKey', eta: 15 };
+  const costChip = (template: string, lang: SmsLang) => {
+    const info = smsInfo(sanitizeSms(fillSmsTemplate(template, sample, lang)));
+    const tone = info.encoding === 'UCS-2' || info.segments > 2 ? 'text-red-400'
+      : info.segments === 2 ? 'text-amber-400' : 'text-emerald-400';
+    return <span className={`text-[10px] font-bold tabular-nums ${tone}`}>{info.segments || 1} SMS</span>;
+  };
+
+  return (
+    <Section icon={MessageSquare} title="SMS Templates">
+      <p className="text-xs text-slate-400 -mt-1">
+        The one-tap texts on the job card. Placeholders fill automatically: {'{name}'} client, {'{tech}'} technician, {'{company}'}, {'{eta}'} minutes.
+        Keep a template at <span className="text-emerald-400 font-bold">1 SMS</span> — longer texts and emoji multiply what each send costs.
+      </p>
+      <div className="space-y-2">
+        {SMS_TEMPLATES.map(def => {
+          const en = resolveSmsTemplate(def, overrides, 'en');
+          const es = resolveSmsTemplate(def, overrides, 'es');
+          const customized = !!overrides?.[def.id];
+          const editing = editingId === def.id;
+          return (
+            <div key={def.id} className="p-3.5 rounded-xl bg-white/5 border border-white/10 space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-bold text-white">{def.label}</span>
+                {customized && <span className="text-[9px] font-bold uppercase tracking-wider text-blue-300 bg-blue-500/10 border border-blue-500/30 rounded px-1.5 py-0.5">edited</span>}
+                <span className="flex-1" />
+                {!editing && (
+                  <button
+                    onClick={() => { setEditingId(def.id); setDraftEn(en); setDraftEs(es); }}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-all"
+                    aria-label={`Edit ${def.label}`}
+                  ><Pencil size={13} /></button>
+                )}
+              </div>
+              {editing ? (
+                <div className="space-y-2">
+                  {([['EN', draftEn, setDraftEn], ['ES', draftEs, setDraftEs]] as const).map(([lang, value, setValue]) => (
+                    <div key={lang}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{lang}</span>
+                        {costChip(value, lang === 'ES' ? 'es' : 'en')}
+                      </div>
+                      <textarea
+                        value={value}
+                        onChange={e => setValue(e.target.value)}
+                        rows={2}
+                        className="w-full bg-slate-800 border border-white/10 rounded-lg p-2.5 text-xs font-medium text-white outline-none focus:border-blue-500/50 resize-none leading-relaxed"
+                      />
+                    </div>
+                  ))}
+                  <div className="flex gap-2 pt-1">
+                    <button
+                      onClick={() => { setSmsTemplate(def.id, { en: draftEn, es: draftEs }); setEditingId(null); }}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-bold transition-all active:scale-95"
+                    ><Check size={12} /> Save</button>
+                    <button
+                      onClick={() => setEditingId(null)}
+                      className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-slate-300 text-[11px] font-bold hover:text-white transition-all active:scale-95"
+                    >Cancel</button>
+                    {customized && (
+                      <button
+                        onClick={() => { resetSmsTemplate(def.id); setEditingId(null); }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-amber-300 text-[11px] font-bold hover:bg-amber-500/10 transition-all active:scale-95 ml-auto"
+                      ><RotateCcw size={12} /> Default</button>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-1.5">
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="text-xs text-slate-400 leading-relaxed flex-1">{en}</p>
+                    {costChip(en, 'en')}
+                  </div>
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="text-xs text-slate-500 leading-relaxed flex-1 italic">{es}</p>
+                    {costChip(es, 'es')}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </Section>
   );
 };

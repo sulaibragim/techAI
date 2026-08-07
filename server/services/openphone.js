@@ -5,6 +5,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, '../../.env.local') });
 
 import { isOptedOut } from './messages.js';
+import { sanitizeSms } from './smsText.js';
 
 const BASE = 'https://api.openphone.com/v1';
 const headers = () => ({ Authorization: process.env.OPENPHONE_API_KEY });
@@ -48,6 +49,10 @@ export async function getCallTranscript(callId) {
 // Honours STOP: a number that opted out never gets another automated message from us.
 // `bypassOptOut` exists for exactly one caller — the STOP acknowledgement itself.
 export async function sendSMS(to, content, { bypassOptOut = false } = {}) {
+  // Em dashes, curly quotes and accented caps silently flip a message into the UCS-2
+  // encoding where a segment holds 70 chars instead of 160 — same text, 2-3x the cost.
+  // Normalizing here covers every automated sender (reminders, digest, webhooks) at once.
+  content = sanitizeSms(content);
   const from = process.env.OPENPHONE_PHONE_NUMBER;
   if (!process.env.OPENPHONE_API_KEY || !from) {
     console.warn('[OpenPhone] API key / OPENPHONE_PHONE_NUMBER not set — cannot send SMS');

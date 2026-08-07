@@ -120,6 +120,7 @@ settingsRouter.put('/', requireAuth, requireRole('owner', 'manager'), async (req
       if (patch.monthlyTargets) merged.monthlyTargets = mergeMap(current.monthlyTargets, patch.monthlyTargets);
       if (patch.techTargets) merged.techTargets = mergeMap(current.techTargets, patch.techTargets);
       if (patch.supplierAliases) merged.supplierAliases = mergeMap(current.supplierAliases, patch.supplierAliases);
+      if (patch.smsTemplates) merged.smsTemplates = mergeMap(current.smsTemplates, patch.smsTemplates);
       if (patch.importedInvoices) {
         // String set with newest-first order, capped — the duplicate-invoice guard.
         merged.importedInvoices = [...new Set([...(patch.importedInvoices || []), ...(current.importedInvoices || [])])].slice(0, 200);
@@ -140,6 +141,9 @@ settingsRouter.put('/', requireAuth, requireRole('owner', 'manager'), async (req
       const gone = new Set(patch.removedAiMemoryIds);
       merged.aiMemories = merged.aiMemories.filter((m) => !gone.has(m?.id));
     }
+    if (Array.isArray(patch.removedSmsTemplateIds) && merged.smsTemplates) {
+      for (const id of patch.removedSmsTemplateIds) delete merged.smsTemplates[id];
+    }
     if (merged.techTargets && typeof merged.techTargets === 'object') {
       for (const [k, v] of Object.entries(merged.techTargets)) {
         if (!(Number(v) > 0)) delete merged.techTargets[k];
@@ -148,6 +152,7 @@ settingsRouter.put('/', requireAuth, requireRole('owner', 'manager'), async (req
     delete merged.removedExpenseIds; // transport-only keys — never persisted
     delete merged.removedServiceRateIds;
     delete merged.removedAiMemoryIds;
+    delete merged.removedSmsTemplateIds;
     delete merged.replaceLedgers;
 
     await db.query(
