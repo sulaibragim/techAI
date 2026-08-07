@@ -302,6 +302,64 @@ authRouter.put('/users/:id', requireAuth, async (req, res) => {
   }
 });
 
+// ─── Guided-tour progress ──────────────────────────────────────────────────────
+// Always the CALLER's own row — there is no :id, so no one can read or rewrite a
+// teammate's progress, and no role check is needed. Kept off PUT /users/:id because
+// that route is the privileged-field path; this one only ever touches tour_progress.
+
+const TOUR_LIST_CAP = 60;
+const asIdList = (v) =>
+  Array.isArray(v)
+    ? [...new Set(v.filter((x) => typeof x === 'string' && x.length > 0 && x.length <= 64))].slice(0, TOUR_LIST_CAP)
+    : [];
+
+authRouter.get('/tour', requireAuth, async (req, res) => {
+  try {
+    const { rows } = await db.query('SELECT tour_progress FROM users WHERE id = $1', [req.user.id]);
+    res.json(rows[0]?.tour_progress || {});
+  } catch (err) {
+    console.error('[AUTH] get tour progress error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Union, never replace: a phone that finished the Jobs tour offline must not erase the
+// Inbox tour the same person finished on the desktop an hour earlier.
+authRouter.put('/tour', requireAuth, async (req, res) => {
+  try {
+    const patch = req.body;
+    if (!patch || typeof patch !== 'object' || Array.isArray(patch)) {
+      return res.status(400).json({ error: 'Invalid tour payload' });
+    }
+    const { rows } = await db.query('SELECT tour_progress FROM users WHERE id = $1', [req.user.id]);
+    if (rows.length === 0) return res.status(404).json({ error: 'User not found' });
+    const current = rows[0].tour_progress || {};
+
+    const next = {
+      completed: asIdList([...(patch.completed || []), ...(current.completed || [])]),
+      seenTabs: asIdList([...(patch.seenTabs || []), ...(current.seenTabs || [])]),
+      // "Hide the checklist" is a deliberate act, so it may flip either way — but only
+      // when the client actually said so, not because this patch omitted the key.
+      checklistDismissed:
+        typeof patch.checklistDismissed === 'boolean' ? patch.checklistDismissed : !!current.checklistDismissed,
+      // A reset clears the lists above; this stamp tells other devices to drop their copy.
+      resetAt: typeof patch.resetAt === 'string' ? patch.resetAt.slice(0, 40) : current.resetAt,
+    };
+    // Explicit wipe — "Restart the tour" must actually forget, or the union above would
+    // resurrect every completed id on the next sync.
+    if (patch.replace === true) {
+      next.completed = asIdList(patch.completed);
+      next.seenTabs = asIdList(patch.seenTabs);
+    }
+
+    await db.query('UPDATE users SET tour_progress = $2 WHERE id = $1', [req.user.id, JSON.stringify(next)]);
+    res.json(next);
+  } catch (err) {
+    console.error('[AUTH] update tour progress error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Delete user — owner only.
 authRouter.delete('/users/:id', requireAuth, requireRole('owner'), async (req, res) => {
   try {
@@ -385,6 +443,8 @@ function mapUser(row, { lite = false } = {}) {
     skills: row.skills || undefined,
     photo: row.photo || undefined,
     signature: row.signature || undefined,
+    // tour_progress is deliberately NOT here: it is served by GET /tour for the caller's
+    // own row only, so the team list doesn't ship everyone's onboarding state to everyone.
     createdAt: row.created_at?.toISOString(),
   };
 }

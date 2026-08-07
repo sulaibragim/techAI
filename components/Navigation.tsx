@@ -2,6 +2,7 @@ import React, { useRef, useEffect } from 'react';
 import { Calendar, Briefcase, BarChart2, BrainCircuit, MessageSquare, Phone, Package, Users, Settings, LogOut, Receipt, KeyRound, Megaphone, Building2 } from 'lucide-react';
 import { useAuthStore, useCurrentUser, visibleTabsFor } from '../authStore';
 import { useInboxUnreadCount } from '../inboxStore';
+import { useTourStore } from '../tourStore';
 
 interface NavigationProps {
   currentTab: string;
@@ -35,6 +36,9 @@ export const Navigation: React.FC<NavigationProps> = ({ currentTab, onTabChange 
   const currentUser = useCurrentUser();
   const unreadMessages = useInboxUnreadCount();
   const tabs = (currentUser ? visibleTabsFor(currentUser.role) : []).filter(id => TAB_META[id]);
+  // Tabs this person has never opened get a quiet marker, so a new user can see at a
+  // glance what they still have not looked at. It disappears the moment they visit.
+  const seenTabs = useTourStore(s => s.progressFor(currentUser?.id).seenTabs);
 
   // +1 for the Log out button. ≤5 → stretch evenly; >5 → swipeable scroll strip.
   const scrolls = tabs.length + 1 > MAX_FIT;
@@ -75,12 +79,14 @@ export const Navigation: React.FC<NavigationProps> = ({ currentTab, onTabChange 
         {tabs.map((id) => {
           const { label, icon: Icon } = TAB_META[id];
           const isActive = currentTab === id;
+          const isNew = !isActive && !seenTabs.includes(id);
           return (
             <button
               key={id}
               ref={isActive ? activeRef : undefined}
               onClick={() => onTabChange(id)}
-              aria-label={label}
+              data-tour={`nav-${id}`}
+              aria-label={isNew ? `${label} — not opened yet` : label}
               aria-current={isActive ? 'page' : undefined}
               className={`${itemBase} ${itemSize} ${isActive ? 'text-blue-400 bg-blue-500/10' : 'text-slate-400 hover:text-slate-200'}`}
             >
@@ -91,6 +97,9 @@ export const Navigation: React.FC<NavigationProps> = ({ currentTab, onTabChange 
                   <span className="absolute -top-1.5 -right-2.5 min-w-[16px] h-4 px-1 bg-blue-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
                     {unreadMessages > 9 ? '9+' : unreadMessages}
                   </span>
+                )}
+                {isNew && !(id === 'messages' && unreadMessages > 0) && (
+                  <span className="absolute -top-0.5 -right-1.5 w-2 h-2 rounded-full bg-amber-400 ring-2 ring-slate-900" />
                 )}
               </span>
               <span className="text-[11px] font-semibold leading-none">{label}</span>

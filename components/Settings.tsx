@@ -9,6 +9,7 @@ import { authHeaders } from '../apiClient';
 import { Role, TECH_SKILLS, SERVICE_CATEGORIES, CLIENT_SMS_META, CLIENT_SMS_DEFAULTS, STAFF_NOTIFY_META, STAFF_NOTIFY_DEFAULTS } from '../types';
 import { PushNotificationsCard } from './PushNotificationsCard';
 import { LaunchReadinessCard } from './LaunchReadinessCard';
+import { GuidedToursCard } from './GuidedToursCard';
 
 const VERSION = '1.0.0';
 
@@ -408,6 +409,9 @@ export const Settings: React.FC = () => {
             <p className="text-xs text-slate-500 mt-1">Used in daily goal tracker</p>
           </div>
         </Section>}
+
+        {/* Every role gets this — a technician needs the replay button as much as the owner */}
+        <GuidedToursCard />
 
         {currentUser?.role === 'owner' && <LaunchReadinessCard />}
 
