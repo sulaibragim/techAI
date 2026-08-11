@@ -5,6 +5,7 @@ import { useAppStore } from '../store';
 import { useAuthStore, useCurrentUser, can } from '../authStore';
 import { useSettingsStore } from '../settingsStore';
 import { useTourStore } from '../tourStore';
+import { localize, CHECKLIST_ITEMS, UI_TEXT } from '../tours';
 import type { TabId } from '../types';
 
 interface ChecklistProps {
@@ -23,6 +24,7 @@ export const OnboardingChecklist: React.FC<ChecklistProps> = ({ onAddJob }) => {
   const setActiveTab = useAppStore((s) => s.setActiveTab);
   const companyName = useSettingsStore((s) => s.companyName);
   const dismissed = useTourStore((s) => s.progressFor(currentUser?.id).checklistDismissed);
+  const lang = useTourStore((s) => s.progressFor(currentUser?.id).lang);
   const setChecklistDismissed = useTourStore((s) => s.setChecklistDismissed);
 
   const items = useMemo(() => {
@@ -30,40 +32,30 @@ export const OnboardingChecklist: React.FC<ChecklistProps> = ({ onAddJob }) => {
     return [
       {
         id: 'company',
-        label: 'Add your company details',
-        hint: 'They print on every invoice you send',
         icon: Building2,
         done: companyName.trim().length > 0,
         go: () => setActiveTab('settings' as TabId),
       },
       {
         id: 'team',
-        label: 'Add your team',
-        hint: 'Each technician gets their own sign-in',
         icon: Users,
         done: teammates > 0,
         go: () => setActiveTab('settings' as TabId),
       },
       {
         id: 'job',
-        label: 'Create your first job',
-        hint: 'Client, address, what is locked — three steps',
         icon: Briefcase,
         done: jobs.length > 0,
         go: onAddJob,
       },
       {
         id: 'complete',
-        label: 'Complete a job',
-        hint: 'Move it through to Completed on the board',
         icon: CircleCheck,
         done: jobs.some((j) => j.status === 'completed'),
         go: () => setActiveTab('jobs' as TabId),
       },
       {
         id: 'paid',
-        label: 'Take your first payment',
-        hint: 'Card, cash, or a payment link by text',
         icon: CreditCard,
         done: jobs.some((j) => (j.amountPaid || 0) > 0),
         go: () => setActiveTab('accounting' as TabId),
@@ -96,16 +88,16 @@ export const OnboardingChecklist: React.FC<ChecklistProps> = ({ onAddJob }) => {
             </div>
             <div className="min-w-0">
               <p className="text-sm font-bold text-white tracking-tight">
-                {allDone ? 'You are fully set up' : 'First steps'}
+                {localize(allDone ? UI_TEXT.checklistDoneTitle : UI_TEXT.checklistTitle, lang)}
               </p>
               <p className="text-xs text-slate-400 font-medium">
-                {allDone ? 'Everything below is done — this card can go now' : `${doneCount} of ${items.length} done`}
+                {localize(allDone ? UI_TEXT.checklistDoneSubtitle : UI_TEXT.checklistProgress(doneCount, items.length), lang)}
               </p>
             </div>
           </div>
           <button
             onClick={() => setChecklistDismissed(currentUser.id, true)}
-            aria-label="Hide the checklist"
+            aria-label={localize(UI_TEXT.hideChecklist, lang)}
             className="p-1.5 text-slate-500 hover:text-white rounded-lg hover:bg-white/5 transition-colors shrink-0"
           >
             <X size={14} />
@@ -124,6 +116,7 @@ export const OnboardingChecklist: React.FC<ChecklistProps> = ({ onAddJob }) => {
         <div className="space-y-1.5">
           {items.map((item) => {
             const Icon = item.icon;
+            const text = CHECKLIST_ITEMS[item.id];
             return (
               <button
                 key={item.id}
@@ -144,9 +137,9 @@ export const OnboardingChecklist: React.FC<ChecklistProps> = ({ onAddJob }) => {
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className={`block text-[13px] font-semibold ${item.done ? 'text-slate-400 line-through' : 'text-white'}`}>
-                    {item.label}
+                    {localize(text.label, lang)}
                   </span>
-                  {!item.done && <span className="block text-[11px] text-slate-500 font-medium truncate">{item.hint}</span>}
+                  {!item.done && <span className="block text-[11px] text-slate-500 font-medium truncate">{localize(text.hint, lang)}</span>}
                 </span>
                 {!item.done && <ChevronRight size={14} className="text-slate-500 shrink-0" />}
               </button>
@@ -159,7 +152,7 @@ export const OnboardingChecklist: React.FC<ChecklistProps> = ({ onAddJob }) => {
             onClick={() => setChecklistDismissed(currentUser.id, true)}
             className="w-full mt-4 py-2.5 rounded-xl bg-green-600 hover:bg-green-500 text-white text-[11px] font-bold uppercase tracking-wider transition-all active:scale-[0.99]"
           >
-            Hide this
+            {localize(UI_TEXT.hideThis, lang)}
           </button>
         )}
       </motion.div>

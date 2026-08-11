@@ -2,19 +2,21 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { Compass, Check, Play, RotateCcw, Eye } from 'lucide-react';
 import { useTourStore } from '../tourStore';
-import { toursForRole } from '../tours';
+import { localize, toursForRole, UI_TEXT } from '../tours';
 import { useCurrentUser, can } from '../authStore';
 import { useAppStore } from '../store';
+import { LanguageToggle } from './LanguageToggle';
 import type { TabId } from '../types';
 
-/** Settings card: replay any tour, un-hide the checklist, or start the whole thing over.
- *  Onboarding that can't be re-opened is a one-shot the second person on the account
- *  never gets to see. */
+/** Settings card: replay any tour, un-hide the checklist, switch the onboarding language,
+ *  or start the whole thing over. Onboarding that can't be re-opened is a one-shot the
+ *  second person on the account never gets to see. */
 export const GuidedToursCard: React.FC = () => {
   const currentUser = useCurrentUser();
   const setActiveTab = useAppStore((s) => s.setActiveTab);
-  const { startTour, resetProgress, setChecklistDismissed } = useTourStore();
+  const { startTour, resetProgress, setChecklistDismissed, setLang } = useTourStore();
   const progress = useTourStore((s) => s.progressFor(currentUser?.id));
+  const lang = progress.lang;
 
   if (!currentUser) return null;
   const tours = toursForRole(currentUser.role);
@@ -36,17 +38,19 @@ export const GuidedToursCard: React.FC = () => {
       animate={{ opacity: 1, y: 0 }}
       className="bg-slate-900 border border-white/5 rounded-2xl p-6"
     >
-      <div className="flex items-center space-x-3 mb-6">
-        <div className="w-8 h-8 bg-blue-500/10 rounded-lg flex items-center justify-center">
-          <Compass size={16} className="text-blue-400" />
+      <div className="flex items-center justify-between gap-3 mb-6">
+        <div className="flex items-center space-x-3 min-w-0">
+          <div className="w-8 h-8 bg-blue-500/10 rounded-lg flex items-center justify-center shrink-0">
+            <Compass size={16} className="text-blue-400" />
+          </div>
+          <h3 className="text-sm font-bold uppercase tracking-widest text-white truncate">{localize(UI_TEXT.guidedToursTitle, lang)}</h3>
         </div>
-        <h3 className="text-sm font-bold uppercase tracking-widest text-white">Guided Tours</h3>
+        <LanguageToggle lang={lang} onChange={(l) => setLang(currentUser.id, l)} />
       </div>
 
       <div className="space-y-5">
         <p className="text-xs text-slate-500 leading-relaxed">
-          Short walkthroughs that run on their own the first time you open a screen. Replay any of them
-          here — handy when a new person joins and needs to be shown around.
+          {localize(UI_TEXT.guidedToursDescription, lang)}
         </p>
 
         <div className="space-y-1.5">
@@ -65,14 +69,14 @@ export const GuidedToursCard: React.FC = () => {
                   {done ? <Check size={12} /> : <Play size={11} />}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[13px] font-semibold text-white truncate">{tour.label}</p>
-                  <p className="text-[11px] text-slate-500 font-medium truncate">{tour.description}</p>
+                  <p className="text-[13px] font-semibold text-white truncate">{localize(tour.label, lang)}</p>
+                  <p className="text-[11px] text-slate-500 font-medium truncate">{localize(tour.description, lang)}</p>
                 </div>
                 <button
                   onClick={() => replay(tour.id, tour.tab)}
                   className="shrink-0 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:border-blue-500/40 text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95"
                 >
-                  {done ? 'Replay' : 'Start'}
+                  {localize(done ? UI_TEXT.replay : UI_TEXT.start, lang)}
                 </button>
               </div>
             );
@@ -84,7 +88,7 @@ export const GuidedToursCard: React.FC = () => {
             onClick={() => setChecklistDismissed(currentUser.id, false)}
             className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:text-white text-xs font-bold uppercase tracking-wider transition-all active:scale-95"
           >
-            <Eye size={13} /> Show the first-steps checklist again
+            <Eye size={13} /> {localize(UI_TEXT.showChecklistAgain, lang)}
           </button>
         )}
 
@@ -92,12 +96,10 @@ export const GuidedToursCard: React.FC = () => {
           onClick={restartAll}
           className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-400 hover:text-blue-400 hover:border-blue-500/30 text-xs font-bold uppercase tracking-wider transition-all active:scale-95"
         >
-          <RotateCcw size={13} /> Start onboarding over
+          <RotateCcw size={13} /> {localize(UI_TEXT.restartOnboarding, lang)}
         </button>
         <p className="text-[11px] text-slate-600 leading-relaxed -mt-2">
-          Brings back the welcome screen, every tour, and the “not opened yet” markers on the tabs — as if
-          you were signing in for the first time. It touches nothing but your own onboarding: no job,
-          client, setting, or teammate is affected.
+          {localize(UI_TEXT.restartDescription, lang)}
         </p>
       </div>
     </motion.div>

@@ -2,10 +2,12 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { API_BASE } from './backendUrl';
 import { authHeaders } from './apiClient';
+import type { Lang } from './tours';
 
 /**
  * Onboarding progress: which guided tours a person finished, which tabs they have already
- * opened, and whether they hid the first-steps checklist.
+ * opened, whether they hid the first-steps checklist, and which language the onboarding
+ * text shows in.
  *
  * Two properties this has to get right:
  *  - It is PER USER, not per company. Settings are one shared blob, so putting it there
@@ -14,15 +16,17 @@ import { authHeaders } from './apiClient';
  *    user id rather than stored flat, and signing in as someone else shows their own state.
  *
  * The server copy (users.tour_progress) is what makes the tour not replay on a second
- * device. Local state is the fast path; the server is merged in on sign-in.
+ * device, and what carries a language choice from one device to another. Local state is
+ * the fast path; the server is merged in on sign-in.
  */
 export interface TourProgress {
   completed: string[];
   seenTabs: string[];
   checklistDismissed: boolean;
+  lang: Lang;
 }
 
-const EMPTY: TourProgress = { completed: [], seenTabs: [], checklistDismissed: false };
+const EMPTY: TourProgress = { completed: [], seenTabs: [], checklistDismissed: false, lang: 'en' };
 
 interface TourState {
   /** userId → progress. Keyed so a shared device never leaks one person's state to another. */
@@ -47,7 +51,11 @@ interface TourState {
 
   markTabSeen: (userId: string | null | undefined, tab: string) => void;
   setChecklistDismissed: (userId: string | null | undefined, dismissed: boolean) => void;
-  /** Clears everything for this user, locally and on the server, so tours replay. */
+  /** Switches the onboarding language. Does not touch progress — switching languages
+   *  mid-training should not restart the tour the person is already partway through. */
+  setLang: (userId: string | null | undefined, lang: Lang) => void;
+  /** Clears tour/checklist progress for this user, locally and on the server, so
+   *  everything replays — but keeps their language choice; a reset is not a language reset. */
   resetProgress: (userId: string | null | undefined) => Promise<void>;
   /** Pulls the server copy and unions it into the local one. Called after sign-in. */
   syncProgress: (userId: string | null | undefined) => Promise<void>;
@@ -84,6 +92,12 @@ export const useTourStore = create<TourState>()(
         stepIndex: 0,
         showWelcome: false,
 
+        // Returns a STABLE reference when nothing has changed: byUser[userId] (once
+        // migrated at hydration, see `merge` below) or the module-level EMPTY constant.
+        // A selector like `useTourStore(s => s.progressFor(id))` re-runs this on every
+        // render, so allocating a fresh object here — e.g. `{...EMPTY, ...p}` — would hand
+        // back a new reference each time and spin the component into an infinite
+        // render loop ("getSnapshot should be cached").
         progressFor: (userId) => (userId && get().byUser[userId]) || EMPTY,
         hasCompleted: (userId, tourId) => get().progressFor(userId).completed.includes(tourId),
         hasSeenTab: (userId, tab) => get().progressFor(userId).seenTabs.includes(tab),
@@ -120,17 +134,25 @@ export const useTourStore = create<TourState>()(
           void pushProgress({ checklistDismissed: dismissed });
         },
 
+        setLang: (userId, lang) => {
+          patchUser(userId, (p) => ({ ...p, lang }));
+          void pushProgress({ lang });
+        },
+
         resetProgress: async (userId) => {
           if (!userId) return;
+          const lang = get().progressFor(userId).lang;
           set((state) => ({
-            byUser: { ...state.byUser, [userId]: { ...EMPTY } },
+            byUser: { ...state.byUser, [userId]: { ...EMPTY, lang } },
             activeTourId: null,
             stepIndex: 0,
             showWelcome: false,
           }));
           // replace:true — the server unions by default, which would restore every id we
-          // just cleared on the next sync and make "Restart tours" do nothing.
-          await pushProgress({ replace: true, completed: [], seenTabs: [], checklistDismissed: false });
+          // just cleared on the next sync and make "Restart tours" do nothing. `lang` rides
+          // along unchanged: resetting the tour is not the same thing as resetting the
+          // language someone deliberately picked.
+          await pushProgress({ replace: true, completed: [], seenTabs: [], checklistDismissed: false, lang });
         },
 
         syncProgress: async (userId) => {
@@ -144,6 +166,9 @@ export const useTourStore = create<TourState>()(
               completed: union(p.completed, remote.completed || []),
               seenTabs: union(p.seenTabs, remote.seenTabs || []),
               checklistDismissed: p.checklistDismissed || !!remote.checklistDismissed,
+              // The server is the cross-device source of truth for language: whichever
+              // device picked one last should win on the others, not "OR" like the booleans.
+              lang: remote.lang === 'ru' || remote.lang === 'en' ? remote.lang : p.lang,
             }));
           } catch {
             // Offline sign-in: local progress stands on its own.
@@ -165,6 +190,16 @@ export const useTourStore = create<TourState>()(
       // Never persist which step is on screen — a reload mid-tour should not reopen the
       // overlay on top of whatever the person came back to do.
       partialize: (state) => ({ byUser: state.byUser }),
+      // Backfills `lang` (added after this store shipped) onto any record saved before it
+      // existed. Runs ONCE, when the persisted blob is read off disk — not on every
+      // `progressFor` call — so every entry in `byUser` is a complete, stable TourProgress
+      // by the time any component reads it.
+      merge: (persisted, current) => {
+        const stored = (persisted as { byUser?: Record<string, Partial<TourProgress>> } | null)?.byUser || {};
+        const byUser: Record<string, TourProgress> = {};
+        for (const [userId, progress] of Object.entries(stored)) byUser[userId] = { ...EMPTY, ...progress };
+        return { ...current, byUser };
+      },
     }
   )
 );

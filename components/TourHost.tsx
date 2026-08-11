@@ -2,10 +2,11 @@ import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Compass, MessageSquare, KeyRound, X } from 'lucide-react';
 import { useTourStore } from '../tourStore';
-import { tabTourFor, tourById, welcomeTourFor } from '../tours';
+import { localize, tabTourFor, tourById, welcomeTourFor, UI_TEXT } from '../tours';
 import { useCurrentUser, can } from '../authStore';
 import { useAppStore } from '../store';
 import { TourOverlay } from './TourOverlay';
+import { LanguageToggle } from './LanguageToggle';
 import type { TabId } from '../types';
 
 interface TourHostProps {
@@ -28,15 +29,16 @@ export const TourHost: React.FC<TourHostProps> = ({ activeTab, paused }) => {
 
   const {
     activeTourId, stepIndex, showWelcome,
-    startTour, nextStep, prevStep, endTour, dismissWelcome,
+    startTour, nextStep, prevStep, endTour, dismissWelcome, setLang,
     markTabSeen, syncProgress,
   } = useTourStore();
 
   const tour = activeTourId ? tourById(activeTourId) : undefined;
   const welcomeTour = currentUser ? welcomeTourFor(currentUser.role) : undefined;
   // Subscribed, not read once: "Start onboarding over" has to bring the welcome card back,
-  // and it only clears progress — nothing else about this component changes.
+  // and a language switch has to re-render every string on screen — neither is a one-time read.
   const progress = useTourStore((s) => s.progressFor(userId));
+  const lang = progress.lang;
 
   // Pull the server copy once per sign-in, so a tour finished on the desktop doesn't
   // replay on the phone.
@@ -120,24 +122,26 @@ export const TourHost: React.FC<TourHostProps> = ({ activeTab, paused }) => {
               transition={{ type: 'spring', stiffness: 300, damping: 26 }}
               className="w-full max-w-md bg-slate-900 border border-white/10 rounded-3xl p-7 shadow-[0_32px_80px_rgba(0,0,0,0.7)] relative"
             >
-              <button
-                onClick={() => dismissWelcome(userId)}
-                aria-label="Close"
-                className="absolute top-4 right-4 p-1.5 text-slate-500 hover:text-white rounded-lg hover:bg-white/5 transition-colors"
-              >
-                <X size={15} />
-              </button>
+              <div className="absolute top-4 right-4 flex items-center gap-1.5">
+                <LanguageToggle lang={lang} onChange={(l) => setLang(userId, l)} />
+                <button
+                  onClick={() => dismissWelcome(userId)}
+                  aria-label={localize(UI_TEXT.closeWelcome, lang)}
+                  className="p-1.5 text-slate-500 hover:text-white rounded-lg hover:bg-white/5 transition-colors"
+                >
+                  <X size={15} />
+                </button>
+              </div>
 
               <div className="w-14 h-14 rounded-2xl bg-blue-600/15 border border-blue-500/30 flex items-center justify-center mb-5">
                 <KeyRound size={24} className="text-blue-400" />
               </div>
 
               <h2 className="text-2xl font-bold text-white tracking-tight mb-2">
-                Welcome{currentUser.name ? `, ${currentUser.name.split(' ')[0]}` : ''}
+                {localize(UI_TEXT.welcomeHeading(currentUser.name?.split(' ')[0]), lang)}
               </h2>
               <p className="text-sm text-slate-400 leading-relaxed mb-6">
-                Two minutes now saves you an afternoon of poking around. Pick how you would like to learn it —
-                you can start the tour again any time from Settings.
+                {localize(UI_TEXT.welcomeBody, lang)}
               </p>
 
               <div className="space-y-2.5">
@@ -147,8 +151,8 @@ export const TourHost: React.FC<TourHostProps> = ({ activeTab, paused }) => {
                 >
                   <Compass size={20} className="shrink-0" />
                   <span className="min-w-0">
-                    <span className="block text-sm font-bold">Show me around</span>
-                    <span className="block text-xs text-blue-100/80">{welcomeTour.steps.length} quick stops</span>
+                    <span className="block text-sm font-bold">{localize(UI_TEXT.showMeAround, lang)}</span>
+                    <span className="block text-xs text-blue-100/80">{localize(UI_TEXT.quickStops(welcomeTour.steps.length), lang)}</span>
                   </span>
                 </button>
 
@@ -159,8 +163,8 @@ export const TourHost: React.FC<TourHostProps> = ({ activeTab, paused }) => {
                   >
                     <MessageSquare size={20} className="shrink-0 text-blue-400" />
                     <span className="min-w-0">
-                      <span className="block text-sm font-bold">I would rather just ask</span>
-                      <span className="block text-xs text-slate-400">Open the assistant and ask it anything</span>
+                      <span className="block text-sm font-bold">{localize(UI_TEXT.askInstead, lang)}</span>
+                      <span className="block text-xs text-slate-400">{localize(UI_TEXT.askInsteadHint, lang)}</span>
                     </span>
                   </button>
                 )}
@@ -169,7 +173,7 @@ export const TourHost: React.FC<TourHostProps> = ({ activeTab, paused }) => {
                   onClick={() => dismissWelcome(userId)}
                   className="w-full py-3 text-xs font-semibold uppercase tracking-wider text-slate-500 hover:text-slate-300 transition-colors"
                 >
-                  I will figure it out
+                  {localize(UI_TEXT.figureItOut, lang)}
                 </button>
               </div>
             </motion.div>
@@ -181,6 +185,8 @@ export const TourHost: React.FC<TourHostProps> = ({ activeTab, paused }) => {
         <TourOverlay
           steps={tour.steps}
           stepIndex={Math.min(stepIndex, tour.steps.length - 1)}
+          lang={lang}
+          onLangChange={(l) => setLang(userId, l)}
           onNext={nextStep}
           onPrev={prevStep}
           onFinish={() => endTour(userId)}

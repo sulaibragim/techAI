@@ -342,6 +342,10 @@ authRouter.put('/tour', requireAuth, async (req, res) => {
       // when the client actually said so, not because this patch omitted the key.
       checklistDismissed:
         typeof patch.checklistDismissed === 'boolean' ? patch.checklistDismissed : !!current.checklistDismissed,
+      // Same idea for the onboarding language: only a valid, explicit value overrides what
+      // is already stored, so a patch that doesn't mention it (e.g. marking a tab seen)
+      // can't silently flip someone's language back to the default.
+      lang: patch.lang === 'ru' || patch.lang === 'en' ? patch.lang : current.lang === 'ru' ? 'ru' : 'en',
       // A reset clears the lists above; this stamp tells other devices to drop their copy.
       resetAt: typeof patch.resetAt === 'string' ? patch.resetAt.slice(0, 40) : current.resetAt,
     };

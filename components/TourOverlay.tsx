@@ -1,13 +1,16 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { ChevronLeft, ChevronRight, Check, X } from 'lucide-react';
-import type { TourStep } from '../tours';
+import { localize, UI_TEXT, type TourStep, type Lang } from '../tours';
+import { LanguageToggle } from './LanguageToggle';
 
 interface Rect { top: number; left: number; width: number; height: number }
 
 interface TourOverlayProps {
   steps: TourStep[];
   stepIndex: number;
+  lang: Lang;
+  onLangChange: (lang: Lang) => void;
   onNext: () => void;
   onPrev: () => void;
   onFinish: () => void;
@@ -37,7 +40,7 @@ const sameRect = (a: Rect | null, b: Rect | null) =>
   a === b || (!!a && !!b && Math.abs(a.top - b.top) < 1 && Math.abs(a.left - b.left) < 1 &&
     Math.abs(a.width - b.width) < 1 && Math.abs(a.height - b.height) < 1);
 
-export const TourOverlay: React.FC<TourOverlayProps> = ({ steps, stepIndex, onNext, onPrev, onFinish, onSkip }) => {
+export const TourOverlay: React.FC<TourOverlayProps> = ({ steps, stepIndex, lang, onLangChange, onNext, onPrev, onFinish, onSkip }) => {
   const step = steps[stepIndex];
   const [rect, setRect] = useState<Rect | null>(null);
   const rectRef = useRef<Rect | null>(null);
@@ -171,7 +174,7 @@ export const TourOverlay: React.FC<TourOverlayProps> = ({ steps, stepIndex, onNe
   }
 
   return (
-    <div className="fixed inset-0 z-[300] font-sans" role="dialog" aria-modal="true" aria-label="Guided tour">
+    <div className="fixed inset-0 z-[300] font-sans" role="dialog" aria-modal="true" aria-label={localize(UI_TEXT.tourDialogLabel, lang)}>
       {/* No spotlight for this step: one flat scrim, so the card reads as a normal modal. */}
       {!rect && <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-[2px]" />}
 
@@ -211,19 +214,23 @@ export const TourOverlay: React.FC<TourOverlayProps> = ({ steps, stepIndex, onNe
           className="absolute bg-slate-900 border border-white/10 rounded-2xl p-5 shadow-[0_24px_60px_rgba(0,0,0,0.65)]"
           style={cardStyle}
         >
-          <button
-            onClick={onSkip}
-            aria-label="Close the tour"
-            className="absolute top-3 right-3 p-1.5 text-slate-500 hover:text-white rounded-lg hover:bg-white/5 transition-colors"
-          >
-            <X size={14} />
-          </button>
-
-          <p className="text-[10px] font-bold uppercase tracking-widest text-blue-400 mb-2">
-            Step {stepIndex + 1} of {steps.length}
-          </p>
-          <h3 className="text-base font-bold text-white tracking-tight mb-2 pr-6">{step.title}</h3>
-          <p className="text-[13px] leading-relaxed text-slate-300">{step.body}</p>
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-blue-400 shrink-0">
+              {localize(UI_TEXT.stepOf(stepIndex + 1, steps.length), lang)}
+            </p>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <LanguageToggle lang={lang} onChange={onLangChange} />
+              <button
+                onClick={onSkip}
+                aria-label={localize(UI_TEXT.closeTour, lang)}
+                className="p-1.5 text-slate-500 hover:text-white rounded-lg hover:bg-white/5 transition-colors"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          </div>
+          <h3 className="text-base font-bold text-white tracking-tight mb-2">{localize(step.title, lang)}</h3>
+          <p className="text-[13px] leading-relaxed text-slate-300">{localize(step.body, lang)}</p>
 
           <div className="flex items-center gap-1.5 mt-4 mb-4">
             {steps.map((_, i) => (
@@ -239,7 +246,7 @@ export const TourOverlay: React.FC<TourOverlayProps> = ({ steps, stepIndex, onNe
               onClick={onSkip}
               className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 hover:text-slate-300 transition-colors"
             >
-              Skip tour
+              {localize(UI_TEXT.skipTour, lang)}
             </button>
             <div className="flex items-center gap-2">
               {stepIndex > 0 && (
@@ -247,14 +254,14 @@ export const TourOverlay: React.FC<TourOverlayProps> = ({ steps, stepIndex, onNe
                   onClick={onPrev}
                   className="flex items-center gap-1 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:text-white text-[11px] font-bold uppercase tracking-wider transition-all active:scale-95"
                 >
-                  <ChevronLeft size={13} /> Back
+                  <ChevronLeft size={13} /> {localize(UI_TEXT.back, lang)}
                 </button>
               )}
               <button
                 onClick={isLast ? onFinish : onNext}
                 className="flex items-center gap-1 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-bold uppercase tracking-wider transition-all active:scale-95 shadow-lg shadow-blue-900/40"
               >
-                {isLast ? <><Check size={13} /> Got it</> : <>Next <ChevronRight size={13} /></>}
+                {isLast ? <><Check size={13} /> {localize(UI_TEXT.gotIt, lang)}</> : <>{localize(UI_TEXT.next, lang)} <ChevronRight size={13} /></>}
               </button>
             </div>
           </div>
