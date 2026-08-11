@@ -47,7 +47,7 @@ export const TOURS: TourDef[] = [
       {
         placement: 'center',
         title: 'This is your Workroom',
-        body: 'Today’s schedule, the money you have made this month, and anything waiting on a decision — all on one screen. Everything else is one tab away.',
+        body: "Today's schedule, the money you have made this month, and anything waiting on a decision — all on one screen. Everything else is one tab away.",
       },
       {
         target: '[data-tour="new-job"]',
@@ -93,12 +93,12 @@ export const TOURS: TourDef[] = [
       {
         target: '[data-tour="nav-jobs"]',
         title: 'Open a job to work it',
-        body: 'Accept it, tap En route so the office and the client know you are moving, add photos, then build the invoice and collect payment on the spot.',
+        body: 'Accept it, tap On My Way so the office and the client know you are moving, add photos, then build the invoice and collect payment on the spot.',
       },
       {
         target: '[data-tour="nav-autokey"]',
         title: 'Auto-Key before you drive',
-        body: 'Type the car or scan the VIN and it tells you the keyway, the chip, whether it needs programming — and if that blank is on the van.',
+        body: 'Type the car or scan the VIN and it tells you the keyway, the chip, whether it needs programming — and whether that blank is on the van.',
       },
       {
         target: '[data-tour="nav-inventory"]',
@@ -228,7 +228,7 @@ export const TOURS: TourDef[] = [
       {
         placement: 'center',
         title: 'Where the money came from',
-        body: 'Revenue by month against your target, close rate, and how each technician is performing. Set the target in Settings and this screen judges you against it.',
+        body: 'Revenue by month against your target, close rate, and how each technician is performing. Set the target in Settings and this screen tracks you against it.',
       },
     ],
   },

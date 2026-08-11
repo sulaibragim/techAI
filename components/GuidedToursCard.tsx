@@ -95,8 +95,9 @@ export const GuidedToursCard: React.FC = () => {
           <RotateCcw size={13} /> Start onboarding over
         </button>
         <p className="text-[11px] text-slate-600 leading-relaxed -mt-2">
-          Clears what you have seen — the welcome screen, every tour, and the “not opened yet” markers
-          on the tabs come back. It touches nothing but your own onboarding.
+          Brings back the welcome screen, every tour, and the “not opened yet” markers on the tabs — as if
+          you were signing in for the first time. It touches nothing but your own onboarding: no job,
+          client, setting, or teammate is affected.
         </p>
       </div>
     </motion.div>
