@@ -30,9 +30,10 @@ export interface SettingsState {
   taxRate: number; // sales-tax percent applied to taxable revenue (0 = none)
   clientSms: ClientSmsSettings; // owner switches for automatic client-facing texts
   staffNotify: StaffNotifySettings; // owner switches for automatic messages to US, not clients
+  smsTemplates: Record<string, { en?: string; es?: string }>; // owner overrides of the one-tap client texts (template id → texts)
   onboardingComplete: boolean;
   aiAvailable: boolean; // runtime flag: is GEMINI_API_KEY configured on the server?
-  updateSettings: (patch: Partial<Omit<SettingsState, 'updateSettings' | 'resetSettings' | 'setMonthlyTarget' | 'setTechTarget' | 'addExpense' | 'removeExpense' | 'addStockMovement' | 'clearStockLedger' | 'setMovementDispute' | 'addServiceRate' | 'updateServiceRate' | 'removeServiceRate' | 'upsertClientProfile' | 'addAiMemory' | 'removeAiMemory' | 'syncSettings' | 'checkAiAvailable' | 'aiAvailable'>>) => void;
+  updateSettings: (patch: Partial<Omit<SettingsState, 'updateSettings' | 'resetSettings' | 'setMonthlyTarget' | 'setTechTarget' | 'addExpense' | 'removeExpense' | 'addStockMovement' | 'clearStockLedger' | 'setMovementDispute' | 'addServiceRate' | 'updateServiceRate' | 'removeServiceRate' | 'upsertClientProfile' | 'addAiMemory' | 'removeAiMemory' | 'setSmsTemplate' | 'resetSmsTemplate' | 'syncSettings' | 'checkAiAvailable' | 'aiAvailable'>>) => void;
   setMonthlyTarget: (monthKey: string, value: number) => void;
   setTechTarget: (userId: string, value: number) => void;
   addExpense: (expense: Omit<Expense, 'id'>) => void;
@@ -46,6 +47,10 @@ export interface SettingsState {
   updateServiceRate: (rate: ServiceRate) => void;
   removeServiceRate: (id: string) => void;
   upsertClientProfile: (phoneKey: string, patch: Partial<ClientProfile>) => void;
+  /** Override one one-tap SMS template (both languages at once). */
+  setSmsTemplate: (id: string, texts: { en?: string; es?: string }) => void;
+  /** Back to the built-in default text for this template. */
+  resetSmsTemplate: (id: string) => void;
   addAiMemory: (text: string) => AiMemory;
   removeAiMemory: (id: string) => void;
   learnSupplierAlias: (supplier: string, code: string, partId: string) => void;
@@ -84,6 +89,7 @@ export const SETTINGS_DEFAULTS = {
   taxRate: 0,
   clientSms: { ...CLIENT_SMS_DEFAULTS },
   staffNotify: { ...STAFF_NOTIFY_DEFAULTS },
+  smsTemplates: {} as Record<string, { en?: string; es?: string }>,
   onboardingComplete: false,
 };
 
@@ -113,6 +119,7 @@ const KEY_WORDS: Record<string, string> = {
   expenses: 'expense', stockMovements: 'stock movement', priceBook: 'price book',
   clientProfiles: 'client profile', monthlyTargets: 'monthly target', techTargets: 'technician target',
   aiMemories: 'AI instruction', taxRate: 'tax rate', adSpend: 'ad spend',
+  smsTemplates: 'SMS template', removedSmsTemplateIds: 'SMS template',
 };
 const humanKey = (k: string) =>
   KEY_WORDS[k] || k.replace(/([A-Z])/g, ' $1').toLowerCase().trim();
@@ -232,6 +239,22 @@ export const useSettingsStore = create<SettingsState>()(
           return { clientProfiles: { ...state.clientProfiles, [phoneKey]: next } };
         });
         pushToServer({ clientProfiles: { [phoneKey]: get().clientProfiles[phoneKey] } });
+      },
+
+      setSmsTemplate: (id, texts) => {
+        if (!id) return;
+        const entry = { en: (texts.en || '').trim(), es: (texts.es || '').trim() };
+        set((state) => ({ smsTemplates: { ...state.smsTemplates, [id]: entry } }));
+        pushToServer({ smsTemplates: { [id]: entry } });
+      },
+
+      resetSmsTemplate: (id) => {
+        set((state) => {
+          const next = { ...state.smsTemplates };
+          delete next[id];
+          return { smsTemplates: next };
+        });
+        pushToServer({ removedSmsTemplateIds: [id] });
       },
 
       addAiMemory: (text) => {

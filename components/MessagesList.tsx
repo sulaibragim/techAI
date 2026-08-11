@@ -9,13 +9,19 @@ import {
 import { Job } from '../types';
 import { API_BASE } from '../backendUrl';
 import { authHeaders } from '../apiClient';
+import { useCurrentUser } from '../authStore';
 import { useInboxStore, InboxMedia } from '../inboxStore';
+import { OPENPHONE_PHONE_NUMBER_ID } from '../smsService';
+import { smsInfo, sanitizeSms } from '../smsText';
+import { SMS_TEMPLATES, fillSmsTemplate, resolveSmsTemplate, SmsLang } from '../smsTemplates';
+import { useSwipeBack } from '../useSwipeBack';
 import {
   buildClients, findClientByPhone, normalizePhone, formatPhone,
   clientFlags, clientScore, TIER_STYLE, ClientRecord,
 } from '../clientUtils';
 
-const PHONE_NUMBER_ID = 'PNkhFHiD2G';
+// One source of truth for the number we send from — a second copy here would drift.
+const PHONE_NUMBER_ID = OPENPHONE_PHONE_NUMBER_ID;
 
 type ThreadItem =
   | { kind: 'sms'; id: string; ts: number; direction: 'in' | 'out'; body: string; media?: InboxMedia[] }
@@ -45,6 +51,26 @@ const DRAFTS_KEY = 'techai-inbox-drafts-v1';
 
 const fmtTime = (iso: number) =>
   new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+// Thread-list stamp: a phone row has ~60px for this, so today is a clock, older is a date.
+const fmtShort = (ts: number) => {
+  const d = new Date(ts), now = new Date();
+  if (d.toDateString() === now.toDateString()) return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  const y = new Date(now); y.setDate(now.getDate() - 1);
+  if (d.toDateString() === y.toDateString()) return 'Yest.';
+  if (d.getFullYear() === now.getFullYear()) return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return d.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: '2-digit' });
+};
+// Mobile gets a full-screen chat (like JobDetail); ≥md keeps the two-pane inbox.
+const useIsNarrow = () => {
+  const [narrow, setNarrow] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)');
+    const on = () => setNarrow(mq.matches);
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, []);
+  return narrow;
+};
 const fmtDur = (s?: number) => {
   if (!s) return '';
   const m = Math.floor(s / 60), r = s % 60;
@@ -188,10 +214,13 @@ export const MessagesList: React.FC<MessagesListProps> = ({ onJobSelect, onClien
     if (sending || !replyText.trim()) return;
     setSending(true);
     try {
+      // Same GSM cleanup as every other send path — a pasted em dash or curly quote
+      // would otherwise flip the whole message to the 70-char encoding.
+      const content = sanitizeSms(replyText).trim();
       const res = await fetch(`${API_BASE}/api/openphone/messages/send`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeaders() },
-        body: JSON.stringify({ to, content: replyText.trim(), phoneNumberId: PHONE_NUMBER_ID }),
+        body: JSON.stringify({ to, content, phoneNumberId: PHONE_NUMBER_ID }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => null);
@@ -241,6 +270,45 @@ export const MessagesList: React.FC<MessagesListProps> = ({ onJobSelect, onClien
     return [...live].sort((a, b) => `${b.scheduledDate}T${b.scheduledTime}`.localeCompare(`${a.scheduledDate}T${a.scheduledTime}`))[0];
   }, [open?.client]);
 
+  // ≥md the inbox is one bounded two-pane box. Its height is MEASURED, not guessed:
+  // a fixed 100dvh−9rem was wrong whenever the app header grew (Active Dispatch bar,
+  // offline banner) and pushed the composer off the bottom of the screen.
+  const shellRef = useRef<HTMLDivElement>(null);
+  const [paneH, setPaneH] = useState(0);
+  const measurePane = useCallback(() => {
+    const el = shellRef.current;
+    if (!el || !window.matchMedia('(min-width: 768px)').matches) { setPaneH(0); return; }
+    setPaneH(Math.max(420, Math.round(window.innerHeight - el.getBoundingClientRect().top - 24)));
+  }, []);
+  useLayoutEffect(measurePane); // every render — the banners above us come and go
+  useEffect(() => {
+    window.addEventListener('resize', measurePane);
+    return () => window.removeEventListener('resize', measurePane);
+  }, [measurePane]);
+
+  // The phone's chat layer is `fixed`, and iOS does NOT shrink those when the keyboard
+  // opens — the composer would sit behind it. Follow the VISUAL viewport instead.
+  const overlayRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const vv = window.visualViewport;
+    const el = overlayRef.current;
+    if (!vv || !el || !openKey) return;
+    const apply = () => {
+      if (!window.matchMedia('(max-width: 767px)').matches) { el.style.height = ''; el.style.top = ''; return; }
+      el.style.height = `${vv.height}px`;
+      el.style.top = `${vv.offsetTop}px`;
+    };
+    apply();
+    vv.addEventListener('resize', apply);
+    vv.addEventListener('scroll', apply);
+    return () => {
+      vv.removeEventListener('resize', apply);
+      vv.removeEventListener('scroll', apply);
+      el.style.height = '';
+      el.style.top = '';
+    };
+  }, [openKey]);
+
   const FILTER_CHIPS: { id: InboxFilter; label: string; count?: number }[] = [
     { id: 'all', label: 'All' },
     { id: 'unread', label: 'Unread', count: unreadCount },
@@ -248,70 +316,69 @@ export const MessagesList: React.FC<MessagesListProps> = ({ onJobSelect, onClien
   ];
 
   return (
-    // Bounded to the viewport so the LIST and the CHAT scroll inside themselves — the whole
-    // page no longer runs to the bottom when you scroll a long conversation.
-    <div className="flex flex-col h-[calc(100dvh-12rem)] md:h-[calc(100dvh-9rem)] max-w-5xl mx-auto animate-in fade-in duration-500">
+    // Mobile: the list is a normal page section (the app shell owns the scrolling and the
+    // bottom-nav inset) and the chat opens as a full-screen layer. ≥md: one bounded
+    // two-pane inbox where the list and the chat scroll inside themselves.
+    <div
+      ref={shellRef}
+      style={paneH ? { height: paneH } : undefined}
+      className="flex flex-col max-w-5xl mx-auto animate-in fade-in duration-500"
+    >
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-2 shrink-0 mb-4">
-        <div className="flex items-center gap-3">
-          {open && (
-            <button onClick={() => setOpenKey(null)} className="p-2 bg-slate-900 border border-white/10 rounded-xl text-slate-300 hover:text-white transition-all active:scale-95 md:hidden">
-              <ArrowLeft size={16} />
-            </button>
-          )}
-          <div>
-            <h2 className="text-2xl font-bold tracking-tight text-white leading-none">Client Inbox</h2>
-            <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-2">One chat per client · calls, texts & invoices</p>
-          </div>
+      <div className="flex items-center justify-between gap-2 px-1 md:px-2 shrink-0 mb-3 md:mb-4">
+        <div className="min-w-0">
+          <h2 className="text-xl md:text-2xl font-bold tracking-tight text-white leading-none truncate">Client Inbox</h2>
+          <p className="hidden sm:block text-xs text-slate-500 font-bold uppercase tracking-widest mt-2">One chat per client · calls, texts & invoices</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 shrink-0">
           {online && (
-            <div className="hidden sm:flex items-center space-x-2 text-green-400 bg-green-500/5 px-3 py-2 rounded-xl border border-green-500/20">
+            <div className="hidden lg:flex items-center space-x-2 text-green-400 bg-green-500/5 px-3 py-2 rounded-xl border border-green-500/20">
               <Radio size={12} className="animate-pulse" />
               <span className="text-xs font-bold uppercase tracking-widest">OpenPhone Live</span>
             </div>
           )}
           <button
             onClick={() => setComposeOpen(true)}
-            className="flex items-center gap-2 px-3 py-2.5 bg-blue-600 hover:bg-blue-500 rounded-xl text-white transition-all active:scale-95 text-xs font-bold uppercase tracking-wider"
+            className="flex items-center gap-2 h-11 px-3 bg-blue-600 hover:bg-blue-500 rounded-xl text-white transition-all active:scale-95 text-xs font-bold uppercase tracking-wider"
             title="Start a new conversation"
           >
-            <MessageSquarePlus size={14} />
-            <span className="hidden sm:inline">New message</span>
+            <MessageSquarePlus size={16} />
+            <span className="hidden lg:inline">New message</span>
           </button>
           <button
             onClick={syncHistory}
             disabled={syncing}
-            className="flex items-center gap-2 px-3 py-2.5 bg-slate-900 border border-white/10 rounded-xl text-slate-300 hover:text-white hover:border-blue-500/30 transition-all active:scale-95 disabled:opacity-50 text-xs font-bold uppercase tracking-wider"
+            className="flex items-center gap-2 h-11 px-3 bg-slate-900 border border-white/10 rounded-xl text-slate-300 hover:text-white hover:border-blue-500/30 transition-all active:scale-95 disabled:opacity-50 text-xs font-bold uppercase tracking-wider"
             title="Pull the full message & call history from OpenPhone"
           >
-            <History size={14} className={syncing ? 'animate-spin' : ''} />
-            <span className="hidden sm:inline">{syncing ? 'Syncing…' : 'Sync history'}</span>
+            <History size={16} className={syncing ? 'animate-spin' : ''} />
+            <span className="hidden lg:inline">{syncing ? 'Syncing…' : 'Sync history'}</span>
           </button>
-          <button onClick={() => fetchAll()} disabled={loading} className="p-2.5 bg-slate-900 border border-white/10 rounded-xl text-slate-400 hover:text-white hover:border-blue-500/30 transition-all active:scale-95 disabled:opacity-40" title="Refresh">
-            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+          <button onClick={() => fetchAll()} disabled={loading} className="h-11 w-11 flex items-center justify-center bg-slate-900 border border-white/10 rounded-xl text-slate-400 hover:text-white hover:border-blue-500/30 transition-all active:scale-95 disabled:opacity-40" title="Refresh">
+            <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
           </button>
         </div>
       </div>
 
-      <div className="grid md:grid-cols-[minmax(0,340px)_1fr] gap-4 px-2 flex-1 min-h-0">
+      <div className="grid md:grid-cols-[minmax(0,340px)_minmax(0,1fr)] gap-4 px-1 md:px-2 flex-1 min-h-0 min-w-0">
         {/* ── Thread list ── */}
-        <div className={`flex-col min-h-0 ${open ? 'hidden md:flex' : 'flex'}`}>
+        <div className="flex flex-col min-w-0 md:min-h-0">
           <div className="relative mb-2 shrink-0">
             <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
             <input
               value={query}
               onChange={e => setQuery(e.target.value)}
               placeholder="Search name or number…"
-              className="w-full bg-slate-900 border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+              /* 16px on phones — anything smaller makes iOS zoom the page on focus. */
+              className="w-full bg-slate-900 border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-base md:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
             />
           </div>
-          <div className="flex gap-1.5 mb-2 shrink-0">
+          <div className="flex gap-1.5 mb-2 shrink-0 overflow-x-auto scrollbar-hide">
             {FILTER_CHIPS.map(c => (
               <button
                 key={c.id}
                 onClick={() => setFilter(c.id)}
-                className={`px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider border transition-all active:scale-95 ${
+                className={`shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider border transition-all active:scale-95 ${
                   filter === c.id ? 'bg-blue-600/20 border-blue-500/50 text-blue-300' : 'bg-slate-900 border-white/10 text-slate-400 hover:text-white'
                 }`}
               >
@@ -319,17 +386,17 @@ export const MessagesList: React.FC<MessagesListProps> = ({ onJobSelect, onClien
               </button>
             ))}
           </div>
-          <div className="space-y-2 min-h-0 flex-1 overflow-y-auto pr-1 scrollbar-hide">
+          <div className="space-y-2 min-w-0 md:min-h-0 md:flex-1 md:overflow-y-auto md:pr-1 scrollbar-hide">
           {loading && !threads.length ? (
             [...Array(4)].map((_, i) => <div key={i} className="bg-slate-900/80 p-4 rounded-2xl border border-white/10 animate-pulse h-16" />)
           ) : !threads.length ? (
-            <div className="bg-slate-900 rounded-2xl border border-white/10 p-12 flex flex-col items-center justify-center opacity-40 text-center">
+            <div className="bg-slate-900 rounded-2xl border border-white/10 p-8 md:p-12 flex flex-col items-center justify-center opacity-40 text-center">
               <Smartphone size={26} className="mb-3 text-blue-500" />
               <p className="text-sm font-bold tracking-tight">{online ? 'No conversations yet' : 'Can’t reach the server'}</p>
               <p className="text-xs font-semibold text-slate-400 mt-1.5">{online ? 'Client texts & calls will appear here' : 'The inbox is unavailable right now'}</p>
             </div>
           ) : !visibleThreads.length ? (
-            <div className="bg-slate-900 rounded-2xl border border-white/10 p-10 text-center opacity-40">
+            <div className="bg-slate-900 rounded-2xl border border-white/10 p-8 md:p-10 text-center opacity-40">
               <p className="text-sm font-bold">{query.trim() ? `Nothing matches “${query.trim()}”` : 'Nothing here — all caught up'}</p>
             </div>
           ) : (
@@ -355,7 +422,7 @@ export const MessagesList: React.FC<MessagesListProps> = ({ onJobSelect, onClien
                     </div>
                     <p className={`text-xs truncate mt-0.5 ${unread ? 'text-slate-200 font-semibold' : 'text-slate-400 italic'}`}>{snippet(t.latest)}</p>
                   </div>
-                  {t.latest && <span className="text-[10px] font-bold text-slate-500 tabular-nums shrink-0">{fmtTime(t.latest.ts)}</span>}
+                  {t.latest && <span className="text-[10px] font-bold text-slate-500 tabular-nums shrink-0 self-start mt-1">{fmtShort(t.latest.ts)}</span>}
                 </button>
               );
             })
@@ -363,8 +430,8 @@ export const MessagesList: React.FC<MessagesListProps> = ({ onJobSelect, onClien
           </div>
         </div>
 
-        {/* ── Chat panel ── */}
-        <div className={`min-h-0 ${open ? 'flex' : 'hidden md:flex'}`}>
+        {/* ── Chat panel — full-screen layer on a phone, right pane from md up ── */}
+        <div ref={overlayRef} className={`min-w-0 min-h-0 ${open ? 'fixed inset-0 z-[120] flex md:static md:z-auto' : 'hidden md:flex'}`}>
           {!open ? (
             <div className="w-full h-full bg-slate-900/40 rounded-2xl border border-white/10 border-dashed flex flex-col items-center justify-center p-16 opacity-40 text-center">
               <MessageSquare size={28} className="mb-3 text-blue-500" />
@@ -379,6 +446,7 @@ export const MessagesList: React.FC<MessagesListProps> = ({ onJobSelect, onClien
               replyText={replyText}
               setReplyText={setReplyText}
               onSend={() => sendReply(open.phone)}
+              onBack={() => setOpenKey(null)}
               onCall={() => { window.location.href = `tel:${open.phone}`; }}
               onProfile={open.client && onClientSelect ? () => onClientSelect(open.client!.id) : undefined}
               onNewJob={onCreateJobFromContact ? () => onCreateJobFromContact(open.phone, titleFor(open)) : undefined}
@@ -426,8 +494,11 @@ const ComposeModal: React.FC<{
   const freeNumber = qDigits.length >= 10 ? qTrim : null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-start justify-center pt-[15vh] px-4" onClick={onClose}>
-      <div className="w-full max-w-md bg-slate-900 border border-white/10 rounded-2xl shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 z-[140] bg-black/60 backdrop-blur-sm flex items-end md:items-start justify-center md:pt-[15vh] md:px-4" onClick={onClose}>
+      <div
+        className="w-full max-w-md bg-slate-900 border border-white/10 rounded-t-3xl md:rounded-2xl shadow-2xl overflow-hidden pb-[env(safe-area-inset-bottom)] md:pb-0"
+        onClick={e => e.stopPropagation()}
+      >
         <div className="p-4 border-b border-white/10 flex items-center gap-3">
           <MessageSquarePlus size={18} className="text-blue-400 shrink-0" />
           <input
@@ -442,11 +513,12 @@ const ComposeModal: React.FC<{
               }
             }}
             placeholder="Client name or phone number…"
-            className="flex-1 bg-transparent text-sm text-white placeholder-slate-500 focus:outline-none"
+            inputMode="text"
+            className="flex-1 min-w-0 bg-transparent text-base md:text-sm text-white placeholder-slate-500 focus:outline-none"
           />
-          <button onClick={onClose} className="p-1.5 text-slate-400 hover:text-white transition-colors"><X size={16} /></button>
+          <button onClick={onClose} className="p-2 -m-0.5 text-slate-400 hover:text-white transition-colors"><X size={18} /></button>
         </div>
-        <div className="max-h-[45vh] overflow-y-auto scrollbar-hide p-2 space-y-1">
+        <div className="max-h-[50vh] md:max-h-[45vh] overflow-y-auto overscroll-contain scrollbar-hide p-2 space-y-1">
           {freeNumber && (
             <button
               onClick={() => onPick(freeNumber)}
@@ -489,15 +561,34 @@ type TranscriptState = 'loading' | 'error' | { status: string; dialogue: { speak
 const ChatPanel: React.FC<{
   thread: Thread; title: string; sending: boolean;
   replyText: string; setReplyText: (v: string) => void;
-  onSend: () => void; onCall: () => void;
+  onSend: () => void; onCall: () => void; onBack: () => void;
   onProfile?: () => void; onNewJob?: () => void;
   activeJob?: Job | null; onOpenJob?: () => void;
-}> = ({ thread, title, sending, replyText, setReplyText, onSend, onCall, onProfile, onNewJob, activeJob, onOpenJob }) => {
+}> = ({ thread, title, sending, replyText, setReplyText, onSend, onCall, onBack, onProfile, onNewJob, activeJob, onOpenJob }) => {
   const flags = thread.client ? clientFlags(thread.client) : null;
   const score = thread.client ? clientScore(thread.client) : null;
   const companyName = useSettingsStore(s => s.companyName);
   const googleReviewUrl = useSettingsStore(s => s.googleReviewUrl);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const templateOverrides = useSettingsStore(s => s.smsTemplates);
+  const currentUser = useCurrentUser();
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  // Phone = full-screen layer, so a right-swipe closes it the same way it closes a job card.
+  const narrow = useIsNarrow();
+  const swipeRef = useSwipeBack<HTMLDivElement>(onBack, { enabled: narrow });
+
+  // The box grows with the text instead of scrolling a one-line input sideways.
+  const autosize = useCallback(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    el.style.height = '0px';
+    el.style.height = `${Math.min(el.scrollHeight, 140)}px`;
+  }, []);
+  useLayoutEffect(autosize, [replyText, autosize]);
+  useEffect(() => {
+    window.addEventListener('resize', autosize); // rotation changes how many lines the text needs
+    return () => window.removeEventListener('resize', autosize);
+  }, [autosize]);
 
   // Open at the NEWEST message (bottom), like any messenger. Stay pinned to the bottom as
   // messages arrive — but only if the user hasn't scrolled up to read history.
@@ -509,6 +600,14 @@ const ChatPanel: React.FC<{
   };
   useLayoutEffect(() => { pinnedRef.current = true; scrollToBottom(); }, [thread.key]);
   useLayoutEffect(() => { if (pinnedRef.current) scrollToBottom(); }, [thread.items.length]);
+  // The keyboard shrinking the layer must not push the newest message out of sight.
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const onResize = () => { if (pinnedRef.current) requestAnimationFrame(scrollToBottom); };
+    vv.addEventListener('resize', onResize);
+    return () => vv.removeEventListener('resize', onResize);
+  }, []);
 
   // Call transcripts — fetched on first expand, kept for the session.
   const [openCallId, setOpenCallId] = useState<string | null>(null);
@@ -533,32 +632,57 @@ const ChatPanel: React.FC<{
     return d && d === clientDigits ? (title || 'Client') : companyName || 'Us';
   };
 
-  // Quick templates — {name} is the client's first name, EN + ES.
+  // Quick templates. The dispatch set is the SAME one the owner edits in Settings, so a
+  // reply from the inbox reads like a reply from the job card; the extras below are the
+  // ones only a conversation needs. Every default fits one GSM-7 segment — see smsText.ts.
   const [templatesOpen, setTemplatesOpen] = useState(false);
+  const [tplLang, setTplLang] = useState<SmsLang>('en');
   const firstName = thread.client?.firstName || (thread.contactName || '').split(' ')[0] || '';
-  const fill = (tpl: string) => tpl.replace(/\{name\}/g, firstName || 'there').replace(/ {2,}/g, ' ').trim();
-  const TEMPLATES: { lang: string; items: string[] }[] = [
-    {
-      lang: 'English',
-      items: [
-        `Hi {name}, this is ${companyName}. We got your request — when is a good time to call you?`,
-        `On my way! I'll text you when I'm close.`,
-        `I'm outside now.`,
-        `Could you send a photo of the lock / door? It helps me bring the right parts.`,
-        `Running about 15 minutes late — sorry! I'll be there as soon as I can.`,
-        ...(googleReviewUrl ? [`Thank you for choosing ${companyName}! If everything was great, a quick review means a lot: ${googleReviewUrl}`] : []),
-      ],
-    },
-    {
-      lang: 'Español',
-      items: [
-        `¡Hola {name}! Le escribe ${companyName}. Recibimos su solicitud — ¿a qué hora le podemos llamar?`,
-        `¡Voy en camino! Le aviso cuando esté cerca.`,
-        `Ya estoy afuera.`,
-        `¿Puede mandar una foto de la cerradura o de la puerta? Así llevo las piezas correctas.`,
-      ],
-    },
-  ];
+
+  const templates = useMemo(() => {
+    const vars = { name: firstName, tech: currentUser?.name || '', company: companyName, eta: null };
+    const extras: { id: string; label: string; en: string; es: string }[] = [
+      {
+        id: 'inbox-hello', label: 'First reply',
+        en: 'Hi {name}, this is {company}. We got your message - when is a good time to call you?',
+        es: 'Hola {name}, le escribe {company}. Recibimos su mensaje - a que hora le podemos llamar?',
+      },
+      {
+        id: 'inbox-photo', label: 'Send a photo',
+        en: 'Could you text a photo of the lock or the door? It helps us bring the right parts.',
+        es: 'Puede mandar una foto de la cerradura o de la puerta? Asi llevamos las piezas correctas.',
+      },
+      {
+        id: 'inbox-quote', label: 'Price after look',
+        en: 'Hi {name}, the tech gives you the exact price on site before any work starts - no surprises.',
+        es: 'Hola {name}, el tecnico le da el precio exacto en el sitio antes de empezar - sin sorpresas.',
+      },
+      ...(googleReviewUrl ? [{
+        id: 'inbox-review', label: 'Review link',
+        en: `Thanks for choosing {company}! If we did well, a quick review means a lot: ${googleReviewUrl}`,
+        es: `Gracias por elegir {company}. Si quedo contento, una resena nos ayuda mucho: ${googleReviewUrl}`,
+      }] : []),
+    ];
+    return [
+      ...extras.map(e => ({ id: e.id, label: e.label, text: fillSmsTemplate(tplLang === 'es' ? e.es : e.en, vars, tplLang) })),
+      ...SMS_TEMPLATES.map(def => ({
+        id: def.id,
+        label: def.label,
+        text: fillSmsTemplate(resolveSmsTemplate(def, templateOverrides, tplLang), vars, tplLang),
+      })),
+    ];
+  }, [firstName, currentUser?.name, companyName, googleReviewUrl, templateOverrides, tplLang]);
+
+  const applyTemplate = (text: string) => {
+    setReplyText(text);
+    setTemplatesOpen(false);
+    inputRef.current?.focus();
+  };
+
+  // What this reply will actually cost to send.
+  const info = useMemo(() => smsInfo(sanitizeSms(replyText)), [replyText]);
+  const costTone = info.encoding === 'UCS-2' || info.segments > 2 ? 'text-red-400'
+    : info.segments === 2 ? 'text-amber-400' : 'text-slate-500';
 
   // AI draft — Дурачок reads the conversation and proposes the next reply.
   const [drafting, setDrafting] = useState(false);
@@ -599,33 +723,45 @@ const ChatPanel: React.FC<{
   };
 
   return (
-    <div className="w-full h-full bg-slate-900 rounded-2xl border border-white/10 shadow-2xl flex flex-col overflow-hidden">
-      {/* Header */}
-      <div className="p-4 border-b border-white/10 flex items-center gap-3">
-        <div className={`w-11 h-11 rounded-xl flex items-center justify-center border shrink-0 ${thread.client ? 'bg-blue-600/10 border-blue-500/30 text-blue-300 font-bold' : 'bg-slate-950 border-white/10 text-slate-400'}`}>
+    <div
+      ref={swipeRef}
+      className="w-full h-full bg-slate-900 md:rounded-2xl border-0 md:border border-white/10 shadow-2xl flex flex-col overflow-hidden"
+    >
+      {/* Header — clears the notch when this is the top of the screen */}
+      <div className="px-3 md:px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] md:pt-4 border-b border-white/10 flex items-center gap-2.5 md:gap-3 shrink-0">
+        <button
+          onClick={onBack}
+          title="Back to the inbox"
+          className="md:hidden shrink-0 w-10 h-10 flex items-center justify-center bg-white/5 border border-white/10 rounded-xl text-slate-300 active:scale-90 transition-all"
+        >
+          <ArrowLeft size={18} />
+        </button>
+        <div className={`hidden sm:flex w-11 h-11 rounded-xl items-center justify-center border shrink-0 ${thread.client ? 'bg-blue-600/10 border-blue-500/30 text-blue-300 font-bold' : 'bg-slate-950 border-white/10 text-slate-400'}`}>
           {thread.client ? `${thread.client.firstName[0] || ''}${thread.client.lastName[0] || ''}`.toUpperCase() || <User size={18} /> : <User size={18} />}
         </div>
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-base font-bold text-white truncate">{title}</p>
-            {score && <span className={`text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded border ${TIER_STYLE[score.tier]}`}>{score.tier}</span>}
+          <div className="flex items-center gap-1.5 md:gap-2 min-w-0">
+            <p className="text-sm md:text-base font-bold text-white truncate">{title}</p>
+            {score && <span className={`hidden sm:inline text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded border shrink-0 ${TIER_STYLE[score.tier]}`}>{score.tier}</span>}
+          </div>
+          <div className="flex items-center gap-2 min-w-0">
+            <p className="text-[11px] md:text-xs text-slate-500 tracking-wide truncate">{formatPhone(thread.phone)}</p>
             {activeJob && (
               <button
                 onClick={onOpenJob}
                 disabled={!onOpenJob}
-                className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border border-blue-500/40 bg-blue-600/15 text-blue-300 hover:bg-blue-600/30 transition-all flex items-center gap-1"
+                className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border border-blue-500/40 bg-blue-600/15 text-blue-300 hover:bg-blue-600/30 transition-all flex items-center gap-1 shrink-0 max-w-[55%] truncate"
                 title="Open this job"
               >
-                <Briefcase size={10} /> #{activeJob.jobNumber} · {activeJob.status}
+                <Briefcase size={10} className="shrink-0" /> <span className="truncate">#{activeJob.jobNumber} · {activeJob.status}</span>
               </button>
             )}
           </div>
-          <p className="text-xs text-slate-500 tracking-widest">{formatPhone(thread.phone)}</p>
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
-          <button onClick={onCall} title="Call" className="p-2.5 bg-white/5 border border-white/10 rounded-xl text-slate-300 hover:text-green-400 transition-all active:scale-95"><Phone size={15} /></button>
-          {onProfile && <button onClick={onProfile} title="Client profile" className="p-2.5 bg-white/5 border border-white/10 rounded-xl text-slate-300 hover:text-blue-400 transition-all active:scale-95"><User size={15} /></button>}
-          {onNewJob && <button onClick={onNewJob} title="New job for this client" className="p-2.5 bg-blue-600/15 border border-blue-500/30 rounded-xl text-blue-300 hover:bg-blue-600 hover:text-white transition-all active:scale-95"><Briefcase size={15} /></button>}
+          <button onClick={onCall} title="Call" className="w-10 h-10 flex items-center justify-center bg-white/5 border border-white/10 rounded-xl text-slate-300 hover:text-green-400 transition-all active:scale-95"><Phone size={16} /></button>
+          {onProfile && <button onClick={onProfile} title="Client profile" className="w-10 h-10 flex items-center justify-center bg-white/5 border border-white/10 rounded-xl text-slate-300 hover:text-blue-400 transition-all active:scale-95"><User size={16} /></button>}
+          {onNewJob && <button onClick={onNewJob} title="New job for this client" className="w-10 h-10 flex items-center justify-center bg-blue-600/15 border border-blue-500/30 rounded-xl text-blue-300 hover:bg-blue-600 hover:text-white transition-all active:scale-95"><Briefcase size={16} /></button>}
         </div>
       </div>
 
@@ -640,7 +776,7 @@ const ChatPanel: React.FC<{
           const el = e.currentTarget;
           pinnedRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 150;
         }}
-        className="p-4 space-y-2.5 flex-1 min-h-0 overflow-y-auto scrollbar-hide flex flex-col"
+        className="p-3 md:p-4 space-y-2.5 flex-1 min-h-0 min-w-0 overflow-y-auto overflow-x-hidden overscroll-contain scrollbar-hide flex flex-col"
       >
         {!thread.items.length && (
           <div className="self-center my-auto text-center opacity-40">
@@ -655,10 +791,10 @@ const ChatPanel: React.FC<{
             const tr = transcripts[it.id];
             const expanded = openCallId === it.id;
             return (
-              <div key={it.id} className="self-center flex flex-col items-center max-w-full">
+              <div key={it.id} className="flex flex-col items-center max-w-full min-w-0">
                 <button
                   onClick={() => toggleCall(it.id)}
-                  className="flex items-center gap-2 text-[11px] font-semibold text-slate-400 bg-white/5 border border-white/10 rounded-full px-3 py-1.5 hover:border-blue-500/40 hover:text-slate-200 transition-all"
+                  className="flex items-center justify-center flex-wrap gap-x-2 gap-y-0.5 max-w-full text-[11px] font-semibold text-slate-400 bg-white/5 border border-white/10 rounded-2xl px-3 py-1.5 hover:border-blue-500/40 hover:text-slate-200 transition-all"
                   title="Show call transcript"
                 >
                   <Icon size={12} className={it.direction === 'missed' ? 'text-red-400' : 'text-slate-400'} />
@@ -694,8 +830,8 @@ const ChatPanel: React.FC<{
           const images = (it.media || []).filter(m => !m.type || m.type.startsWith('image'));
           const files = (it.media || []).filter(m => m.type && !m.type.startsWith('image'));
           return (
-            <div key={it.id} className={`max-w-[85%] ${out ? 'self-end' : 'self-start'}`}>
-              <div className={`rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${out ? 'bg-blue-600 text-white rounded-br-sm' : 'bg-slate-800 text-slate-100 border border-white/10 rounded-bl-sm'}`}>
+            <div key={it.id} className={`max-w-[88%] md:max-w-[85%] min-w-0 ${out ? 'self-end' : 'self-start'}`}>
+              <div className={`rounded-2xl px-3.5 py-2.5 text-[15px] md:text-sm leading-relaxed ${out ? 'bg-blue-600 text-white rounded-br-sm' : 'bg-slate-800 text-slate-100 border border-white/10 rounded-bl-sm'}`}>
                 {images.map((m, i) => (
                   <a key={i} href={m.url} target="_blank" rel="noopener noreferrer" className="block mb-1.5 last:mb-0">
                     <img src={m.url} alt="MMS attachment" loading="lazy" className="rounded-xl max-h-52 w-auto max-w-full" />
@@ -711,7 +847,9 @@ const ChatPanel: React.FC<{
                     <CreditCard size={15} /> Payment link <ExternalLink size={12} className="opacity-70" />
                   </a>
                 ) : it.body ? (
-                  <span className="whitespace-pre-wrap break-words">{it.body}</span>
+                  // `anywhere`, not `break-word`: only this one lets a pasted URL shrink the
+                  // bubble's min-content, which is what used to widen the whole tab sideways.
+                  <span className="whitespace-pre-wrap [overflow-wrap:anywhere]">{it.body}</span>
                 ) : null}
               </div>
               <p className={`text-[10px] text-slate-500 mt-1 ${out ? 'text-right' : 'text-left'}`}>{fmtTime(it.ts)}</p>
@@ -720,52 +858,96 @@ const ChatPanel: React.FC<{
         })}
       </div>
 
-      {/* Reply */}
-      <div className="relative p-3 border-t border-white/10 flex gap-2">
+      {/* Reply — this whole row used to end up behind the phone's tab bar */}
+      <div className="relative shrink-0 border-t border-white/10 p-3 pb-[max(0.75rem,calc(0.5rem+env(safe-area-inset-bottom)))] md:pb-3">
         {templatesOpen && (
-          <div className="absolute bottom-full left-3 right-3 mb-2 bg-slate-950 border border-white/10 rounded-2xl shadow-2xl max-h-64 overflow-y-auto scrollbar-hide p-2 z-10">
-            {TEMPLATES.map(group => (
-              <div key={group.lang}>
-                <p className="px-2 pt-2 pb-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">{group.lang}</p>
-                {group.items.map((tpl, i) => (
-                  <button
-                    key={i}
-                    onClick={() => { setReplyText(fill(tpl)); setTemplatesOpen(false); inputRef.current?.focus(); }}
-                    className="w-full text-left px-2.5 py-2 rounded-lg text-xs text-slate-300 hover:bg-white/5 hover:text-white transition-colors"
-                  >
-                    {fill(tpl)}
-                  </button>
-                ))}
+          <>
+            <div className="fixed inset-0 z-[125] md:hidden" onClick={() => setTemplatesOpen(false)} />
+            <div className="fixed inset-x-0 bottom-0 z-[130] max-h-[68vh] rounded-t-3xl border-t border-white/10 bg-slate-950 shadow-2xl overflow-y-auto overscroll-contain scrollbar-hide p-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:absolute md:inset-x-3 md:top-auto md:bottom-full md:z-10 md:mb-2 md:max-h-72 md:rounded-2xl md:border md:pb-2">
+              <div className="sticky top-0 flex items-center justify-between gap-2 bg-slate-950 px-1.5 py-2">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Quick replies</p>
+                <span className="flex rounded-lg border border-white/10 overflow-hidden">
+                  {(['en', 'es'] as SmsLang[]).map(l => (
+                    <button
+                      key={l}
+                      onClick={() => setTplLang(l)}
+                      className={`px-2.5 py-1 text-[10px] font-bold uppercase transition-all ${tplLang === l ? 'bg-blue-600 text-white' : 'bg-white/5 text-slate-400'}`}
+                    >{l}</button>
+                  ))}
+                </span>
               </div>
+              {templates.map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => applyTemplate(t.text)}
+                  className="w-full text-left px-2.5 py-2.5 rounded-xl hover:bg-white/5 active:bg-white/10 transition-colors"
+                >
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-blue-400/80">{t.label}</p>
+                  <p className="text-xs text-slate-300 mt-0.5 leading-snug">{t.text}</p>
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* One-tap chips — the reason templates were invisible on a phone before */}
+        {!replyText && (
+          <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-2 -mx-0.5 px-0.5">
+            {templates.slice(0, 5).map(t => (
+              <button
+                key={t.id}
+                onClick={() => applyTemplate(t.text)}
+                className="shrink-0 px-3 py-1.5 rounded-full border border-white/10 bg-white/5 text-[11px] font-bold text-slate-300 hover:text-white hover:border-blue-500/40 transition-all active:scale-95"
+              >
+                {t.label}
+              </button>
             ))}
           </div>
         )}
-        <button
-          onClick={() => setTemplatesOpen(v => !v)}
-          title="Quick templates"
-          className={`p-2.5 rounded-xl border transition-all active:scale-95 ${templatesOpen ? 'bg-blue-600/20 border-blue-500/40 text-blue-300' : 'bg-white/5 border-white/10 text-slate-300 hover:text-white'}`}
-        >
-          <Zap size={15} />
-        </button>
-        <button
-          onClick={aiDraft}
-          disabled={drafting}
-          title="Let the AI draft a reply"
-          className={`p-2.5 rounded-xl border transition-all active:scale-95 disabled:opacity-60 ${drafting ? 'bg-purple-600/20 border-purple-500/40 text-purple-300' : 'bg-white/5 border-white/10 text-slate-300 hover:text-purple-300'}`}
-        >
-          <Sparkles size={15} className={drafting ? 'animate-pulse' : ''} />
-        </button>
-        <input
-          ref={inputRef}
-          value={replyText}
-          onChange={e => setReplyText(e.target.value)}
-          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); onSend(); } }}
-          placeholder="Text the client…"
-          className="flex-1 min-w-0 bg-slate-800 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
-        />
-        <button onClick={onSend} disabled={sending || !replyText.trim()} className="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-bold transition-all active:scale-95 disabled:opacity-40 flex items-center gap-1.5">
-          <Send size={14} />{sending ? '…' : 'Send'}
-        </button>
+
+        <div className="flex items-end gap-2 min-w-0">
+          <button
+            onClick={() => setTemplatesOpen(v => !v)}
+            title="Quick templates"
+            className={`shrink-0 w-10 h-10 md:w-11 md:h-11 flex items-center justify-center rounded-xl border transition-all active:scale-95 ${templatesOpen ? 'bg-blue-600/20 border-blue-500/40 text-blue-300' : 'bg-white/5 border-white/10 text-slate-300 hover:text-white'}`}
+          >
+            <Zap size={17} />
+          </button>
+          <button
+            onClick={aiDraft}
+            disabled={drafting}
+            title="Let the AI draft a reply"
+            className={`shrink-0 w-10 h-10 md:w-11 md:h-11 flex items-center justify-center rounded-xl border transition-all active:scale-95 disabled:opacity-60 ${drafting ? 'bg-purple-600/20 border-purple-500/40 text-purple-300' : 'bg-white/5 border-white/10 text-slate-300 hover:text-purple-300'}`}
+          >
+            <Sparkles size={17} className={drafting ? 'animate-pulse' : ''} />
+          </button>
+          <textarea
+            ref={inputRef}
+            rows={1}
+            value={replyText}
+            onChange={e => setReplyText(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && !narrow) { e.preventDefault(); onSend(); } }}
+            placeholder="Text the client…"
+            enterKeyHint="enter"
+            /* 16px on phones: a smaller font makes iOS zoom in the moment you tap the box. */
+            className="flex-1 min-w-0 resize-none bg-slate-800 border border-white/10 rounded-xl px-3.5 py-3 text-base md:text-sm leading-snug text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 scrollbar-hide"
+          />
+          <button
+            onClick={onSend}
+            disabled={sending || !replyText.trim()}
+            title="Send"
+            className="shrink-0 h-10 md:h-11 px-3.5 md:px-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-bold transition-all active:scale-95 disabled:opacity-40 flex items-center gap-1.5"
+          >
+            <Send size={16} /><span className="hidden md:inline">{sending ? '…' : 'Send'}</span>
+          </button>
+        </div>
+
+        {!!replyText.trim() && (
+          <p className={`mt-1.5 px-1 text-[10px] font-bold tabular-nums ${costTone}`}>
+            {info.chars} chars · {info.segments || 1} SMS
+            {info.encoding === 'UCS-2' && ' · emoji/symbols make this 2-3x pricier'}
+          </p>
+        )}
       </div>
     </div>
   );

@@ -27,7 +27,9 @@ import { isRevenueJob } from '../financialUtils';
 import { translateCallSummary } from '../translateService';
 import { geocodeAddress } from '../geocoding';
 import { haversineMiles, approxEtaMinutes, formatMiles, LatLng } from '../geoUtils';
-import { getDriveEta, getRouteInfo, getWeather, buildOnMyWayMessage, getClientLang, QUICK_REPLIES, type QuickReply } from '../dispatchMessage';
+import { getDriveEta, getRouteInfo, getWeather, type Weather } from '../dispatchMessage';
+import { SMS_TEMPLATES } from '../smsTemplates';
+import { SmsComposeSheet } from './SmsComposeSheet';
 import { AutoKeyPanel } from './AutoKeyPanel';
 import { AddressAutocomplete } from './AddressAutocomplete';
 import { useSwipeBack } from '../useSwipeBack';
@@ -221,32 +223,26 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
 
   const [msgSending, setMsgSending] = useState(false);
 
-  /** Send a canned message, then log it to the thread — but only if it actually sent. */
-  const sendQuickReply = async (q: QuickReply) => {
-    const phone = (localJob.client?.phone || '').trim();
-    if (!phone || msgSending) return;
-    setMsgSending(true);
-    try {
-      const lang = await getClientLang(phone);
-      const text = q.build({
-        firstName: localJob.client.firstName,
-        techName: users.find(u => u.id === localJob.assignedTo)?.name || technicianName,
-        companyName,
-        lang,
-      });
-      const ok = await sendSms(phone, text);
-      if (!ok) { alert('Message failed to send. Check the number or try again.'); return; }
-      const smsMsg: Message = {
-        id: Math.random().toString(36).slice(2),
-        sender: 'technician', content: text,
-        timestamp: new Date().toISOString(), method: 'sms',
-      };
-      const withMsg: Job = { ...localJob, messages: [...(localJob.messages || []), smsMsg] };
-      setLocalJob(withMsg);
-      commitJob(withMsg);
-    } finally {
-      setMsgSending(false);
-    }
+  // Preview-first client texting: every canned message opens the compose sheet where
+  // the tech sees the filled template, edits it, and watches the segment counter —
+  // nothing goes out unseen anymore.
+  const [smsSheet, setSmsSheet] = useState<{
+    templateId: string;
+    etaMinutes: number | null;
+    weather: Weather | null;
+  } | null>(null);
+
+  /** Log a sent SMS into the job's message thread. */
+  const logSmsToThread = (text: string, base?: Job) => {
+    const job = base || localJob;
+    const smsMsg: Message = {
+      id: Math.random().toString(36).slice(2),
+      sender: 'technician', content: text,
+      timestamp: new Date().toISOString(), method: 'sms',
+    };
+    const withMsg: Job = { ...job, messages: [...(job.messages || []), smsMsg] };
+    setLocalJob(withMsg);
+    commitJob(withMsg);
   };
 
   const handleSendMessage = async () => {
@@ -287,9 +283,10 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
     );
   });
 
-  // "On My Way": flip the job to En Route (saved immediately so it sticks) and text the
-  // client a smart heads-up — real drive-time ETA from the tech's current spot plus a
-  // weather-aware tip. Status change always lands; everything else degrades gracefully.
+  // "On My Way": flip the job to En Route (saved immediately so it sticks), then open
+  // the compose sheet with the on-my-way template and a real drive-time ETA already
+  // filled in. The status change always lands; the SMS goes out only when the tech
+  // reviews it and taps Send.
   const handleOnMyWay = async () => {
     if (otwState === 'sending') return;
     // Heading out implies acceptance, so clear a pending assignment too.
@@ -308,67 +305,31 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
     if (!phone) { setOtwState('error'); setTimeout(() => setOtwState('idle'), 4000); return; }
 
     setOtwState('sending');
-    const techName = users.find(u => u.id === localJob.assignedTo)?.name || technicianName;
-    const isCar = localJob.lockDetails.type === 'Automotive';
-
     let techLoc = (await getCurrentLocation()) || (currentUser?.lastLocation ? { lat: currentUser.lastLocation.lat, lng: currentUser.lastLocation.lng } : null);
     let clientLoc = clientCoords;
     if (!clientLoc) clientLoc = await geocodeAddress([localJob.client.address, localJob.client.zip].filter(Boolean).join(', '));
 
     const etaMinutes = (techLoc && clientLoc) ? await getDriveEta(techLoc, clientLoc) : null;
     const weather = clientLoc ? await getWeather(clientLoc) : null;
-    const lang = await getClientLang(phone);
-
-    const text = buildOnMyWayMessage({ firstName: localJob.client.firstName, techName, companyName, etaMinutes, isCar, weather, lang });
-    const ok = await sendSms(phone, text);
-
-    if (ok) {
-      const smsMsg: Message = { id: Math.random().toString(36).slice(2), sender: 'technician', content: text, timestamp: new Date().toISOString(), method: 'sms' };
-      const withMsg: Job = { ...enRouteJob, messages: [...(enRouteJob.messages || []), smsMsg] };
-      setLocalJob(withMsg);
-      commitJob(withMsg);
-      setOtwState('sent');
-    } else {
-      setOtwState('error');
-    }
-    setTimeout(() => setOtwState('idle'), 4000);
+    setOtwState('idle');
+    setSmsSheet({ templateId: 'on-my-way', etaMinutes, weather });
   };
 
-  // "Send ETA update": once En Route, text the client a fresh, on-demand ETA without
-  // changing status. One free route lookup per tap — same cheap pattern as the auto-reply.
+  // "Send ETA update": once En Route, open the compose sheet with a fresh route ETA
+  // filled into the eta-update template. One free route lookup per tap.
   const handleEtaUpdate = async () => {
     if (etaUpdState === 'sending') return;
     const phone = (localJob.client.phone || '').trim();
     if (!phone) { setEtaUpdState('error'); setTimeout(() => setEtaUpdState('idle'), 4000); return; }
 
     setEtaUpdState('sending');
-    const techName = users.find(u => u.id === localJob.assignedTo)?.name || technicianName;
     let techLoc = (await getCurrentLocation()) || (currentUser?.lastLocation ? { lat: currentUser.lastLocation.lat, lng: currentUser.lastLocation.lng } : null);
     let clientLoc = clientCoords;
     if (!clientLoc) clientLoc = await geocodeAddress([localJob.client.address, localJob.client.zip].filter(Boolean).join(', '));
 
     const route = (techLoc && clientLoc) ? await getRouteInfo(techLoc, clientLoc) : null;
-    const lang = await getClientLang(phone);
-    const name = (localJob.client.firstName || '').trim() || (lang === 'es' ? 'hola' : 'there');
-    const text = lang === 'es'
-      ? (route
-        ? `Hola ${name}, actualización — ${techName} está a unas ${formatMiles(route.miles)} millas, llegará en ~${route.minutes} min. ¡Nos vemos pronto!`
-        : `Hola ${name}, actualización — ${techName} sigue en camino y llegará lo antes posible. ¡Gracias por su paciencia!`)
-      : (route
-        ? `Hi ${name}, quick update — ${techName} is about ${formatMiles(route.miles)} mi away, ETA ~${route.minutes} min. See you soon!`
-        : `Hi ${name}, quick update — ${techName} is still on the way and will be there as soon as possible. Thanks for your patience!`);
-    const ok = await sendSms(phone, text);
-
-    if (ok) {
-      const smsMsg: Message = { id: Math.random().toString(36).slice(2), sender: 'technician', content: text, timestamp: new Date().toISOString(), method: 'sms' };
-      const withMsg: Job = { ...localJob, messages: [...(localJob.messages || []), smsMsg] };
-      setLocalJob(withMsg);
-      commitJob(withMsg);
-      setEtaUpdState('sent');
-    } else {
-      setEtaUpdState('error');
-    }
-    setTimeout(() => setEtaUpdState('idle'), 4000);
+    setEtaUpdState('idle');
+    setSmsSheet({ templateId: 'eta-update', etaMinutes: route?.minutes ?? null, weather: null });
   };
 
   // "Ask for a review": on a finished job, text the client a thank-you + the Google review
@@ -2274,8 +2235,8 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                       }`}
                     >
                       {otwState === 'sent' ? (<><CheckCircle2 size={16} /> Client Notified</>)
-                        : otwState === 'sending' ? (<><Car size={16} className="animate-pulse" /> Notifying Client…</>)
-                        : otwState === 'error' ? (<><Car size={16} /> En Route Set · SMS Failed</>)
+                        : otwState === 'sending' ? (<><Car size={16} className="animate-pulse" /> Getting ETA…</>)
+                        : otwState === 'error' ? (<><Car size={16} /> En Route Set · No Phone</>)
                         : (<><Car size={16} /> On My Way</>)}
                     </button>
 
@@ -2291,8 +2252,8 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                         }`}
                       >
                         {etaUpdState === 'sent' ? (<><CheckCircle2 size={14} /> ETA Sent</>)
-                          : etaUpdState === 'sending' ? (<><Navigation size={14} className="animate-pulse" /> Sending ETA…</>)
-                          : etaUpdState === 'error' ? (<><Navigation size={14} /> SMS Failed</>)
+                          : etaUpdState === 'sending' ? (<><Navigation size={14} className="animate-pulse" /> Getting ETA…</>)
+                          : etaUpdState === 'error' ? (<><Navigation size={14} /> No Phone</>)
                           : (<><Navigation size={14} /> Send ETA Update</>)}
                       </button>
                     )}
@@ -2557,10 +2518,10 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                        actually went out. */}
                    {(localJob.client.phone || '').trim() && (
                      <div className="flex flex-wrap gap-2">
-                       {QUICK_REPLIES.map(q => (
+                       {SMS_TEMPLATES.map(q => (
                          <button
                            key={q.id}
-                           onClick={() => sendQuickReply(q)}
+                           onClick={() => setSmsSheet({ templateId: q.id, etaMinutes: routeToClient?.minutes ?? null, weather: null })}
                            disabled={msgSending}
                            className="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-[11px] font-semibold text-slate-300 hover:bg-blue-600/20 hover:text-blue-200 hover:border-blue-500/40 active:scale-95 transition-all disabled:opacity-40"
                          >
@@ -3088,6 +3049,23 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
           </div>
         </div>
       </div>
+
+      <SmsComposeSheet
+        open={!!smsSheet}
+        onClose={() => setSmsSheet(null)}
+        phone={(localJob.client.phone || '').trim()}
+        clientName={`${localJob.client.firstName || ''} ${localJob.client.lastName || ''}`.trim()}
+        techName={users.find(u => u.id === localJob.assignedTo)?.name || technicianName}
+        etaMinutes={smsSheet?.etaMinutes}
+        isCar={localJob.lockDetails.type === 'Automotive'}
+        weather={smsSheet?.weather}
+        initialTemplateId={smsSheet?.templateId}
+        onSent={(text) => {
+          logSmsToThread(text);
+          if (smsSheet?.templateId === 'on-my-way') { setOtwState('sent'); setTimeout(() => setOtwState('idle'), 4000); }
+          if (smsSheet?.templateId === 'eta-update') { setEtaUpdState('sent'); setTimeout(() => setEtaUpdState('idle'), 4000); }
+        }}
+      />
     </div>
   );
 };
