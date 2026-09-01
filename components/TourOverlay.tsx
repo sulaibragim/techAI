@@ -19,7 +19,10 @@ interface TourOverlayProps {
 
 const SPOTLIGHT_PAD = 8;
 const CARD_WIDTH = 340;
-const GAP = 14;
+/** Distance between the highlight and the caption card — wide enough for the leader line
+ *  to read as a line rather than a smudge between two touching boxes. */
+const GAP = 46;
+const ACCENT = '#38bdf8';
 
 /** First MATCH that is actually on screen — the same `data-tour` id exists on both the
  *  desktop sidebar and the mobile nav, and only one of them is rendered at a time. */
@@ -40,11 +43,50 @@ const sameRect = (a: Rect | null, b: Rect | null) =>
   a === b || (!!a && !!b && Math.abs(a.top - b.top) < 1 && Math.abs(a.left - b.left) < 1 &&
     Math.abs(a.width - b.width) < 1 && Math.abs(a.height - b.height) < 1);
 
+/**
+ * The curve joining the highlighted control to its caption. Leaves the ring from whichever
+ * edge faces the card and enters the card head-on, so the line never cuts across either box.
+ * Returns null when the two are nearly touching — a leader shorter than its own dashes reads
+ * as a glitch, and the card is obviously attached at that distance anyway.
+ */
+function leaderPath(ring: Rect, card: Rect): { d: string; end: { x: number; y: number } } | null {
+  const rcx = ring.left + ring.width / 2, rcy = ring.top + ring.height / 2;
+  const ccx = card.left + card.width / 2, ccy = card.top + card.height / 2;
+  const dx = ccx - rcx, dy = ccy - rcy;
+  const PULL = 44; // how far the curve leaves each anchor along its own normal
+
+  if (Math.abs(dy) >= Math.abs(dx)) {
+    const down = dy > 0;
+    const sep = down ? card.top - (ring.top + ring.height) : ring.top - (card.top + card.height);
+    if (sep < 16) return null;
+    const from = { x: rcx, y: down ? ring.top + ring.height : ring.top };
+    const to = { x: ccx, y: down ? card.top : card.top + card.height };
+    const pull = down ? PULL : -PULL;
+    return {
+      d: `M ${from.x} ${from.y} C ${from.x} ${from.y + pull}, ${to.x} ${to.y - pull}, ${to.x} ${to.y}`,
+      end: to,
+    };
+  }
+
+  const right = dx > 0;
+  const sep = right ? card.left - (ring.left + ring.width) : ring.left - (card.left + card.width);
+  if (sep < 16) return null;
+  const from = { x: right ? ring.left + ring.width : ring.left, y: rcy };
+  const to = { x: right ? card.left : card.left + card.width, y: ccy };
+  const pull = right ? PULL : -PULL;
+  return {
+    d: `M ${from.x} ${from.y} C ${from.x + pull} ${from.y}, ${to.x - pull} ${to.y}, ${to.x} ${to.y}`,
+    end: to,
+  };
+}
+
 export const TourOverlay: React.FC<TourOverlayProps> = ({ steps, stepIndex, lang, onLangChange, onNext, onPrev, onFinish, onSkip }) => {
   const step = steps[stepIndex];
   const [rect, setRect] = useState<Rect | null>(null);
   const rectRef = useRef<Rect | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+  const cardBoxRef = useRef<Rect | null>(null);
+  const [cardBox, setCardBox] = useState<Rect | null>(null);
   const [cardHeight, setCardHeight] = useState(250);
   const isLast = stepIndex === steps.length - 1;
 
@@ -104,11 +146,17 @@ export const TourOverlay: React.FC<TourOverlayProps> = ({ steps, stepIndex, lang
     };
   }, [stepIndex, step?.target, step?.placement, measure]);
 
-  // Placing the card ABOVE a target needs its real height — copy length varies per step,
-  // and a guessed height would either overlap the highlight or float away from it.
+  // The card's real height decides whether it can sit above the target, and its real box is
+  // where the leader line has to land. Both are read after layout — copy length varies per
+  // step, so neither can be guessed. Guarded by a tolerance so this can't loop.
   useLayoutEffect(() => {
-    const h = cardRef.current?.offsetHeight;
+    const el = cardRef.current;
+    if (!el) return;
+    const h = el.offsetHeight;
     if (h && Math.abs(h - cardHeight) > 2) setCardHeight(h);
+    const r = el.getBoundingClientRect();
+    const next: Rect = { top: r.top, left: r.left, width: r.width, height: r.height };
+    if (!sameRect(cardBoxRef.current, next)) { cardBoxRef.current = next; setCardBox(next); }
   });
 
   useEffect(() => {
@@ -128,25 +176,27 @@ export const TourOverlay: React.FC<TourOverlayProps> = ({ steps, stepIndex, lang
   const isMobile = vw < 768;
   const clamp = (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), Math.max(lo, hi));
 
-  const ringBox = rect
-    ? (() => {
-        const top = Math.max(4, rect.top - SPOTLIGHT_PAD);
-        const left = Math.max(4, rect.left - SPOTLIGHT_PAD);
-        return {
-          top,
-          left,
-          width: Math.min(vw - 4, rect.left + rect.width + SPOTLIGHT_PAD) - left,
-          height: Math.min(vh - 4, rect.top + rect.height + SPOTLIGHT_PAD) - top,
-        };
-      })()
-    : null;
+  // Clamped to the viewport so the ring's border stays visible around an element sitting
+  // flush against an edge — every item in the phone's bottom nav. Clamping two opposite
+  // edges can invert the box when the target is entirely off-screen (a scroll that never
+  // landed), which an SVG rect renders as garbage, so that case yields no ring at all and
+  // the step falls back to a plain centered card.
+  const ringBox = (() => {
+    if (!rect) return null;
+    const left = Math.max(4, rect.left - SPOTLIGHT_PAD);
+    const top = Math.max(4, rect.top - SPOTLIGHT_PAD);
+    const width = Math.min(vw - 4, rect.left + rect.width + SPOTLIGHT_PAD) - left;
+    const height = Math.min(vh - 4, rect.top + rect.height + SPOTLIGHT_PAD) - top;
+    if (width <= 0 || height <= 0) return null;
+    return { top, left, width, height };
+  })();
 
   // Card placement. On a phone the card parks at the opposite end of the screen from the
   // highlight so it can never cover the thing it describes. On desktop it sits beside the
   // target — but always clamped inside the viewport: a target that failed to scroll into
   // view must not drag the instructions off-screen with it.
   const cardStyle: React.CSSProperties = { width: Math.min(CARD_WIDTH, vw - 32) };
-  if (!rect) {
+  if (!ringBox) {
     // inset + auto margins, NOT translate(-50%,-50%): the card's transform belongs to the
     // enter animation, and a hand-written one is silently overwritten the moment it runs.
     cardStyle.inset = 0;
@@ -156,8 +206,8 @@ export const TourOverlay: React.FC<TourOverlayProps> = ({ steps, stepIndex, lang
     // Pick the side with more room, measured from the target's EDGES. Going by its centre
     // put the card under a tall element like the checklist, which starts high on the
     // screen but reaches most of the way down it.
-    const roomAbove = rect.top;
-    const roomBelow = vh - (rect.top + rect.height);
+    const roomAbove = ringBox.top;
+    const roomBelow = vh - (ringBox.top + ringBox.height);
     cardStyle.left = 16;
     cardStyle.right = 16;
     cardStyle.width = 'auto';
@@ -165,40 +215,72 @@ export const TourOverlay: React.FC<TourOverlayProps> = ({ steps, stepIndex, lang
     else cardStyle.top = 'max(1rem, env(safe-area-inset-top))';
   } else {
     const width = Math.min(CARD_WIDTH, vw - 32);
-    const below = rect.top + rect.height + GAP;
-    const above = rect.top - GAP - cardHeight;
+    const below = ringBox.top + ringBox.height + GAP;
+    const above = ringBox.top - GAP - cardHeight;
     const fitsBelow = vh - below > cardHeight + 16;
     const wantsBelow = step.placement === 'bottom' || (step.placement !== 'top' && fitsBelow);
-    cardStyle.left = clamp(rect.left + rect.width / 2 - width / 2, 16, vw - width - 16);
+    cardStyle.left = clamp(ringBox.left + ringBox.width / 2 - width / 2, 16, vw - width - 16);
     cardStyle.top = clamp(wantsBelow ? below : above, 16, vh - cardHeight - 16);
   }
 
-  return (
-    <div className="fixed inset-0 z-[300] font-sans" role="dialog" aria-modal="true" aria-label={localize(UI_TEXT.tourDialogLabel, lang)}>
-      {/* No spotlight for this step: one flat scrim, so the card reads as a normal modal. */}
-      {!rect && <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-[2px]" />}
+  const leader = ringBox && cardBox ? leaderPath(ringBox, cardBox) : null;
 
-      {/* The scrim IS the ring's outer shadow — one element, so the cut-out can never drift
-          out of sync with the four edges of a hand-built mask. */}
+  return (
+    // pointer-events-none: with the screen no longer blacked out, the app underneath stays
+    // usable — the caption says "press this button", so pressing it has to actually work.
+    // Only the card (and the scrim on target-less steps) take clicks back.
+    <div className="fixed inset-0 z-[300] font-sans pointer-events-none" role="dialog" aria-label={localize(UI_TEXT.tourDialogLabel, lang)}>
+      {/* Nothing to point at on this step, so the card carries it alone: a light wash to
+          separate it from the screen — far lighter than the old blackout, which hid the
+          very thing the tour was talking about. */}
+      {!ringBox && <div className="absolute inset-0 bg-slate-950/60 pointer-events-auto" />}
+
       {ringBox && (
-        <div
-          className="absolute rounded-2xl border-2 border-blue-400 pointer-events-none"
-          style={{
-            // Clamped to the viewport: the padding around an element sitting flush against
-            // an edge — every item in the phone's bottom nav — would otherwise push the
-            // ring's border off-screen, leaving the highlight looking cut open.
-            top: ringBox.top,
-            left: ringBox.left,
-            width: ringBox.width,
-            height: ringBox.height,
-            // A CSS transition, not a JS-animated one: a frame-driven library writes the
-            // new geometry only on a frame, so on a throttled tab the cut-out would sit on
-            // the previous step's element. Here the correct box is in the DOM immediately
-            // and the glide is only decoration.
-            transition: 'top 260ms cubic-bezier(0.22,1,0.36,1), left 260ms cubic-bezier(0.22,1,0.36,1), width 260ms cubic-bezier(0.22,1,0.36,1), height 260ms cubic-bezier(0.22,1,0.36,1)',
-            boxShadow: '0 0 0 9999px rgba(2,6,23,0.82), 0 0 26px rgba(59,130,246,0.55)',
-          }}
-        />
+        <svg
+          className="absolute inset-0"
+          width="100%"
+          height="100%"
+          viewBox={`0 0 ${vw} ${vh}`}
+          aria-hidden="true"
+        >
+          {/* Halo first, so the marching ring sits on top of it */}
+          <rect
+            className="tour-halo"
+            x={Math.max(0, ringBox.left - 7)}
+            y={Math.max(0, ringBox.top - 7)}
+            width={ringBox.width + 14}
+            height={ringBox.height + 14}
+            rx={16}
+            fill={ACCENT}
+          />
+          <rect
+            className="tour-ants"
+            x={ringBox.left}
+            y={ringBox.top}
+            width={ringBox.width}
+            height={ringBox.height}
+            rx={11}
+            fill="none"
+            stroke={ACCENT}
+            strokeWidth={2.5}
+            strokeDasharray="10 8"
+            strokeLinecap="round"
+          />
+          {leader && (
+            <>
+              <path
+                className="tour-ants-line"
+                d={leader.d}
+                fill="none"
+                stroke={ACCENT}
+                strokeWidth={2}
+                strokeDasharray="6 6"
+                strokeLinecap="round"
+              />
+              <circle cx={leader.end.x} cy={leader.end.y} r={4} fill={ACCENT} />
+            </>
+          )}
+        </svg>
       )}
 
       {/* Enter-only, no AnimatePresence: mode="wait" holds the outgoing card until its exit
@@ -211,7 +293,7 @@ export const TourOverlay: React.FC<TourOverlayProps> = ({ steps, stepIndex, lang
           initial={{ opacity: 0, y: 10, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.18, ease: 'easeOut' }}
-          className="absolute bg-slate-900 border border-white/10 rounded-2xl p-5 shadow-[0_24px_60px_rgba(0,0,0,0.65)]"
+          className="absolute pointer-events-auto bg-slate-900 border border-blue-500/30 rounded-2xl p-5 shadow-[0_24px_60px_rgba(0,0,0,0.65)]"
           style={cardStyle}
         >
           <div className="flex items-center justify-between gap-2 mb-2">
