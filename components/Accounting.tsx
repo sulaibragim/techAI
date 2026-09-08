@@ -15,7 +15,7 @@ import {
 } from '../financialUtils';
 import { Job, Message, EXPENSE_CATEGORIES, ExpenseCategory, LeadChannel, LEAD_CHANNELS, LEAD_CHANNEL_LABELS } from '../types';
 import { formatDate } from '../dateUtils';
-import { sendSms } from '../smsService';
+import { sendSmsDetailed } from '../smsService';
 
 const fmt$ = (n: number) => `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const fmtSigned$ = (n: number) => `${n < 0 ? '−' : ''}${fmt$(Math.abs(n))}`;
@@ -230,9 +230,10 @@ export const Accounting: React.FC<{ onJobSelect?: (job: Job) => void }> = ({ onJ
     const balance = Math.max(0, job.totalAmount - collectedAmount(job));
     const text = `Hi ${job.client.firstName}, a friendly reminder from ${companyName}: invoice #${job.jobNumber} has an open balance of ${fmt$(balance)}. You can reply to this message or call us anytime. Thank you!`;
     setRemindState(s => ({ ...s, [jobId]: 'sending' }));
-    const ok = await sendSms(job.client.phone, text);
-    setRemindState(s => ({ ...s, [jobId]: ok ? 'sent' : 'error' }));
-    if (ok) {
+    const result = await sendSmsDetailed(job.client.phone, text);
+    setRemindState(s => ({ ...s, [jobId]: result.ok ? 'sent' : 'error' }));
+    if (!result.ok) alert(`Reminder not sent. ${result.error || ''}`.trim());
+    if (result.ok) {
       const msg: Message = { id: `msg-${Date.now()}`, timestamp: new Date().toISOString(), sender: 'system', content: text, method: 'sms' };
       updateJob({ ...job, messages: [...(job.messages || []), msg] });
     }

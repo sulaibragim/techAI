@@ -19,7 +19,7 @@ import { useAppStore } from '../store';
 import { useAuthStore, useCurrentUser, can, worksField } from '../authStore';
 import { BRANDS, LOCK_TYPES as LOCK_ICONS } from '../constants';
 import { formatTimestamp, formatDate } from '../dateUtils';
-import { sendSms } from '../smsService';
+import { sendSmsDetailed } from '../smsService';
 import { API_BASE } from '../backendUrl';
 import { authHeaders } from '../apiClient';
 import { normalizePhone, toE164US, formatPhone, buildClients, clientFlags, clientScore, TIER_STYLE, priorVisits } from '../clientUtils';
@@ -255,11 +255,11 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
     if (!phone) { alert('No client phone number on this job.'); return; }
 
     setMsgSending(true);
-    const ok = await sendSms(phone, text);
+    const result = await sendSmsDetailed(phone, text);
     setMsgSending(false);
 
-    if (!ok) {
-      alert('Message failed to send. Check the number or try again.');
+    if (!result.ok) {
+      alert(`Message failed to send. ${result.error || ''}`.trim());
       return;
     }
     // Record in the thread only after the client actually got the text.
@@ -345,9 +345,9 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
     setReviewState('sending');
     const name = (localJob.client.firstName || '').trim() || 'there';
     const text = `Hi ${name}, thanks for choosing ${companyName}! If we did a great job, we'd really appreciate a quick review: ${googleReviewUrl.trim()}`;
-    const ok = await sendSms(phone, text);
+    const result = await sendSmsDetailed(phone, text);
 
-    if (ok) {
+    if (result.ok) {
       const smsMsg: Message = { id: Math.random().toString(36).slice(2), sender: 'technician', content: text, timestamp: new Date().toISOString(), method: 'sms' };
       const withMsg: Job = { ...localJob, messages: [...(localJob.messages || []), smsMsg] };
       setLocalJob(withMsg);
@@ -355,6 +355,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
       setReviewState('sent');
     } else {
       setReviewState('error');
+      alert(`Review request not sent. ${result.error || ''}`.trim());
     }
     setTimeout(() => setReviewState('idle'), 4000);
   };

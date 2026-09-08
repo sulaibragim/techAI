@@ -110,7 +110,10 @@ async function opGet(path, params = {}) {
   const qs = new URLSearchParams();
   for (const [k, v] of Object.entries(params)) {
     if (v == null) continue;
-    if (Array.isArray(v)) v.forEach(x => qs.append(`${k}[]`, x));
+    // Array params are REPEATED keys ("participants=+1...&participants=+1..."). The
+    // "participants[]" spelling we used to send now comes back 400 "Expected array"
+    // from /messages and /calls, which silently killed the whole history backfill.
+    if (Array.isArray(v)) v.forEach(x => qs.append(k, x));
     else qs.set(k, String(v));
   }
   const r = await fetch(`${OP_BASE}${path}?${qs.toString()}`, { headers: opHeaders() });
@@ -185,7 +188,7 @@ async function runSync() {
     if (!pageToken) break;
   }
 
-  let msgAdded = 0, callAdded = 0;
+  let msgAdded = 0, callAdded = 0, failed = 0;
   // 2) For each conversation, pull that participant's messages + calls (1 page = last 100).
   for (const conv of conversations.slice(0, MAX_CONVERSATIONS)) {
     const others = (conv.participants || []).filter(p => digits10(p) !== ownKey);
@@ -204,7 +207,7 @@ async function runSync() {
         contact: name ? { name } : null,
       }));
       msgAdded += mergeById(recentMessages, msgs, MAX_MESSAGES, dbSaveMessage);
-    } catch (e) { console.warn('[OpenPhone] sync messages', e.message); }
+    } catch (e) { failed++; console.warn('[OpenPhone] sync messages', e.message); }
 
     // Calls are 1:1 only.
     if (others.length === 1) {
@@ -225,12 +228,18 @@ async function runSync() {
           };
         });
         callAdded += mergeById(recentCalls, calls, MAX_CALLS, dbSaveCall);
-      } catch (e) { console.warn('[OpenPhone] sync calls', e.message); }
+      } catch (e) { failed++; console.warn('[OpenPhone] sync calls', e.message); }
     }
   }
 
-  console.log(`[OpenPhone] history sync: ${conversations.length} conversations, +${msgAdded} messages, +${callAdded} calls`);
-  return { conversations: conversations.length, msgAdded, callAdded };
+  // A per-conversation fetch that fails is caught above so one bad thread can't stop the
+  // run — but when EVERY thread fails (an API contract change, a revoked key) the sync
+  // used to look like a quiet success with nothing new. Say it out loud.
+  if (failed && !msgAdded && !callAdded) {
+    console.error(`[OpenPhone] history sync brought back NOTHING — all ${failed} fetches failed (see warnings above)`);
+  }
+  console.log(`[OpenPhone] history sync: ${conversations.length} conversations, +${msgAdded} messages, +${callAdded} calls, ${failed} failed fetches`);
+  return { conversations: conversations.length, msgAdded, callAdded, failed };
 }
 
 // Throttled + single-flight wrapper. `force` bypasses the throttle (manual "Sync" button).
@@ -528,6 +537,12 @@ openphoneRouter.post('/messages/send', requireAuth, async (req, res) => {
     if (req.user.role === 'technician' && !(await techMaySendTo(req.user.id, toAddr))) {
       return res.status(403).json({ error: 'You can only message clients on your own jobs' });
     }
+    // Without a key the request below goes out as "Authorization: undefined" and comes
+    // back as an opaque OpenPhone error. Say what is actually missing instead.
+    if (!process.env.OPENPHONE_API_KEY) {
+      console.error('[OpenPhone] send blocked — OPENPHONE_API_KEY is not set on the server');
+      return res.status(503).json({ error: 'Texting is not configured on the server (OPENPHONE_API_KEY missing)' });
+    }
     // Sender identity comes from SERVER env, not the browser. Prefer the OpenPhone number
     // (from), exactly like the proven sendSMS() helper; fall back to the server's own
     // phoneNumberId; only then the client-supplied one. Never let a hardcoded browser
@@ -544,10 +559,16 @@ openphoneRouter.post('/messages/send', requireAuth, async (req, res) => {
       },
       body: JSON.stringify({ ...sender, to: [toAddr], content }),
     });
-    const data = await response.json();
+    const data = await response.json().catch(() => null);
     if (!response.ok) {
       console.error('[OpenPhone] send failed', response.status, JSON.stringify(data));
-      return res.status(response.status).json({ error: data?.message || 'Send failed', details: data });
+      // Pass OpenPhone's own words and code through — the UI decides what to show, and
+      // it must never invent a billing problem out of a plain rejection.
+      return res.status(response.status).json({
+        error: data?.message || `OpenPhone rejected the message (HTTP ${response.status})`,
+        code: data?.code || null,
+        details: data,
+      });
     }
     // Also store outgoing message locally + durably
     const outMsg = {

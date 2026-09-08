@@ -5,6 +5,7 @@ import { useAppStore } from './store';
 import { useAuthStore } from './authStore';
 import { API_BASE } from './backendUrl';
 import { authHeaders } from './apiClient';
+import { describeSmsFailure } from './smsService';
 import { buildClients, clientScore, clientFlags, normalizePhone } from './clientUtils';
 import { findKeyProfiles, findProcedure, decodeVin, reverseLookup, stockForKeyway } from './vehicleKeyLookup';
 import { accountsReceivable } from './financialUtils';
@@ -748,8 +749,10 @@ export async function handleAITool(name: string, args: any): Promise<any> {
             phoneNumberId: import.meta.env.VITE_OPENPHONE_PHONE_NUMBER_ID || 'PNkhFHiD2G',
           }),
         });
-        const data = await res.json();
-        return { status: res.ok ? 'success' : 'error', message: res.ok ? `SMS sent to ${args.to}` : data.error };
+        const data = await res.json().catch(() => null);
+        return res.ok
+          ? { status: 'success', message: `SMS sent to ${args.to}` }
+          : { status: 'error', message: describeSmsFailure(res.status, data?.error) };
       } catch {
         return { status: 'error', message: 'Failed to send SMS' };
       }

@@ -11,7 +11,7 @@ import { API_BASE } from '../backendUrl';
 import { authHeaders } from '../apiClient';
 import { useCurrentUser } from '../authStore';
 import { useInboxStore, InboxMedia } from '../inboxStore';
-import { OPENPHONE_PHONE_NUMBER_ID } from '../smsService';
+import { OPENPHONE_PHONE_NUMBER_ID, describeSmsFailure } from '../smsService';
 import { smsInfo, sanitizeSms } from '../smsText';
 import { SMS_TEMPLATES, fillSmsTemplate, resolveSmsTemplate, SmsLang } from '../smsTemplates';
 import { useSwipeBack } from '../useSwipeBack';
@@ -224,11 +224,7 @@ export const MessagesList: React.FC<MessagesListProps> = ({ onJobSelect, onClien
       });
       if (!res.ok) {
         const err = await res.json().catch(() => null);
-        const reason = err?.error || '';
-        if (res.status === 402 || /credit/i.test(reason)) {
-          throw new Error('OpenPhone is out of prepaid SMS credits — top up in OpenPhone → Settings → Billing, then resend.');
-        }
-        throw new Error(reason || 'The message was not delivered. Check the number or try again.');
+        throw new Error(describeSmsFailure(res.status, err?.error));
       }
       setReplyText('');
       await fetchAll(true);

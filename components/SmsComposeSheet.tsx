@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { X, Send, Sparkles, AlertTriangle } from 'lucide-react';
-import { sendSms } from '../smsService';
+import { sendSmsDetailed } from '../smsService';
 import { smsInfo, sanitizeSms } from '../smsText';
 import {
   SMS_TEMPLATES, SPANISH_INVITE, fillSmsTemplate, resolveSmsTemplate,
@@ -110,13 +110,13 @@ export const SmsComposeSheet: React.FC<SmsComposeSheetProps> = ({
     if (!clean || sending) return;
     setSending(true);
     setError('');
-    const ok = await sendSms(phone, clean);
+    const result = await sendSmsDetailed(phone, clean);
     setSending(false);
-    if (ok) {
+    if (result.ok) {
       onSent?.(clean);
       onClose();
     } else {
-      setError('Send failed - check the number or OpenPhone credits, then try again.');
+      setError(result.error || 'The message was not delivered. Try again.');
     }
   };
 
