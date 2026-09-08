@@ -21,6 +21,7 @@ export interface PriceImportRow extends DraftRate {
   include: boolean;
   existingId?: string;  // matched an existing rate → update it instead of adding a twin
   oldPrice?: number;    // its current price, so the preview can show 149 → 169
+  oldNightPrice?: number; // and its current after-hours price, which can change on its own
   similarTo?: string;   // a near-miss name already in the book, so the owner can spot a twin
 }
 
@@ -261,11 +262,12 @@ export function buildImportRows(drafts: DraftRate[], existing: ServiceRate[]): P
       category: match ? match.category : d.category,
       type: match ? match.type : d.type,
       key: `${key}-${i}`,
-      // A rate already at this price has nothing to import — leave it off by default so
-      // "Импортировать 40" means forty real changes.
-      include: !(match && match.price === d.price && !d.nightPrice),
+      // A rate already at this price AND this night price has nothing to import — leave
+      // it off by default so "Импортировать 40" means forty real changes.
+      include: !(match && match.price === d.price && (match.nightPrice ?? null) === (d.nightPrice ?? null)),
       existingId: match?.id,
       oldPrice: match?.price,
+      oldNightPrice: match?.nightPrice,
       similarTo: similar?.name,
     });
   });

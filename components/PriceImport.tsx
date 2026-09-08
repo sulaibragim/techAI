@@ -261,7 +261,13 @@ export const PriceImport: React.FC<Props> = ({ existing, onCancel, onConfirm }) 
                         className="flex-1 min-w-0 bg-transparent text-sm font-semibold text-white outline-none focus:bg-slate-950 rounded px-1"
                       />
                       <span className={`shrink-0 text-[10px] font-bold ${r.existingId ? 'text-blue-400' : 'text-green-400'}`}>
-                        {r.existingId ? (r.oldPrice === r.price ? 'без изменений' : 'обновить') : 'новая'}
+                        {!r.existingId
+                          ? 'новая'
+                          : r.oldPrice !== r.price
+                            ? 'обновить'
+                            : (r.oldNightPrice ?? null) !== (r.nightPrice ?? null)
+                              ? 'ночная цена'
+                              : 'без изменений'}
                       </span>
                       <button
                         onClick={() => setRows(rs => (rs ? rs.filter(x => x.key !== r.key) : rs))}

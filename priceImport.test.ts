@@ -175,6 +175,12 @@ describe('buildImportRows', () => {
     expect(rows[1].include).toBe(true);
   });
 
+  it('switches a rate back on when only its night price changed', () => {
+    const rows = buildImportRows(parsePriceList('Car lockout $139, night $199'), existing);
+    expect(rows[0]).toMatchObject({ include: true, price: 139, nightPrice: 199 });
+    expect(rows[0].oldNightPrice).toBeUndefined();
+  });
+
   it('flags a near-miss name instead of silently merging it', () => {
     const book: ServiceRate[] = [{ id: 'r-rekey', name: 'Lock rekey (1st door)', category: 'Rekey & Install', price: 149, type: 'labor' }];
     const [row] = buildImportRows(parsePriceList('Lock rekey $169'), book);
