@@ -10,6 +10,8 @@ import { Role, TECH_SKILLS, SERVICE_CATEGORIES, CLIENT_SMS_META, CLIENT_SMS_DEFA
 import { PushNotificationsCard } from './PushNotificationsCard';
 import { LaunchReadinessCard } from './LaunchReadinessCard';
 import { GuidedToursCard } from './GuidedToursCard';
+import { PriceImport } from './PriceImport';
+import type { ImportPlan } from '../priceImport';
 import { SMS_TEMPLATES, resolveSmsTemplate, fillSmsTemplate, SmsLang } from '../smsTemplates';
 import { smsInfo, sanitizeSms } from '../smsText';
 
@@ -587,13 +589,53 @@ const RatesSection: React.FC = () => {
   const updateServiceRate = useSettingsStore(s => s.updateServiceRate);
   const addServiceRate = useSettingsStore(s => s.addServiceRate);
   const removeServiceRate = useSettingsStore(s => s.removeServiceRate);
+  const importServiceRates = useSettingsStore(s => s.importServiceRates);
+  const [showImport, setShowImport] = useState(false);
+  const [query, setQuery] = useState('');
+  const [flash, setFlash] = useState('');
   const fieldCls = 'bg-slate-950 border border-white/10 rounded-lg px-2.5 py-1.5 text-sm text-white outline-none focus:border-blue-500/50';
+
+  const q = query.trim().toLowerCase();
+  const visible = priceBook.filter(r => !q || r.name.toLowerCase().includes(q) || r.category.toLowerCase().includes(q));
+  // An imported rate can carry a category we don't ship — group by whatever is in the
+  // book, not only by the built-in list, or those rates would be invisible here.
+  const categories = [...SERVICE_CATEGORIES, ...new Set(priceBook.map(r => r.category))]
+    .filter((c, i, all) => all.indexOf(c) === i);
+
+  const runImport = (plan: ImportPlan) => {
+    const { added, updated } = importServiceRates(plan);
+    setShowImport(false);
+    setFlash(`Добавлено ${added}, обновлено ${updated}`);
+    setTimeout(() => setFlash(''), 4000);
+  };
 
   return (
     <Section icon={Tag} title="Service Rates">
-      <p className="text-xs text-slate-500 -mt-2">Tap-to-fill prices on invoices. Seeded from trustkeyaz.com — edit anytime; changes apply everywhere.</p>
-      {SERVICE_CATEGORIES.map(cat => {
-        const rates = priceBook.filter(r => r.category === cat);
+      <p className="text-xs text-slate-500 -mt-2">
+        Цены, которые техник тапает в счёте. Не вбивай по одной — вставь список, файл или ссылку на сайт кнопкой «Импорт».
+      </p>
+
+      <div className="flex items-center gap-2">
+        <input
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+          placeholder={`Поиск среди ${priceBook.length} услуг…`}
+          className={`${fieldCls} flex-1 min-w-0`}
+        />
+        <button
+          onClick={() => setShowImport(true)}
+          className="flex items-center gap-1.5 shrink-0 px-3 py-1.5 rounded-lg bg-blue-600/20 border border-blue-500/40 text-blue-300 text-xs font-bold uppercase tracking-wider hover:bg-blue-600/30 transition-all"
+        >
+          <Upload size={14} /> Импорт
+        </button>
+      </div>
+
+      {flash && (
+        <p className="text-xs font-bold text-green-400 flex items-center gap-1.5"><Check size={13} /> {flash}</p>
+      )}
+
+      {categories.map(cat => {
+        const rates = visible.filter(r => r.category === cat);
         if (rates.length === 0) return null;
         return (
           <div key={cat}>
@@ -613,7 +655,13 @@ const RatesSection: React.FC = () => {
           </div>
         );
       })}
+      {q && visible.length === 0 && <p className="text-sm text-slate-500">Ничего не нашлось по «{query}».</p>}
+
       <button onClick={() => addServiceRate({ name: 'New service', category: 'Lockout', price: 0, type: 'labor' })} className="flex items-center gap-1.5 text-blue-400 text-sm font-bold"><Plus size={15} /> Add rate</button>
+
+      {showImport && (
+        <PriceImport existing={priceBook} onCancel={() => setShowImport(false)} onConfirm={runImport} />
+      )}
     </Section>
   );
 };

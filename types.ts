@@ -158,7 +158,7 @@ export interface StockMovement {
 
 // Rate card / price book — our standard service prices (seeded from trustkeyaz.com).
 // Tapping one on an invoice fills the description + price so the team bills consistently.
-export const SERVICE_CATEGORIES = ['Lockout', 'Rekey & Install', 'Smart Locks', 'Car Keys', 'Safes', 'Bundles'] as const;
+export const SERVICE_CATEGORIES = ['Lockout', 'Rekey & Install', 'Smart Locks', 'Car Keys', 'Safes', 'Bundles', 'Other'] as const;
 export type ServiceCategory = typeof SERVICE_CATEGORIES[number];
 
 export interface ServiceRate {

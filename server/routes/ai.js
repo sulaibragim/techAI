@@ -4,7 +4,8 @@ import { Router } from 'express';
 // treats a bare req.ip fallback as a hard error, which is why the dev server refused to boot.
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { GoogleGenAI } from '@google/genai';
-import { requireAuth } from '../middleware/auth.js';
+import { requireAuth, requireRole } from '../middleware/auth.js';
+import { fetchPage, htmlToText } from '../services/pageFetch.js';
 
 export const aiRouter = Router();
 
@@ -160,5 +161,67 @@ aiRouter.post('/live-token', requireAuth, voiceUserLimiter, async (_req, res) =>
   } catch (err) {
     console.error('[AI] live-token error:', err?.message);
     res.status(502).json({ error: 'Failed to create voice token', detail: err?.message });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Price-list import from a web page ("just take the prices off our website").
+//
+// The server does the fetching because the browser cannot: another origin's page is
+// unreadable from JS. That makes this endpoint a request-forwarder, so it is locked
+// down accordingly — owner/manager only, http(s) only, public addresses only (every
+// redirect hop re-checked), a hard size and time cap, and the same AI budget as chat.
+
+const SCAN_PROMPT = `You are reading the text of a LOCKSMITH company web page to extract their price list.
+Return ONLY valid JSON (no markdown fences, no commentary):
+
+{"rates":[{"name":string,"price":number,"nightPrice":number|null,"note":string}]}
+
+Rules:
+- name: the service as a customer would recognise it ("Car lockout", "Lock rekey"), max 60 chars
+- price: the daytime/base price in dollars as a number (for "from $99" use 99 and put "from" in note)
+- nightPrice: the after-hours/night price if the page gives one, otherwise null
+- note: any short qualifier printed with the price ("per additional door", "from", "labor only"), else ""
+- Include every priced service you can see; skip phone numbers, addresses, years, review counts and discounts
+- If the page lists no service prices at all, return {"rates":[]}`;
+
+aiRouter.post('/price-scan', requireAuth, requireRole('owner', 'manager'), aiUserLimiter, async (req, res) => {
+  const ai = getAI();
+  if (!ai) return res.status(503).json({ error: 'AI not configured on server' });
+  const { url } = req.body || {};
+  if (!url || typeof url !== 'string' || url.length > 500) return res.status(400).json({ error: 'Invalid url' });
+  if (budgetRemaining(req.user.id) <= 0) {
+    return res.status(429).json({ error: "You've hit today's AI usage limit. It resets tomorrow." });
+  }
+
+  let text;
+  try {
+    text = htmlToText(await fetchPage(url));
+  } catch (err) {
+    return res.status(400).json({ error: err?.message || 'Could not read that page.' });
+  }
+  if (text.length < 40) return res.status(422).json({ error: 'That page has no readable text.' });
+
+  try {
+    const resp = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: [{ role: 'user', parts: [{ text }] }],
+      config: { systemInstruction: SCAN_PROMPT, maxOutputTokens: MAX_OUTPUT_TOKENS, responseMimeType: 'application/json' },
+    });
+    recordSpend(req.user.id, resp.usageMetadata?.totalTokenCount ?? Math.ceil(text.length / 4) + MAX_OUTPUT_TOKENS);
+    const parsed = JSON.parse((resp.text || '{}').replace(/^```(?:json)?|```$/g, '').trim());
+    const rates = (Array.isArray(parsed) ? parsed : parsed.rates || [])
+      .map((r) => ({
+        name: String(r?.name || '').trim().slice(0, 80),
+        price: Number(r?.price),
+        nightPrice: Number(r?.nightPrice) > 0 ? Number(r.nightPrice) : undefined,
+        note: String(r?.note || '').trim().slice(0, 120) || undefined,
+      }))
+      .filter((r) => r.name && Number.isFinite(r.price) && r.price >= 0 && r.price <= 100000)
+      .slice(0, 200);
+    res.json({ rates });
+  } catch (err) {
+    console.error('[AI] price-scan error:', err?.message);
+    res.status(502).json({ error: 'Could not read the prices off that page.' });
   }
 });

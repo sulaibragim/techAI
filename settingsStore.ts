@@ -33,7 +33,7 @@ export interface SettingsState {
   smsTemplates: Record<string, { en?: string; es?: string }>; // owner overrides of the one-tap client texts (template id → texts)
   onboardingComplete: boolean;
   aiAvailable: boolean; // runtime flag: is GEMINI_API_KEY configured on the server?
-  updateSettings: (patch: Partial<Omit<SettingsState, 'updateSettings' | 'resetSettings' | 'setMonthlyTarget' | 'setTechTarget' | 'addExpense' | 'removeExpense' | 'addStockMovement' | 'clearStockLedger' | 'setMovementDispute' | 'addServiceRate' | 'updateServiceRate' | 'removeServiceRate' | 'upsertClientProfile' | 'addAiMemory' | 'removeAiMemory' | 'setSmsTemplate' | 'resetSmsTemplate' | 'syncSettings' | 'checkAiAvailable' | 'aiAvailable'>>) => void;
+  updateSettings: (patch: Partial<Omit<SettingsState, 'updateSettings' | 'resetSettings' | 'setMonthlyTarget' | 'setTechTarget' | 'addExpense' | 'removeExpense' | 'addStockMovement' | 'clearStockLedger' | 'setMovementDispute' | 'addServiceRate' | 'updateServiceRate' | 'removeServiceRate' | 'importServiceRates' | 'upsertClientProfile' | 'addAiMemory' | 'removeAiMemory' | 'setSmsTemplate' | 'resetSmsTemplate' | 'syncSettings' | 'checkAiAvailable' | 'aiAvailable'>>) => void;
   setMonthlyTarget: (monthKey: string, value: number) => void;
   setTechTarget: (userId: string, value: number) => void;
   addExpense: (expense: Omit<Expense, 'id'>) => void;
@@ -46,6 +46,8 @@ export interface SettingsState {
   addServiceRate: (rate: Omit<ServiceRate, 'id'>) => void;
   updateServiceRate: (rate: ServiceRate) => void;
   removeServiceRate: (id: string) => void;
+  /** Bulk price-list import: add new services and re-price existing ones in one write. */
+  importServiceRates: (plan: { add: Omit<ServiceRate, 'id'>[]; update: ServiceRate[] }) => { added: number; updated: number };
   upsertClientProfile: (phoneKey: string, patch: Partial<ClientProfile>) => void;
   /** Override one one-tap SMS template (both languages at once). */
   setSmsTemplate: (id: string, texts: { en?: string; es?: string }) => void;
@@ -222,6 +224,23 @@ export const useSettingsStore = create<SettingsState>()(
       removeServiceRate: (id) => {
         set((state) => ({ priceBook: state.priceBook.filter(r => r.id !== id) }));
         pushToServer({ removedServiceRateIds: [id] });
+      },
+
+      // One import = one delta write. Sending the whole price book instead would let a
+      // stale device's copy overwrite rates another device just changed.
+      importServiceRates: ({ add, update }) => {
+        const stamp = Date.now();
+        const added: ServiceRate[] = add.map((rate, i) => ({
+          ...rate,
+          id: `rate-${stamp}-${i}-${Math.random().toString(36).slice(2, 7)}`,
+        }));
+        const byId = new Map(update.map(r => [r.id, r]));
+        set((state) => ({
+          priceBook: [...state.priceBook.map(r => byId.get(r.id) || r), ...added],
+        }));
+        const touched = [...update, ...added];
+        if (touched.length > 0) pushToServer({ priceBook: touched });
+        return { added: added.length, updated: update.length };
       },
 
       upsertClientProfile: (phoneKey, patch) => {

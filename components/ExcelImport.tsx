@@ -6,6 +6,7 @@ import {
   SheetData, ColumnMap, MAP_FIELDS_BY_TARGET, MapField, ImportTarget,
   findHeaderIdx, autoMap, buildRows, guessTarget, looksLikePurchaseLog, ImportRow,
 } from '../inventoryExcel';
+import { parseSpreadsheetFile } from '../spreadsheet';
 
 interface ExcelImportProps {
   existing: Part[];
@@ -32,36 +33,6 @@ export const ExcelImport: React.FC<ExcelImportProps> = ({ existing, onCancel, on
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
-  /**
-   * Hand the file to a throwaway worker and wait for rows back. The worker is terminated
-   * on success, failure and timeout alike — a hostile file that sends the parser into a
-   * catastrophic regex spins that thread, not the app, and gets killed after 30s.
-   */
-  const parseSpreadsheet = (file: File): Promise<SheetData[]> => new Promise(async (resolve, reject) => {
-    // A MODULE worker, and it has to be: the dev server serves the worker's TypeScript as an
-    // ES module, so a classic worker died on its `import` with "Cannot use import statement
-    // outside a module" — every spreadsheet in dev looked like a corrupt file. The options
-    // object must be a static literal (Vite parses it at build time), so this can't be
-    // conditional on the environment. Module workers need Safari 15+, which costs nothing
-    // here: the app's push notifications already require iOS 16.4+.
-    const worker = new Worker(new URL('../excelParser.worker.ts', import.meta.url), { type: 'module' });
-    const done = (fn: () => void) => { clearTimeout(timer); worker.terminate(); fn(); };
-    const timer = setTimeout(
-      () => done(() => reject(new Error('файл слишком сложный или повреждён (превышено время разбора)'))),
-      30_000
-    );
-    worker.onmessage = (e: MessageEvent<{ ok: boolean; sheets?: SheetData[]; error?: string }>) =>
-      done(() => (e.data.ok ? resolve((e.data.sheets || []) as SheetData[]) : reject(new Error(e.data.error || 'ошибка разбора'))));
-    worker.onerror = (e) => done(() => reject(new Error(e.message || 'ошибка разбора')));
-
-    const isCsv = /\.csv$/i.test(file.name) || (file.type || '').includes('csv');
-    if (isCsv) worker.postMessage({ kind: 'csv', text: await file.text() });
-    else {
-      const buffer = await file.arrayBuffer();
-      worker.postMessage({ kind: 'binary', buffer }, [buffer]); // transfer, don't copy
-    }
-  });
-
   const sheet = sheets?.find(s => s.name === sheetName) || null;
   const header: any[] = sheet && sheet.rows[headerIdx] ? sheet.rows[headerIdx] : [];
 
@@ -72,7 +43,7 @@ export const ExcelImport: React.FC<ExcelImportProps> = ({ existing, onCancel, on
   const handleFile = async (file: File) => {
     setError(''); setBusy(true);
     try {
-      const parsed = await parseSpreadsheet(file);
+      const parsed = await parseSpreadsheetFile(file);
       if (parsed.length === 0) { setError('В файле нет данных.'); setBusy(false); return; }
       // Default to the sheet that looks most like stock (most mapped columns).
       const scored = parsed.map(s => {
