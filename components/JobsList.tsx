@@ -142,6 +142,7 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onJobSelect, onAddJob 
             />
           </div>
           <button
+            data-tour="new-job"
             onClick={onAddJob}
             className="shrink-0 whitespace-nowrap bg-blue-600 hover:bg-white hover:text-blue-700 text-white px-4 md:px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-wider shadow-[0_0_20px_rgba(0,229,255,0.3)] transition-all"
           >

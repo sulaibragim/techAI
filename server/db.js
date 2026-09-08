@@ -170,6 +170,10 @@ export async function initDB() {
       -- Owner/manager who also works jobs and earns a technician-style commission.
       -- Pay/assignment only — never affects role or permissions (idempotent).
       ALTER TABLE users ADD COLUMN IF NOT EXISTS field_tech BOOLEAN DEFAULT false;
+      -- Which guided tours this person has finished and which tabs they've opened.
+      -- Per-user (not the company settings blob) so a second device doesn't replay the
+      -- tour, and so one teammate's progress never hides the tour from another.
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS tour_progress JSONB;
 
       -- Per-client SMS language preference, keyed by the last-10 digits of their phone
       -- so it follows the person across jobs. 'en' default; flips to 'es' when a client

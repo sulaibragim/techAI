@@ -366,7 +366,7 @@ export const Inventory: React.FC = () => {
                 <FileSpreadsheet size={16} />
                 <span>Импорт Excel</span>
               </button>
-              <button onClick={() => { setReceiveSeed(null); setReceiveOpen(true); }} className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-blue-500/20 hover:bg-blue-500 transition-colors active:scale-95">
+              <button data-tour="stock-tools" onClick={() => { setReceiveSeed(null); setReceiveOpen(true); }} className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-blue-500/20 hover:bg-blue-500 transition-colors active:scale-95">
                 <Truck size={16} />
                 <span>Receive Stock</span>
               </button>

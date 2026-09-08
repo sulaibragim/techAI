@@ -12,6 +12,7 @@ import { useSettingsStore } from '../settingsStore';
 import { Job, JobStatus, STATUS_COLORS } from '../types';
 import { calculateFinancialMetrics, revenueOnDay, technicianDay, accountsReceivable } from '../financialUtils';
 import { PendingJobSuggestions } from './PendingJobSuggestions';
+import { OnboardingChecklist } from './OnboardingChecklist';
 
 // Short two-note chime via Web Audio (no asset file). Best-effort — silent if the browser blocks it.
 function playLeadChime() {
@@ -360,6 +361,9 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
 
   return (
     <div className="space-y-6 pb-32 animate-in fade-in duration-700">
+
+      {/* Setup progress — hides itself once the account is past its first paid job */}
+      <OnboardingChecklist onAddJob={onAddJob} />
 
       {/* New website leads — loud "don't miss it" banner */}
       <AnimatePresence>
@@ -733,7 +737,7 @@ export const WorkroomDashboard: React.FC<{ onJobSelect: (job: Job) => void; onAd
             <Zap size={15} className="mr-2 text-blue-400" />
             Pipeline
           </h3>
-          <button onClick={onAddJob} className="flex items-center space-x-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-xl transition-all active:scale-95 shadow-lg shadow-blue-900/30">
+          <button data-tour="new-job" onClick={onAddJob} className="flex items-center space-x-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-xl transition-all active:scale-95 shadow-lg shadow-blue-900/30">
             <Plus size={13} />
             <span>New Job</span>
           </button>

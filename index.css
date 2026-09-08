@@ -44,3 +44,21 @@
     display: none;
   }
 }
+
+/* Guided-tour spotlight. The onboarding no longer blacks the screen out, so the highlight
+   has to earn attention on its own: a dashed ring that marches around the target, the same
+   dashes running down the leader line to the caption, and a slow halo behind it.
+   Only stroke-dashoffset and opacity animate — never geometry, which is set from measured
+   pixels so a stalled frame loop can leave the ring correct but still. */
+@keyframes tour-ants { to { stroke-dashoffset: -36px; } }
+@keyframes tour-ants-line { to { stroke-dashoffset: -24px; } }
+@keyframes tour-halo { 0%, 100% { opacity: 0.12; } 50% { opacity: 0.4; } }
+
+.tour-ants { animation: tour-ants 1.4s linear infinite; }
+.tour-ants-line { animation: tour-ants-line 1.4s linear infinite; }
+.tour-halo { opacity: 0.24; animation: tour-halo 2s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tour-ants, .tour-ants-line, .tour-halo { animation: none; }
+  .tour-halo { opacity: 0.26; }
+}

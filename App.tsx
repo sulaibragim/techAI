@@ -36,6 +36,7 @@ const ClientsList = lazyWithReload(() => import('./components/ClientsList').then
 const AutoKey = lazyWithReload(() => import('./components/AutoKey').then(m => ({ default: m.AutoKey })), 'AutoKey');
 const MasterKey = lazyWithReload(() => import('./components/MasterKey').then(m => ({ default: m.MasterKey })), 'MasterKey');
 const OnboardingWizard = lazyWithReload(() => import('./components/OnboardingWizard').then(m => ({ default: m.OnboardingWizard })), 'OnboardingWizard');
+const TourHost = lazyWithReload(() => import('./components/TourHost').then(m => ({ default: m.TourHost })), 'TourHost');
 
 // Light, centered spinner shown while a code-split screen streams in.
 const TabLoader: React.FC = () => (
@@ -427,11 +428,17 @@ const App: React.FC = () => {
 
         {/* Main content */}
         <main className="flex-1 p-3 md:p-8 overflow-y-auto scrollbar-hide bg-slate-950">
-          <div className="max-w-[1600px] mx-auto pb-20 md:pb-0">{renderContent()}</div>
+          {/* The bottom nav is ~68px TALL PLUS the home-indicator inset, so a flat pb-20
+              left the last ~30px of every tab under the bar on an iPhone. */}
+          <div className="max-w-[1600px] mx-auto pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0">{renderContent()}</div>
         </main>
       </div>
 
       <Suspense fallback={null}>
+        {/* Guided onboarding. Paused while a full-screen surface is open — a tooltip
+            pointing at the nav is nonsense on top of an open job card or the wizard. */}
+        <TourHost activeTab={effectiveTab} paused={isWizardOpen || !!selectedJob} />
+
         {/* Gate the MOUNT, not just the render inside. React.lazy only fetches when the
             element is actually rendered, so mounting it unconditionally downloaded the
             voice chunk — and everything it statically pulls in — for technicians and

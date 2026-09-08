@@ -5,6 +5,7 @@ import { Calendar, Briefcase, BarChart2, Settings, LogOut, BrainCircuit, Phone, 
 import { useAppStore, useVisibleJobs } from '../store';
 import { useAuthStore, useCurrentUser, visibleTabsFor, ROLE_LABELS } from '../authStore';
 import { useInboxUnreadCount } from '../inboxStore';
+import { useTourStore } from '../tourStore';
 import { outstandingAmount } from '../financialUtils';
 
 function formatRelativeTime(isoString: string): string {
@@ -39,6 +40,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onTabChange }) => 
   const currentUser = useCurrentUser();
   const lowStockCount = inventory.filter(p => p.stock <= p.reorderPoint).length;
   const unreadMessages = useInboxUnreadCount();
+  const seenTabs = useTourStore(s => s.progressFor(currentUser?.id).seenTabs);
 
   // Work that needs a human decision now, newest first. Derived from real job state —
   // the old panel read a store field nothing ever writes, so it was always empty.
@@ -90,10 +92,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onTabChange }) => 
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = currentTab === tab.id;
+          const isNew = !isActive && !seenTabs.includes(tab.id);
           return (
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
+              data-tour={`nav-${tab.id}`}
+              title={isNew ? `${tab.label} — you have not opened this yet` : undefined}
               className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-300 group relative ${
                 isActive ? 'text-blue-400' : 'text-slate-300 hover:text-white'
               }`}
@@ -118,6 +123,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onTabChange }) => 
                 <span className="relative z-10 bg-blue-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
                   {unreadMessages > 9 ? '9+' : unreadMessages}
                 </span>
+              )}
+              {isNew && !(tab.id === 'inventory' && lowStockCount > 0) && !(tab.id === 'messages' && unreadMessages > 0) && (
+                <span className="relative z-10 w-2 h-2 rounded-full bg-amber-400 shrink-0" />
               )}
             </button>
           );
