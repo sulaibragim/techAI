@@ -53,7 +53,6 @@ const JOB_TEMPLATES = [
   { id: 'lock-install', icon: Wrench, label: 'Lock Install', lockType: 'Residential' as const, complaint: 'Customer needs new deadbolt / lock installed.', color: 'from-slate-600/20 to-slate-800/10 border-slate-500/30', iconColor: 'text-slate-300' },
 ];
 
-const TIME_SLOTS = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00'];
 const pad = (n: number) => String(n).padStart(2, '0');
 const todayStr = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
 
@@ -206,7 +205,8 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
     const numPart = Math.floor(1000 + Math.random() * 9000).toString();
     const now = new Date();
     const scheduledDate = scheduleMode === 'asap' ? todayStr() : schedDate;
-    const scheduledTime = scheduleMode === 'asap' ? `${pad(now.getHours())}:00` : schedTime;
+    // A cleared time field must not save an empty slot the calendar can't place.
+    const scheduledTime = scheduleMode === 'asap' ? `${pad(now.getHours())}:00` : (schedTime || '09:00');
 
     const fullClient: Client = {
       id: `c-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
@@ -457,9 +457,7 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
                 {scheduleMode === 'later' && (
                   <div className="grid grid-cols-2 gap-3 mt-3 animate-in fade-in">
                     <input type="date" min={todayStr()} value={schedDate} onChange={e => setSchedDate(e.target.value)} className="bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm font-semibold text-white outline-none [color-scheme:dark]" />
-                    <select value={schedTime} onChange={e => setSchedTime(e.target.value)} className="bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm font-semibold text-white outline-none">
-                      {TIME_SLOTS.map(t => <option key={t} value={t}>{t}</option>)}
-                    </select>
+                    <input type="time" value={schedTime} onChange={e => setSchedTime(e.target.value)} className="bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm font-semibold text-white outline-none [color-scheme:dark]" />
                   </div>
                 )}
               </div>

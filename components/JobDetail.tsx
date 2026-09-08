@@ -126,6 +126,9 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
     const base = isNaN(d.getTime()) ? new Date() : d;
     return new Date(base.getFullYear(), base.getMonth(), 1);
   });
+  // Free-typed time in the schedule sheet — the preset slots are a shortcut, not the
+  // whole choice: a manager booking 08:00 or 09:30 shouldn't be blocked by the grid.
+  const [customTime, setCustomTime] = useState(localJob.scheduledTime || '09:00');
   const [customBrand, setCustomBrand] = useState('');
   const [showCustomBrandInput, setShowCustomBrandInput] = useState(false);
   
@@ -705,11 +708,13 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
     if (initialJob.isNewLead) commitJob({ ...initialJob, isNewLead: false });
   }, [initialJob.id]);
 
-  // When the schedule sheet opens, jump the calendar to the selected date's month.
+  // When the schedule sheet opens, jump the calendar to the selected date's month and
+  // seed the time field with whatever the job is currently booked for.
   useEffect(() => {
     if (!showCalendar) return;
     const d = new Date(calendarDate + 'T00:00:00');
     if (!isNaN(d.getTime())) setCalMonth(new Date(d.getFullYear(), d.getMonth(), 1));
+    setCustomTime(localJob.scheduledTime || '09:00');
   }, [showCalendar]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Client coordinates for tech-distance ranking, ETA, and map links. A verified address
@@ -1943,25 +1948,57 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                 );
               })()}
 
-              {/* TIME PICKER */}
-              <div className="grid grid-cols-3 gap-2 md:gap-3 pt-4 border-t border-white/10">
-                {TIME_SLOTS.map(time => {
-                  const taken = isTimeSlotTaken(calendarDate, time);
-                  const isCurrent = localJob.scheduledDate === calendarDate && localJob.scheduledTime === time;
-                  return (
+              {/* TIME PICKER — presets are the shortcut, the field below takes any time */}
+              <div className="pt-4 border-t border-white/10 space-y-3">
+                <span className="block text-[10px] font-bold uppercase tracking-widest text-slate-500">Quick slots</span>
+                <div className="grid grid-cols-3 gap-2 md:gap-3">
+                  {TIME_SLOTS.map(time => {
+                    const taken = isTimeSlotTaken(calendarDate, time);
+                    const isCurrent = localJob.scheduledDate === calendarDate && localJob.scheduledTime === time;
+                    return (
+                      <button
+                        key={time}
+                        disabled={taken}
+                        onClick={() => {
+                          handleLocalChange({ scheduledDate: calendarDate, scheduledTime: time });
+                          setShowCalendar(false);
+                        }}
+                        className={`py-3.5 md:py-4 rounded-xl text-xs font-bold uppercase border transition-all active:scale-95 ${isCurrent ? 'bg-blue-600 border-blue-400 text-white' : taken ? 'bg-red-600/20 border-red-600/30 text-red-500 cursor-not-allowed' : 'bg-white/5 border-white/10 text-slate-300 hover:text-white'}`}
+                      >
+                        {time}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="pt-1 space-y-2">
+                  <span className="block text-[10px] font-bold uppercase tracking-widest text-slate-500">Or any time</span>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="time"
+                      value={customTime}
+                      onChange={e => setCustomTime(e.target.value)}
+                      className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-white outline-none focus:border-blue-500/50 [color-scheme:dark]"
+                    />
                     <button
-                      key={time}
-                      disabled={taken}
+                      disabled={!customTime}
                       onClick={() => {
-                        handleLocalChange({ scheduledDate: calendarDate, scheduledTime: time });
+                        handleLocalChange({ scheduledDate: calendarDate, scheduledTime: customTime });
                         setShowCalendar(false);
                       }}
-                      className={`py-3.5 md:py-4 rounded-xl text-xs font-bold uppercase border transition-all active:scale-95 ${isCurrent ? 'bg-blue-600 border-blue-400 text-white' : taken ? 'bg-red-600/20 border-red-600/30 text-red-500 cursor-not-allowed' : 'bg-white/5 border-white/10 text-slate-300 hover:text-white'}`}
+                      className="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-widest transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
                     >
-                      {time}
+                      Set
                     </button>
-                  );
-                })}
+                  </div>
+                  {/* A manual booking may deliberately overlap (two techs, a callback) —
+                      warn, don't block, or there is no way to schedule it at all. */}
+                  {customTime && isTimeSlotTaken(calendarDate, customTime) && (
+                    <p className="flex items-center gap-1.5 text-[11px] font-semibold text-amber-400">
+                      <AlertTriangle size={12} /> Another job is already booked at {customTime}.
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           </div>
