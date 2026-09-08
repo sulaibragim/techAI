@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { Job, Client, LockDetails, LeadChannel, LEAD_CHANNELS, LEAD_CHANNEL_LABELS } from '../types';
 import { BRANDS as INITIAL_BRANDS, LOCK_TYPES } from '../constants';
-import { useAuthStore, useCurrentUser } from '../authStore';
+import { useAuthStore, useCurrentUser, worksField } from '../authStore';
 import { useVisibleJobs } from '../store';
 import { useSettingsStore } from '../settingsStore';
 import { buildClients, findClientByPhone, toE164US, normalizePhone, ClientRecord } from '../clientUtils';
@@ -67,7 +67,10 @@ const SpeechRecognition = typeof window !== 'undefined' ? ((window as any).Speec
 export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, initialPhone, initialName, autoPrefill }) => {
   const currentUser = useCurrentUser();
   const allUsers = useAuthStore(s => s.users);
-  const technicians = useMemo(() => allUsers.filter(u => u.role === 'technician' && u.active), [allUsers]);
+  // Assignable = technicians plus any owner/manager flagged as a field tech, same as the
+  // job card. Filtering on the role alone made a working owner assignable from the job card
+  // but invisible here, so a new job could never be dispatched to them at intake.
+  const technicians = useMemo(() => allUsers.filter(u => worksField(u) && u.active), [allUsers]);
   const jobs = useVisibleJobs();
   const clientProfiles = useSettingsStore(s => s.clientProfiles);
   const clients = useMemo(() => buildClients(jobs, clientProfiles), [jobs, clientProfiles]);

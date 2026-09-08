@@ -8,7 +8,7 @@ import { Login } from './components/Login';
 import { useAppStore, useVisibleJobs, hasPendingJobWrite } from './store';
 import { subscribeToWrites, clearWriteError, setSessionExpiredHandler, resetWriteQueue, flushWrites } from './writeQueue';
 import { useSettingsStore } from './settingsStore';
-import { useCurrentUser, useAuthStore, visibleTabsFor, ROLE_LABELS, can } from './authStore';
+import { useCurrentUser, useAuthStore, visibleTabsFor, ROLE_LABELS, can, worksField } from './authStore';
 import { startInboxPolling, stopInboxPolling } from './inboxStore';
 import { getToken, authHeaders } from './apiClient';
 import { API_BASE } from './backendUrl';
@@ -217,7 +217,7 @@ const App: React.FC = () => {
   // Location was previously written ONLY when they toggled themselves Available, so the
   // "where's my tech?" auto-reply and Send ETA Update were computed from wherever the
   // tech stood hours ago — not where their van actually is right now.
-  const hasEnRouteJob = currentUser?.role === 'technician' &&
+  const hasEnRouteJob = !!currentUser && worksField(currentUser) &&
     jobs.some(j => j.assignedTo === currentUser.id && j.status === 'enRoute');
   useEffect(() => {
     if (!hasEnRouteJob || !currentUser) return;
@@ -239,10 +239,10 @@ const App: React.FC = () => {
   // a "share your location" ping. Grab a one-off fresh GPS here — on that ping, when the
   // app returns to the foreground, or when it's opened (e.g. by tapping that push) during
   // an active job. The fresh location fulfills the waiting client's ETA request server-side.
-  const hasActiveJob = currentUser?.role === 'technician' &&
+  const hasActiveJob = !!currentUser && worksField(currentUser) &&
     jobs.some(j => j.assignedTo === currentUser.id && (j.status === 'enRoute' || j.status === 'onSite'));
   useEffect(() => {
-    if (currentUser?.role !== 'technician' || !currentUser) return;
+    if (!currentUser || !worksField(currentUser)) return;
     if (typeof navigator === 'undefined' || !navigator.geolocation) return;
     const grab = () => navigator.geolocation.getCurrentPosition(
       pos => setTechLocation(currentUser.id, { lat: pos.coords.latitude, lng: pos.coords.longitude, updatedAt: new Date().toISOString() }),
@@ -366,7 +366,7 @@ const App: React.FC = () => {
                   <div className="absolute top-0 right-0 w-2 h-2 bg-blue-600 rounded-full border-2 border-[#030303] animate-pulse shadow-lg" />
                 )}
             </button>
-            {currentUser.role === 'technician' && (
+            {worksField(currentUser) && (
               <select
                 value={currentUser.techStatus || 'offDuty'}
                 onChange={e => handleTechStatusChange(e.target.value as TechStatus)}
