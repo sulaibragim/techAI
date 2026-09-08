@@ -2037,8 +2037,10 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
               <section className="bg-slate-900 p-5 md:p-8 rounded-2xl border border-slate-700 space-y-6 shadow-md relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/5 blur-3xl rounded-full -mr-16 -mt-16" />
 
-                {/* TECH ACCEPTANCE — only the assigned tech sees this, only while pending */}
-                {currentUser?.role === 'technician' && localJob.assignedTo === currentUser?.id && localJob.acceptanceStatus === 'pending' && (
+                {/* TECH ACCEPTANCE — the assigned field worker sees this while pending. Keyed to
+                    worksField, not the technician role: an owner/manager who runs jobs is assignable
+                    and gets the assignment SMS, so they need the same Accept/Decline. */}
+                {!!currentUser && worksField(currentUser) && localJob.assignedTo === currentUser.id && localJob.acceptanceStatus === 'pending' && (
                   <div className="relative z-10 bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 space-y-3">
                     <div className="flex items-center gap-2 text-amber-300">
                       <ClipboardList size={16} />

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useAppStore } from '../store';
-import { useAuthStore } from '../authStore';
+import { useAuthStore, useCurrentUser, worksField } from '../authStore';
 import { API_BASE } from '../backendUrl';
 import { authHeaders } from '../apiClient';
 import { TechStatus, Message, Job } from '../types';
@@ -90,7 +90,8 @@ function formatDur(s: number | null): string {
 export const PendingJobSuggestions: React.FC<{ onJobCreated?: (job: import('../types').Job) => void }> = ({ onJobCreated }) => {
   const { addJob, jobs, updateJob } = useAppStore();
   const { users } = useAuthStore();
-  const technicians = users.filter(u => u.role === 'technician' && u.active);
+  const currentUser = useCurrentUser();
+  const technicians = users.filter(u => worksField(u) && u.active);
   const [pending, setPending] = useState<PendingJob[]>([]);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [creating, setCreating] = useState<string | null>(null);
@@ -201,7 +202,7 @@ export const PendingJobSuggestions: React.FC<{ onJobCreated?: (job: import('../t
       messages: [],
       assignedTo: assignedTechId,
       // Mirror the wizard: an assigned tech must accept/decline; unassigned stays clear.
-      acceptanceStatus: assignedTechId ? 'pending' : undefined,
+      acceptanceStatus: assignedTechId ? (assignedTechId === currentUser?.id ? 'accepted' : 'pending') : undefined,
       callSummary: s?.callSummary || pj.openPhoneSummary || undefined,
       callQuality: s?.callQuality || undefined,
       callTranscript: pj.transcript || undefined,
