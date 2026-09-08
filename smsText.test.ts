@@ -15,6 +15,19 @@ describe('sanitizeSms', () => {
   it('keeps GSM-safe Spanish characters', () => {
     expect(sanitizeSms('¿mañana? ¡sí!')).toBe('¿mañana? ¡si!');
   });
+  it('rescues the symbols our own templates use', () => {
+    // The digest's warning sign and multiplication sign are not in GSM-7: one of them
+    // alone re-encoded the whole wrap at 70 chars a segment, tripling its price.
+    expect(sanitizeSms('⚠️ Watch: 2× $0 completions')).toBe('! Watch: 2x $0 completions');
+    expect(sanitizeSms('a	b')).toBe('a b');
+  });
+  it('keeps a digest with fraud flags on one segment', () => {
+    const wrap = sanitizeSms('TrustKey daily wrap - 2026-09-08: $1,240 from 5 jobs today. '
+      + '3 unpaid ($712 outstanding). 4 booked tomorrow. ⚠ Watch: Mike: 3 no-sale visits, 2× $0.');
+    const info = smsInfo(wrap);
+    expect(info.encoding).toBe('GSM-7');
+    expect(info.segments).toBe(1);
+  });
 });
 
 describe('smsInfo', () => {

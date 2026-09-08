@@ -5,7 +5,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, '../../.env.local') });
 
 import { isOptedOut } from './messages.js';
-import { sanitizeSms } from './smsText.js';
+import { sanitizeSms, smsInfo } from './smsText.js';
 
 const BASE = 'https://api.openphone.com/v1';
 const headers = () => ({ Authorization: process.env.OPENPHONE_API_KEY });
@@ -53,6 +53,14 @@ export async function sendSMS(to, content, { bypassOptOut = false } = {}) {
   // encoding where a segment holds 70 chars instead of 160 — same text, 2-3x the cost.
   // Normalizing here covers every automated sender (reminders, digest, webhooks) at once.
   content = sanitizeSms(content);
+  // Anything sanitizeSms couldn't rescue still bills at 70 chars a segment — 2-3x. Name
+  // the culprits in the log so a new template or a pasted emoji can't quietly triple the
+  // bill the way the digest's warning sign did.
+  const info = smsInfo(content);
+  if (info.encoding === 'UCS-2') {
+    const bad = [...new Set([...content].filter(ch => smsInfo(ch).encoding === 'UCS-2'))].join(' ');
+    console.warn(`[OpenPhone] message bills as UCS-2 (${info.segments} segments instead of ${Math.ceil(info.chars / 160)}) — non-GSM chars: ${bad}`);
+  }
   const from = process.env.OPENPHONE_PHONE_NUMBER;
   if (!process.env.OPENPHONE_API_KEY || !from) {
     console.warn('[OpenPhone] API key / OPENPHONE_PHONE_NUMBER not set — cannot send SMS');

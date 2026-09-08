@@ -9,6 +9,7 @@ import { getClientLang, t, claimOnce } from '../services/messages.js';
 import { clientSmsEnabled, staffNotifyEnabled } from '../services/businessSettings.js';
 import { sendEmail, emailConfigured } from '../services/email.js';
 import { stripeConfigured, webhookConfigured, createCheckoutSession, createRefund, getSessionPayment, getPaymentFee, verifyStripeSignature, publicBase, expireCheckoutSession, getChargeIntent, paySig, payUrlFor } from '../services/stripe.js';
+import { shortUrl, resolveShortCode } from '../services/shortLinks.js';
 
 export const paymentsRouter = Router();
 
@@ -52,6 +53,13 @@ async function companyName() {
 const RECEIPT_SECRET = (process.env.RECEIPT_SECRET || '').trim() || jwtSecret();
 const receiptSig = (jobId) => crypto.createHmac('sha256', RECEIPT_SECRET).update(`receipt:${jobId}`).digest('hex').slice(0, 20);
 const receiptUrlFor = (base, jobId) => (base ? `${base}/pay/receipt/${encodeURIComponent(jobId)}/${receiptSig(jobId)}` : '');
+
+// The same two pages, addressed short, for use in TEXTS only. A 108-character signed URL
+// is two thirds of an SMS segment; these are 54 and keep the pay/receipt texts to one
+// segment. Anything rendered in the app or emailed keeps the long signed form — there is
+// no length pressure there, and old links stay valid either way.
+const payLinkForSms = (base, jobId) => shortUrl(base, 'p', 'pay', jobId, payUrlFor(base, jobId));
+const receiptLinkForSms = (base, jobId) => shortUrl(base, 'r', 'receipt', jobId, receiptUrlFor(base, jobId));
 
 // Checkout sessions we created and that may still be open. Kept so they can be killed
 // the moment the job is settled some other way — otherwise the client pays cash at the
@@ -346,7 +354,7 @@ async function sendReceiptSMS({ job, jobId, amount, balance, base }) {
     name, company,
     jobNo: job.jobNumber || jobId,
     amount, balance,
-    receiptUrl: receiptUrlFor(base, jobId),
+    receiptUrl: await receiptLinkForSms(base, jobId),
   })));
 }
 
@@ -418,7 +426,7 @@ paymentsRouter.post('/link', requireAuth, async (req, res) => {
     if (sms && phone) {
       const first = (job.client?.firstName || '').trim() || 'there';
       // Text the durable link, not the raw session URL — the text outlives the session.
-      const link = payUrlFor(publicBase(req), jobId) || session.url;
+      const link = (await payLinkForSms(publicBase(req), jobId)) || session.url;
       const ok = await sendSMS(phone, `Hi ${first}, you can pay your balance of ${money(charge)} for job #${job.jobNumber || jobId} securely by card here: ${link} — ${company}`);
       smsSent = !!ok;
     }
@@ -914,13 +922,18 @@ payPagesRouter.get('/cancelled', (_req, res) => {
 // Tapping this mints a fresh session for whatever is still owed, right now, and forwards.
 // Public by design; the HMAC path segment is the auth, and the amount is always recomputed
 // server-side from the stored balance — the URL carries no amount to tamper with.
-payPagesRouter.get('/j/:jobId/:sig', async (req, res) => {
-  const { jobId, sig } = req.params;
-  const expected = paySig(jobId);
-  const got = Buffer.from(String(sig));
-  const exp = Buffer.from(expected);
-  if (got.length !== exp.length || !crypto.timingSafeEqual(got, exp)) return res.sendStatus(404);
+function sigOk(expected, got) {
+  const a = Buffer.from(String(got));
+  const b = Buffer.from(String(expected));
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
 
+payPagesRouter.get('/j/:jobId/:sig', (req, res) =>
+  sigOk(paySig(req.params.jobId), req.params.sig)
+    ? renderPayPage(req, res, req.params.jobId)
+    : res.sendStatus(404));
+
+async function renderPayPage(req, res, jobId) {
   try {
     const { rows } = await db.query('SELECT data FROM jobs WHERE id = $1', [jobId]);
     if (rows.length === 0) return res.sendStatus(404);
@@ -952,17 +965,16 @@ payPagesRouter.get('/j/:jobId/:sig', async (req, res) => {
     res.type('html').status(502).send(page('⚠️', 'Something went wrong',
       'We couldn’t open the payment page. Please try again in a moment, or contact us.'));
   }
-});
+}
 
 // Full itemized receipt at an unguessable URL — texted to the client after payment.
 // Public by design (the payer isn't a CRM user); the HMAC path segment is the auth.
-payPagesRouter.get('/receipt/:jobId/:sig', async (req, res) => {
-  const { jobId, sig } = req.params;
-  const expected = receiptSig(jobId);
-  const got = Buffer.from(String(sig));
-  const exp = Buffer.from(expected);
-  if (got.length !== exp.length || !crypto.timingSafeEqual(got, exp)) return res.sendStatus(404);
+payPagesRouter.get('/receipt/:jobId/:sig', (req, res) =>
+  sigOk(receiptSig(req.params.jobId), req.params.sig)
+    ? renderReceiptPage(req, res, req.params.jobId)
+    : res.sendStatus(404));
 
+async function renderReceiptPage(req, res, jobId) {
   try {
     const { rows } = await db.query('SELECT data FROM jobs WHERE id = $1', [jobId]);
     if (rows.length === 0) return res.sendStatus(404);
@@ -975,4 +987,17 @@ payPagesRouter.get('/receipt/:jobId/:sig', async (req, res) => {
     console.error('[payments] receipt page error:', err.message);
     res.sendStatus(500);
   }
+}
+
+// Short links (/p/<code>, /r/<code>) reach the SAME two pages. The code is the whole
+// authorisation, exactly as the HMAC path segment is on the long form, and it is bound to
+// one kind so a receipt code can never be replayed as a pay link.
+export const shortLinkRouter = Router();
+shortLinkRouter.get('/:code', async (req, res) => {
+  const wanted = req.baseUrl === '/r' ? 'receipt' : 'pay';
+  const rec = await resolveShortCode(req.params.code);
+  if (!rec || rec.kind !== wanted) return res.sendStatus(404);
+  return wanted === 'receipt'
+    ? renderReceiptPage(req, res, rec.job_id)
+    : renderPayPage(req, res, rec.job_id);
 });

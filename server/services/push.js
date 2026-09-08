@@ -52,38 +52,43 @@ export async function deleteSubscription(endpoint, userId) {
 }
 
 // Send to a set of subscription rows; prune any the push service reports as gone (404/410).
+// Returns HOW MANY actually landed, because callers use that to decide whether an SMS is
+// still needed: a push that reached the installed app is free, the SMS behind it is not.
 async function send(rows, payload) {
-  if (!configured || !rows?.length) return;
+  if (!configured || !rows?.length) return 0;
   const body = JSON.stringify(payload);
-  await Promise.all(rows.map(async (r) => {
+  const results = await Promise.all(rows.map(async (r) => {
     const subscription = { endpoint: r.endpoint, keys: { p256dh: r.p256dh, auth: r.auth } };
     try {
       await webpush.sendNotification(subscription, body);
+      return 1;
     } catch (err) {
       if (err.statusCode === 404 || err.statusCode === 410) {
         await deleteSubscription(r.endpoint).catch(() => {});
       } else {
         console.error('[push] send error', err.statusCode, err.body || err.message);
       }
+      return 0;
     }
   }));
+  return results.reduce((a, b) => a + b, 0);
 }
 
 // Push to every device a single user has registered (e.g. the tech a job was assigned to).
 export async function sendPushToUser(userId, payload) {
-  if (!configured || !hasDB() || !userId) return;
+  if (!configured || !hasDB() || !userId) return 0;
   try {
     const { rows } = await db.query(
       'SELECT endpoint, p256dh, auth FROM push_subscriptions WHERE user_id = $1',
       [userId]
     );
-    await send(rows, payload);
-  } catch (e) { console.error('[push] sendPushToUser', e.message); }
+    return await send(rows, payload);
+  } catch (e) { console.error('[push] sendPushToUser', e.message); return 0; }
 }
 
 // Push to every active user holding one of the given roles, optionally skipping the actor.
 export async function sendPushToRoles(roles, payload, excludeUserId) {
-  if (!configured || !hasDB() || !roles?.length) return;
+  if (!configured || !hasDB() || !roles?.length) return 0;
   try {
     const { rows } = await db.query(
       `SELECT ps.endpoint, ps.p256dh, ps.auth
@@ -93,6 +98,6 @@ export async function sendPushToRoles(roles, payload, excludeUserId) {
           AND ($2::text IS NULL OR ps.user_id <> $2)`,
       [roles, excludeUserId || null]
     );
-    await send(rows, payload);
-  } catch (e) { console.error('[push] sendPushToRoles', e.message); }
+    return await send(rows, payload);
+  } catch (e) { console.error('[push] sendPushToRoles', e.message); return 0; }
 }

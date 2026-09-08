@@ -161,6 +161,19 @@ export async function initDB() {
       );
       CREATE INDEX IF NOT EXISTS idx_push_subs_user ON push_subscriptions(user_id);
 
+      -- Short public links for texted pay/receipt pages. The long form
+      -- (/pay/j/<job-uuid>/<20-hex sig>) is 108 characters — two thirds of a 160-char
+      -- SMS segment, which pushed the payment, receipt and reminder texts into a second
+      -- segment each and doubled their cost. A code here keeps those texts at one
+      -- segment. The code IS the secret, so it is long enough not to be guessable.
+      CREATE TABLE IF NOT EXISTS short_links (
+        code TEXT PRIMARY KEY,
+        kind TEXT NOT NULL,
+        job_id TEXT NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_short_links_target ON short_links(kind, job_id);
+
       -- Live technician location for proximity-based dispatch (added later; idempotent).
       ALTER TABLE users ADD COLUMN IF NOT EXISTS last_location JSONB;
       -- Technician specialties for smart assignment (idempotent).

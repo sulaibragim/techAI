@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { db } from '../db.js';
 import { requireAuth, requireRole } from '../middleware/auth.js';
-import { sendPushToRoles } from '../services/push.js';
+import { sendPushToUser } from '../services/push.js';
 import { toE164, sendSMS } from '../services/openphone.js';
 
 export const inventoryRouter = Router();
@@ -117,18 +117,22 @@ inventoryRouter.post('/reorder-request', requireAuth, requireRole('owner', 'mana
     const title = `Нужно закупить: ${clean.length} позиц.`;
     const body = `${top}${tail}`;
 
-    sendPushToRoles(['owner'], {
+    const payload = {
       title,
       body: `${body} — от ${from}`,
       tag: 'reorder-request',
       data: { type: 'reorder', url: '/' },
-    }).catch(e => console.error('[INVENTORY] reorder push error:', e.message));
+    };
 
-    // Text every active owner who has a number on file.
+    // Push first, text only whoever it didn't reach. This one is worth the care: the note
+    // is written in Russian, which is outside the GSM alphabet, so as an SMS it always
+    // bills at 70 characters a segment — twice the price of the same length in English.
     let texted = 0;
     try {
-      const { rows } = await db.query("SELECT phone FROM users WHERE role = 'owner' AND active = true AND phone IS NOT NULL");
+      const { rows } = await db.query("SELECT id, phone FROM users WHERE role = 'owner' AND active = true AND phone IS NOT NULL");
       for (const row of rows) {
+        const pushed = await sendPushToUser(row.id, payload).catch(() => 0);
+        if (pushed) continue;
         const to = toE164(row.phone);
         if (!to) continue;
         // sendSMS returns null on a bad number or missing OpenPhone config — count what
@@ -137,7 +141,7 @@ inventoryRouter.post('/reorder-request', requireAuth, requireRole('owner', 'mana
         if (sent) texted += 1;
       }
     } catch (e) {
-      console.error('[INVENTORY] reorder SMS error:', e.message);
+      console.error('[INVENTORY] reorder notify error:', e.message);
     }
 
     console.log(`[INVENTORY] reorder request from ${from} — ${clean.length} lines, ${texted} SMS`);

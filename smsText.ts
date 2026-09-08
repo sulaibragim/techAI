@@ -30,6 +30,15 @@ const REPLACEMENTS: Record<string, string> = {
   'Á': 'A', 'Í': 'I', 'Ó': 'O', 'Ú': 'U', // Á Í Ó Ú
   'â': 'a', 'ê': 'e', 'î': 'i', 'ô': 'o', 'û': 'u', // â ê î ô û
   'ë': 'e', 'ï': 'i', 'ç': 'c',      // ë ï ç
+  '\t': ' ',                                                  // tab is NOT in GSM-7 either
+  '\u26a0': '!', '\ufe0f': '',                                // warning sign, and the invisible variation selector that trails it
+  '\u00d7': 'x', '\u00f7': '/',                               // multiplication and division signs
+  '\u2248': '~', '\u2264': '<=', '\u2265': '>=',              // almost-equal, less/greater-or-equal
+  '\u00b0': ' deg', '\u2116': 'No.',                          // degree, numero
+  '\u2192': '->', '\u2190': '<-',                             // arrows
+  '\u2713': 'v', '\u2714': 'v', '\u2717': 'x', '\u2718': 'x', // check and cross marks
+  '\u2032': "'", '\u2033': '"',                               // prime, double prime
+  '\u2010': '-', '\u2011': '-', '\u2015': '-',                // hyphen, non-breaking hyphen, horizontal bar
 };
 
 export function sanitizeSms(text: string): string {

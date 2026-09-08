@@ -1,7 +1,8 @@
 import { db } from '../db.js';
 import { sendSMS } from './openphone.js';
-import { sendPushToRoles } from './push.js';
+import { sendPushToUser } from './push.js';
 import { stripeConfigured, publicBase, payUrlFor } from './stripe.js';
+import { shortUrl } from './shortLinks.js';
 import { getClientLang, t, isOptedOut, OPT_OUT_NOTE } from './messages.js';
 import { clientSmsEnabled, staffNotifyEnabled } from './businessSettings.js';
 
@@ -137,7 +138,12 @@ async function runPaymentReminders() {
     // a Tuesday reminder was a dead end by Thursday — the client tapped it, got Stripe's
     // "expired" page, and had no way to pay until someone re-texted them by hand. This
     // link mints a fresh session when tapped, however late that is.
-    const payUrl = stripeConfigured() ? (payUrlFor(publicBase(), row.id) || '') : '';
+    // Short form: the long signed URL is 108 chars and pushed this reminder into a
+    // second segment on its own.
+    const base = publicBase();
+    const payUrl = stripeConfigured()
+      ? (await shortUrl(base, 'p', 'pay', row.id, payUrlFor(base, row.id)) || '')
+      : '';
 
     // Carriers expect the opt-out path to be visible on automated traffic like this.
     const text = t('paymentReminder', lang, {
@@ -228,24 +234,32 @@ async function runEveningDigest() {
     if (flags.length) watchLines.push(`${t.name}: ${flags.join(', ')}`);
   }
 
+  // Kept under 160 characters on purpose, flags and all: one segment. The long-winded
+  // version spilled into a second (a third when a fraud flag pulled in the warning sign),
+  // and it says the same thing.
   const text = [
-    `TrustKey daily wrap — ${date}:`,
-    `${money(revenueToday)} from ${doneToday.length} job${doneToday.length === 1 ? '' : 's'} today.`,
-    unpaidCount > 0 ? `${unpaidCount} unpaid (${money(outstanding)} outstanding).` : 'No outstanding balances.',
-    `${bookedTomorrow} job${bookedTomorrow === 1 ? '' : 's'} booked for tomorrow.`,
-    watchLines.length ? `⚠ Watch: ${watchLines.join('; ')}.` : '',
+    `TrustKey wrap ${date}:`,
+    `${money(revenueToday)} from ${doneToday.length} job${doneToday.length === 1 ? '' : 's'}.`,
+    unpaidCount > 0 ? `${unpaidCount} unpaid (${money(outstanding)} out).` : 'Nothing outstanding.',
+    `${bookedTomorrow} booked tomorrow.`,
+    watchLines.length ? `! Watch: ${watchLines.join('; ')}.` : '',
   ].filter(Boolean).join(' ');
 
-  const { rows: owners } = await db.query(
-    "SELECT phone FROM users WHERE role = 'owner' AND active = true AND phone IS NOT NULL AND phone <> ''"
-  );
-  for (const o of owners) await sendSMS(o.phone.trim(), text);
-  sendPushToRoles(['owner'], {
+  const payload = {
     title: 'Daily wrap',
-    body: text.replace('TrustKey daily wrap — ', '').slice(0, 160),
+    body: text.replace(`TrustKey wrap ${date}: `, '').slice(0, 160),
     tag: `digest-${date}`,
     data: { type: 'digest', url: '/' },
-  }).catch(() => {});
+  };
+  const { rows: owners } = await db.query(
+    "SELECT id, phone FROM users WHERE role = 'owner' AND active = true AND phone IS NOT NULL AND phone <> ''"
+  );
+  // One wrap per owner, not two. The push carries the same numbers for free; the text is
+  // only for an owner whose app isn't installed.
+  for (const o of owners) {
+    const pushed = await sendPushToUser(o.id, payload).catch(() => 0);
+    if (!pushed) await sendSMS(o.phone.trim(), text);
+  }
   console.log('[scheduler] evening digest sent:', text);
 }
 

@@ -20,14 +20,18 @@ async function notifyAssignedTech(assigneeId, job, actingUserId) {
   const name = [c.firstName, c.lastName].filter(Boolean).join(' ');
   const when = [job.scheduledDate, job.scheduledTime].filter(Boolean).join(' ');
 
-  // Push to the tech's installed app — fires even if they have no phone on file.
-  sendPushToUser(assigneeId, {
+  // Push to the tech's installed app — fires even if they have no phone on file, and
+  // costs nothing. The SMS below is its FALLBACK, not its twin: we used to send both, so
+  // every assignment was billed as a text even when the app had already buzzed in the
+  // tech's pocket.
+  const pushed = await sendPushToUser(assigneeId, {
     title: 'New job assigned to you',
     body: [name && `Client: ${name}`, c.address, when && `When: ${when}`].filter(Boolean).join(' · ')
       || 'Open the app to view it.',
     tag: `job-${job.id || job.jobNumber || assigneeId}`,
     data: { type: 'assignment', jobId: job.id || null, url: '/' },
-  }).catch(e => console.error('[JOBS] push error:', e));
+  }).catch(e => { console.error('[JOBS] push error:', e); return 0; });
+  if (pushed > 0) return;
 
   try {
     const { rows } = await db.query('SELECT name, phone FROM users WHERE id = $1', [assigneeId]);
@@ -110,16 +114,34 @@ async function notifyBookingConfirmed(job, jobId) {
 // Alert the dispatchers (active owners/managers with a phone, plus LEAD_NOTIFY_PHONE)
 // about a tech lifecycle milestone. Best-effort SMS; skips the acting user so nobody
 // texts themselves.
+const DISPATCH_TITLES = {
+  techAccepted: 'Job accepted',
+  techEnRoute: 'Tech on the way',
+  techDeclined: 'Job DECLINED',
+};
+
 async function notifyDispatchers(text, excludeUserId, kind) {
   try {
     if (kind && !(await staffNotifyEnabled(kind))) return;
-    const recipients = new Set();
-    if (process.env.LEAD_NOTIFY_PHONE) recipients.add(process.env.LEAD_NOTIFY_PHONE.trim());
+    const payload = {
+      title: DISPATCH_TITLES[kind] || 'Dispatch',
+      body: text,
+      tag: `dispatch-${kind || 'update'}`,
+      data: { type: 'dispatch', url: '/' },
+    };
     const { rows } = await db.query(
       "SELECT id, phone FROM users WHERE role IN ('owner', 'manager') AND active = true AND phone IS NOT NULL AND phone <> ''"
     );
-    for (const r of rows) { if (r.id !== excludeUserId) recipients.add(r.phone.trim()); }
-    for (const to of recipients) await sendSMS(to, text);
+    // Each dispatcher gets ONE notification: push if their app is installed, otherwise a
+    // text. These fire on every accept and every en-route, several times a day, so
+    // sending both channels to everyone was the biggest avoidable line on the SMS bill.
+    for (const r of rows) {
+      if (r.id === excludeUserId) continue;
+      const pushed = await sendPushToUser(r.id, payload).catch(() => 0);
+      if (!pushed) await sendSMS(r.phone.trim(), text);
+    }
+    // A number from the env has no user behind it, so there is nothing to push to.
+    if (process.env.LEAD_NOTIFY_PHONE) await sendSMS(process.env.LEAD_NOTIFY_PHONE.trim(), text);
   } catch (err) {
     console.error('[JOBS] dispatcher notify error:', err);
   }
