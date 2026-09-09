@@ -147,7 +147,7 @@ async function runPaymentReminders() {
 
     // Carriers expect the opt-out path to be visible on automated traffic like this.
     const text = t('paymentReminder', lang, {
-      name: first, company: company.name, jobNo: j.jobNumber || row.id, balance, payUrl, phone: company.phone,
+      name: first, company: company.name, jobNo: j.jobNumber || row.id, balance, payUrl,
     }) + (OPT_OUT_NOTE[lang] || OPT_OUT_NOTE.en);
     const ok = await sendSMS(phone, text);
     if (!ok) {

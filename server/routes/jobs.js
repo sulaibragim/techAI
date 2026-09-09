@@ -64,6 +64,22 @@ async function userName(id) {
   } catch { return 'A technician'; }
 }
 
+// "2026-09-12" + "10:00" -> "Sep 12, 10:00" (es: "12 sep, 10:00"). An ISO date reads as
+// a filing cabinet in a text to a customer, and it is six characters longer. Parsed by
+// hand on purpose: handing a bare date to Date() reads it as UTC, which in Arizona would
+// name the day before.
+const WHEN_MONTHS = {
+  en: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  es: ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'],
+};
+function whenPhrase(date, time, lang) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(date || ''));
+  const months = WHEN_MONTHS[lang] || WHEN_MONTHS.en;
+  const month = m ? months[Number(m[2]) - 1] : null;
+  const day = month ? (lang === 'es' ? `${Number(m[3])} ${month}` : `${month} ${Number(m[3])}`) : (date || '');
+  return [day, time].filter(Boolean).join(', ');
+}
+
 // Company display name from the settings blob (for client-facing texts).
 async function companyName() {
   try {
@@ -104,7 +120,7 @@ async function notifyBookingConfirmed(job, jobId) {
     job.assignedTo ? userName(job.assignedTo) : Promise.resolve(''),
     companyName(),
   ]);
-  const when = [job.scheduledDate, job.scheduledTime].filter(Boolean).join(' ');
+  const when = whenPhrase(job.scheduledDate, job.scheduledTime, lang);
   let text = t('bookingScheduled', lang, { name: first, tech: tech || '', company, when });
   if (lang !== 'es') text += SPANISH_INVITE; // one-time Spanish invite while they're on English
   await sendSMS(phone, text);

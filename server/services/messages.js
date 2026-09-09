@@ -109,11 +109,14 @@ const nf = (n) => `$${(Math.round(n * 100) / 100).toLocaleString('en-US')}`;
 
 // ─── Message templates (lang → builder) ────────────────────────────────────────
 export const MSG = {
+  // Kept under one segment INCLUDING the Spanish invite that rides along on the English
+  // one — the older, chattier version measured 226 characters and billed as two. No "he"
+  // or "she" about the tech either: we don't know, and the client doesn't need to.
   bookingScheduled: {
     en: ({ name, tech, company, when }) =>
-      `Hi ${name}, thanks for choosing ${company}! ${tech ? `${tech} is assigned` : `You're booked`} for your appointment on ${when}. We'll text you when your technician is on the way. Reply here anytime with questions.`,
+      `Hi ${name}, thanks for choosing ${company}! ${tech ? `${tech} is booked` : `You're booked`} for ${when} and will text you before arriving.`,
     es: ({ name, tech, company, when }) =>
-      `Hola ${name}, ¡gracias por elegir ${company}! ${tech ? `${tech} está asignado` : `Su cita está reservada`} para el ${when}. Le avisaremos cuando su técnico vaya en camino. Responda aquí si tiene preguntas.`,
+      `Hola ${name}, ¡gracias por elegir ${company}! ${tech ? `${tech} vendrá` : `Su cita es`} el ${when} y le avisaremos antes de llegar.`,
   },
   arrived: {
     en: ({ name, tech, company }) => `Hi ${name}, ${tech} from ${company} has arrived at your location. See you in a moment!`,
@@ -127,15 +130,19 @@ export const MSG = {
     en: ({ name, tech }) => `Hi ${name}, ${tech} is on the way and will be there as soon as possible. Thanks for your patience!`,
     es: ({ name, tech }) => `Hola ${name}, ${tech} va en camino y llegará lo antes posible. ¡Gracias por su paciencia!`,
   },
+  // Down from three segments to one for a typical name — but it lands ON the 160-char
+  // boundary with our long railway.app pay link, so a long first name or a four-figure
+  // balance still tips it to two. A short custom domain is what would settle it for good.
+  // The company phone came out: this arrives in a thread the client can just reply to.
   paymentReminder: {
-    en: ({ name, company, jobNo, balance, payUrl, phone }) =>
-      `Hi ${name}, this is ${company}. Friendly reminder: job #${jobNo} has an outstanding balance of ${nf(balance)}.`
-      + (payUrl ? ` Pay securely by card: ${payUrl}` : '')
-      + ` Reply here${phone ? ` or call ${phone}` : ''} with any questions — thank you!`,
-    es: ({ name, company, jobNo, balance, payUrl, phone }) =>
-      `Hola ${name}, le escribe ${company}. Recordatorio: el trabajo #${jobNo} tiene un saldo pendiente de ${nf(balance)}.`
-      + (payUrl ? ` Pague de forma segura con tarjeta: ${payUrl}` : '')
-      + ` Responda aquí${phone ? ` o llame al ${phone}` : ''} si tiene preguntas. ¡Gracias!`,
+    en: ({ name, company, jobNo, balance, payUrl }) =>
+      `Hi ${name}, ${company}: job #${jobNo} - ${nf(balance)} balance.`
+      + (payUrl ? ` Pay by card: ${payUrl}` : '')
+      + ` Thank you!`,
+    es: ({ name, company, jobNo, balance, payUrl }) =>
+      `Hola ${name}, ${company}: trabajo #${jobNo} - ${nf(balance)} de saldo.`
+      + (payUrl ? ` Pague con tarjeta: ${payUrl}` : '')
+      + ` ¡Gracias!`,
   },
   paymentReceived: {
     en: ({ name, company, jobNo, amount, balance, receiptUrl }) =>
