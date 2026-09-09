@@ -11,8 +11,9 @@ export const jobsRouter = Router();
 
 const isTech = (req) => req.user.role === 'technician';
 
-// SMS the technician a job was just assigned to. Best-effort; never blocks the request.
-// Skips self-assignment (a tech picking up their own job shouldn't text themselves).
+// Tell the technician a job just landed on them — push AND SMS, both every time.
+// Best-effort; never blocks the request. Skips self-assignment (a tech picking up their
+// own job shouldn't text themselves).
 async function notifyAssignedTech(assigneeId, job, actingUserId) {
   if (!assigneeId || assigneeId === actingUserId) return;
   if (!(await staffNotifyEnabled('jobAssigned'))) return;
@@ -20,18 +21,17 @@ async function notifyAssignedTech(assigneeId, job, actingUserId) {
   const name = [c.firstName, c.lastName].filter(Boolean).join(' ');
   const when = [job.scheduledDate, job.scheduledTime].filter(Boolean).join(' ');
 
-  // Push to the tech's installed app — fires even if they have no phone on file, and
-  // costs nothing. The SMS below is its FALLBACK, not its twin: we used to send both, so
-  // every assignment was billed as a text even when the app had already buzzed in the
-  // tech's pocket.
-  const pushed = await sendPushToUser(assigneeId, {
+  // BOTH channels here, deliberately — Sultan's call, and the right one. A push can be
+  // swiped away, silenced by a Do Not Disturb, or never arrive because the phone dropped
+  // off the network; a missed assignment costs a job, which is several thousand times the
+  // cent the text costs. Everywhere else in this file the SMS is only a push fallback.
+  sendPushToUser(assigneeId, {
     title: 'New job assigned to you',
     body: [name && `Client: ${name}`, c.address, when && `When: ${when}`].filter(Boolean).join(' · ')
       || 'Open the app to view it.',
     tag: `job-${job.id || job.jobNumber || assigneeId}`,
     data: { type: 'assignment', jobId: job.id || null, url: '/' },
-  }).catch(e => { console.error('[JOBS] push error:', e); return 0; });
-  if (pushed > 0) return;
+  }).catch(e => console.error('[JOBS] push error:', e));
 
   try {
     const { rows } = await db.query('SELECT name, phone FROM users WHERE id = $1', [assigneeId]);
