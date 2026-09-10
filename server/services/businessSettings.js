@@ -43,6 +43,7 @@ const STAFF_NOTIFY_DEFAULTS = {
   techDeclined: true,     // dispatchers told a tech DECLINED — needs reassigning
   newLead: true,          // website lead arrived
   clientReply: true,      // a client texted us back (push)
+  aiCallback: true,       // Sona took the call and promised a callback (SMS + push to owners)
   paymentReceived: true,  // card payment landed (push)
   refund: true,           // refund issued / chargeback opened (push)
 };

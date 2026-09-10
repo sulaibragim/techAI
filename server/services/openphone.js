@@ -26,6 +26,43 @@ export function toE164(raw, defaultCc = '1') {
   return `+${digits}`;                                           // assume it already carries a country code
 }
 
+// Read-only GET against the REST API. Array params are REPEATED keys
+// ("participants=+1...&participants=+1..."): the "participants[]" spelling comes back
+// 400 "Expected array" from /messages and /calls. Throws with .status on a non-2xx.
+export async function opGet(path, params = {}) {
+  const qs = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) {
+    if (v == null) continue;
+    if (Array.isArray(v)) v.forEach(x => qs.append(k, x));
+    else qs.set(k, String(v));
+  }
+  const res = await fetch(`${BASE}${path}?${qs.toString()}`, { headers: headers() });
+  if (!res.ok) {
+    const err = new Error(`${path} → ${res.status} ${await res.text().catch(() => '')}`.slice(0, 300));
+    err.status = res.status;
+    throw err;
+  }
+  return res.json();
+}
+
+// OUR number + its id, resolved once. Needed to tell our side of a call or transcript from
+// the client's — the REST API only hands back bare `participants`.
+let ownNumberCache = null;
+export async function resolveOwnNumber() {
+  if (ownNumberCache) return ownNumberCache;
+  const envNum = process.env.OPENPHONE_PHONE_NUMBER ? toE164(process.env.OPENPHONE_PHONE_NUMBER) : '';
+  let id = process.env.OPENPHONE_PHONE_NUMBER_ID || '';
+  let e164 = envNum;
+  try {
+    const list = await opGet('/phone-numbers');
+    const nums = list?.data || [];
+    const match = (envNum && nums.find(n => toE164(n.phoneNumber || n.number || '') === envNum)) || nums[0];
+    if (match) { id = id || match.id; e164 = e164 || toE164(match.phoneNumber || match.number || ''); }
+  } catch (e) { console.warn('[OpenPhone] resolveOwnNumber:', e.message); }
+  ownNumberCache = { id, e164 };
+  return ownNumberCache;
+}
+
 export async function getPhoneNumbers() {
   const res = await fetch(`${BASE}/phone-numbers`, { headers: headers() });
   return res.json();

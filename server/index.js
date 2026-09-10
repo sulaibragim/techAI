@@ -18,6 +18,7 @@ import { pushRouter } from './routes/push.js';
 import { paymentsRouter, payPagesRouter, shortLinkRouter } from './routes/payments.js';
 import { initDB, db } from './db.js';
 import { startScheduler } from './services/scheduler.js';
+import { startAiCallbackWatch } from './services/aiCallbacks.js';
 import { isProd } from './config.js';
 
 import { fileURLToPath } from 'url';
@@ -163,6 +164,7 @@ async function start() {
       // everything, not just what the webhook caught since boot. Fire-and-forget.
       syncOpenPhoneHistory({ force: true }).catch(e => console.error('[OpenPhone] boot sync', e.message));
       startScheduler(); // payment reminders + evening digest (needs the DB)
+      startAiCallbackWatch(); // text the owners when Sona promises a caller a callback
     } catch (err) {
       console.error('[DB] Failed to connect:', err.message);
       // In production a swallowed DB failure is the worst outcome in this codebase: the app

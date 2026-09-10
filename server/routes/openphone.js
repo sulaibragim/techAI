@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import crypto from 'node:crypto';
 import { processTranscriptWithAI } from '../services/gemini.js';
-import { toE164, sendSMS, getCallTranscript } from '../services/openphone.js';
+import { toE164, sendSMS, getCallTranscript, opGet, resolveOwnNumber } from '../services/openphone.js';
+import { checkAiCall } from '../services/aiCallbacks.js';
 import { sanitizeSms } from '../services/smsText.js';
 import { requireAuth, requireRole } from '../middleware/auth.js';
 import { sendPushToRoles } from '../services/push.js';
@@ -93,8 +94,6 @@ export async function hydrateOpenPhoneStores() {
 // pull each conversation's messages + calls. We do that here, dedupe into the same stores
 // the webhook feeds, and persist to Postgres. Throttled + single-flight so opening the
 // inbox can trigger it cheaply.
-const OP_BASE = 'https://api.openphone.com/v1';
-const opHeaders = () => ({ Authorization: process.env.OPENPHONE_API_KEY });
 const digits10 = (p) => String(p || '').replace(/\D/g, '').slice(-10);
 
 // MMS attachments. OpenPhone shapes media as either bare URL strings or {url, type}
@@ -104,39 +103,6 @@ function normalizeMedia(media) {
   return media
     .map(m => (typeof m === 'string' ? { url: m, type: '' } : { url: m?.url || '', type: m?.type || m?.contentType || '' }))
     .filter(m => m.url);
-}
-
-async function opGet(path, params = {}) {
-  const qs = new URLSearchParams();
-  for (const [k, v] of Object.entries(params)) {
-    if (v == null) continue;
-    // Array params are REPEATED keys ("participants=+1...&participants=+1..."). The
-    // "participants[]" spelling we used to send now comes back 400 "Expected array"
-    // from /messages and /calls, which silently killed the whole history backfill.
-    if (Array.isArray(v)) v.forEach(x => qs.append(k, x));
-    else qs.set(k, String(v));
-  }
-  const r = await fetch(`${OP_BASE}${path}?${qs.toString()}`, { headers: opHeaders() });
-  if (!r.ok) throw new Error(`${path} → ${r.status} ${await r.text().catch(() => '')}`.slice(0, 300));
-  return r.json();
-}
-
-// Resolve OUR OpenPhone number + its id once (needed to know the "other party" and to
-// derive from/to on calls, which the REST API returns only as `participants`).
-let ownNumberCache = null;
-async function resolveOwnNumber() {
-  if (ownNumberCache) return ownNumberCache;
-  const envNum = process.env.OPENPHONE_PHONE_NUMBER ? toE164(process.env.OPENPHONE_PHONE_NUMBER) : '';
-  let id = process.env.OPENPHONE_PHONE_NUMBER_ID || '';
-  let e164 = envNum;
-  try {
-    const list = await opGet('/phone-numbers');
-    const nums = list?.data || [];
-    const match = (envNum && nums.find(n => toE164(n.phoneNumber || n.number || '') === envNum)) || nums[0];
-    if (match) { id = id || match.id; e164 = e164 || toE164(match.phoneNumber || match.number || ''); }
-  } catch (e) { console.warn('[OpenPhone] resolveOwnNumber:', e.message); }
-  ownNumberCache = { id, e164 };
-  return ownNumberCache;
 }
 
 let lastSyncAt = 0;
@@ -324,6 +290,12 @@ openphoneRouter.post('/webhook', async (req, res) => {
 
     if (event.type === 'call.summary.completed') {
       handleSummaryCompleted(obj);
+    }
+
+    // Did Sona answer and promise a callback? The one-minute poll in aiCallbacks.js finds
+    // the same calls with no webhook at all; this only gets the owners' text out sooner.
+    if (event.type === 'call.summary.completed' || event.type === 'call.transcript.completed') {
+      checkAiCall(obj.callId).catch(e => console.error('[OpenPhone] callback check error', e.message));
     }
 
     if (event.type === 'message.received') {

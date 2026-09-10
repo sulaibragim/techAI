@@ -361,7 +361,9 @@ export const Settings: React.FC = () => {
           </p>
           <div className="space-y-2">
             {STAFF_NOTIFY_META.map(m => {
-              const on = (settings.staffNotify || STAFF_NOTIFY_DEFAULTS)[m.key];
+              // Merged over the defaults: settings saved before a switch existed lack its key,
+              // and a missing key would show OFF while the server treats it as on.
+              const on = { ...STAFF_NOTIFY_DEFAULTS, ...settings.staffNotify }[m.key];
               return (
                 <div key={m.key} className="flex items-center gap-4 p-3 rounded-xl bg-white/5 border border-white/10">
                   <div className="flex-1 min-w-0">
@@ -377,7 +379,7 @@ export const Settings: React.FC = () => {
                     aria-checked={on}
                     aria-label={m.label}
                     onClick={() => {
-                      const cur = settings.staffNotify || STAFF_NOTIFY_DEFAULTS;
+                      const cur = { ...STAFF_NOTIFY_DEFAULTS, ...settings.staffNotify };
                       settings.updateSettings({ staffNotify: { ...cur, [m.key]: !cur[m.key] } });
                     }}
                     className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${on ? 'bg-blue-600' : 'bg-slate-600'}`}

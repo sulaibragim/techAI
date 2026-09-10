@@ -458,6 +458,7 @@ export interface StaffNotifySettings {
   techDeclined: boolean;    // dispatchers told a tech DECLINED
   newLead: boolean;         // website lead arrived
   clientReply: boolean;     // a client texted us back
+  aiCallback: boolean;      // Sona took a call and promised a callback
   paymentReceived: boolean; // card payment landed
   refund: boolean;          // refund issued / chargeback opened
 }
@@ -472,6 +473,7 @@ export const STAFF_NOTIFY_DEFAULTS: StaffNotifySettings = {
   techDeclined: true,
   newLead: true,
   clientReply: true,
+  aiCallback: true,
   paymentReceived: true,
   refund: true,
 };
@@ -480,6 +482,7 @@ export const STAFF_NOTIFY_META: { key: keyof StaffNotifySettings; label: string;
   { key: 'dailyDigest',     label: 'Daily wrap-up',        desc: 'One text at 20:00: today’s revenue, unpaid count, tomorrow’s bookings', who: 'You' },
   { key: 'newLead',         label: 'New website lead',     desc: 'A lead came in from the website form', who: 'Dispatch' },
   { key: 'clientReply',     label: 'Client texted back',   desc: 'Push when a customer replies to us', who: 'Dispatch' },
+  { key: 'aiCallback',      label: 'AI promised a callback', desc: 'Sona answered a call and told the caller we’ll call back — text + push to every owner', who: 'Owners' },
   { key: 'jobAssigned',     label: 'Job assigned',         desc: 'The technician is told a job landed on them', who: 'Technician' },
   { key: 'techEnRoute',     label: 'Tech on the way',      desc: 'A technician set a job to En Route', who: 'Dispatch' },
   { key: 'techAccepted',    label: 'Tech accepted',        desc: 'A technician accepted a job', who: 'Dispatch' },
