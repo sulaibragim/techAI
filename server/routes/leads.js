@@ -115,7 +115,11 @@ leadsRouter.post('/', async (req, res) => {
   res.status(201).json({ ok: true, id, jobNumber });
 });
 
-const VALID_CHANNELS = new Set(['google_ads', 'facebook', 'instagram', 'google_maps', 'website', 'referral', 'repeat', 'other']);
+const VALID_CHANNELS = new Set(['google_ads', 'facebook', 'instagram', 'google_maps', 'website', 'ai', 'referral', 'repeat', 'other']);
+
+// AI assistants that send people to websites. ChatGPT tags its own outbound links with
+// utm_source=chatgpt.com; the others show up as the referrer.
+const AI_SOURCES = /chatgpt|openai|perplexity|gemini|claude|copilot/;
 
 // Turn whatever the site sent into one of our normalized LeadChannel values.
 // Priority: an explicit, valid `channel` the site set → click ids → UTM → default
@@ -128,6 +132,9 @@ function deriveChannel({ channelRaw, attribution }) {
   const med = (attribution.utmMedium || '').toLowerCase();
 
   if (attribution.gclid) return 'google_ads';
+
+  // Before the Google check below, or gemini.google.com would count as Google Maps.
+  if (AI_SOURCES.test(src) || AI_SOURCES.test((attribution.referrer || '').toLowerCase())) return 'ai';
 
   // Social — utm_source tells Instagram from Facebook; a bare Meta click id (fbclid)
   // can't, so default it to Facebook.

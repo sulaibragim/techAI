@@ -306,11 +306,12 @@ export type LeadChannel =
   | 'instagram'     // Instagram ads
   | 'google_maps'   // Google Business Profile / organic maps
   | 'website'       // site form / SEO, no ad click
+  | 'ai'            // an AI assistant sent them — ChatGPT, Gemini, Claude, Perplexity
   | 'referral'      // word of mouth, another business, partner
   | 'repeat'        // returning customer
   | 'other';        // Yelp, signage, truck wrap, anything else
 
-export const LEAD_CHANNELS: LeadChannel[] = ['google_ads', 'facebook', 'instagram', 'google_maps', 'website', 'referral', 'repeat', 'other'];
+export const LEAD_CHANNELS: LeadChannel[] = ['google_ads', 'facebook', 'instagram', 'google_maps', 'website', 'ai', 'referral', 'repeat', 'other'];
 
 export const LEAD_CHANNEL_LABELS: Record<LeadChannel | 'unknown', string> = {
   google_ads:  'Google Ads',
@@ -318,6 +319,7 @@ export const LEAD_CHANNEL_LABELS: Record<LeadChannel | 'unknown', string> = {
   instagram:   'Instagram',
   google_maps: 'Google Maps',
   website:     'Website',
+  ai:          'AI',
   referral:    'Referral',
   repeat:      'Repeat client',
   other:       'Other',

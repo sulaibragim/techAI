@@ -20,6 +20,7 @@ const CH_COLORS: Record<LeadChannel | 'unknown', string> = {
   instagram:   '#C13584',
   google_maps: '#10B981',
   website:     '#8B5CF6',
+  ai:          '#22D3EE',
   referral:    '#F59E0B',
   repeat:      '#F472B6',
   other:       '#14B8A6',
