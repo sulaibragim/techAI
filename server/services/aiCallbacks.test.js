@@ -42,6 +42,32 @@ describe('callbackPromised', () => {
     }
   });
 
+  it('hears the promise our own call script ends every call on', () => {
+    const dialogue = [
+      sona('So: dead Schlage on a locked unit at 1840 W Emelita in Mesa, you want it open and rekeyed with two keys. Right?'),
+      caller('Right.'),
+      sona("I'm sending this to our available technician now. He'll call you within five minutes."),
+    ];
+    expect(callbackPromised({ summary: null, dialogue, ownNumber: OURS })).toBe(true);
+    for (const line of [
+      "I'm sending this to our available technician now.",
+      "He'll call you within five minutes.",
+      'Let me have dispatch confirm a window with you.',
+    ]) {
+      expect(callbackPromised({ summary: null, dialogue: [sona(line)], ownNumber: OURS }), line).toBe(true);
+    }
+  });
+
+  it('does not take an offer for a promise', () => {
+    for (const line of [
+      'Would you like me to have someone call you?',
+      'Do you want the technician to call you back?',
+      'Should I have dispatch confirm a window with you?',
+    ]) {
+      expect(callbackPromised({ summary: null, dialogue: [sona(line)], ownNumber: OURS }), line).toBe(false);
+    }
+  });
+
   it('stays quiet when the caller turned the message down', () => {
     const summary = { status: 'completed', summary: ['The caller asked about hours.'], jobs: [
       { name: 'Answer questions', result: { data: [{ name: 'Hours?', value: 'Open 24/7.' }] } },

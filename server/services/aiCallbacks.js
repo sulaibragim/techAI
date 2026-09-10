@@ -21,12 +21,14 @@ const WAIT_MS = 15 * 60 * 1000;     // how long Sona's summary / transcript may 
 
 const digits10 = (p) => String(p || '').replace(/\D/g, '').slice(-10);
 
-// Sona's closing promise: "someone will follow-up with you", "we'll call you back",
-// "alguien le devolverá la llamada". Her OFFER — "would you like me to take a message so
-// someone CAN follow up?" — is not a promise: the caller may still say no.
+// Sona's closing promise, in her default wording ("someone will follow-up with you") and
+// in our own call script (locksmitch/CALL-SCRIPT.md), which ends every call with "I'm
+// sending this to our available technician now. He'll call you within five minutes." —
+// no "back" in it. Her OFFERS are not promises ("would you like me to have someone call
+// you?" can still get a no), so questions are skipped sentence by sentence.
 // No trailing \b on the Spanish: without the u flag "á" is not a word character, so
 // "comunicará\b" never matches.
-const PROMISE_EN = /\b(?:will|['’]ll)\s+(?:be\s+)?(?:follow(?:ing)?[\s-]*up|call(?:ing)?\s+you\s+back|get(?:ting)?\s+back\s+to\s+you|reach(?:ing)?\s+out|contact(?:ing)?\s+you|give\s+you\s+a\s+(?:call|ring)|return(?:ing)?\s+your\s+call)/i;
+const PROMISE_EN = /\b(?:will|['’]ll)\s+(?:be\s+)?(?:follow(?:ing)?[\s-]*up|call(?:ing)?\s+you|get(?:ting)?\s+back\s+to\s+you|reach(?:ing)?\s+out|contact(?:ing)?\s+you|give\s+you\s+a\s+(?:call|ring)|return(?:ing)?\s+your\s+call)|\bsending\s+(?:this|it|that|your\s+\w+)\s+(?:over\s+)?to\s+(?:our|the|an?)\s+(?:available\s+)?(?:tech|technician|team|dispatch)|\bhave\s+(?:dispatch|someone|our\s+team|the\s+tech\w*|a\s+tech\w*)\s+(?:call|contact|confirm|reach)|\b(?:tech|technician|dispatch)\s+(?:calls|will\s+call)\s+you/i;
 const PROMISE_ES = /devolver[áa]n?\s+(?:la|su)\s+llamada|le\s+llamar(?:[áa]n?|emos)|se\s+(?:comunicar|pondr)[áa]n?|nos\s+(?:comunicaremos|pondremos\s+en\s+contacto)/i;
 
 // Sona's summary lists the "jobs" she ran on the call. A message-taking job that actually
@@ -57,7 +59,9 @@ export function callbackPromised({ summary, dialogue, ownNumber }) {
   const own = digits10(ownNumber);
   return (dialogue || [])
     .filter(l => own && digits10(l?.identifier) === own)
-    .some(l => PROMISE_EN.test(l?.content || '') || PROMISE_ES.test(l?.content || ''));
+    .flatMap(l => String(l?.content || '').match(/[^.!?]+[.!?]*/g) || [])
+    .filter(s => !s.trim().endsWith('?'))
+    .some(s => PROMISE_EN.test(s) || PROMISE_ES.test(s));
 }
 
 export function prettyPhone(raw) {
