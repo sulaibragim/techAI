@@ -3,6 +3,7 @@ import crypto from 'node:crypto';
 import { processTranscriptWithAI } from '../services/gemini.js';
 import { toE164, sendSMS, getCallTranscript, opGet, resolveOwnNumber } from '../services/openphone.js';
 import { checkAiCall } from '../services/aiCallbacks.js';
+import { clientThread, callOtherParty } from '../services/clientThread.js';
 import { sanitizeSms } from '../services/smsText.js';
 import { requireAuth, requireRole } from '../middleware/auth.js';
 import { sendPushToRoles } from '../services/push.js';
@@ -435,11 +436,20 @@ openphoneRouter.get('/calls', requireAuth, requireRole('owner', 'manager'), (_re
   res.json({ data: recentCalls, totalItems: recentCalls.length });
 });
 
+const isOffice = (req) => req.user.role === 'owner' || req.user.role === 'manager';
+
 // ─── GET one call's transcript (fetched live from OpenPhone, cached) ─────────
-// Same owner/manager gate as the call list itself — a transcript is the call's content.
+// A transcript is the call's content: the office reads any, a technician only a call
+// with a client on one of their own jobs (the job card shows those calls).
 const transcriptCache = new Map(); // callId -> { dialogue, status }
-openphoneRouter.get('/calls/:id/transcript', requireAuth, requireRole('owner', 'manager'), async (req, res) => {
+openphoneRouter.get('/calls/:id/transcript', requireAuth, async (req, res) => {
   const callId = req.params.id;
+  if (!isOffice(req)) {
+    const call = recentCalls.find(c => c.id === callId);
+    if (!(await techMaySendTo(req.user.id, callOtherParty(call)))) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+  }
   if (transcriptCache.has(callId)) return res.json(transcriptCache.get(callId));
   try {
     const r = await getCallTranscript(callId);
@@ -472,6 +482,25 @@ openphoneRouter.get('/calls/:id/transcript', requireAuth, requireRole('owner', '
 openphoneRouter.get('/messages', requireAuth, requireRole('owner', 'manager'), (_req, res) => {
   syncOpenPhoneHistory().catch(() => {}); // fire-and-forget, throttled
   res.json({ data: recentMessages, totalItems: recentMessages.length });
+});
+
+// ─── GET the conversation with one job's client (the job card's message box) ──
+// Every text both ways and every call with that client, on either of their numbers.
+// A technician gets it only for a job assigned to them — the same line as who they may text.
+openphoneRouter.get('/jobs/:jobId/thread', requireAuth, async (req, res) => {
+  try {
+    const { rows } = await db.query('SELECT data FROM jobs WHERE id = $1', [req.params.jobId]);
+    const job = rows[0]?.data;
+    if (!job) return res.status(404).json({ error: 'Job not found' });
+    if (!isOffice(req) && job.assignedTo !== req.user.id) {
+      return res.status(403).json({ error: 'Not your job' });
+    }
+    // No webhooks from OpenPhone — new texts only arrive through this throttled pull.
+    syncOpenPhoneHistory().catch(() => {});
+    res.json(clientThread(recentMessages, recentCalls, [job.client?.phone, job.client?.secondaryPhone]));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Manual "Sync history" — forces a pull past the throttle and reports what it fetched.

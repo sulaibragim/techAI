@@ -3,8 +3,8 @@ import { useVisibleJobs } from '../store';
 import { useSettingsStore } from '../settingsStore';
 import {
   MessageSquare, MessageSquarePlus, User, Smartphone, RefreshCw, Send, Radio, ArrowLeft,
-  PhoneIncoming, PhoneOutgoing, PhoneMissed, Phone, CreditCard, Briefcase, ExternalLink,
-  History, Search, Sparkles, Zap, X, ChevronDown, Paperclip,
+  Phone, CreditCard, Briefcase, ExternalLink,
+  History, Search, Sparkles, Zap, X, Paperclip,
 } from 'lucide-react';
 import { Job } from '../types';
 import { API_BASE } from '../backendUrl';
@@ -15,6 +15,7 @@ import { OPENPHONE_PHONE_NUMBER_ID, describeSmsFailure } from '../smsService';
 import { smsInfo, sanitizeSms } from '../smsText';
 import { SMS_TEMPLATES, fillSmsTemplate, resolveSmsTemplate, SmsLang } from '../smsTemplates';
 import { useSwipeBack } from '../useSwipeBack';
+import { CallPill, fmtCallDuration } from './CallPill';
 import {
   buildClients, findClientByPhone, normalizePhone, formatPhone,
   clientFlags, clientScore, TIER_STYLE, ClientRecord,
@@ -71,12 +72,6 @@ const useIsNarrow = () => {
   }, []);
   return narrow;
 };
-const fmtDur = (s?: number) => {
-  if (!s) return '';
-  const m = Math.floor(s / 60), r = s % 60;
-  return m > 0 ? `${m}m ${r}s` : `${r}s`;
-};
-
 type InboxFilter = 'all' | 'unread' | 'needsReply';
 
 export const MessagesList: React.FC<MessagesListProps> = ({ onJobSelect, onClientSelect, onCreateJobFromContact }) => {
@@ -552,7 +547,6 @@ const ComposeModal: React.FC<{
 };
 
 // ─── Chat panel ───────────────────────────────────────────────────────────────
-type TranscriptState = 'loading' | 'error' | { status: string; dialogue: { speaker: string; text: string }[] };
 
 const ChatPanel: React.FC<{
   thread: Thread; title: string; sending: boolean;
@@ -604,29 +598,6 @@ const ChatPanel: React.FC<{
     vv.addEventListener('resize', onResize);
     return () => vv.removeEventListener('resize', onResize);
   }, []);
-
-  // Call transcripts — fetched on first expand, kept for the session.
-  const [openCallId, setOpenCallId] = useState<string | null>(null);
-  const [transcripts, setTranscripts] = useState<Record<string, TranscriptState>>({});
-  const toggleCall = async (id: string) => {
-    if (openCallId === id) { setOpenCallId(null); return; }
-    setOpenCallId(id);
-    if (transcripts[id] && transcripts[id] !== 'error') return; // errors retry on re-expand
-    setTranscripts(p => ({ ...p, [id]: 'loading' }));
-    try {
-      const r = await fetch(`${API_BASE}/api/openphone/calls/${id}/transcript`, { headers: { ...authHeaders() } });
-      const j = await r.json();
-      if (!r.ok) throw new Error();
-      setTranscripts(p => ({ ...p, [id]: j }));
-    } catch {
-      setTranscripts(p => ({ ...p, [id]: 'error' }));
-    }
-  };
-  const clientDigits = thread.key;
-  const speakerLabel = (speaker: string) => {
-    const d = String(speaker || '').replace(/\D/g, '').slice(-10);
-    return d && d === clientDigits ? (title || 'Client') : companyName || 'Us';
-  };
 
   // Quick templates. The dispatch set is the SAME one the owner edits in Settings, so a
   // reply from the inbox reads like a reply from the job card; the extras below are the
@@ -687,7 +658,7 @@ const ChatPanel: React.FC<{
     setDrafting(true);
     try {
       const convo = thread.items.slice(-25).map(it => it.kind === 'call'
-        ? `[${it.direction === 'missed' ? 'Missed call' : it.direction === 'in' ? 'Incoming call' : 'Outgoing call'}${it.duration ? `, ${fmtDur(it.duration)}` : ''}]`
+        ? `[${it.direction === 'missed' ? 'Missed call' : it.direction === 'in' ? 'Incoming call' : 'Outgoing call'}${it.duration ? `, ${fmtCallDuration(it.duration)}` : ''}]`
         : `${it.direction === 'out' ? 'Us' : 'Client'}: ${it.body || '[photo]'}`
       ).join('\n');
       const job = activeJob ? `Active job #${activeJob.jobNumber}: ${activeJob.status}, scheduled ${activeJob.scheduledDate} ${activeJob.scheduledTime}.` : 'No active job.';
@@ -782,42 +753,17 @@ const ChatPanel: React.FC<{
         )}
         {thread.items.map(it => {
           if (it.kind === 'call') {
-            const Icon = it.direction === 'missed' ? PhoneMissed : it.direction === 'in' ? PhoneIncoming : PhoneOutgoing;
-            const label = it.direction === 'missed' ? 'Missed call' : it.direction === 'in' ? 'Incoming call' : 'Outgoing call';
-            const tr = transcripts[it.id];
-            const expanded = openCallId === it.id;
             return (
-              <div key={it.id} className="flex flex-col items-center max-w-full min-w-0">
-                <button
-                  onClick={() => toggleCall(it.id)}
-                  className="flex items-center justify-center flex-wrap gap-x-2 gap-y-0.5 max-w-full text-[11px] font-semibold text-slate-400 bg-white/5 border border-white/10 rounded-2xl px-3 py-1.5 hover:border-blue-500/40 hover:text-slate-200 transition-all"
-                  title="Show call transcript"
-                >
-                  <Icon size={12} className={it.direction === 'missed' ? 'text-red-400' : 'text-slate-400'} />
-                  {label}{it.duration ? ` · ${fmtDur(it.duration)}` : ''}
-                  <span className="text-slate-600">· {fmtTime(it.ts)}</span>
-                  <ChevronDown size={12} className={`transition-transform ${expanded ? 'rotate-180' : ''}`} />
-                </button>
-                {expanded && (
-                  <div className="mt-2 w-full max-w-md bg-slate-950/80 border border-white/10 rounded-xl p-3 text-left">
-                    {tr === 'loading' || !tr ? (
-                      <p className="text-[11px] text-slate-500 font-semibold animate-pulse">Loading transcript…</p>
-                    ) : tr === 'error' ? (
-                      <p className="text-[11px] text-slate-500 font-semibold">Couldn’t load the transcript.</p>
-                    ) : !tr.dialogue.length ? (
-                      <p className="text-[11px] text-slate-500 font-semibold">No transcript for this call.</p>
-                    ) : (
-                      <div className="space-y-1.5 max-h-56 overflow-y-auto scrollbar-hide">
-                        {tr.dialogue.map((l, i) => (
-                          <p key={i} className="text-[11px] leading-relaxed text-slate-300">
-                            <span className={`font-bold ${speakerLabel(l.speaker) === (title || 'Client') ? 'text-amber-300' : 'text-blue-300'}`}>{speakerLabel(l.speaker)}:</span> {l.text}
-                          </p>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
+              <CallPill
+                key={it.id}
+                callId={it.id}
+                direction={it.direction}
+                duration={it.duration}
+                when={fmtTime(it.ts)}
+                clientKeys={[thread.key]}
+                clientName={title || 'Client'}
+                ourName={companyName || 'Us'}
+              />
             );
           }
           const out = it.direction === 'out';

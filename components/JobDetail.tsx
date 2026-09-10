@@ -33,6 +33,7 @@ import { SmsComposeSheet } from './SmsComposeSheet';
 import { AutoKeyPanel } from './AutoKeyPanel';
 import { AddressAutocomplete } from './AddressAutocomplete';
 import { useSwipeBack } from '../useSwipeBack';
+import { JobMessageThread } from './JobMessageThread';
 
 const STATUS_OPTIONS: { id: JobStatus; label: string }[] = [
   { id: 'scheduled', label: 'Scheduled' },
@@ -225,6 +226,8 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
   const [routeToClient, setRouteToClient] = useState<{ miles: number; minutes: number } | null>(null);
 
   const [msgSending, setMsgSending] = useState(false);
+  // Bumped after every send so the message box refetches and shows the text at once.
+  const [threadTick, setThreadTick] = useState(0);
 
   // Preview-first client texting: every canned message opens the compose sheet where
   // the tech sees the filled template, edits it, and watches the segment counter —
@@ -246,6 +249,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
     const withMsg: Job = { ...job, messages: [...(job.messages || []), smsMsg] };
     setLocalJob(withMsg);
     commitJob(withMsg);
+    setThreadTick(t => t + 1);
   };
 
   const handleSendMessage = async () => {
@@ -274,6 +278,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
     setLocalJob(updatedJob);
     commitJob(updatedJob);
     setDraftMessage('');
+    setThreadTick(t => t + 1);
   };
 
   // Tech's live position when they tap On My Way (fresh GPS; resolves null if denied/no GPS).
@@ -2535,23 +2540,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                   <MessageSquare size={16} className="mr-3 text-blue-500" /> 
                   Message History
                 </h3>
-                <div className="flex-1 overflow-y-auto space-y-4 pr-2 scrollbar-hide">
-                  {localJob.messages && localJob.messages.length > 0 ? (
-                    localJob.messages.map(msg => (
-                      <div key={msg.id} className={`flex flex-col ${msg.sender === 'technician' ? 'items-end' : 'items-start'}`}>
-                        <div className={`max-w-[85%] p-4 rounded-2xl text-sm font-medium leading-relaxed ${msg.sender === 'technician' ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-white/5 text-slate-300 rounded-tl-none'}`}>
-                          {msg.content}
-                        </div>
-                        <span className="text-xs font-bold text-slate-500 uppercase mt-1 tracking-widest">{formatTimestamp(msg.timestamp)}</span>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="h-full flex flex-col items-center justify-center opacity-20">
-                      <MessageSquare size={26} className="mb-2" />
-                       <p className="text-xs font-bold uppercase tracking-widest">No Messages</p>
-                    </div>
-                  )}
-                </div>
+                <JobMessageThread job={localJob} refreshKey={threadTick} />
                 <div className="mt-6 pt-6 border-t border-white/10 space-y-3">
                    {/* One tap instead of typing the same five sentences all day. Sends in
                        the client's language and only logs to the thread once the message
