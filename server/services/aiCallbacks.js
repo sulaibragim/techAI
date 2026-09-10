@@ -31,20 +31,35 @@ const digits10 = (p) => String(p || '').replace(/\D/g, '').slice(-10);
 const PROMISE_EN = /\b(?:will|['’]ll)\s+(?:be\s+)?(?:follow(?:ing)?[\s-]*up|call(?:ing)?\s+you|get(?:ting)?\s+back\s+to\s+you|reach(?:ing)?\s+out|contact(?:ing)?\s+you|give\s+you\s+a\s+(?:call|ring)|return(?:ing)?\s+your\s+call)|\bsending\s+(?:this|it|that|your\s+\w+)\s+(?:over\s+)?to\s+(?:our|the|an?)\s+(?:available\s+)?(?:tech|technician|team|dispatch)|\bhave\s+(?:dispatch|someone|our\s+team|the\s+tech\w*|a\s+tech\w*)\s+(?:call|contact|confirm|reach)|\b(?:tech|technician|dispatch)\s+(?:calls|will\s+call)\s+you/i;
 const PROMISE_ES = /devolver[áa]n?\s+(?:la|su)\s+llamada|le\s+llamar(?:[áa]n?|emos)|se\s+(?:comunicar|pondr)[áa]n?|nos\s+(?:comunicaremos|pondremos\s+en\s+contacto)/i;
 
-// Sona's summary lists the "jobs" she ran on the call. A message-taking job that actually
-// captured something is the plainest possible "someone will call you back".
-function messageJobs(summary) {
-  return (summary?.jobs || []).filter(j => /message/i.test(j?.name || ''));
-}
-
-function messageField(summary, re) {
-  for (const j of messageJobs(summary)) {
+// Sona's summary lists the "jobs" she ran on the call, each with what it captured.
+// "Answer questions" holds Q&A pairs; every other job — the stock "Message taking", our
+// intake job — holds what the caller told her. Any of those capturing something is the
+// plainest possible "someone will call you back".
+function intakeFields(summary) {
+  const out = [];
+  for (const j of summary?.jobs || []) {
+    if (/answer/i.test(j?.name || '')) continue;
     for (const d of j?.result?.data || []) {
       const v = String(d?.value ?? '').trim();
-      if (v && re.test(d?.name || '')) return v;
+      if (v) out.push([String(d?.name || ''), v]);
     }
   }
-  return '';
+  return out;
+}
+
+const pick = (fields, re) => (fields.find(([k]) => re.test(k)) || [])[1] || '';
+
+/** What the owners' text needs from Sona's summary: who, where, and what's wrong. */
+export function callbackDetails(summary) {
+  const f = intakeFields(summary);
+  const issue = pick(f, /going on|message|reason|summary|issue|problem|need|\bjob\b/i);
+  const vehicle = pick(f, /vehicle|\bcar\b|make|model|\block\b/i);
+  return {
+    name: pick(f, /\bname\b/i),
+    zip: pick(f, /\bzip\b|postal/i),
+    address: pick(f, /address|street|location/i),
+    note: [issue || firstSentence(summary), vehicle].filter(Boolean).join('; '),
+  };
 }
 
 /**
@@ -53,9 +68,7 @@ function messageField(summary, re) {
  * saying "I'll get back to you" is not a promise we made.
  */
 export function callbackPromised({ summary, dialogue, ownNumber }) {
-  const tookMessage = messageJobs(summary)
-    .some(j => (j?.result?.data || []).some(d => String(d?.value ?? '').trim()));
-  if (tookMessage) return true;
+  if (intakeFields(summary).length) return true;
   const own = digits10(ownNumber);
   return (dialogue || [])
     .filter(l => own && digits10(l?.identifier) === own)
@@ -70,12 +83,15 @@ export function prettyPhone(raw) {
   return ten ? `(${ten.slice(0, 3)}) ${ten.slice(3, 6)}-${ten.slice(6)}` : (raw || 'unknown number');
 }
 
-// One segment, always: the number goes first so a long name or message is what gets cut,
-// never the thing the owner taps to call back.
-export function callbackText({ phone, name, note }) {
+// One segment, always. The number goes first, then ZIP and address; the note is what gets
+// cut to fit — never the thing the owner taps, and never where the job is.
+export function callbackText({ phone, name, zip, address, note }) {
   const who = [prettyPhone(phone), sanitizeSms(name || '').slice(0, 40)].filter(Boolean).join(', ');
-  let text = `Call back: ${who}` + (note ? `\nSona: ${sanitizeSms(note)}` : '');
-  if (text.length > 160) text = text.slice(0, 157).trimEnd() + '...';
+  const where = [zip, address].map(s => sanitizeSms(s || '').trim()).filter(Boolean).join(', ').slice(0, 70);
+  let text = `Call back: ${who}` + (where ? `\n${where}` : '');
+  const room = 160 - text.length - '\nSona: '.length;
+  const n = sanitizeSms(note || '').trim();
+  if (n && room >= 12) text += `\nSona: ${n.length > room ? n.slice(0, room - 3).trimEnd() + '...' : n}`;
   return text;
 }
 
@@ -98,11 +114,12 @@ async function readDialogue(callId) {
   } catch (e) { if (e.status === 404) return null; throw e; }
 }
 
-async function notifyOwners({ callId, phone, name, note }) {
-  const text = callbackText({ phone, name, note });
+async function notifyOwners({ callId, phone, name, zip, address, note }) {
+  const text = callbackText({ phone, name, zip, address, note });
   sendPushToRoles(['owner'], {
     title: `Call back ${name || prettyPhone(phone)}`,
-    body: [name && prettyPhone(phone), note || 'Sona told them we will call back.'].filter(Boolean).join(' · '),
+    body: [name && prettyPhone(phone), [zip, address].filter(Boolean).join(', '), note || 'Sona told them we will call back.']
+      .filter(Boolean).join(' · '),
     tag: `callback-${callId}`,
     data: { type: 'callback', from: phone || null, url: '/' },
   }).catch(e => console.error('[callbacks] push error', e.message));
@@ -155,12 +172,7 @@ export async function checkAiCall(callId, known) {
     if (!(await staffNotifyEnabled('aiCallback'))) return;
     if (!(await claimOnce(callId, 'aiCallback'))) return; // texted before a restart / by the webhook path
     const phone = (call.participants || []).find(p => digits10(p) !== digits10(own)) || '';
-    await notifyOwners({
-      callId,
-      phone,
-      name: messageField(summary, /\bname\b/i),
-      note: messageField(summary, /message|reason|summary/i) || firstSentence(summary),
-    });
+    await notifyOwners({ callId, phone, ...callbackDetails(summary) });
   } finally {
     inFlight.delete(callId);
   }

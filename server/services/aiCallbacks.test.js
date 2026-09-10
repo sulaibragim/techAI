@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { callbackPromised, callbackText, prettyPhone } from './aiCallbacks.js';
+import { callbackPromised, callbackText, callbackDetails, prettyPhone } from './aiCallbacks.js';
 import { smsInfo } from './smsText.js';
 
 const OURS = '+16232004499';
@@ -17,9 +17,29 @@ const TAKEN_SUMMARY = {
   ],
 };
 
+// Shape of the first call on the new intake script (2026-09-10): the fields Sona recorded
+// are named after the questions she was told to ask.
+const INTAKE_SUMMARY = {
+  status: 'completed',
+  summary: ['The caller requested assistance with a locked door because they do not have a working key. The virtual assistant collected the necessary location and contact details to dispatch a technician.'],
+  jobs: [{ name: 'Message taking', result: { data: [
+    { name: 'What is going on', value: 'The door is locked and they do not have a working key.' },
+    { name: 'Key and door status', value: 'The door is locked and there is no working key.' },
+    { name: 'ZIP code', value: '85204' },
+    { name: 'Full street address', value: '1711 Extension Road' },
+    { name: 'First name', value: 'Sam' },
+    { name: 'Phone number status', value: 'Caller ID is available.' },
+  ] } }],
+};
+
 describe('callbackPromised', () => {
   it('fires when Sona took a message', () => {
     expect(callbackPromised({ summary: TAKEN_SUMMARY, dialogue: null, ownNumber: OURS })).toBe(true);
+  });
+
+  it('fires on our own intake job too, whatever it is called', () => {
+    const summary = { status: 'completed', jobs: [{ name: 'Locksmith service request', result: { data: [{ name: 'ZIP', value: '85210' }] } }] };
+    expect(callbackPromised({ summary, dialogue: null, ownNumber: OURS })).toBe(true);
   });
 
   it('fires on her spoken promise alone, before the summary exists', () => {
@@ -92,7 +112,52 @@ describe('callbackPromised', () => {
   });
 });
 
+describe('callbackDetails', () => {
+  it('pulls who, where and what from the intake fields', () => {
+    expect(callbackDetails(INTAKE_SUMMARY)).toEqual({
+      name: 'Sam',
+      zip: '85204',
+      address: '1711 Extension Road',
+      note: 'The door is locked and they do not have a working key.',
+    });
+  });
+
+  it('reads the stock message-taking job the same way', () => {
+    expect(callbackDetails(TAKEN_SUMMARY)).toEqual({
+      name: 'Liam Templaburger', zip: '', address: '', note: 'Quote for key fob programming',
+    });
+  });
+
+  it('adds the vehicle to the note, from the field names our intake script records', () => {
+    const summary = { jobs: [{ name: 'Locksmith service request', result: { data: [
+      { name: 'NAME', value: 'Ana Ruiz' }, { name: 'ZIP', value: '85210' }, { name: 'ADDRESS', value: "Fry's, Baseline and Dobson" },
+      { name: 'JOB', value: 'Keys locked inside' }, { name: 'VEHICLE', value: '2019 Toyota Camry' },
+    ] } }] };
+    expect(callbackDetails(summary)).toEqual({
+      name: 'Ana Ruiz', zip: '85210', address: "Fry's, Baseline and Dobson", note: 'Keys locked inside; 2019 Toyota Camry',
+    });
+  });
+
+  it("falls back to the summary's first sentence when no field says what's wrong", () => {
+    const summary = { summary: ['Caller needs a rekey. Two doors.'], jobs: [{ name: 'Message taking', result: { data: [{ name: 'First name', value: 'Bo' }] } }] };
+    expect(callbackDetails(summary).note).toBe('Caller needs a rekey.');
+  });
+});
+
 describe('callbackText', () => {
+  it('puts the ZIP and address on their own line', () => {
+    const text = callbackText({ phone: CALLER, ...callbackDetails(INTAKE_SUMMARY) });
+    expect(text).toBe('Call back: (602) 555-1708, Sam\n85204, 1711 Extension Road\nSona: The door is locked and they do not have a working key.');
+    expect(smsInfo(text)).toMatchObject({ encoding: 'GSM-7', segments: 1 });
+  });
+
+  it('trims the note, never the ZIP or address', () => {
+    const text = callbackText({ phone: CALLER, name: 'Sam', zip: '85204', address: '1711 Extension Road', note: 'y '.repeat(200) });
+    expect(text.length).toBeLessThanOrEqual(160);
+    expect(text).toContain('85204, 1711 Extension Road');
+    expect(text.endsWith('...')).toBe(true);
+  });
+
   it('reads as one short, tappable text', () => {
     const text = callbackText({ phone: CALLER, name: 'Liam Templaburger', note: 'Quote for key fob programming' });
     expect(text).toBe('Call back: (602) 555-1708, Liam Templaburger\nSona: Quote for key fob programming');
