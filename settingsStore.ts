@@ -3,7 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { API_BASE } from './backendUrl';
 import { authHeaders } from './apiClient';
 import { sendWrite } from './writeQueue';
-import { Expense, ClientProfile, StockMovement, ServiceRate, AiMemory, ClientSmsSettings, CLIENT_SMS_DEFAULTS, StaffNotifySettings, STAFF_NOTIFY_DEFAULTS } from './types';
+import { Expense, ClientProfile, StockMovement, ServiceRate, AiMemory, ClientSmsSettings, CLIENT_SMS_DEFAULTS, StaffNotifySettings, STAFF_NOTIFY_DEFAULTS, ReviewLink } from './types';
 import { PRICE_BOOK_SEED } from './priceBook';
 
 export interface SettingsState {
@@ -13,7 +13,8 @@ export interface SettingsState {
   companyCity: string;
   companyPhone: string;
   companyEmail: string;
-  googleReviewUrl: string; // "leave us a review" link (Google Business); empty hides the feature
+  googleReviewUrl: string; // legacy single review link; the server serves it as reviewLinks until that list is edited
+  reviewLinks: ReviewLink[]; // pages a client lands on to leave a review (Google, Yelp…); empty hides the review texts
   licenseNumber: string;
   profilePhoto: string;
   monthlyRevenueTarget: number;
@@ -33,7 +34,7 @@ export interface SettingsState {
   smsTemplates: Record<string, { en?: string; es?: string }>; // owner overrides of the one-tap client texts (template id → texts)
   onboardingComplete: boolean;
   aiAvailable: boolean; // runtime flag: is GEMINI_API_KEY configured on the server?
-  updateSettings: (patch: Partial<Omit<SettingsState, 'updateSettings' | 'resetSettings' | 'setMonthlyTarget' | 'setTechTarget' | 'addExpense' | 'removeExpense' | 'addStockMovement' | 'clearStockLedger' | 'setMovementDispute' | 'addServiceRate' | 'updateServiceRate' | 'removeServiceRate' | 'importServiceRates' | 'upsertClientProfile' | 'addAiMemory' | 'removeAiMemory' | 'setSmsTemplate' | 'resetSmsTemplate' | 'syncSettings' | 'checkAiAvailable' | 'aiAvailable'>>) => void;
+  updateSettings: (patch: Partial<Omit<SettingsState, 'updateSettings' | 'resetSettings' | 'setMonthlyTarget' | 'setTechTarget' | 'addExpense' | 'removeExpense' | 'addStockMovement' | 'clearStockLedger' | 'setMovementDispute' | 'addServiceRate' | 'updateServiceRate' | 'removeServiceRate' | 'importServiceRates' | 'upsertClientProfile' | 'addAiMemory' | 'removeAiMemory' | 'setSmsTemplate' | 'resetSmsTemplate' | 'addReviewLink' | 'updateReviewLink' | 'removeReviewLink' | 'syncSettings' | 'checkAiAvailable' | 'aiAvailable'>>) => void;
   setMonthlyTarget: (monthKey: string, value: number) => void;
   setTechTarget: (userId: string, value: number) => void;
   addExpense: (expense: Omit<Expense, 'id'>) => void;
@@ -53,6 +54,9 @@ export interface SettingsState {
   setSmsTemplate: (id: string, texts: { en?: string; es?: string }) => void;
   /** Back to the built-in default text for this template. */
   resetSmsTemplate: (id: string) => void;
+  addReviewLink: (link: Omit<ReviewLink, 'id'>) => ReviewLink;
+  updateReviewLink: (link: ReviewLink) => void;
+  removeReviewLink: (id: string) => void;
   addAiMemory: (text: string) => AiMemory;
   removeAiMemory: (id: string) => void;
   learnSupplierAlias: (supplier: string, code: string, partId: string) => void;
@@ -75,6 +79,7 @@ export const SETTINGS_DEFAULTS = {
   companyPhone: '(503) 555-0100',
   companyEmail: 'info@salemlocksmith.com',
   googleReviewUrl: '',
+  reviewLinks: [] as ReviewLink[],
   licenseNumber: 'LK-00000',
   profilePhoto: '',
   monthlyRevenueTarget: 5000,
@@ -122,6 +127,7 @@ const KEY_WORDS: Record<string, string> = {
   clientProfiles: 'client profile', monthlyTargets: 'monthly target', techTargets: 'technician target',
   aiMemories: 'AI instruction', taxRate: 'tax rate', adSpend: 'ad spend',
   smsTemplates: 'SMS template', removedSmsTemplateIds: 'SMS template',
+  reviewLinks: 'review link', removedReviewLinkIds: 'review link',
 };
 const humanKey = (k: string) =>
   KEY_WORDS[k] || k.replace(/([A-Z])/g, ' $1').toLowerCase().trim();
@@ -274,6 +280,25 @@ export const useSettingsStore = create<SettingsState>()(
           return { smsTemplates: next };
         });
         pushToServer({ removedSmsTemplateIds: [id] });
+      },
+
+      // Deltas like the price book: the server unions entries by id, so a link added on
+      // one phone can't be erased by another phone saving its older copy of the list.
+      addReviewLink: (link) => {
+        const entry: ReviewLink = { ...link, id: `rev-${Date.now()}-${Math.random().toString(36).slice(2, 7)}` };
+        set((state) => ({ reviewLinks: [...state.reviewLinks, entry] }));
+        pushToServer({ reviewLinks: [entry] });
+        return entry;
+      },
+
+      updateReviewLink: (link) => {
+        set((state) => ({ reviewLinks: state.reviewLinks.map(l => l.id === link.id ? link : l) }));
+        pushToServer({ reviewLinks: [link] });
+      },
+
+      removeReviewLink: (id) => {
+        set((state) => ({ reviewLinks: state.reviewLinks.filter(l => l.id !== id) }));
+        pushToServer({ removedReviewLinkIds: [id] });
       },
 
       addAiMemory: (text) => {

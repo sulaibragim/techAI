@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { db } from '../db.js';
 import { requireAuth, requireRole } from '../middleware/auth.js';
+import { reviewLinksOf, cleanReviewLink, MAX_REVIEW_LINKS } from '../services/reviewLinks.js';
 
 export const settingsRouter = Router();
 
@@ -46,6 +47,7 @@ settingsRouter.get('/', requireAuth, async (req, res) => {
     if (rows.length === 0) return res.json({});
     const value = JSON.parse(rows[0].value);
     delete value.geminiApiKey;
+    value.reviewLinks = reviewLinksOf(value);
     if (req.user.role === 'technician') {
       for (const k of TECH_HIDDEN_KEYS) delete value[k];
       // A tech may see their OWN personal goal, but not everyone else's.
@@ -121,6 +123,10 @@ settingsRouter.put('/', requireAuth, requireRole('owner', 'manager'), async (req
       if (patch.techTargets) merged.techTargets = mergeMap(current.techTargets, patch.techTargets);
       if (patch.supplierAliases) merged.supplierAliases = mergeMap(current.supplierAliases, patch.supplierAliases);
       if (patch.smsTemplates) merged.smsTemplates = mergeMap(current.smsTemplates, patch.smsTemplates);
+      if (patch.reviewLinks) {
+        const incoming = (Array.isArray(patch.reviewLinks) ? patch.reviewLinks : []).map(cleanReviewLink).filter(Boolean);
+        merged.reviewLinks = unionKeepOrder(reviewLinksOf(current), incoming);
+      }
       if (patch.importedInvoices) {
         // String set with newest-first order, capped — the duplicate-invoice guard.
         merged.importedInvoices = [...new Set([...(patch.importedInvoices || []), ...(current.importedInvoices || [])])].slice(0, 200);
@@ -144,6 +150,15 @@ settingsRouter.put('/', requireAuth, requireRole('owner', 'manager'), async (req
     if (Array.isArray(patch.removedSmsTemplateIds) && merged.smsTemplates) {
       for (const id of patch.removedSmsTemplateIds) delete merged.smsTemplates[id];
     }
+    if (Array.isArray(patch.removedReviewLinkIds)) {
+      const gone = new Set(patch.removedReviewLinkIds);
+      const base = Array.isArray(merged.reviewLinks) ? merged.reviewLinks : reviewLinksOf(current);
+      merged.reviewLinks = base.filter((l) => !gone.has(l?.id));
+    }
+    // Only links a phone can open go out in a client text; never let the list grow unbounded.
+    if (Array.isArray(merged.reviewLinks)) {
+      merged.reviewLinks = merged.reviewLinks.map(cleanReviewLink).filter(Boolean).slice(0, MAX_REVIEW_LINKS);
+    }
     if (merged.techTargets && typeof merged.techTargets === 'object') {
       for (const [k, v] of Object.entries(merged.techTargets)) {
         if (!(Number(v) > 0)) delete merged.techTargets[k];
@@ -153,6 +168,7 @@ settingsRouter.put('/', requireAuth, requireRole('owner', 'manager'), async (req
     delete merged.removedServiceRateIds;
     delete merged.removedAiMemoryIds;
     delete merged.removedSmsTemplateIds;
+    delete merged.removedReviewLinkIds;
     delete merged.replaceLedgers;
 
     await db.query(

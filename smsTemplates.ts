@@ -47,6 +47,21 @@ export const SMS_TEMPLATES: SmsTemplateDef[] = [
   },
 ];
 
+// The review request. It asks every client the same way on purpose: Google forbids
+// asking only the happy ones ("if we did a great job…" is exactly that). {link} is the
+// page that opens the review form, picked from Settings → Review Links. With Google's
+// short link (g.page/r/…/review) it stays one segment; Yelp's longer link can make it two.
+export const REVIEW_TEMPLATE: SmsTemplateDef = {
+  id: 'review', label: 'Ask for review',
+  en: 'Hi {name}, thanks for choosing {company}! Could you leave us a quick review? It takes a minute: {link}',
+  es: 'Hola {name}, ¡gracias por elegir {company}! ¿Nos deja una breve reseña? Solo toma un minuto: {link}',
+};
+
+/** An owner's edited review text that lost {link} would ask for a review with nowhere to go. */
+export function withReviewLink(template: string): string {
+  return template.includes('{link}') ? template : `${template.trimEnd()} {link}`;
+}
+
 // Offered as a one-tap add-on for a client's FIRST message, not glued to every text.
 // "SI" not "SÍ": the accented Í alone would flip a whole message to the 70-char encoding.
 export const SPANISH_INVITE = 'Para español, responda SI.';
@@ -56,18 +71,23 @@ export interface SmsVars {
   tech?: string;
   company?: string;
   eta?: number | null;
+  link?: string;
 }
 
-/** Substitute {name}/{tech}/{company}/{eta} and GSM-sanitize. eta falls back to 15 —
+/** Substitute {name}/{tech}/{company}/{eta}/{link} and GSM-sanitize. eta falls back to 15 —
  *  the preview-first flow means the tech always SEES the number before it sends. */
 export function fillSmsTemplate(template: string, vars: SmsVars, lang: SmsLang = 'en'): string {
   const map: Record<string, string> = {
-    name: (vars.name || '').trim() || (lang === 'es' ? 'hola' : 'there'),
+    name: (vars.name || '').trim() || (lang === 'es' ? '' : 'there'),
     tech: (vars.tech || '').trim() || (lang === 'es' ? 'su tecnico' : 'your technician'),
     company: (vars.company || '').trim() || 'our team',
     eta: String(Math.max(1, Math.round(vars.eta ?? 15))),
+    link: (vars.link || '').trim(),
   };
-  return sanitizeSms(template.replace(/\{(\w+)\}/g, (m, k) => map[k] ?? m));
+  const filled = template.replace(/\{(\w+)\}/g, (m, k) => map[k] ?? m)
+    // No name in Spanish: "Hola, …" — the old 'hola' fallback produced "Hola hola, …".
+    .replace(/\bHola ([,!])/g, 'Hola$1');
+  return sanitizeSms(filled);
 }
 
 export type SmsTemplateOverrides = Record<string, { en?: string; es?: string }>;

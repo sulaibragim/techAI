@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { motion } from 'motion/react';
-import { User, Target, Key, RotateCcw, Save, Upload, Info, Building2, AlertTriangle, Users, Plus, Trash2, ShieldCheck, History, Lock, Pencil, Check, X, Tag, BrainCircuit, MessageSquare, BellRing, Wrench } from 'lucide-react';
+import { User, Target, Key, RotateCcw, Save, Upload, Info, Building2, AlertTriangle, Users, Plus, Trash2, ShieldCheck, History, Lock, Pencil, Check, X, Tag, BrainCircuit, MessageSquare, BellRing, Wrench, Star } from 'lucide-react';
 import { useSettingsStore, SETTINGS_DEFAULTS, settingsStorageIsEphemeral } from '../settingsStore';
 import { useAuthStore, useCurrentUser, can, worksField, ROLE_LABELS, MIN_PASSWORD_LENGTH } from '../authStore';
 import { useAppStore } from '../store';
@@ -12,13 +12,16 @@ import { LaunchReadinessCard } from './LaunchReadinessCard';
 import { GuidedToursCard } from './GuidedToursCard';
 import { PriceImport } from './PriceImport';
 import type { ImportPlan } from '../priceImport';
-import { SMS_TEMPLATES, resolveSmsTemplate, fillSmsTemplate, SmsLang } from '../smsTemplates';
+import { SMS_TEMPLATES, REVIEW_TEMPLATE, resolveSmsTemplate, fillSmsTemplate, withReviewLink, SmsLang } from '../smsTemplates';
 import { smsInfo, sanitizeSms } from '../smsText';
+import { primaryReviewLink } from '../reviewLinks';
+import { ReviewLinksEditor } from './ReviewLinksEditor';
 
 const VERSION = '1.0.0';
 
-const Section = ({ icon: Icon, title, children }: { icon: React.ElementType; title: string; children: React.ReactNode }) => (
+const Section = ({ icon: Icon, title, children, id }: { icon: React.ElementType; title: string; children: React.ReactNode; id?: string }) => (
   <motion.div
+    id={id}
     initial={{ opacity: 0, y: 12 }}
     animate={{ opacity: 1, y: 0 }}
     className="bg-slate-900 border border-white/5 rounded-2xl p-6"
@@ -43,7 +46,6 @@ export const Settings: React.FC = () => {
     companyCity: settings.companyCity,
     companyPhone: settings.companyPhone,
     companyEmail: settings.companyEmail,
-    googleReviewUrl: settings.googleReviewUrl,
     licenseNumber: settings.licenseNumber,
     profilePhoto: settings.profilePhoto,
     monthlyRevenueTarget: settings.monthlyRevenueTarget,
@@ -146,7 +148,6 @@ export const Settings: React.FC = () => {
       companyCity: SETTINGS_DEFAULTS.companyCity,
       companyPhone: SETTINGS_DEFAULTS.companyPhone,
       companyEmail: SETTINGS_DEFAULTS.companyEmail,
-      googleReviewUrl: SETTINGS_DEFAULTS.googleReviewUrl,
       licenseNumber: SETTINGS_DEFAULTS.licenseNumber,
       profilePhoto: SETTINGS_DEFAULTS.profilePhoto,
       monthlyRevenueTarget: SETTINGS_DEFAULTS.monthlyRevenueTarget,
@@ -304,19 +305,13 @@ export const Settings: React.FC = () => {
             />
           </div>
           <p className="text-xs text-slate-500 -mt-1">Appears on all printed invoices</p>
-          <div>
-            <label className={labelCls}>Google Review Link</label>
-            <input
-              className={inputCls}
-              type="url"
-              maxLength={300}
-              value={form.googleReviewUrl}
-              onChange={e => setForm(f => ({ ...f, googleReviewUrl: e.target.value }))}
-              placeholder="https://g.page/r/…/review"
-            />
-            <p className="text-xs text-slate-500 mt-1">Enables a one-tap “Ask for a review” text on completed jobs. Leave blank to hide it.</p>
-          </div>
         </Section>}
+
+        {currentUser && (currentUser.role === 'owner' || currentUser.role === 'manager') && (
+          <Section icon={Star} title="Review Links" id="review-links">
+            <ReviewLinksEditor />
+          </Section>
+        )}
 
         {currentUser && isBackOffice(currentUser.role) && <Section icon={MessageSquare} title="Client Messages">
           <p className="text-xs text-slate-400 -mt-1">
@@ -674,6 +669,7 @@ const RatesSection: React.FC = () => {
 const SmsTemplatesSection: React.FC = () => {
   const overrides = useSettingsStore(s => s.smsTemplates);
   const companyName = useSettingsStore(s => s.companyName);
+  const reviewLinks = useSettingsStore(s => s.reviewLinks);
   const setSmsTemplate = useSettingsStore(s => s.setSmsTemplate);
   const resetSmsTemplate = useSettingsStore(s => s.resetSmsTemplate);
 
@@ -681,9 +677,14 @@ const SmsTemplatesSection: React.FC = () => {
   const [draftEn, setDraftEn] = useState('');
   const [draftEs, setDraftEs] = useState('');
 
-  const sample = { name: 'John', tech: 'Alex', company: companyName || 'TrustKey', eta: 15 };
-  const costChip = (template: string, lang: SmsLang) => {
-    const info = smsInfo(sanitizeSms(fillSmsTemplate(template, sample, lang)));
+  // Priced with the real review link when there is one — its length is most of the text.
+  const sample = {
+    name: 'John', tech: 'Alex', company: companyName || 'TrustKey', eta: 15,
+    link: primaryReviewLink(reviewLinks)?.url || 'https://g.page/r/CVkT7rL3xYzaEBM/review',
+  };
+  const costChip = (template: string, lang: SmsLang, id?: string) => {
+    const text = id === REVIEW_TEMPLATE.id ? withReviewLink(template) : template;
+    const info = smsInfo(sanitizeSms(fillSmsTemplate(text, sample, lang)));
     const tone = info.encoding === 'UCS-2' || info.segments > 2 ? 'text-red-400'
       : info.segments === 2 ? 'text-amber-400' : 'text-emerald-400';
     return <span className={`text-[10px] font-bold tabular-nums ${tone}`}>{info.segments || 1} SMS</span>;
@@ -692,11 +693,11 @@ const SmsTemplatesSection: React.FC = () => {
   return (
     <Section icon={MessageSquare} title="SMS Templates">
       <p className="text-xs text-slate-400 -mt-1">
-        The one-tap texts on the job card. Placeholders fill automatically: {'{name}'} client, {'{tech}'} technician, {'{company}'}, {'{eta}'} minutes.
+        The one-tap texts on the job card and in Messages. Placeholders fill automatically: {'{name}'} client, {'{tech}'} technician, {'{company}'}, {'{eta}'} minutes, {'{link}'} the review link.
         Keep a template at <span className="text-emerald-400 font-bold">1 SMS</span> — longer texts and emoji multiply what each send costs.
       </p>
       <div className="space-y-2">
-        {SMS_TEMPLATES.map(def => {
+        {[...SMS_TEMPLATES, REVIEW_TEMPLATE].map(def => {
           const en = resolveSmsTemplate(def, overrides, 'en');
           const es = resolveSmsTemplate(def, overrides, 'es');
           const customized = !!overrides?.[def.id];
@@ -721,7 +722,7 @@ const SmsTemplatesSection: React.FC = () => {
                     <div key={lang}>
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{lang}</span>
-                        {costChip(value, lang === 'ES' ? 'es' : 'en')}
+                        {costChip(value, lang === 'ES' ? 'es' : 'en', def.id)}
                       </div>
                       <textarea
                         value={value}
@@ -752,11 +753,11 @@ const SmsTemplatesSection: React.FC = () => {
                 <div className="space-y-1.5">
                   <div className="flex items-start justify-between gap-3">
                     <p className="text-xs text-slate-400 leading-relaxed flex-1">{en}</p>
-                    {costChip(en, 'en')}
+                    {costChip(en, 'en', def.id)}
                   </div>
                   <div className="flex items-start justify-between gap-3">
                     <p className="text-xs text-slate-500 leading-relaxed flex-1 italic">{es}</p>
-                    {costChip(es, 'es')}
+                    {costChip(es, 'es', def.id)}
                   </div>
                 </div>
               )}

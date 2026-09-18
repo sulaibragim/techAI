@@ -10,6 +10,7 @@ import { buildClients, clientScore, clientFlags, normalizePhone } from './client
 import { findKeyProfiles, findProcedure, decodeVin, reverseLookup, stockForKeyway } from './vehicleKeyLookup';
 import { accountsReceivable } from './financialUtils';
 import { LineItem, isStockPart } from './types';
+import { REVIEW_TEMPLATE, resolveSmsTemplate, withReviewLink } from './smsTemplates';
 
 const CHAT_MODEL = 'gemini-2.5-flash';
 
@@ -115,6 +116,14 @@ function getBusinessContext(): string {
     .map(m => `- ${m.text}`)
     .join('\n');
 
+  // Review requests by voice ("попроси у Джека отзыв"): the same wording the one-tap text
+  // uses, with the link that opens the review form. Google first unless Sultan names another.
+  const reviewLinks = settings.reviewLinks || [];
+  const reviewText = withReviewLink(resolveSmsTemplate(REVIEW_TEMPLATE, settings.smsTemplates, 'en'));
+  const reviewBlock = reviewLinks.length
+    ? `\nREVIEW REQUESTS (send_sms / send_sms_by_name, confirm first; fill {name}, {company} and {link} — exactly ONE link from the list, Google unless told otherwise):\nText: ${reviewText}\nLinks: ${reviewLinks.map(l => `${l.label}: ${l.url}`).join(' | ')}\n`
+    : '';
+
   const recentJobs = jobs.slice(-15).map(j => {
     const rec = repByPhone.get(normalizePhone(j.client.phone));
     const tag = rec ? ` | client: ${clientScore(rec).tier}${rec.rating ? `/${rec.rating}` : ''}` : '';
@@ -134,7 +143,7 @@ TOTAL COMPLETED: ${completedJobs.length} (Revenue: $${totalRevenue})
 MONTHLY TARGET: $${settings.monthlyRevenueTarget}
 
 TECHNICIANS: ${techList || 'None configured'}
-${memories ? `\nSTANDING INSTRUCTIONS FROM SULTAN (always honor these; use 'forget' to drop one):\n${memories}\n` : ''}
+${memories ? `\nSTANDING INSTRUCTIONS FROM SULTAN (always honor these; use 'forget' to drop one):\n${memories}\n` : ''}${reviewBlock}
 TOP CLIENTS (by reputation score):
 ${topClients || '(no clients yet)'}
 ${watchlist ? `\nWATCHLIST (handle with care / do-not-service):\n${watchlist}` : ''}

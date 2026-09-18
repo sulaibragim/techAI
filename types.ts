@@ -179,6 +179,18 @@ export interface AiMemory {
   createdAt: string;        // ISO
 }
 
+// A page where a client can leave us a review. The SMS carries the link that opens the
+// review form itself (Google's g.page/r/…/review), so the client taps once and types.
+// Several can exist: one per platform, or one per Google listing if we run several.
+export type ReviewPlatform = 'google' | 'yelp' | 'facebook' | 'nextdoor' | 'other';
+
+export interface ReviewLink {
+  id: string;
+  platform: ReviewPlatform;
+  label: string;            // what the chip says: "Google", "Yelp", "Google Mesa"
+  url: string;
+}
+
 export type JobStatus =
   | 'scheduled' 
   | 'enRoute' 

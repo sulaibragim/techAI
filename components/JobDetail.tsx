@@ -28,7 +28,7 @@ import { translateCallSummary } from '../translateService';
 import { geocodeAddress } from '../geocoding';
 import { haversineMiles, approxEtaMinutes, formatMiles, LatLng } from '../geoUtils';
 import { getDriveEta, getRouteInfo, getWeather, type Weather } from '../dispatchMessage';
-import { SMS_TEMPLATES } from '../smsTemplates';
+import { SMS_TEMPLATES, REVIEW_TEMPLATE } from '../smsTemplates';
 import { SmsComposeSheet } from './SmsComposeSheet';
 import { AutoKeyPanel } from './AutoKeyPanel';
 import { AddressAutocomplete } from './AddressAutocomplete';
@@ -61,7 +61,7 @@ function directionsUrl(c: Pick<Client, 'lat' | 'lng' | 'address' | 'zip' | 'plac
 
 export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (job: Job) => void }> = ({ job: initialJob, onClose, onOpenJob }) => {
   const { jobs, updateJob, removeJob, inventory, consumePart, returnPart } = useAppStore();
-  const { companyName, technicianName, companyAddress, companyCity, companyPhone, companyEmail, licenseNumber, googleReviewUrl } = useSettingsStore();
+  const { companyName, technicianName, companyAddress, companyCity, companyPhone, companyEmail, licenseNumber, reviewLinks } = useSettingsStore();
   const clientProfiles = useSettingsStore(s => s.clientProfiles);
   const upsertClientProfile = useSettingsStore(s => s.upsertClientProfile);
   const priceBook = useSettingsStore(s => s.priceBook);
@@ -218,7 +218,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
   const [draftMessage, setDraftMessage] = useState('');
   const [otwState, setOtwState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const [etaUpdState, setEtaUpdState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
-  const [reviewState, setReviewState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [reviewState, setReviewState] = useState<'idle' | 'sent'>('idle');
   const [payLinkState, setPayLinkState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   // Which-address-to-drive-to chooser, shown only when the client has a second address.
   const [navPickerOpen, setNavPickerOpen] = useState(false);
@@ -340,30 +340,9 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
     setSmsSheet({ templateId: 'eta-update', etaMinutes: route?.minutes ?? null, weather: null });
   };
 
-  // "Ask for a review": on a finished job, text the client a thank-you + the Google review
-  // link. Only shown when a review URL is configured in Settings. Pure SMS — no Maps billing.
-  const handleAskReview = async () => {
-    if (reviewState === 'sending') return;
-    const phone = (localJob.client.phone || '').trim();
-    if (!phone || !googleReviewUrl.trim()) { setReviewState('error'); setTimeout(() => setReviewState('idle'), 4000); return; }
-
-    setReviewState('sending');
-    const name = (localJob.client.firstName || '').trim() || 'there';
-    const text = `Hi ${name}, thanks for choosing ${companyName}! If we did a great job, we'd really appreciate a quick review: ${googleReviewUrl.trim()}`;
-    const result = await sendSmsDetailed(phone, text);
-
-    if (result.ok) {
-      const smsMsg: Message = { id: Math.random().toString(36).slice(2), sender: 'technician', content: text, timestamp: new Date().toISOString(), method: 'sms' };
-      const withMsg: Job = { ...localJob, messages: [...(localJob.messages || []), smsMsg] };
-      setLocalJob(withMsg);
-      commitJob(withMsg);
-      setReviewState('sent');
-    } else {
-      setReviewState('error');
-      alert(`Review request not sent. ${result.error || ''}`.trim());
-    }
-    setTimeout(() => setReviewState('idle'), 4000);
-  };
+  // "Ask for a review": the thank-you text with a link that opens the review form (Google,
+  // Yelp… from Settings → Review Links). Preview-first like every other client text.
+  const handleAskReview = () => setSmsSheet({ templateId: REVIEW_TEMPLATE.id, etaMinutes: null, weather: null });
 
   // "Text pay link": server creates a Stripe Checkout session for the outstanding
   // balance and texts it to the client. The webhook marks the job paid when the card
@@ -2305,20 +2284,16 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                   </div>
                 )}
 
-                {/* ASK FOR A REVIEW — finished jobs only, and only when a review link is set in Settings */}
-                {jobIsClosed && localJob.status === 'completed' && googleReviewUrl.trim() && localJob.client.phone && (
+                {/* ASK FOR A REVIEW — finished jobs only, and only when Settings has a review link */}
+                {jobIsClosed && localJob.status === 'completed' && reviewLinks.length > 0 && (localJob.client.phone || '').trim() && (
                   <button
                     onClick={handleAskReview}
-                    disabled={reviewState === 'sending'}
-                    className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-all active:scale-95 disabled:cursor-wait border ${
+                    className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-all active:scale-95 border ${
                       reviewState === 'sent' ? 'bg-emerald-600/15 text-emerald-400 border-emerald-500/40'
-                      : reviewState === 'error' ? 'bg-amber-500/15 text-amber-400 border-amber-500/40'
                       : 'bg-amber-500/10 text-amber-300 border-amber-500/30 hover:bg-amber-500/20'
                     }`}
                   >
                     {reviewState === 'sent' ? (<><CheckCircle2 size={14} /> Review Request Sent</>)
-                      : reviewState === 'sending' ? (<><Star size={14} className="animate-pulse" /> Sending…</>)
-                      : reviewState === 'error' ? (<><Star size={14} /> SMS Failed</>)
                       : (<><Star size={14} /> Ask for a Review</>)}
                   </button>
                 )}
@@ -2557,6 +2532,16 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                            {q.label}
                          </button>
                        ))}
+                       {/* Once the work is sold or done — asking before it is finished reads wrong. */}
+                       {reviewLinks.length > 0 && (localJob.status === 'sold' || localJob.status === 'completed') && (
+                         <button
+                           onClick={handleAskReview}
+                           disabled={msgSending}
+                           className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-[11px] font-semibold text-amber-200 hover:bg-amber-500/20 active:scale-95 transition-all disabled:opacity-40"
+                         >
+                           <Star size={12} /> {REVIEW_TEMPLATE.label}
+                         </button>
+                       )}
                      </div>
                    )}
                    <div className="bg-white/5 rounded-2xl p-4 flex items-center">
@@ -3093,6 +3078,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
           logSmsToThread(text);
           if (smsSheet?.templateId === 'on-my-way') { setOtwState('sent'); setTimeout(() => setOtwState('idle'), 4000); }
           if (smsSheet?.templateId === 'eta-update') { setEtaUpdState('sent'); setTimeout(() => setEtaUpdState('idle'), 4000); }
+          if (smsSheet?.templateId === REVIEW_TEMPLATE.id) { setReviewState('sent'); setTimeout(() => setReviewState('idle'), 4000); }
         }}
       />
     </div>

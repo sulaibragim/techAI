@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { sanitizeSms, smsInfo } from './smsText';
-import { SMS_TEMPLATES, SPANISH_INVITE, fillSmsTemplate } from './smsTemplates';
+import { SMS_TEMPLATES, SPANISH_INVITE, REVIEW_TEMPLATE, fillSmsTemplate, withReviewLink } from './smsTemplates';
 
 describe('sanitizeSms', () => {
   it('replaces typographic chars with GSM twins', () => {
@@ -70,5 +70,32 @@ describe('sms templates', () => {
   it('fills fallbacks when data is missing', () => {
     const text = fillSmsTemplate('Hi {name}! {tech} from {company} is about {eta} min out.', {}, 'en');
     expect(text).toBe('Hi there! your technician from our team is about 15 min out.');
+  });
+  it('greets a Spanish client with no name as "Hola," not "Hola hola"', () => {
+    expect(fillSmsTemplate('Hola {name}, gracias.', {}, 'es')).toBe('Hola, gracias.');
+    expect(fillSmsTemplate('Hola {name}! Ya llegamos.', {}, 'es')).toBe('Hola! Ya llegamos.');
+    expect(fillSmsTemplate('Hola {name}, gracias.', { name: 'Ana' }, 'es')).toBe('Hola Ana, gracias.');
+  });
+});
+
+describe('review request', () => {
+  // Google's own review-form link, the one Settings asks for.
+  const link = 'https://g.page/r/CVkT7rL3xYzaEBM/review';
+  it('fits one GSM segment with a long name, a long company name and the Google link', () => {
+    for (const lang of ['en', 'es'] as const) {
+      const text = fillSmsTemplate(REVIEW_TEMPLATE[lang], { name: 'Christopher', company: 'Trust Key Locksmith AZ', link }, lang);
+      const info = smsInfo(text);
+      expect(info.encoding, text).toBe('GSM-7');
+      expect(info.segments, text).toBe(1);
+      expect(text.endsWith(link)).toBe(true);
+    }
+  });
+  it('asks every client the same way, never only the happy ones', () => {
+    expect(REVIEW_TEMPLATE.en.toLowerCase()).not.toMatch(/\bif (we|you)\b/);
+    expect(REVIEW_TEMPLATE.es.toLowerCase()).not.toMatch(/\bsi (quedo|le gusto)/);
+  });
+  it('an edited text that lost {link} still carries the link', () => {
+    expect(withReviewLink('Please review us!')).toBe('Please review us! {link}');
+    expect(withReviewLink('Review: {link} thanks')).toBe('Review: {link} thanks');
   });
 });

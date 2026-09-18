@@ -1,5 +1,5 @@
 import React, { useMemo, useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
-import { useVisibleJobs } from '../store';
+import { useVisibleJobs, useAppStore } from '../store';
 import { useSettingsStore } from '../settingsStore';
 import {
   MessageSquare, MessageSquarePlus, User, Smartphone, RefreshCw, Send, Radio, ArrowLeft,
@@ -13,7 +13,7 @@ import { useCurrentUser } from '../authStore';
 import { useInboxStore, InboxMedia } from '../inboxStore';
 import { OPENPHONE_PHONE_NUMBER_ID, describeSmsFailure } from '../smsService';
 import { smsInfo, sanitizeSms } from '../smsText';
-import { SMS_TEMPLATES, fillSmsTemplate, resolveSmsTemplate, SmsLang } from '../smsTemplates';
+import { SMS_TEMPLATES, REVIEW_TEMPLATE, fillSmsTemplate, resolveSmsTemplate, withReviewLink, SmsLang } from '../smsTemplates';
 import { useSwipeBack } from '../useSwipeBack';
 import { CallPill, fmtCallDuration } from './CallPill';
 import {
@@ -548,6 +548,10 @@ const ComposeModal: React.FC<{
 
 // ─── Chat panel ───────────────────────────────────────────────────────────────
 
+// A quick reply. `setup` marks the review shortcut shown before any review link exists:
+// tapping it opens Settings instead of filling the box.
+interface QuickTemplate { id: string; label: string; text: string; setup?: boolean }
+
 const ChatPanel: React.FC<{
   thread: Thread; title: string; sending: boolean;
   replyText: string; setReplyText: (v: string) => void;
@@ -558,7 +562,7 @@ const ChatPanel: React.FC<{
   const flags = thread.client ? clientFlags(thread.client) : null;
   const score = thread.client ? clientScore(thread.client) : null;
   const companyName = useSettingsStore(s => s.companyName);
-  const googleReviewUrl = useSettingsStore(s => s.googleReviewUrl);
+  const reviewLinks = useSettingsStore(s => s.reviewLinks);
   const templateOverrides = useSettingsStore(s => s.smsTemplates);
   const currentUser = useCurrentUser();
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -606,14 +610,18 @@ const ChatPanel: React.FC<{
   const [tplLang, setTplLang] = useState<SmsLang>('en');
   const firstName = thread.client?.firstName || (thread.contactName || '').split(' ')[0] || '';
 
+  // Only the office can add review links, so only the office is offered the shortcut.
+  const canSetUpReviews = currentUser?.role === 'owner' || currentUser?.role === 'manager';
+
   const templates = useMemo(() => {
     const vars = { name: firstName, tech: currentUser?.name || '', company: companyName, eta: null };
-    const extras: { id: string; label: string; en: string; es: string }[] = [
-      {
-        id: 'inbox-hello', label: 'First reply',
-        en: 'Hi {name}, this is {company}. We got your message - when is a good time to call you?',
-        es: 'Hola {name}, le escribe {company}. Recibimos su mensaje - a que hora le podemos llamar?',
-      },
+    const fill = (e: { en: string; es: string }) => fillSmsTemplate(tplLang === 'es' ? e.es : e.en, vars, tplLang);
+    const hello = {
+      id: 'inbox-hello', label: 'First reply',
+      en: 'Hi {name}, this is {company}. We got your message - when is a good time to call you?',
+      es: 'Hola {name}, le escribe {company}. Recibimos su mensaje - a que hora le podemos llamar?',
+    };
+    const extras = [
       {
         id: 'inbox-photo', label: 'Send a photo',
         en: 'Could you text a photo of the lock or the door? It helps us bring the right parts.',
@@ -624,24 +632,47 @@ const ChatPanel: React.FC<{
         en: 'Hi {name}, the tech gives you the exact price on site before any work starts - no surprises.',
         es: 'Hola {name}, el tecnico le da el precio exacto en el sitio antes de empezar - sin sorpresas.',
       },
-      ...(googleReviewUrl ? [{
-        id: 'inbox-review', label: 'Review link',
-        en: `Thanks for choosing {company}! If we did well, a quick review means a lot: ${googleReviewUrl}`,
-        es: `Gracias por elegir {company}. Si quedo contento, una resena nos ayuda mucho: ${googleReviewUrl}`,
-      }] : []),
     ];
+    // One review request per link (Google, Yelp, a second Google page…), right after the
+    // first reply so it sits among the one-tap chips instead of deep in the list.
+    const reviewText = withReviewLink(resolveSmsTemplate(REVIEW_TEMPLATE, templateOverrides, tplLang));
+    const reviews: QuickTemplate[] = reviewLinks.length
+      ? reviewLinks.map(l => ({
+          id: `review-${l.id}`,
+          label: `Review · ${l.label}`,
+          text: fillSmsTemplate(reviewText, { ...vars, link: l.url }, tplLang),
+        }))
+      : canSetUpReviews
+        ? [{ id: 'review-setup', label: '+ Review link', text: 'Add your Google or Yelp review link in Settings, and a one-tap review request appears here.', setup: true }]
+        : [];
     return [
-      ...extras.map(e => ({ id: e.id, label: e.label, text: fillSmsTemplate(tplLang === 'es' ? e.es : e.en, vars, tplLang) })),
+      { id: hello.id, label: hello.label, text: fill(hello) },
+      ...reviews,
+      ...extras.map(e => ({ id: e.id, label: e.label, text: fill(e) })),
       ...SMS_TEMPLATES.map(def => ({
         id: def.id,
         label: def.label,
         text: fillSmsTemplate(resolveSmsTemplate(def, templateOverrides, tplLang), vars, tplLang),
       })),
-    ];
-  }, [firstName, currentUser?.name, companyName, googleReviewUrl, templateOverrides, tplLang]);
+    ] as QuickTemplate[];
+  }, [firstName, currentUser?.name, companyName, reviewLinks, canSetUpReviews, templateOverrides, tplLang]);
 
-  const applyTemplate = (text: string) => {
-    setReplyText(text);
+  // The review shortcut with no link yet: take the owner straight to where links are added.
+  const openReviewLinkSettings = () => {
+    setTemplatesOpen(false);
+    useAppStore.getState().setActiveTab('settings');
+    let tries = 0;
+    const reveal = () => {
+      const el = document.getElementById('review-links');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      else if (++tries < 40) setTimeout(reveal, 100); // Settings loads lazily
+    };
+    setTimeout(reveal, 60);
+  };
+
+  const applyTemplate = (t: QuickTemplate) => {
+    if (t.setup) { openReviewLinkSettings(); return; }
+    setReplyText(t.text);
     setTemplatesOpen(false);
     inputRef.current?.focus();
   };
@@ -821,11 +852,11 @@ const ChatPanel: React.FC<{
               {templates.map(t => (
                 <button
                   key={t.id}
-                  onClick={() => applyTemplate(t.text)}
+                  onClick={() => applyTemplate(t)}
                   className="w-full text-left px-2.5 py-2.5 rounded-xl hover:bg-white/5 active:bg-white/10 transition-colors"
                 >
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-blue-400/80">{t.label}</p>
-                  <p className="text-xs text-slate-300 mt-0.5 leading-snug">{t.text}</p>
+                  <p className={`text-[10px] font-bold uppercase tracking-wider ${t.setup ? 'text-amber-400/90' : t.id.startsWith('review-') ? 'text-amber-300/90' : 'text-blue-400/80'}`}>{t.label}</p>
+                  <p className={`text-xs mt-0.5 leading-snug [overflow-wrap:anywhere] ${t.setup ? 'text-slate-400 italic' : 'text-slate-300'}`}>{t.text}</p>
                 </button>
               ))}
             </div>
@@ -838,8 +869,12 @@ const ChatPanel: React.FC<{
             {templates.slice(0, 5).map(t => (
               <button
                 key={t.id}
-                onClick={() => applyTemplate(t.text)}
-                className="shrink-0 px-3 py-1.5 rounded-full border border-white/10 bg-white/5 text-[11px] font-bold text-slate-300 hover:text-white hover:border-blue-500/40 transition-all active:scale-95"
+                onClick={() => applyTemplate(t)}
+                className={`shrink-0 px-3 py-1.5 rounded-full border text-[11px] font-bold transition-all active:scale-95 ${
+                  t.setup ? 'border-dashed border-amber-500/40 bg-transparent text-amber-300/90 hover:text-amber-200'
+                  : t.id.startsWith('review-') ? 'border-amber-500/30 bg-amber-500/10 text-amber-200 hover:text-white hover:border-amber-400/60'
+                  : 'border-white/10 bg-white/5 text-slate-300 hover:text-white hover:border-blue-500/40'
+                }`}
               >
                 {t.label}
               </button>

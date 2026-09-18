@@ -3,10 +3,12 @@ import { X, Send, Sparkles, AlertTriangle } from 'lucide-react';
 import { sendSmsDetailed } from '../smsService';
 import { smsInfo, sanitizeSms } from '../smsText';
 import {
-  SMS_TEMPLATES, SPANISH_INVITE, fillSmsTemplate, resolveSmsTemplate,
+  SMS_TEMPLATES, SPANISH_INVITE, REVIEW_TEMPLATE, fillSmsTemplate, resolveSmsTemplate, withReviewLink,
   SmsLang, SmsVars,
 } from '../smsTemplates';
 import { useSettingsStore } from '../settingsStore';
+import { primaryReviewLink } from '../reviewLinks';
+import type { ReviewLink } from '../types';
 import { getClientLang, tipFor, Weather } from '../dispatchMessage';
 import { formatPhone } from '../clientUtils';
 
@@ -34,6 +36,7 @@ export const SmsComposeSheet: React.FC<SmsComposeSheetProps> = ({
 }) => {
   const companyName = useSettingsStore(s => s.companyName);
   const overrides = useSettingsStore(s => s.smsTemplates);
+  const reviewLinks = useSettingsStore(s => s.reviewLinks);
 
   const [templateId, setTemplateId] = useState('on-my-way');
   const [lang, setLang] = useState<SmsLang>('en');
@@ -42,7 +45,12 @@ export const SmsComposeSheet: React.FC<SmsComposeSheetProps> = ({
   const [inviteOn, setInviteOn] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
+  const [linkId, setLinkId] = useState('');
   const tipTextRef = useRef('');
+
+  // The review request appears only once there is somewhere to send the client.
+  const chips = reviewLinks.length ? [...SMS_TEMPLATES, REVIEW_TEMPLATE] : SMS_TEMPLATES;
+  const activeLink = reviewLinks.find(l => l.id === linkId) || primaryReviewLink(reviewLinks);
 
   const vars: SmsVars = useMemo(() => ({
     name: (clientName || '').trim().split(/\s+/)[0],
@@ -51,7 +59,10 @@ export const SmsComposeSheet: React.FC<SmsComposeSheetProps> = ({
     eta: etaMinutes,
   }), [clientName, techName, companyName, etaMinutes]);
 
-  const buildText = (id: string, l: SmsLang) => {
+  const buildText = (id: string, l: SmsLang, link: ReviewLink | undefined = activeLink) => {
+    if (id === REVIEW_TEMPLATE.id && link) {
+      return fillSmsTemplate(withReviewLink(resolveSmsTemplate(REVIEW_TEMPLATE, overrides, l)), { ...vars, link: link.url }, l);
+    }
     const def = SMS_TEMPLATES.find(t => t.id === id) || SMS_TEMPLATES[0];
     return fillSmsTemplate(resolveSmsTemplate(def, overrides, l), vars, l);
   };
@@ -60,17 +71,20 @@ export const SmsComposeSheet: React.FC<SmsComposeSheetProps> = ({
   // is looked up once and pre-selects the ES toggle for Spanish speakers.
   useEffect(() => {
     if (!open) return;
-    const id = initialTemplateId || 'on-my-way';
+    const primary = primaryReviewLink(reviewLinks);
+    const wanted = initialTemplateId || 'on-my-way';
+    const id = wanted === REVIEW_TEMPLATE.id && !primary ? 'on-my-way' : wanted;
     tipTextRef.current = tipFor(!!isCar, weather || null); // stable pick per open
     setTemplateId(id);
+    setLinkId(primary?.id || '');
     setTipOn(false);
     setInviteOn(false);
     setError('');
     setLang('en');
-    setText(buildText(id, 'en'));
+    setText(buildText(id, 'en', primary));
     let alive = true;
     getClientLang(phone).then(l => {
-      if (alive && l === 'es') { setLang('es'); setText(buildText(id, 'es')); }
+      if (alive && l === 'es') { setLang('es'); setText(buildText(id, 'es', primary)); }
     });
     return () => { alive = false; };
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -86,6 +100,13 @@ export const SmsComposeSheet: React.FC<SmsComposeSheetProps> = ({
     setLang(l);
     setTipOn(false); setInviteOn(false);
     setText(buildText(templateId, l));
+  };
+
+  // Another review page: swap just the link, so an edited text keeps the edits.
+  const pickLink = (link: ReviewLink) => {
+    const prev = activeLink;
+    setLinkId(link.id);
+    setText(t => (prev && t.includes(prev.url) ? t.replace(prev.url, link.url) : buildText(REVIEW_TEMPLATE.id, lang, link)));
   };
 
   // Add-on chips do plain text surgery so manual edits elsewhere survive the toggle.
@@ -135,7 +156,7 @@ export const SmsComposeSheet: React.FC<SmsComposeSheetProps> = ({
         </div>
 
         <div className="flex flex-wrap gap-1.5 mb-3">
-          {SMS_TEMPLATES.map(t => (
+          {chips.map(t => (
             <button
               key={t.id}
               onClick={() => pickTemplate(t.id)}
@@ -145,6 +166,21 @@ export const SmsComposeSheet: React.FC<SmsComposeSheetProps> = ({
             >{t.label}</button>
           ))}
         </div>
+
+        {templateId === REVIEW_TEMPLATE.id && reviewLinks.length > 1 && (
+          <div className="flex flex-wrap items-center gap-1.5 mb-3">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mr-0.5">Review on</span>
+            {reviewLinks.map(l => (
+              <button
+                key={l.id}
+                onClick={() => pickLink(l)}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all active:scale-95 ${
+                  activeLink?.id === l.id ? 'bg-amber-500/20 border-amber-500/50 text-amber-200' : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'
+                }`}
+              >{l.label}</button>
+            ))}
+          </div>
+        )}
 
         <textarea
           value={text}
