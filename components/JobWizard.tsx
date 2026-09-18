@@ -254,6 +254,13 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
   };
 
   const handleComplete = () => {
+    // The customer is the last step now (a call goes: what happened → price → address → name),
+    // so the required fields are checked here, not on the way past.
+    if (!client.phone?.trim()) { setError('Phone number is required.'); return; }
+    if (!client.firstName?.trim() && !client.lastName?.trim()) { setError('Client name is required.'); return; }
+    if (!client.zip?.trim()) { setError('ZIP code is required.'); return; }
+    if (!client.address?.trim()) { setError('Service address is required — the tech has to drive somewhere.'); return; }
+
     const initials = (client.firstName?.[0] || 'J') + (client.lastName?.[0] || 'D');
     const numPart = Math.floor(1000 + Math.random() * 9000).toString();
     const now = new Date();
@@ -310,16 +317,7 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
     setStep(1);
   };
 
-  const nextStep = () => {
-    if (step === 1) {
-      if (!client.phone?.trim()) { setError('Phone number is required.'); return; }
-      if (!client.firstName?.trim() && !client.lastName?.trim()) { setError('Client name is required.'); return; }
-      if (!client.zip?.trim()) { setError('ZIP code is required.'); return; }
-      if (!client.address?.trim()) { setError('Service address is required — the tech has to drive somewhere.'); return; }
-    }
-    setError('');
-    setStep(s => s + 1);
-  };
+  const nextStep = () => { setError(''); setStep(s => s + 1); };
   const prevStep = () => { setError(''); setStep(s => s - 1); };
 
   // Swipe right to go back a step (or close from the first step) — same reason as JobDetail:
@@ -414,8 +412,94 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
             </div>
           )}
 
-          {/* ───────── STEP 1 — CUSTOMER & DISPATCH ───────── */}
+          {/* ───────── STEP 1 — THE JOB ───────── */}
           {step === 1 && (
+            <div className="space-y-5 animate-in slide-in-from-right-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-2xl font-bold">The Job</h3>
+                <button onClick={() => setShowCamera(true)} className="p-3 bg-blue-600/10 text-blue-500 rounded-2xl border border-blue-500/20 hover:bg-blue-600/20 transition-all" title="Add photo (optional)"><Camera size={18} /></button>
+              </div>
+
+              <div>
+                <label className={`${labelCls} mb-3`}>Job Type</label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {LOCK_TYPES.map(t => {
+                    const Icon = t.icon;
+                    return (
+                      <button key={t.id} onClick={() => setLockDetails({ ...lockDetails, type: t.id as any })} className={`p-4 rounded-2xl border flex flex-col items-center space-y-2 transition-all ${lockDetails.type === t.id ? 'bg-blue-600 border-blue-400 text-white shadow-xl' : 'bg-slate-900 border-white/10 text-slate-300'}`}>
+                        <Icon size={20} /><span className="text-[11px] font-bold uppercase tracking-wider">{t.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {photos.length > 0 && (
+                <div className="flex flex-wrap gap-3">
+                  {photos.map((p, i) => (
+                    <div key={i} className="relative w-20 h-20 rounded-2xl overflow-hidden border border-white/10 group">
+                      <img src={p} className="w-full h-full object-cover" alt="Job" />
+                      {/* Visible on touch — a mis-shot photo was otherwise impossible to
+                          remove before creating the job. */}
+                      <button aria-label="Remove photo" onClick={() => setPhotos(prev => prev.filter((_, idx) => idx !== i))} className="absolute top-1 right-1 p-1.5 bg-red-600 rounded-lg opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"><Trash2 size={12} /></button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="relative">
+                  <div className={`${cardCls} flex items-center justify-between`}>
+                    <div className="flex-1 min-w-0">
+                      <label className={labelCls}>Make / Brand</label>
+                      <input className={`${fieldCls} uppercase`} value={lockDetails.brand} onChange={e => setLockDetails({ ...lockDetails, brand: e.target.value })} placeholder="TOYOTA, SCHLAGE" />
+                    </div>
+                    <button onClick={() => setShowBrandSearch(!showBrandSearch)} className="ml-3 p-2.5 bg-white/5 rounded-xl text-blue-500 shrink-0"><Plus size={16} /></button>
+                  </div>
+                  {showBrandSearch && (
+                    <div className="absolute top-full left-0 right-0 mt-2 p-3 bg-slate-800 border border-white/10 rounded-2xl z-50 grid grid-cols-2 gap-2 shadow-2xl max-h-44 overflow-y-auto scrollbar-hide">
+                      {INITIAL_BRANDS.map(b => (
+                        <button key={b} onClick={() => { setLockDetails({ ...lockDetails, brand: b }); setShowBrandSearch(false); }} className="text-left px-3 py-2 text-xs font-bold uppercase text-slate-300 hover:bg-blue-600 hover:text-white rounded-lg transition-all">{b}</button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div className={cardCls}>
+                  <label className={labelCls}>Model / Year</label>
+                  <input className={`${fieldCls} uppercase`} value={lockDetails.modelOrYear} onChange={e => setLockDetails({ ...lockDetails, modelOrYear: e.target.value })} placeholder="2018 CAMRY / DEADBOLT" />
+                </div>
+              </div>
+
+              {lockDetails.type === 'Automotive' && (
+                <div className="space-y-4">
+                  <div className={`${cardCls} flex items-end gap-3`}>
+                    <div className="flex-1 min-w-0">
+                      <label className={labelCls}>VIN <span className="text-slate-600 normal-case font-medium">· auto-fills make & year</span></label>
+                      <input className={`${fieldCls} uppercase`} value={vinInput} onChange={e => setVinInput(e.target.value)} maxLength={17} placeholder="17-CHARACTER VIN" />
+                    </div>
+                    <button onClick={() => setShowVinScan(true)} className="px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-slate-200 shrink-0" title="Scan VIN barcode"><Camera size={16} /></button>
+                    <button onClick={() => decodeVinToFields()} disabled={vinBusy || vinInput.trim().length < 17} className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white text-xs font-bold uppercase tracking-wider shrink-0">{vinBusy ? '…' : 'Decode'}</button>
+                  </div>
+                  <AutoKeyPanel make={lockDetails.brand} modelOrYear={lockDetails.modelOrYear} />
+                </div>
+              )}
+
+              <div className={cardCls}>
+                <div className="flex items-center justify-between mb-2">
+                  <label className={labelCls + ' mb-0'}>What's the problem?</label>
+                  {SpeechRecognition && (
+                    <button onClick={toggleDictation} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all active:scale-95 ${listening ? 'bg-red-600 text-white animate-pulse' : 'bg-blue-600/10 text-blue-400 border border-blue-500/20'}`}>
+                      <Mic size={12} /> {listening ? 'Listening…' : 'Dictate'}
+                    </button>
+                  )}
+                </div>
+                <textarea className="w-full bg-slate-950 border border-white/10 rounded-xl p-4 min-h-[160px] text-base font-medium text-slate-200 resize-none outline-none focus:border-blue-500 transition-all" value={complaint} onChange={e => setComplaint(e.target.value)} placeholder="Describe the lock issue or vehicle situation… or tap Dictate and speak." />
+              </div>
+            </div>
+          )}
+
+          {/* ───────── STEP 2 — CUSTOMER & DISPATCH ───────── */}
+          {step === 2 && (
             <div className="space-y-5 animate-in slide-in-from-right-4">
               <h3 className="text-2xl font-bold">Customer & Dispatch</h3>
 
@@ -573,92 +657,6 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
                   />
                 </div>
               )}
-            </div>
-          )}
-
-          {/* ───────── STEP 2 — THE JOB ───────── */}
-          {step === 2 && (
-            <div className="space-y-5 animate-in slide-in-from-right-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-2xl font-bold">The Job</h3>
-                <button onClick={() => setShowCamera(true)} className="p-3 bg-blue-600/10 text-blue-500 rounded-2xl border border-blue-500/20 hover:bg-blue-600/20 transition-all" title="Add photo (optional)"><Camera size={18} /></button>
-              </div>
-
-              <div>
-                <label className={`${labelCls} mb-3`}>Job Type</label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {LOCK_TYPES.map(t => {
-                    const Icon = t.icon;
-                    return (
-                      <button key={t.id} onClick={() => setLockDetails({ ...lockDetails, type: t.id as any })} className={`p-4 rounded-2xl border flex flex-col items-center space-y-2 transition-all ${lockDetails.type === t.id ? 'bg-blue-600 border-blue-400 text-white shadow-xl' : 'bg-slate-900 border-white/10 text-slate-300'}`}>
-                        <Icon size={20} /><span className="text-[11px] font-bold uppercase tracking-wider">{t.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {photos.length > 0 && (
-                <div className="flex flex-wrap gap-3">
-                  {photos.map((p, i) => (
-                    <div key={i} className="relative w-20 h-20 rounded-2xl overflow-hidden border border-white/10 group">
-                      <img src={p} className="w-full h-full object-cover" alt="Job" />
-                      {/* Visible on touch — a mis-shot photo was otherwise impossible to
-                          remove before creating the job. */}
-                      <button aria-label="Remove photo" onClick={() => setPhotos(prev => prev.filter((_, idx) => idx !== i))} className="absolute top-1 right-1 p-1.5 bg-red-600 rounded-lg opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"><Trash2 size={12} /></button>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="relative">
-                  <div className={`${cardCls} flex items-center justify-between`}>
-                    <div className="flex-1 min-w-0">
-                      <label className={labelCls}>Make / Brand</label>
-                      <input className={`${fieldCls} uppercase`} value={lockDetails.brand} onChange={e => setLockDetails({ ...lockDetails, brand: e.target.value })} placeholder="TOYOTA, SCHLAGE" />
-                    </div>
-                    <button onClick={() => setShowBrandSearch(!showBrandSearch)} className="ml-3 p-2.5 bg-white/5 rounded-xl text-blue-500 shrink-0"><Plus size={16} /></button>
-                  </div>
-                  {showBrandSearch && (
-                    <div className="absolute top-full left-0 right-0 mt-2 p-3 bg-slate-800 border border-white/10 rounded-2xl z-50 grid grid-cols-2 gap-2 shadow-2xl max-h-44 overflow-y-auto scrollbar-hide">
-                      {INITIAL_BRANDS.map(b => (
-                        <button key={b} onClick={() => { setLockDetails({ ...lockDetails, brand: b }); setShowBrandSearch(false); }} className="text-left px-3 py-2 text-xs font-bold uppercase text-slate-300 hover:bg-blue-600 hover:text-white rounded-lg transition-all">{b}</button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                <div className={cardCls}>
-                  <label className={labelCls}>Model / Year</label>
-                  <input className={`${fieldCls} uppercase`} value={lockDetails.modelOrYear} onChange={e => setLockDetails({ ...lockDetails, modelOrYear: e.target.value })} placeholder="2018 CAMRY / DEADBOLT" />
-                </div>
-              </div>
-
-              {lockDetails.type === 'Automotive' && (
-                <div className="space-y-4">
-                  <div className={`${cardCls} flex items-end gap-3`}>
-                    <div className="flex-1 min-w-0">
-                      <label className={labelCls}>VIN <span className="text-slate-600 normal-case font-medium">· auto-fills make & year</span></label>
-                      <input className={`${fieldCls} uppercase`} value={vinInput} onChange={e => setVinInput(e.target.value)} maxLength={17} placeholder="17-CHARACTER VIN" />
-                    </div>
-                    <button onClick={() => setShowVinScan(true)} className="px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-slate-200 shrink-0" title="Scan VIN barcode"><Camera size={16} /></button>
-                    <button onClick={() => decodeVinToFields()} disabled={vinBusy || vinInput.trim().length < 17} className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white text-xs font-bold uppercase tracking-wider shrink-0">{vinBusy ? '…' : 'Decode'}</button>
-                  </div>
-                  <AutoKeyPanel make={lockDetails.brand} modelOrYear={lockDetails.modelOrYear} />
-                </div>
-              )}
-
-              <div className={cardCls}>
-                <div className="flex items-center justify-between mb-2">
-                  <label className={labelCls + ' mb-0'}>What's the problem?</label>
-                  {SpeechRecognition && (
-                    <button onClick={toggleDictation} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all active:scale-95 ${listening ? 'bg-red-600 text-white animate-pulse' : 'bg-blue-600/10 text-blue-400 border border-blue-500/20'}`}>
-                      <Mic size={12} /> {listening ? 'Listening…' : 'Dictate'}
-                    </button>
-                  )}
-                </div>
-                <textarea className="w-full bg-slate-950 border border-white/10 rounded-xl p-4 min-h-[160px] text-base font-medium text-slate-200 resize-none outline-none focus:border-blue-500 transition-all" value={complaint} onChange={e => setComplaint(e.target.value)} placeholder="Describe the lock issue or vehicle situation… or tap Dictate and speak." />
-              </div>
             </div>
           )}
         </div>
