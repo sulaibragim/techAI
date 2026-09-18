@@ -91,12 +91,41 @@ describe('call-script edits', () => {
 });
 
 describe('training results', () => {
-  it('each person writes only their own record; the owner reads everyone, a technician nobody', async () => {
-    await put({ trainingResults: { 'u-anna': { attempts: 1, bestScore: 20, total: 21, lastAt: '2026-09-18T15:00:00.000Z' } } }, 'manager');
-    await put({ trainingResults: { 'u-oleg': { attempts: 2, bestScore: 21, total: 21, lastAt: '2026-09-18T16:00:00.000Z', passedAt: '2026-09-18T16:00:00.000Z' } } }, 'manager');
+  const putTraining = async (body, role) => fetch(`${base}/training`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'x-role': role },
+    body: JSON.stringify(body),
+  });
+  const record = { attempts: 1, bestScore: 20, total: 21, lastAt: '2026-09-18T15:00:00.000Z' };
+
+  it('records from two people both stay; the owner reads everyone', async () => {
+    await put({ trainingResults: { 'u-anna': record } }, 'manager');
+    await put({ trainingResults: { 'u-oleg': { ...record, attempts: 2, bestScore: 21, passedAt: '2026-09-18T16:00:00.000Z' } } }, 'manager');
     expect(Object.keys(saved().trainingResults).sort()).toEqual(['u-anna', 'u-oleg']);
     expect((await get('owner')).trainingResults['u-oleg'].passedAt).toBe('2026-09-18T16:00:00.000Z');
-    expect((await get('technician')).trainingResults).toBeUndefined();
+  });
+
+  it('a technician saves their own record — whose it is comes from the token, not the body', async () => {
+    stored = JSON.stringify({ trainingResults: { 'u-anna': record } });
+    const res = await putTraining({ ...record, aboutReadAt: '2026-09-18T17:00:00.000Z', userId: 'u-anna', note: 'x'.repeat(5000) }, 'technician');
+    expect(res.status).toBe(200);
+    expect(saved().trainingResults['u-anna']).toEqual(record);
+    expect(saved().trainingResults['u-1']).toEqual({ ...record, aboutReadAt: '2026-09-18T17:00:00.000Z' });
+  });
+
+  it('a technician or the кладовщик reads back only their own record', async () => {
+    stored = JSON.stringify({ trainingResults: { 'u-anna': record, 'u-1': { ...record, bestScore: 21 } } });
+    expect((await get('technician')).trainingResults).toEqual({ 'u-1': { ...record, bestScore: 21 } });
+    expect((await get('warehouse')).trainingResults).toEqual({ 'u-1': { ...record, bestScore: 21 } });
+    stored = JSON.stringify({ trainingResults: { 'u-anna': record } });
+    expect((await get('technician')).trainingResults).toEqual({});
+  });
+
+  it('junk is refused', async () => {
+    for (const bad of [[], { attempts: -1 }, { attempts: 'many' }, { lastAt: 'yesterday' }, { roleplays: { 'Bad Id': '2026-09-18T15:00:00.000Z' } }, { roleplays: ['dog-in-hot-car'] }]) {
+      expect((await putTraining(bad, 'technician')).status, JSON.stringify(bad)).toBe(400);
+    }
+    expect(stored).toBeNull();
   });
 });
 

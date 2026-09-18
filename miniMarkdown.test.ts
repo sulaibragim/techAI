@@ -35,7 +35,7 @@ describe('parseMarkdown', () => {
   });
 
   it('parses every training doc into something readable', () => {
-    for (const f of ['training/01-knowledge-base.md', 'training/02-call-scripts.md', 'training/03-never-say.md']) {
+    for (const f of ['training/00-about.md', 'training/00-about.en.md', 'training/01-knowledge-base.md', 'training/02-call-scripts.md', 'training/03-never-say.md']) {
       const blocks = parseMarkdown(readFileSync(f, 'utf8'));
       expect(blocks.filter(b => b.type === 'heading').length, f).toBeGreaterThan(2);
       expect(blocks.filter(b => b.type === 'table').length, f).toBeGreaterThan(0);

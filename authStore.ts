@@ -357,10 +357,11 @@ export const can = {
 
 // Which tabs a role may see, in display order.
 export const visibleTabsFor = (r: Role): string[] => {
-  if (r === 'technician') return ['calendar', 'jobs', 'autokey', 'masterkey', 'inventory', 'settings'];
-  if (r === 'accountant') return ['accounting', 'analytics', 'settings'];
+  // Training is open to everyone — to get to know the company; only the phone desk must pass it.
+  if (r === 'technician') return ['calendar', 'jobs', 'autokey', 'masterkey', 'inventory', 'training', 'settings'];
+  if (r === 'accountant') return ['accounting', 'analytics', 'training', 'settings'];
   // The кладовщик lives on one screen: the shelf. No clients, no money, no messages.
-  if (r === 'warehouse')  return ['inventory', 'settings'];
+  if (r === 'warehouse')  return ['inventory', 'training', 'settings'];
   if (r === 'manager')    return ['calendar', 'jobs', 'messages', 'calls', 'training', 'clients', 'analytics', 'accounting', 'marketing', 'autokey', 'masterkey', 'inventory', 'brain', 'settings'];
   return ['calendar', 'jobs', 'messages', 'calls', 'training', 'clients', 'analytics', 'accounting', 'marketing', 'autokey', 'masterkey', 'inventory', 'brain', 'settings'];
 };

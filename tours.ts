@@ -284,7 +284,7 @@ export const TOURS: TourDef[] = [
   {
     id: 'tab-training',
     label: { en: 'Training', ru: 'Обучение' },
-    description: { en: 'Knowledge base, admission test, practice calls', ru: 'База знаний, тест-допуск, учебные звонки' },
+    description: { en: 'About us, knowledge base, admission test, practice calls', ru: 'О компании, база знаний, тест-допуск, учебные звонки' },
     roles: OFFICE,
     trigger: 'tab',
     tab: 'training',
@@ -293,8 +293,26 @@ export const TOURS: TourDef[] = [
         placement: 'center',
         title: { en: 'Ready for the phones', ru: 'Готовимся к звонкам' },
         body: {
-          en: 'Read the knowledge base, then pass the admission test — every answer right, prices straight from the price book. Practise the ten role-play calls with a colleague. The owner sees who is ready.',
-          ru: 'Прочитайте базу знаний и сдайте тест-допуск — все ответы верно, цены из прайса CRM. Отработайте десять учебных звонков с коллегой. Владелец видит, кто готов.',
+          en: 'Start with "About us", read the knowledge base, then pass the admission test — every answer right, prices straight from the price book. Practise the ten role-play calls with a colleague. The owner sees who is ready.',
+          ru: 'Начните с «О компании», прочитайте базу знаний и сдайте тест-допуск — все ответы верно, цены из прайса CRM. Отработайте десять учебных звонков с коллегой. Владелец видит, кто готов.',
+        },
+      },
+    ],
+  },
+  {
+    id: 'tab-training-team',
+    label: { en: 'Training', ru: 'Обучение' },
+    description: { en: 'Get to know the company', ru: 'Знакомство с компанией' },
+    roles: ['technician', 'accountant', 'warehouse'],
+    trigger: 'tab',
+    tab: 'training',
+    steps: [
+      {
+        placement: 'center',
+        title: { en: 'Get to know the company', ru: 'Знакомство с компанией' },
+        body: {
+          en: 'Start with "About us": who we are, what we promise every customer, and the rules we never break — five minutes. The rest is there if you want it: prices, the phone scripts, and a test to check yourself.',
+          ru: 'Начните с «О компании»: кто мы, что обещаем каждому клиенту и какие правила не нарушаем — пять минут. Остальное — по желанию: цены, скрипты звонков и тест, чтобы проверить себя.',
         },
       },
     ],

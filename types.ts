@@ -355,6 +355,7 @@ export interface TrainingResult {
   lastAt: string;           // ISO, last attempt
   passedAt?: string;        // first attempt with every answer right
   roleplays?: Record<string, string>; // role-play id → ISO when marked practised
+  aboutReadAt?: string;     // ISO, when they marked the "about us" page read
 }
 
 // A recorded call scored against the 12-point card (scorecard.ts) — the weekly coaching loop.

@@ -40,9 +40,10 @@ const renderBlock = (b: Block, i: number) => {
       </blockquote>
     );
     case 'rule': return <hr key={i} className="border-white/10" />;
+    // Two columns wrap fine on a phone; wider tables keep a floor and scroll sideways instead.
     case 'table': return (
       <div key={i} className="overflow-x-auto -mx-1 px-1">
-        <table className="w-full min-w-[520px] text-[13px] border-collapse">
+        <table className={`w-full ${b.head.length > 2 ? 'min-w-[520px]' : ''} text-[13px] border-collapse`}>
           <thead>
             <tr>{b.head.map((h, j) => <th key={j} className="text-left align-bottom font-bold text-slate-300 bg-white/5 border border-white/10 px-2.5 py-2"><Inline text={h} /></th>)}</tr>
           </thead>

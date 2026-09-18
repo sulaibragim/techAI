@@ -18,6 +18,12 @@ const WAREHOUSE_HIDDEN_KEYS = ['expenses', 'monthlyTargets', 'techTargets', 'aiM
 // Client profiles are keyed by the last 10 digits of the phone number.
 const last10 = (p) => String(p || '').replace(/\D/g, '').slice(-10);
 
+// Everyone may take the training; a technician or the кладовщик reads back only their own record.
+const ownTraining = (value, userId) => {
+  const own = value.trainingResults?.[userId];
+  return own ? { [userId]: own } : {};
+};
+
 /** Narrow the client-profile map to the customers on this technician's own jobs. */
 async function profilesForTech(userId, profiles) {
   if (!profiles || typeof profiles !== 'object') return profiles;
@@ -49,7 +55,9 @@ settingsRouter.get('/', requireAuth, async (req, res) => {
     delete value.geminiApiKey;
     value.reviewLinks = reviewLinksOf(value);
     if (req.user.role === 'technician') {
+      const training = ownTraining(value, req.user.id);
       for (const k of TECH_HIDDEN_KEYS) delete value[k];
+      value.trainingResults = training;
       // A tech may see their OWN personal goal, but not everyone else's.
       if (value.techTargets && typeof value.techTargets === 'object') {
         const own = value.techTargets[req.user.id];
@@ -61,7 +69,9 @@ settingsRouter.get('/', requireAuth, async (req, res) => {
       value.clientProfiles = await profilesForTech(req.user.id, value.clientProfiles);
     }
     if (req.user.role === 'warehouse') {
+      const training = ownTraining(value, req.user.id);
       for (const k of WAREHOUSE_HIDDEN_KEYS) delete value[k];
+      value.trainingResults = training;
       value.clientProfiles = {};
     }
     res.json(value);
@@ -99,6 +109,56 @@ function unionKeepOrder(current, incoming) {
   for (const item of incoming || []) if (item?.id && !have.has(item.id)) out.push(item);
   return out;
 }
+
+// A training record is small and shaped: counts, dates, practised role-plays. Anything else
+// is dropped, anything malformed refused — this route is open to every role.
+function cleanTrainingResult(body) {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) return null;
+  const isDate = (v) => typeof v === 'string' && v.length <= 40 && !Number.isNaN(Date.parse(v));
+  const out = {};
+  for (const k of ['attempts', 'bestScore', 'total']) {
+    const n = Number(body[k] ?? 0);
+    if (!Number.isInteger(n) || n < 0 || n > 10000) return null;
+    out[k] = n;
+  }
+  for (const k of ['lastAt', 'passedAt', 'aboutReadAt']) {
+    if (body[k] == null) continue;
+    if (!isDate(body[k])) return null;
+    out[k] = body[k];
+  }
+  if (body.roleplays != null) {
+    if (typeof body.roleplays !== 'object' || Array.isArray(body.roleplays)) return null;
+    const entries = Object.entries(body.roleplays);
+    if (entries.length > 50) return null;
+    out.roleplays = {};
+    for (const [id, at] of entries) {
+      if (!/^[a-z0-9-]{1,60}$/.test(id) || !isDate(at)) return null;
+      out.roleplays[id] = at;
+    }
+  }
+  return out;
+}
+
+// Anyone signed in keeps their own training record (the test, practice calls, "about us" read).
+// Only their own: whose record it is comes from the token, never from the body.
+settingsRouter.put('/training', requireAuth, async (req, res) => {
+  try {
+    const result = cleanTrainingResult(req.body);
+    if (!result) return res.status(400).json({ error: 'Invalid training result' });
+    const { rows } = await db.query("SELECT value FROM settings WHERE key = 'company'");
+    const current = rows.length > 0 ? JSON.parse(rows[0].value) : {};
+    current.trainingResults = { ...(current.trainingResults || {}), [req.user.id]: result };
+    await db.query(
+      `INSERT INTO settings (key, value, updated_at) VALUES ('company', $1, NOW())
+       ON CONFLICT (key) DO UPDATE SET value = $1, updated_at = NOW()`,
+      [JSON.stringify(current)]
+    );
+    res.json({ trainingResults: { [req.user.id]: result } });
+  } catch (err) {
+    console.error('[SETTINGS] training save error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 // Update settings (merge patch) — owner or manager only.
 settingsRouter.put('/', requireAuth, requireRole('owner', 'manager'), async (req, res) => {

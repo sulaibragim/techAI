@@ -360,11 +360,12 @@ export const useSettingsStore = create<SettingsState>()(
         pushToServer({ removedScriptOverrideIds: [key] });
       },
 
-      // Keyed by user: each person writes only their own entry, the server merges the keys.
+      // Every role may train, but only the owner and managers may write settings — so the
+      // record goes to its own route, which files it under the signed-in user.
       saveTrainingResult: (userId, result) => {
         if (!userId) return;
         set((state) => ({ trainingResults: { ...state.trainingResults, [userId]: result } }));
-        pushToServer({ trainingResults: { [userId]: result } });
+        void sendWrite({ url: '/api/settings/training', method: 'PUT', body: result, label: 'your training result' });
       },
 
       addCallReview: (review) => {
