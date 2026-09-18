@@ -47,11 +47,15 @@ export const AddressAutocomplete: React.FC<Props> = ({ address, zip, precision, 
   const sessionRef = useRef<string>(newSessionToken());
   const blurTimer = useRef<number | null>(null);
   const boxRef = useRef<HTMLDivElement>(null);
+  // The text a pick just wrote into the field. Searching it again re-opened the list a
+  // moment after the pick, right over whatever sits below (a Save button caught the next
+  // tap), and paid for one more lookup — so it is skipped until the user types.
+  const pickedText = useRef<string | null>(null);
 
   // Debounced autocomplete on the address text, re-biased whenever the ZIP changes.
   useEffect(() => {
     const q = address.trim();
-    if (q.length < 3) { setSuggestions([]); setLoading(false); return; }
+    if (q.length < 3 || q === pickedText.current) { setSuggestions([]); setLoading(false); return; }
     setLoading(true);
     const t = window.setTimeout(async () => {
       const items = await autocompleteAddress(q, zip, sessionRef.current);
@@ -64,6 +68,7 @@ export const AddressAutocomplete: React.FC<Props> = ({ address, zip, precision, 
 
   // Manual edits invalidate any verified pin — drop coords and force re-verification.
   const onType = (text: string) => {
+    pickedText.current = null;
     onChange({ address: text, zip, lat: undefined, lng: undefined, placeId: undefined, precision: text.trim() ? 'none' : undefined });
   };
 
@@ -72,6 +77,7 @@ export const AddressAutocomplete: React.FC<Props> = ({ address, zip, precision, 
     setSuggestions([]);
     // OSM suggestions already carry coordinates; Google needs a details call.
     if (s.lat != null && s.lng != null) {
+      pickedText.current = s.description.trim();
       onChange({ address: s.description, zip: s.zip || zip, lat: s.lat, lng: s.lng, placeId: s.placeId, precision: s.precision || 'approx' });
       sessionRef.current = newSessionToken();
       return;
@@ -81,9 +87,12 @@ export const AddressAutocomplete: React.FC<Props> = ({ address, zip, precision, 
     setResolving(false);
     sessionRef.current = newSessionToken(); // close the Places billing session
     if (r) {
-      onChange({ address: r.formattedAddress || s.description, zip: r.zip || zip, lat: r.lat, lng: r.lng, placeId: r.placeId, precision: r.precision });
+      const text = r.formattedAddress || s.description;
+      pickedText.current = text.trim();
+      onChange({ address: text, zip: r.zip || zip, lat: r.lat, lng: r.lng, placeId: r.placeId, precision: r.precision });
     } else {
-      // Details lookup failed — keep the text but mark it unverified so the warning shows.
+      // Details lookup failed — keep the text but mark it unverified so the warning shows
+      // (and let the list come back, so the pick can be retried).
       onChange({ address: s.description, zip, precision: 'none' });
     }
   }, [onChange, zip]);
