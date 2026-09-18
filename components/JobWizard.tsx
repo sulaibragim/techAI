@@ -19,6 +19,11 @@ import {
   Mic,
   MapPin,
   History,
+  Key,
+  KeySquare,
+  ScrollText,
+  PanelRightOpen,
+  type LucideIcon,
 } from 'lucide-react';
 import { Job, Client, LockDetails, LeadChannel, LEAD_CHANNELS, LEAD_CHANNEL_LABELS } from '../types';
 import { BRANDS as INITIAL_BRANDS, LOCK_TYPES } from '../constants';
@@ -32,6 +37,8 @@ import { AutoKeyPanel } from './AutoKeyPanel';
 import { decodeVin } from '../vehicleKeyLookup';
 import { VinScanner } from './VinScanner';
 import { AddressAutocomplete } from './AddressAutocomplete';
+import { CallScriptPanel } from './CallScriptPanel';
+import { ScriptId } from '../callScripts';
 import { useSwipeBack } from '../useSwipeBack';
 
 interface JobWizardProps {
@@ -44,14 +51,32 @@ interface JobWizardProps {
   autoPrefill?: boolean;
 }
 
-const JOB_TEMPLATES = [
-  { id: 'car-lockout', icon: Car, label: 'Car Lockout', lockType: 'Automotive' as const, complaint: 'Customer locked keys inside the vehicle.', color: 'from-blue-600/20 to-blue-800/10 border-blue-500/30', iconColor: 'text-blue-400' },
-  { id: 'home-lockout', icon: Home, label: 'Home Lockout', lockType: 'Residential' as const, complaint: 'Customer locked out of their home.', color: 'from-green-600/20 to-green-800/10 border-green-500/30', iconColor: 'text-green-400' },
-  { id: 'rekey', icon: KeyRound, label: 'Rekey', lockType: 'Residential' as const, complaint: 'Customer needs locks rekeyed (moved in / lost key / security).', color: 'from-amber-600/20 to-amber-800/10 border-amber-500/30', iconColor: 'text-amber-400' },
-  { id: 'commercial', icon: Building2, label: 'Commercial Lockout', lockType: 'Commercial' as const, complaint: 'Customer locked out of their business premises.', color: 'from-purple-600/20 to-purple-800/10 border-purple-500/30', iconColor: 'text-purple-400' },
-  { id: 'safe', icon: Lock, label: 'Safe Opening', lockType: 'Secure / Safe' as const, complaint: 'Customer cannot open safe — combination forgotten or malfunction.', color: 'from-red-600/20 to-red-800/10 border-red-500/30', iconColor: 'text-red-400' },
-  { id: 'lock-install', icon: Wrench, label: 'Lock Install', lockType: 'Residential' as const, complaint: 'Customer needs new deadbolt / lock installed.', color: 'from-slate-600/20 to-slate-800/10 border-slate-500/30', iconColor: 'text-slate-300' },
+type Priority = NonNullable<Job['priority']>;
+
+interface JobTemplate {
+  id: Exclude<ScriptId, 'opening'>; // picking the template opens the call script with the same id
+  icon: LucideIcon;
+  label: string;
+  lockType: LockDetails['type'];
+  complaint: string;
+  color: string;
+  iconColor: string;
+  priority?: Priority;
+}
+
+const JOB_TEMPLATES: JobTemplate[] = [
+  { id: 'car-lockout', icon: Car, label: 'Car Lockout', lockType: 'Automotive', complaint: 'Customer locked keys inside the vehicle.', color: 'from-blue-600/20 to-blue-800/10 border-blue-500/30', iconColor: 'text-blue-400' },
+  { id: 'car-key', icon: Key, label: 'Car Key', lockType: 'Automotive', complaint: 'Customer needs a new / spare car key made (has a working key).', color: 'from-cyan-600/20 to-cyan-800/10 border-cyan-500/30', iconColor: 'text-cyan-400', priority: 'today' },
+  { id: 'akl', icon: KeySquare, label: 'All Keys Lost', lockType: 'Automotive', complaint: 'All car keys lost — new key made from scratch on-site.', color: 'from-rose-600/20 to-rose-800/10 border-rose-500/30', iconColor: 'text-rose-400', priority: 'emergency' },
+  { id: 'home-lockout', icon: Home, label: 'Home Lockout', lockType: 'Residential', complaint: 'Customer locked out of their home.', color: 'from-green-600/20 to-green-800/10 border-green-500/30', iconColor: 'text-green-400' },
+  { id: 'rekey', icon: KeyRound, label: 'Rekey', lockType: 'Residential', complaint: 'Customer needs locks rekeyed (moved in / lost key / security).', color: 'from-amber-600/20 to-amber-800/10 border-amber-500/30', iconColor: 'text-amber-400' },
+  { id: 'commercial', icon: Building2, label: 'Commercial Lockout', lockType: 'Commercial', complaint: 'Customer locked out of their business premises.', color: 'from-purple-600/20 to-purple-800/10 border-purple-500/30', iconColor: 'text-purple-400' },
+  { id: 'safe', icon: Lock, label: 'Safe Opening', lockType: 'Secure / Safe', complaint: 'Customer cannot open safe — combination forgotten or malfunction.', color: 'from-red-600/20 to-red-800/10 border-red-500/30', iconColor: 'text-red-400' },
+  { id: 'lock-install', icon: Wrench, label: 'Lock Install', lockType: 'Residential', complaint: 'Customer needs new deadbolt / lock installed.', color: 'from-slate-600/20 to-slate-800/10 border-slate-500/30', iconColor: 'text-slate-300' },
 ];
+
+const SCRIPT_COLLAPSED_KEY = 'callScript.collapsed';
+const SCRIPT_W = 'w-[400px] xl:w-[440px]'; // the script column (desktop)
 
 const pad = (n: number) => String(n).padStart(2, '0');
 const todayStr = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
@@ -95,11 +120,36 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
 
   const [showSecondAddress, setShowSecondAddress] = useState(false);
 
+  // Call script beside the form — for whoever answers the phone, not the techs.
+  const showScript = currentUser?.role === 'owner' || currentUser?.role === 'manager';
+  const [scriptId, setScriptId] = useState<ScriptId>('opening');
+  const [scriptCollapsed, setScriptCollapsed] = useState(() => {
+    try { return localStorage.getItem(SCRIPT_COLLAPSED_KEY) === '1'; } catch { return false; }
+  });
+  const collapseScript = (collapsed: boolean) => {
+    setScriptCollapsed(collapsed);
+    try { localStorage.setItem(SCRIPT_COLLAPSED_KEY, collapsed ? '1' : '0'); } catch { /* private mode */ }
+  };
+  const [scriptSheet, setScriptSheet] = useState(false); // phones: the script opens as a bottom sheet
+  const sidePanel = showScript && !scriptCollapsed;
+
+  // The side panel is capped to the scroll area it sticks in (minus its py-10), so the script
+  // scrolls inside itself instead of running under the footer. Measured: header/footer heights vary.
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [scrollH, setScrollH] = useState(0);
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el || !showScript) return;
+    const ro = new ResizeObserver(() => setScrollH(el.clientHeight));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [showScript]);
+
   // Schedule + priority
   const [scheduleMode, setScheduleMode] = useState<'asap' | 'later'>('asap');
   const [schedDate, setSchedDate] = useState<string>(todayStr());
   const [schedTime, setSchedTime] = useState<string>('10:00');
-  const [priority, setPriority] = useState<'emergency' | 'today' | 'scheduled'>('today');
+  const [priority, setPriority] = useState<Priority>('today');
   const [channel, setChannel] = useState<LeadChannel | ''>('');
 
   // Returning-customer match by phone
@@ -252,10 +302,11 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
     onComplete(newJob);
   };
 
-  const applyTemplate = (tpl: typeof JOB_TEMPLATES[0]) => {
+  const applyTemplate = (tpl: JobTemplate) => {
     setLockDetails({ type: tpl.lockType, brand: '', modelOrYear: '' });
     setComplaint(tpl.complaint);
-    setPriority(tpl.id === 'rekey' || tpl.id === 'lock-install' ? 'scheduled' : tpl.lockType === 'Automotive' || tpl.id.includes('lockout') ? 'emergency' : 'today');
+    setPriority(tpl.priority ?? (tpl.id === 'rekey' || tpl.id === 'lock-install' ? 'scheduled' : tpl.lockType === 'Automotive' || tpl.id.includes('lockout') ? 'emergency' : 'today'));
+    setScriptId(tpl.id);
     setStep(1);
   };
 
@@ -277,7 +328,7 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
     if (step > 0) prevStep();
     else onCancel();
   }, [step, onCancel]);
-  const swipeRef = useSwipeBack<HTMLDivElement>(swipeBack, { enabled: !showCamera && !showVinScan });
+  const swipeRef = useSwipeBack<HTMLDivElement>(swipeBack, { enabled: !showCamera && !showVinScan && !scriptSheet });
 
   // VIN → auto-fill make + model/year (free NHTSA decode) for automotive jobs.
   const decodeVinToFields = async (override?: string) => {
@@ -301,6 +352,13 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
   const cardCls = 'bg-slate-900 p-4 rounded-2xl border border-white/10';
   const labelCls = 'text-xs font-bold text-slate-400 uppercase block mb-1.5';
 
+  // Phones: the script lives in a bottom sheet, opened from a button in thumb reach.
+  const scriptButton = (
+    <button onClick={() => setScriptSheet(true)} className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider shadow-xl shadow-black/40 transition-all active:scale-95">
+      <ScrollText size={16} /> Script
+    </button>
+  );
+
   return (
     <div ref={swipeRef} className="fixed inset-0 bg-slate-950 z-[200] flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-8">
       {showVinScan && <VinScanner onResult={(v) => { setShowVinScan(false); decodeVinToFields(v); }} onClose={() => setShowVinScan(false)} />}
@@ -323,11 +381,17 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
           <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">New Job Intake</h2>
           <p className="text-xl font-bold text-blue-500 mt-1">{step === 0 ? 'Quick Start' : `Step ${step} of 2`}</p>
         </div>
-        <div className="w-16" />
+        <div className="w-16 relative">
+          {showScript && scriptCollapsed && (
+            <button onClick={() => collapseScript(false)} title="Show the call script" className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 items-center gap-2 px-3 py-2 rounded-xl border border-white/10 bg-white/5 text-xs font-bold uppercase tracking-wider text-slate-300 hover:text-white transition-all whitespace-nowrap">
+              <PanelRightOpen size={15} /> Script
+            </button>
+          )}
+        </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto px-6 py-10">
-        <div className="max-w-xl mx-auto">
+      <div ref={scrollRef} className={`flex-1 overflow-y-auto px-6 py-10 ${sidePanel ? 'lg:flex lg:items-start lg:justify-center lg:gap-8' : ''}`}>
+        <div className={`max-w-xl mx-auto ${sidePanel ? 'lg:mx-0 lg:w-full lg:min-w-0' : ''} ${showScript ? 'pb-12 lg:pb-0' : ''}`}>
 
           {step === 0 && (
             <div className="space-y-5 animate-in slide-in-from-bottom-4">
@@ -598,24 +662,55 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
             </div>
           )}
         </div>
+
+        {/* Hidden, not unmounted, while collapsed — the manager keeps their place in the call. */}
+        {showScript && (
+          <aside className={`hidden ${sidePanel ? 'lg:flex' : ''} flex-col sticky top-0 ${SCRIPT_W} shrink-0`} style={scrollH ? { maxHeight: scrollH - 80 } : undefined}>
+            <CallScriptPanel scriptId={scriptId} onScriptChange={setScriptId} managerName={currentUser?.name || ''} onCollapse={() => collapseScript(true)} className="rounded-3xl" />
+          </aside>
+        )}
       </div>
 
+      {showScript && step === 0 && (
+        <div className="lg:hidden fixed right-4 z-30" style={{ bottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}>{scriptButton}</div>
+      )}
+
       {step > 0 && (
-        <footer className="px-6 py-6 border-t border-white/10 bg-slate-950/90 backdrop-blur-md" style={{ paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}>
-          {error && <p className="max-w-xl mx-auto text-xs font-semibold text-red-400 mb-3 text-center">{error}</p>}
-          <div className="max-w-xl mx-auto flex items-center justify-between gap-6">
-            {step > 1 ? (
-              <button onClick={prevStep} className="px-8 py-5 rounded-2xl border border-white/10 text-xs font-bold uppercase tracking-widest flex items-center"><ChevronLeft size={16} className="mr-2" />Back</button>
-            ) : (
-              <button onClick={() => setStep(0)} className="px-8 py-5 rounded-2xl border border-white/10 text-xs font-bold uppercase tracking-widest flex items-center"><ChevronLeft size={16} className="mr-2" />Templates</button>
-            )}
-            {step < 2 ? (
-              <button onClick={nextStep} className="flex-1 bg-blue-600 hover:bg-blue-700 px-8 py-5 rounded-2xl text-sm font-bold uppercase tracking-widest text-white shadow-xl flex items-center justify-center">Next Step<ChevronRight size={16} className="ml-2" /></button>
-            ) : (
-              <button onClick={handleComplete} className="flex-1 bg-green-600 hover:bg-green-700 px-8 py-5 rounded-2xl text-sm font-bold uppercase tracking-widest text-white shadow-lg flex items-center justify-center"><Check size={16} className="mr-2" />Create Job</button>
-            )}
+        <footer className="relative px-6 py-6 border-t border-white/10 bg-slate-950/90 backdrop-blur-md" style={{ paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}>
+          {showScript && <div className="lg:hidden absolute right-4 bottom-full mb-3">{scriptButton}</div>}
+          <div className={sidePanel ? 'lg:flex lg:justify-center lg:gap-8' : undefined}>
+            <div className={`max-w-xl mx-auto ${sidePanel ? 'lg:mx-0 lg:w-full lg:min-w-0' : ''}`}>
+              {error && <p className="text-xs font-semibold text-red-400 mb-3 text-center">{error}</p>}
+              <div className="flex items-center justify-between gap-6">
+                {step > 1 ? (
+                  <button onClick={prevStep} className="px-8 py-5 rounded-2xl border border-white/10 text-xs font-bold uppercase tracking-widest flex items-center"><ChevronLeft size={16} className="mr-2" />Back</button>
+                ) : (
+                  <button onClick={() => setStep(0)} className="px-8 py-5 rounded-2xl border border-white/10 text-xs font-bold uppercase tracking-widest flex items-center"><ChevronLeft size={16} className="mr-2" />Templates</button>
+                )}
+                {step < 2 ? (
+                  <button onClick={nextStep} className="flex-1 bg-blue-600 hover:bg-blue-700 px-8 py-5 rounded-2xl text-sm font-bold uppercase tracking-widest text-white shadow-xl flex items-center justify-center">Next Step<ChevronRight size={16} className="ml-2" /></button>
+                ) : (
+                  <button onClick={handleComplete} className="flex-1 bg-green-600 hover:bg-green-700 px-8 py-5 rounded-2xl text-sm font-bold uppercase tracking-widest text-white shadow-lg flex items-center justify-center"><Check size={16} className="mr-2" />Create Job</button>
+                )}
+              </div>
+            </div>
+            {/* Keeps the buttons under the form, not under the middle of the screen. */}
+            {sidePanel && <div className={`hidden lg:block ${SCRIPT_W} shrink-0`} />}
           </div>
         </footer>
+      )}
+
+      {showScript && (
+        <div className={`lg:hidden fixed inset-0 z-[260] items-end ${scriptSheet ? 'flex' : 'hidden'}`}>
+          <div className="absolute inset-0 bg-black/60" onClick={() => setScriptSheet(false)} />
+          <CallScriptPanel
+            scriptId={scriptId}
+            onScriptChange={setScriptId}
+            managerName={currentUser?.name || ''}
+            onClose={() => setScriptSheet(false)}
+            className="relative w-full max-h-[85dvh] rounded-t-3xl border-b-0 pb-[env(safe-area-inset-bottom)]"
+          />
+        </div>
       )}
     </div>
   );

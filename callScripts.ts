@@ -25,6 +25,7 @@ export interface ScriptStep {
   say: string;
   hint?: string;
   alert?: boolean; // a stop-and-check step (safety, legal limit)
+  call911?: boolean; // the "anyone inside?" check — a yes means EMERGENCY_911 first
 }
 
 export interface ScriptRate {
@@ -103,7 +104,7 @@ export const CALL_SCRIPTS: Record<ScriptId, CallScript> = {
     rates: [RATE.carLockout],
     objections: ['cheaper', 'eta', 'damage', 'licensed', 'noid', 'think', 'discount', 'web20'],
     steps: [
-      { title: 'Безопасность', say: 'Is anyone or a pet inside the car?', hint: 'ДА → 911 (правило внизу). Жара в Аризоне опасна за минуты.', alert: true },
+      { title: 'Безопасность', say: 'Is anyone or a pet inside the car?', hint: 'ДА → сразу 911, фраза ниже. Жара в Аризоне опасна за минуты.', alert: true, call911: true },
       { title: 'Где ключи', say: 'Are the keys inside the car, or are they lost?', hint: 'Потеряны → это не lockout, а All Keys Lost: переключи скрипт.' },
       { title: 'Где клиент', say: 'What city are you in — and is this the best number for you?', hint: 'Проверь зону. Другой город → если техник доедет ≤ ~30 мин, берём.' },
       { title: 'Машина', say: "What's the car — year and make?", hint: 'Для техника. Заполни Make / Model в форме.' },
@@ -157,7 +158,7 @@ export const CALL_SCRIPTS: Record<ScriptId, CallScript> = {
     rates: [RATE.homeLockout, RATE.rekey],
     objections: ['cheaper', 'eta', 'damage', 'licensed', 'think', 'discount', 'web20'],
     steps: [
-      { title: 'Безопасность', say: 'Is anyone inside who needs help — a child alone, someone unwell, a stove on?', hint: 'ДА → 911 (правило внизу).', alert: true },
+      { title: 'Безопасность', say: 'Is anyone inside who needs help — a child alone, someone unwell, a stove on?', hint: 'ДА → сразу 911, фраза ниже.', alert: true, call911: true },
       { title: 'Где клиент', say: 'What city are you in — and is this the best number for you?' },
       { title: 'Замок', say: "Is it the deadbolt that's locked, or just the handle?", hint: 'Для техника, на цену не влияет.' },
       { title: 'Цена', say: "It's {price:r-home-lockout} total to get you in — the trip and the work, nothing added at the door.", hint: 'Уверенно, одной фразой.' },

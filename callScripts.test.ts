@@ -64,6 +64,12 @@ describe('script data', () => {
     }
   });
 
+  it('every emergency script asks the 911 question', () => {
+    for (const s of Object.values(CALL_SCRIPTS).filter(s => s.emergency)) {
+      expect(s.steps.some(st => st.call911), s.id).toBe(true);
+    }
+  });
+
   it('never claims a license, a long warranty or a guessed ETA', () => {
     const all = [
       ...Object.values(CALL_SCRIPTS).flatMap(s => s.steps.map(st => st.say)),
