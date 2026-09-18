@@ -28,6 +28,7 @@ const AIChat = lazyWithReload(() => import('./components/AIChat').then(m => ({ d
 const JobDetail = lazyWithReload(() => import('./components/JobDetail').then(m => ({ default: m.JobDetail })), 'JobDetail');
 const MessagesList = lazyWithReload(() => import('./components/MessagesList').then(m => ({ default: m.MessagesList })), 'MessagesList');
 const CallsList = lazyWithReload(() => import('./components/CallsList').then(m => ({ default: m.CallsList })), 'CallsList');
+const Training = lazyWithReload(() => import('./components/Training').then(m => ({ default: m.Training })), 'Training');
 const Inventory = lazyWithReload(() => import('./components/Inventory').then(m => ({ default: m.Inventory })), 'Inventory');
 const Accounting = lazyWithReload(() => import('./components/Accounting').then(m => ({ default: m.Accounting })), 'Accounting');
 const MarketingDashboard = lazyWithReload(() => import('./components/MarketingDashboard').then(m => ({ default: m.MarketingDashboard })), 'MarketingDashboard');
@@ -296,6 +297,7 @@ const App: React.FC = () => {
               case 'jobs': return <JobsList jobs={jobs} onAddJob={() => openWizard()} onJobSelect={(job) => setSelectedJobId(job.id)} />;
               case 'messages': return <MessagesList onJobSelect={(job) => setSelectedJobId(job.id)} onClientSelect={openClient} onCreateJobFromContact={newJobFromContact} />;
               case 'calls': return <CallsList onClientSelect={openClient} onCreateJobFromCall={newJobFromCall} />;
+              case 'training': return <Training />;
               case 'clients': return <ClientsList onJobSelect={(job) => setSelectedJobId(job.id)} focusClientId={clientFocusId} onFocusConsumed={() => setClientFocusId(null)} />;
               case 'analytics': return <Dashboard />;
               case 'accounting': return <Accounting onJobSelect={(job) => setSelectedJobId(job.id)} />;

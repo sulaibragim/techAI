@@ -361,8 +361,8 @@ export const visibleTabsFor = (r: Role): string[] => {
   if (r === 'accountant') return ['accounting', 'analytics', 'settings'];
   // The кладовщик lives on one screen: the shelf. No clients, no money, no messages.
   if (r === 'warehouse')  return ['inventory', 'settings'];
-  if (r === 'manager')    return ['calendar', 'jobs', 'messages', 'calls', 'clients', 'analytics', 'accounting', 'marketing', 'autokey', 'masterkey', 'inventory', 'brain', 'settings'];
-  return ['calendar', 'jobs', 'messages', 'calls', 'clients', 'analytics', 'accounting', 'marketing', 'autokey', 'masterkey', 'inventory', 'brain', 'settings'];
+  if (r === 'manager')    return ['calendar', 'jobs', 'messages', 'calls', 'training', 'clients', 'analytics', 'accounting', 'marketing', 'autokey', 'masterkey', 'inventory', 'brain', 'settings'];
+  return ['calendar', 'jobs', 'messages', 'calls', 'training', 'clients', 'analytics', 'accounting', 'marketing', 'autokey', 'masterkey', 'inventory', 'brain', 'settings'];
 };
 
 export const ROLE_LABELS: Record<Role, string> = {

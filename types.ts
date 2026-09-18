@@ -1,6 +1,6 @@
 import type { MasterKeyBrand } from './masterKeyUtils';
 
-export type TabId = 'calendar' | 'jobs' | 'messages' | 'calls' | 'clients' | 'analytics' | 'accounting' | 'marketing' | 'autokey' | 'masterkey' | 'inventory' | 'brain' | 'settings';
+export type TabId = 'calendar' | 'jobs' | 'messages' | 'calls' | 'training' | 'clients' | 'analytics' | 'accounting' | 'marketing' | 'autokey' | 'masterkey' | 'inventory' | 'brain' | 'settings';
 
 // 'warehouse' = кладовщик. He books purchases into stock and hands parts out to the
 // technicians. Deliberately blind to clients, money and messages — see visibleTabsFor.
@@ -345,6 +345,17 @@ export const PAID_CHANNELS = new Set<LeadChannel>(['google_ads', 'facebook', 'in
 // Why a caller didn't book. The manager marks it as the call ends; the weekly spread says
 // what to fix — the price, the speed, the script or the ads.
 export type LostReason = 'price' | 'wait' | 'shopping' | 'self' | 'area' | 'notOurs' | 'dealer' | 'noId' | 'other';
+
+// One phone-desk person's training record (Training tab). Kept per user in the settings blob
+// so the owner sees who is ready to take calls.
+export interface TrainingResult {
+  attempts: number;         // admission-test attempts
+  bestScore: number;        // right answers in the best attempt
+  total: number;            // questions in that attempt
+  lastAt: string;           // ISO, last attempt
+  passedAt?: string;        // first attempt with every answer right
+  roleplays?: Record<string, string>; // role-play id → ISO when marked practised
+}
 
 export interface LostCall {
   id: string;

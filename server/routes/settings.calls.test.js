@@ -89,3 +89,13 @@ describe('call-script edits', () => {
     expect((await get('owner')).scriptOverrides).toEqual({ 'rekey/Цена': { say: 'x' } });
   });
 });
+
+describe('training results', () => {
+  it('each person writes only their own record; the owner reads everyone, a technician nobody', async () => {
+    await put({ trainingResults: { 'u-anna': { attempts: 1, bestScore: 20, total: 21, lastAt: '2026-09-18T15:00:00.000Z' } } }, 'manager');
+    await put({ trainingResults: { 'u-oleg': { attempts: 2, bestScore: 21, total: 21, lastAt: '2026-09-18T16:00:00.000Z', passedAt: '2026-09-18T16:00:00.000Z' } } }, 'manager');
+    expect(Object.keys(saved().trainingResults).sort()).toEqual(['u-anna', 'u-oleg']);
+    expect((await get('owner')).trainingResults['u-oleg'].passedAt).toBe('2026-09-18T16:00:00.000Z');
+    expect((await get('technician')).trainingResults).toBeUndefined();
+  });
+});

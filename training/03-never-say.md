@@ -21,7 +21,7 @@
 | «We never drill» / «no damage guaranteed» | Иногда сверлить нужно | «We always try non-destructive entry first. If a lock ever needs drilling, the tech tells you before he starts.» |
 | «If we can't open it, it's free» / «no fix, no fee» | Не наша политика | Не обещать. «You pay after the job is done.» |
 | «I'll send you a written quote before we come» | Письменно заранее не шлём | «Our prices are published on our website — I can text you the price list.» (Письменная смета — только коммерческие проекты после осмотра) |
-| «Your key will be exactly $149» | Ключи — только «from» | «For your car it starts from $149. The tech confirms the exact price on-site before any work.» |
+| «Your key will be exactly $149» | Ключи с чипом и брелоки — только «from». Исключение: простой ключ без чипа (только нарезка) — ровно $149 | «For your car it starts from $149. The tech confirms the exact price on-site before any work.» |
 | «The price won't change» — **про автоключи** | Не меняется только вскрытие, rekey, установка | Для ключей: «confirmed before any work» |
 | «Sure, we can do your BMW» (не проверив) | Европа часто только дилер | «Late-model BMWs are often dealer-only — let me check yours before we send anyone.» |
 | «Sure, we'll program the fob you bought» | Не делаем | См. скрипт «Свой брелок» |

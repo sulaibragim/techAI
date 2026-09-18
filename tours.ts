@@ -282,6 +282,24 @@ export const TOURS: TourDef[] = [
     ],
   },
   {
+    id: 'tab-training',
+    label: { en: 'Training', ru: 'Обучение' },
+    description: { en: 'Knowledge base, admission test, practice calls', ru: 'База знаний, тест-допуск, учебные звонки' },
+    roles: OFFICE,
+    trigger: 'tab',
+    tab: 'training',
+    steps: [
+      {
+        placement: 'center',
+        title: { en: 'Ready for the phones', ru: 'Готовимся к звонкам' },
+        body: {
+          en: 'Read the knowledge base, then pass the admission test — every answer right, prices straight from the price book. Practise the ten role-play calls with a colleague. The owner sees who is ready.',
+          ru: 'Прочитайте базу знаний и сдайте тест-допуск — все ответы верно, цены из прайса CRM. Отработайте десять учебных звонков с коллегой. Владелец видит, кто готов.',
+        },
+      },
+    ],
+  },
+  {
     id: 'tab-clients',
     label: { en: 'Clients', ru: 'Клиенты' },
     description: { en: 'The customer base', ru: 'База клиентов' },

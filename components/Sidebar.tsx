@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Calendar, Briefcase, BarChart2, Settings, LogOut, BrainCircuit, Phone, MessageSquare, AlertCircle, X, Activity, Package, Users, Receipt, KeyRound, Megaphone, Building2 } from 'lucide-react';
+import { Calendar, Briefcase, BarChart2, Settings, LogOut, BrainCircuit, Phone, MessageSquare, AlertCircle, X, Activity, Package, Users, Receipt, KeyRound, Megaphone, Building2, GraduationCap } from 'lucide-react';
 import { useAppStore, useVisibleJobs } from '../store';
 import { useAuthStore, useCurrentUser, visibleTabsFor, ROLE_LABELS } from '../authStore';
 import { useInboxUnreadCount } from '../inboxStore';
@@ -65,6 +65,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onTabChange }) => 
     { id: 'jobs', label: 'My Jobs', icon: Briefcase },
     { id: 'messages', label: 'Messages', icon: MessageSquare },
     { id: 'calls', label: 'Calls', icon: Phone },
+    { id: 'training', label: 'Training', icon: GraduationCap },
     { id: 'clients', label: 'Clients', icon: Users },
     { id: 'analytics', label: 'Financials', icon: BarChart2 },
     { id: 'accounting', label: 'Accounting', icon: Receipt },

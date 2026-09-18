@@ -3,7 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { API_BASE } from './backendUrl';
 import { authHeaders } from './apiClient';
 import { sendWrite } from './writeQueue';
-import { Expense, ClientProfile, StockMovement, ServiceRate, AiMemory, ClientSmsSettings, CLIENT_SMS_DEFAULTS, StaffNotifySettings, STAFF_NOTIFY_DEFAULTS, ReviewLink, LostCall } from './types';
+import { Expense, ClientProfile, StockMovement, ServiceRate, AiMemory, ClientSmsSettings, CLIENT_SMS_DEFAULTS, StaffNotifySettings, STAFF_NOTIFY_DEFAULTS, ReviewLink, LostCall, TrainingResult } from './types';
 import { PRICE_BOOK_SEED, PRICE_BOOK_VERSION, planPriceBookUpgrade, applyPriceBookUpgrade, priceBookUpgradePatch } from './priceBook';
 import type { ScriptOverrides } from './callScripts';
 
@@ -36,9 +36,10 @@ export interface SettingsState {
   smsTemplates: Record<string, { en?: string; es?: string }>; // owner overrides of the one-tap client texts (template id → texts)
   lostCalls: LostCall[]; // calls that ended without a booking, and why (newest first, capped)
   scriptOverrides: ScriptOverrides; // the owner's wording for call-script lines (stepKey/answerKey → texts)
+  trainingResults: Record<string, TrainingResult>; // user id → admission test + role-play record
   onboardingComplete: boolean;
   aiAvailable: boolean; // runtime flag: is GEMINI_API_KEY configured on the server?
-  updateSettings: (patch: Partial<Omit<SettingsState, 'updateSettings' | 'resetSettings' | 'setMonthlyTarget' | 'setTechTarget' | 'addExpense' | 'removeExpense' | 'addStockMovement' | 'clearStockLedger' | 'setMovementDispute' | 'addServiceRate' | 'updateServiceRate' | 'removeServiceRate' | 'importServiceRates' | 'upsertClientProfile' | 'addAiMemory' | 'removeAiMemory' | 'setSmsTemplate' | 'resetSmsTemplate' | 'addReviewLink' | 'updateReviewLink' | 'removeReviewLink' | 'addLostCall' | 'removeLostCall' | 'setScriptOverride' | 'resetScriptOverride' | 'syncSettings' | 'upgradePriceBook' | 'checkAiAvailable' | 'aiAvailable'>>) => void;
+  updateSettings: (patch: Partial<Omit<SettingsState, 'updateSettings' | 'resetSettings' | 'setMonthlyTarget' | 'setTechTarget' | 'addExpense' | 'removeExpense' | 'addStockMovement' | 'clearStockLedger' | 'setMovementDispute' | 'addServiceRate' | 'updateServiceRate' | 'removeServiceRate' | 'importServiceRates' | 'upsertClientProfile' | 'addAiMemory' | 'removeAiMemory' | 'setSmsTemplate' | 'resetSmsTemplate' | 'addReviewLink' | 'updateReviewLink' | 'removeReviewLink' | 'addLostCall' | 'removeLostCall' | 'setScriptOverride' | 'resetScriptOverride' | 'saveTrainingResult' | 'syncSettings' | 'upgradePriceBook' | 'checkAiAvailable' | 'aiAvailable'>>) => void;
   setMonthlyTarget: (monthKey: string, value: number) => void;
   setTechTarget: (userId: string, value: number) => void;
   addExpense: (expense: Omit<Expense, 'id'>) => void;
@@ -68,6 +69,8 @@ export interface SettingsState {
   setScriptOverride: (key: string, texts: { say?: string; hint?: string }) => void;
   /** Back to the built-in wording for this line. */
   resetScriptOverride: (key: string) => void;
+  /** Store one person's training record (the whole entry for that user). */
+  saveTrainingResult: (userId: string, result: TrainingResult) => void;
   addAiMemory: (text: string) => AiMemory;
   removeAiMemory: (id: string) => void;
   learnSupplierAlias: (supplier: string, code: string, partId: string) => void;
@@ -114,6 +117,7 @@ export const SETTINGS_DEFAULTS = {
   smsTemplates: {} as Record<string, { en?: string; es?: string }>,
   lostCalls: [] as LostCall[],
   scriptOverrides: {} as ScriptOverrides,
+  trainingResults: {} as Record<string, TrainingResult>,
   onboardingComplete: false,
 };
 
@@ -147,6 +151,7 @@ const KEY_WORDS: Record<string, string> = {
   reviewLinks: 'review link', removedReviewLinkIds: 'review link',
   lostCalls: 'call note', removedLostCallIds: 'call note',
   scriptOverrides: 'call script', removedScriptOverrideIds: 'call script',
+  trainingResults: 'training result',
 };
 const humanKey = (k: string) =>
   KEY_WORDS[k] || k.replace(/([A-Z])/g, ' $1').toLowerCase().trim();
@@ -348,6 +353,13 @@ export const useSettingsStore = create<SettingsState>()(
           return { scriptOverrides: next };
         });
         pushToServer({ removedScriptOverrideIds: [key] });
+      },
+
+      // Keyed by user: each person writes only their own entry, the server merges the keys.
+      saveTrainingResult: (userId, result) => {
+        if (!userId) return;
+        set((state) => ({ trainingResults: { ...state.trainingResults, [userId]: result } }));
+        pushToServer({ trainingResults: { [userId]: result } });
       },
 
       addAiMemory: (text) => {

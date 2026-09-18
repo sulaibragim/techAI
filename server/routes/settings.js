@@ -9,11 +9,11 @@ export const settingsRouter = Router();
 // what their UI actually needs (price book for invoices, client profiles for the job
 // card, company identity) — the expense ledger, stock ledger, and revenue targets are
 // the owner's books and must not ship to every tech's phone just because they hold a token.
-const TECH_HIDDEN_KEYS = ['expenses', 'stockMovements', 'monthlyTargets', 'aiMemories', 'lostCalls', 'scriptOverrides'];
+const TECH_HIDDEN_KEYS = ['expenses', 'stockMovements', 'monthlyTargets', 'aiMemories', 'lostCalls', 'scriptOverrides', 'trainingResults'];
 
 // The кладовщик works the shelf: he needs the stock ledger (it IS his work) but has no
 // business holding the expense book, revenue targets or the customer base.
-const WAREHOUSE_HIDDEN_KEYS = ['expenses', 'monthlyTargets', 'techTargets', 'aiMemories', 'lostCalls', 'scriptOverrides'];
+const WAREHOUSE_HIDDEN_KEYS = ['expenses', 'monthlyTargets', 'techTargets', 'aiMemories', 'lostCalls', 'scriptOverrides', 'trainingResults'];
 
 // Client profiles are keyed by the last 10 digits of the phone number.
 const last10 = (p) => String(p || '').replace(/\D/g, '').slice(-10);
@@ -125,6 +125,7 @@ settingsRouter.put('/', requireAuth, requireRole('owner', 'manager'), async (req
       if (patch.supplierAliases) merged.supplierAliases = mergeMap(current.supplierAliases, patch.supplierAliases);
       if (patch.smsTemplates) merged.smsTemplates = mergeMap(current.smsTemplates, patch.smsTemplates);
       if (patch.scriptOverrides) merged.scriptOverrides = mergeMap(current.scriptOverrides, patch.scriptOverrides);
+      if (patch.trainingResults) merged.trainingResults = mergeMap(current.trainingResults, patch.trainingResults);
       if (patch.reviewLinks) {
         const incoming = (Array.isArray(patch.reviewLinks) ? patch.reviewLinks : []).map(cleanReviewLink).filter(Boolean);
         merged.reviewLinks = unionKeepOrder(reviewLinksOf(current), incoming);

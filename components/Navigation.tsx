@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { Calendar, Briefcase, BarChart2, BrainCircuit, MessageSquare, Phone, Package, Users, Settings, LogOut, Receipt, KeyRound, Megaphone, Building2 } from 'lucide-react';
+import { Calendar, Briefcase, BarChart2, BrainCircuit, MessageSquare, Phone, Package, Users, Settings, LogOut, Receipt, KeyRound, Megaphone, Building2, GraduationCap } from 'lucide-react';
 import { useAuthStore, useCurrentUser, visibleTabsFor } from '../authStore';
 import { useInboxUnreadCount } from '../inboxStore';
 import { useTourStore } from '../tourStore';
@@ -16,6 +16,7 @@ const TAB_META: Record<string, { label: string; icon: React.ComponentType<{ size
   jobs:       { label: 'Jobs',     icon: Briefcase },
   messages:   { label: 'Inbox',    icon: MessageSquare },
   calls:      { label: 'Calls',    icon: Phone },
+  training:   { label: 'Learn',    icon: GraduationCap },
   clients:    { label: 'Clients',  icon: Users },
   analytics:  { label: 'Stats',    icon: BarChart2 },
   accounting: { label: 'Books',    icon: Receipt },
