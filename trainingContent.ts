@@ -215,6 +215,67 @@ export const RULE_QUESTIONS: RuleQuestion[] = [
     correct: 0,
     why: "Не знаешь ответа — не выдумывай ни «да», ни «нет»: одна выдуманная фраза может стоить компании профиля в Google. Пообещай уточнить, узнай ответ и обязательно перезвони.",
   },
+  // How the call sounds — the part the script can't say for you.
+  {
+    id: "upset-caller",
+    q: "Клиент кричит в трубку: «This is ridiculous! I've been standing out here for an hour and nobody picks up!» Что сказать?",
+    options: [
+      "Sir, please calm down so I can help you.",
+      "I understand, but it's not our fault — we just answered.",
+      "It sounds like it's been a really rough day. … Let's get you sorted — where are you right now?",
+      "Well, at least you called the right company now!",
+    ],
+    correct: 2,
+    why: "Не спорим и не оправдываемся: называем эмоцию, пару секунд молчим и сразу задаём вопрос, который двигает к делу. «Calm down» и «at least» злят ещё больше.",
+  },
+  {
+    id: "hold-etiquette",
+    q: "Чтобы посмотреть в CRM, кто из техников ближе, нужно секунд 30. Как правильно?",
+    options: [
+      "Молча искать — клиент подождёт, так быстрее.",
+      "Сказать «Hold on» и сразу поставить на удержание.",
+      "«One sec… uh… one more sec…» — и говорить, пока ищешь.",
+      "«Can I put you on a quick hold while I check who's closest? About 30 seconds.» — а вернувшись: «Thanks for holding».",
+    ],
+    correct: 3,
+    why: "Холд — только с разрешения и с понятным временем. Тишина без объяснения в стрессе кажется вечностью, а «Thanks for holding» показывает, что его время ценят.",
+  },
+  {
+    id: "warm-goodbye",
+    q: "Заказ записан, повтор сделан. Как закончить звонок?",
+    options: [
+      "«Thanks for calling TrustKey, Maria. Alex will text you from the road — if anything changes, just text this number.»",
+      "«Okay, bye!»",
+      "«Great, he'll be there in 15 minutes. Thank you for choosing the best locksmith in Arizona!»",
+      "«Anything else? No? Okay.» — и повесить трубку.",
+    ],
+    correct: 0,
+    why: "Конец звонка клиент запоминает лучше всего. Спасибо, имя, что будет дальше — и никаких обещаний, которые мы не контролируем.",
+  },
+  {
+    id: "caller-name",
+    q: "Срочный вызов: клиент заперт у машины. Когда спросить его имя и как им пользоваться?",
+    options: [
+      "Только в конце, для заявки — в стрессе это лишнее.",
+      "В начале, вместе с городом и номером, и дальше называть по имени 2–3 раза за звонок.",
+      "Не спрашивать вообще: имя будет в CRM из номера телефона.",
+      "Спросить в начале и называть по имени в каждой фразе — так клиент расположится.",
+    ],
+    correct: 1,
+    why: "Имя в начале звонка — это внимание к человеку, а не к заказу. Но 2–3 раза достаточно: в каждой фразе звучит как продажник по скрипту.",
+  },
+  {
+    id: "night-rate-said",
+    q: "Звонок в 9 вечера: car lockout. Как назвать цену?",
+    options: [
+      "Назвать дневную цену, а про +$60 пусть скажет техник на месте.",
+      "Сказать, что ночью цена «зависит», и назвать её, когда техник приедет.",
+      "Назвать итоговую ночную цену одной фразой и сказать, что это тариф после 8PM.",
+      "Назвать ночную цену и добавить «может, получится дешевле».",
+    ],
+    correct: 2,
+    why: "Надбавку называем сразу и прямо — так её воспринимают как честную. Сюрприз на месте — ровно то, от чего клиентов предупреждают BBB и полиция.",
+  },
 ];
 
 export const ROLE_PLAYS: RolePlay[] = [

@@ -9,11 +9,11 @@ export const settingsRouter = Router();
 // what their UI actually needs (price book for invoices, client profiles for the job
 // card, company identity) — the expense ledger, stock ledger, and revenue targets are
 // the owner's books and must not ship to every tech's phone just because they hold a token.
-const TECH_HIDDEN_KEYS = ['expenses', 'stockMovements', 'monthlyTargets', 'aiMemories', 'lostCalls', 'scriptOverrides', 'trainingResults'];
+const TECH_HIDDEN_KEYS = ['expenses', 'stockMovements', 'monthlyTargets', 'aiMemories', 'lostCalls', 'scriptOverrides', 'trainingResults', 'callReviews'];
 
 // The кладовщик works the shelf: he needs the stock ledger (it IS his work) but has no
 // business holding the expense book, revenue targets or the customer base.
-const WAREHOUSE_HIDDEN_KEYS = ['expenses', 'monthlyTargets', 'techTargets', 'aiMemories', 'lostCalls', 'scriptOverrides', 'trainingResults'];
+const WAREHOUSE_HIDDEN_KEYS = ['expenses', 'monthlyTargets', 'techTargets', 'aiMemories', 'lostCalls', 'scriptOverrides', 'trainingResults', 'callReviews'];
 
 // Client profiles are keyed by the last 10 digits of the phone number.
 const last10 = (p) => String(p || '').replace(/\D/g, '').slice(-10);
@@ -119,6 +119,7 @@ settingsRouter.put('/', requireAuth, requireRole('owner', 'manager'), async (req
       if (patch.priceBook) merged.priceBook = unionKeepOrder(current.priceBook, patch.priceBook);
       if (patch.aiMemories) merged.aiMemories = unionById(current.aiMemories, patch.aiMemories, 100);
       if (patch.lostCalls) merged.lostCalls = unionById(current.lostCalls, patch.lostCalls, 1000);
+      if (patch.callReviews) merged.callReviews = unionById(current.callReviews, patch.callReviews, 500);
       if (patch.clientProfiles) merged.clientProfiles = mergeMap(current.clientProfiles, patch.clientProfiles);
       if (patch.monthlyTargets) merged.monthlyTargets = mergeMap(current.monthlyTargets, patch.monthlyTargets);
       if (patch.techTargets) merged.techTargets = mergeMap(current.techTargets, patch.techTargets);
@@ -145,6 +146,10 @@ settingsRouter.put('/', requireAuth, requireRole('owner', 'manager'), async (req
     if (Array.isArray(patch.removedServiceRateIds) && merged.priceBook) {
       const gone = new Set(patch.removedServiceRateIds);
       merged.priceBook = merged.priceBook.filter((r) => !gone.has(r?.id));
+    }
+    if (Array.isArray(patch.removedCallReviewIds) && merged.callReviews) {
+      const gone = new Set(patch.removedCallReviewIds);
+      merged.callReviews = merged.callReviews.filter((r) => !gone.has(r?.id));
     }
     if (Array.isArray(patch.removedLostCallIds) && merged.lostCalls) {
       const gone = new Set(patch.removedLostCallIds);
@@ -178,6 +183,7 @@ settingsRouter.put('/', requireAuth, requireRole('owner', 'manager'), async (req
     delete merged.removedServiceRateIds;
     delete merged.removedAiMemoryIds;
     delete merged.removedLostCallIds;
+    delete merged.removedCallReviewIds;
     delete merged.removedScriptOverrideIds;
     delete merged.removedSmsTemplateIds;
     delete merged.removedReviewLinkIds;

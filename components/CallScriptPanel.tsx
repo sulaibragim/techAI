@@ -1,12 +1,12 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   ScrollText, Sun, Moon, PanelRightClose, X, Siren, Check, CircleCheck, ChevronDown,
-  ArrowRight, RotateCcw, MessageCircleQuestion, Ban, TriangleAlert,
+  ArrowRight, RotateCcw, MessageCircleQuestion, Ban, TriangleAlert, Smile,
 } from 'lucide-react';
 import { useSettingsStore } from '../settingsStore';
 import { isNightInArizona } from '../priceBook';
 import {
-  CALL_SCRIPTS, OBJECTIONS, NEVER_SAY, EMERGENCY_911, ScriptId, ObjectionId, ScriptContext,
+  CALL_SCRIPTS, OBJECTIONS, NEVER_SAY, EMERGENCY_911, DELIVERY_TIPS, ScriptId, ObjectionId, ScriptContext,
   resolveScript, ratePrice, scriptWithOverrides, answerWithOverrides,
 } from '../callScripts';
 
@@ -14,17 +14,20 @@ interface CallScriptPanelProps {
   scriptId: ScriptId;
   onScriptChange: (id: ScriptId) => void;
   managerName: string;
+  fill?: ScriptContext['fill']; // what the form already knows about the caller
   onCollapse?: () => void; // desktop side panel
   onClose?: () => void;    // phone sheet
   className?: string;
 }
 
-// A line as the manager says it: live prices in green, [slots] to fill in out loud in amber.
+// A line as the manager says it: live prices in green, [slots] to fill in out loud in amber,
+// and what the form already knows (the caller's name, the tech, the address) in sky blue.
 export const Say: React.FC<{ text: string; ctx: ScriptContext }> = ({ text, ctx }) => (
   <>
     {resolveScript(text, ctx).map((s, i) =>
       s.kind === 'price' ? <span key={i} className="text-emerald-300 font-bold">{s.value}</span>
         : s.kind === 'slot' ? <span key={i} className="text-amber-300 bg-amber-500/10 rounded px-1">{s.value}</span>
+        : s.kind === 'filled' ? <span key={i} className="text-sky-300 font-semibold">{s.value}</span>
         : <React.Fragment key={i}>{s.value}</React.Fragment>
     )}
   </>
@@ -34,7 +37,7 @@ const labelCls = 'flex items-center gap-1.5 text-[10px] font-bold uppercase trac
 
 // The phone script beside the intake form: the call step by step for the chosen service,
 // the live price-book price (day or after 8PM), ready answers and the never-say list.
-export const CallScriptPanel: React.FC<CallScriptPanelProps> = ({ scriptId, onScriptChange, managerName, onCollapse, onClose, className = '' }) => {
+export const CallScriptPanel: React.FC<CallScriptPanelProps> = ({ scriptId, onScriptChange, managerName, fill, onCollapse, onClose, className = '' }) => {
   const priceBook = useSettingsStore(s => s.priceBook);
   const overrides = useSettingsStore(s => s.scriptOverrides);
 
@@ -52,6 +55,7 @@ export const CallScriptPanel: React.FC<CallScriptPanelProps> = ({ scriptId, onSc
   const [objection, setObjection] = useState<ObjectionId | null>(null);
   const [showAllAnswers, setShowAllAnswers] = useState(false);
   const [showNever, setShowNever] = useState(false);
+  const [showTips, setShowTips] = useState(false);
   const bodyRef = useRef<HTMLDivElement>(null);
   const currentRef = useRef<HTMLLIElement>(null);
   const answerRef = useRef<HTMLDivElement>(null);
@@ -68,7 +72,7 @@ export const CallScriptPanel: React.FC<CallScriptPanelProps> = ({ scriptId, onSc
   useEffect(() => { answerRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }, [objection]);
 
   const script = scriptWithOverrides(CALL_SCRIPTS[scriptId], overrides);
-  const ctx: ScriptContext = { priceBook, night, me: managerName.trim().split(/\s+/)[0] || '' };
+  const ctx: ScriptContext = { priceBook, night, me: managerName.trim().split(/\s+/)[0] || '', fill };
   const current = script.steps[stepIdx];
   const answer = objection ? answerWithOverrides(objection, overrides) : null;
   // Callers ask off-script too: every ready answer stays one tap away from any script.
@@ -218,6 +222,18 @@ export const CallScriptPanel: React.FC<CallScriptPanelProps> = ({ scriptId, onSc
               <p className="text-sm leading-relaxed font-medium text-white"><Say text={answer.say} ctx={ctx} /></p>
               {answer.hint && <p className="mt-1.5 text-xs leading-relaxed text-slate-400">{answer.hint}</p>}
             </div>
+          )}
+        </section>
+
+        <section className="rounded-2xl border border-sky-500/20 bg-sky-500/5">
+          <button onClick={() => setShowTips(v => !v)} aria-expanded={showTips} className="w-full flex items-center justify-between gap-2 px-3.5 py-2.5 text-left">
+            <span className={`${labelCls} text-sky-300`}><Smile size={13} /> Как звучать</span>
+            <ChevronDown size={14} className={`text-sky-300/70 transition-transform ${showTips ? 'rotate-180' : ''}`} />
+          </button>
+          {showTips && (
+            <ul className="px-3.5 pb-3 space-y-2">
+              {DELIVERY_TIPS.map(t => <li key={t} className="text-xs leading-snug text-slate-300 flex gap-2"><span className="text-sky-400">•</span>{t}</li>)}
+            </ul>
           )}
         </section>
 

@@ -99,3 +99,17 @@ describe('training results', () => {
     expect((await get('technician')).trainingResults).toBeUndefined();
   });
 });
+
+describe('call reviews', () => {
+  const review = (id, timestamp) => ({ id, timestamp, managerId: 'u-anna', scores: [2, null, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2] });
+
+  it('reviews from two devices both stay; a removed one goes; technicians never see them', async () => {
+    await put({ callReviews: [review('r1', '2026-09-18T15:00:00.000Z')] });
+    await put({ callReviews: [review('r2', '2026-09-18T16:00:00.000Z')] }, 'manager');
+    expect(saved().callReviews.map(r => r.id)).toEqual(['r2', 'r1']);
+    await put({ removedCallReviewIds: ['r1'] });
+    expect(saved().callReviews.map(r => r.id)).toEqual(['r2']);
+    expect(saved().removedCallReviewIds).toBeUndefined();
+    expect((await get('technician')).callReviews).toBeUndefined();
+  });
+});

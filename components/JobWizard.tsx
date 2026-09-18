@@ -374,6 +374,13 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
   const cardCls = 'bg-slate-900 p-4 rounded-2xl border border-white/10';
   const labelCls = 'text-xs font-bold text-slate-400 uppercase block mb-1.5';
 
+  // The script says it by name once the form knows it: the caller, the tech picked, the address.
+  const scriptFill = {
+    name: client.firstName?.trim(),
+    Tech: allUsers.find(u => u.id === assignedTo)?.name.trim().split(/\s+/)[0],
+    address: client.address?.trim(),
+  };
+
   // Phones: the script lives in a bottom sheet, opened from a button in thumb reach.
   const scriptButton = (
     <button onClick={() => setScriptSheet(true)} className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider shadow-xl shadow-black/40 transition-all active:scale-95">
@@ -696,7 +703,7 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
         {/* Hidden, not unmounted, while collapsed — the manager keeps their place in the call. */}
         {showScript && (
           <aside className={`hidden ${sidePanel ? 'lg:flex' : ''} flex-col sticky top-0 ${SCRIPT_W} shrink-0`} style={scrollH ? { maxHeight: scrollH - 80 } : undefined}>
-            <CallScriptPanel scriptId={scriptId} onScriptChange={setScriptId} managerName={currentUser?.name || ''} onCollapse={() => collapseScript(true)} className="rounded-3xl" />
+            <CallScriptPanel scriptId={scriptId} onScriptChange={setScriptId} managerName={currentUser?.name || ''} fill={scriptFill} onCollapse={() => collapseScript(true)} className="rounded-3xl" />
           </aside>
         )}
       </div>
@@ -737,6 +744,7 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
             scriptId={scriptId}
             onScriptChange={setScriptId}
             managerName={currentUser?.name || ''}
+            fill={scriptFill}
             onClose={() => setScriptSheet(false)}
             className="relative w-full max-h-[85dvh] rounded-t-3xl border-b-0 pb-[env(safe-area-inset-bottom)]"
           />

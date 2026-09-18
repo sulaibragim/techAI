@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   GraduationCap, BookOpen, ScrollText, Ban, ClipboardCheck, PhoneCall, Users, CheckCircle2, XCircle,
-  RotateCcw, ArrowRight, Trophy, AlertTriangle, ChevronDown,
+  RotateCcw, ArrowRight, Trophy, AlertTriangle, ChevronDown, Headphones, Star,
 } from 'lucide-react';
 import kbDoc from '../training/01-knowledge-base.md?raw';
 import scriptsDoc from '../training/02-call-scripts.md?raw';
@@ -14,8 +14,10 @@ import { RULE_QUESTIONS, ROLE_PLAYS, RolePlay } from '../trainingContent';
 import { CALL_SCRIPTS } from '../callScripts';
 import { TrainingResult } from '../types';
 import { formatDate } from '../dateUtils';
+import { SCORECARD, PASS_PCT, deskTrend, reviewsRu } from '../scorecard';
+import { CallReviews } from './CallReviews';
 
-type Section = 'kb' | 'scripts' | 'never' | 'test' | 'roleplay' | 'team';
+type Section = 'kb' | 'scripts' | 'never' | 'test' | 'roleplay' | 'review' | 'team';
 
 const KIND_LABEL: Record<QuizQuestion['kind'], string> = { price: 'Цена', zone: 'Зона', rule: 'Правило' };
 // Local calendar day — a test passed at 9PM in Arizona is already tomorrow in UTC.
@@ -31,9 +33,11 @@ export const Training: React.FC = () => {
   const me = useCurrentUser();
   const results = useSettingsStore(s => s.trainingResults);
   const saveResult = useSettingsStore(s => s.saveTrainingResult);
+  const reviews = useSettingsStore(s => s.callReviews);
   const [section, setSection] = useState<Section>('kb');
   const mine: TrainingResult | undefined = me ? results[me.id] : undefined;
   const practised = Object.keys(mine?.roleplays || {}).length;
+  const trend = me ? deskTrend(reviews, me.id) : null;
 
   const save = (patch: Partial<TrainingResult>) => {
     if (!me) return;
@@ -65,6 +69,7 @@ export const Training: React.FC = () => {
     { id: 'never', label: 'Нельзя говорить', icon: Ban },
     { id: 'test', label: 'Тест-допуск', icon: ClipboardCheck },
     { id: 'roleplay', label: 'Учебные звонки', icon: PhoneCall },
+    { id: 'review', label: 'Разбор звонка', icon: Headphones },
     ...(me?.role === 'owner' ? [{ id: 'team' as const, label: 'Команда', icon: Users }] : []),
   ];
 
@@ -85,6 +90,11 @@ export const Training: React.FC = () => {
           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border bg-white/5 border-white/10 text-xs font-bold text-slate-300">
             <PhoneCall size={14} /> Учебные звонки {practised}/{ROLE_PLAYS.length}
           </span>
+          {trend?.avg != null && (
+            <span title="Средний балл последних разборов ваших звонков" className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold ${trend.avg >= PASS_PCT ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300' : 'bg-amber-500/10 border-amber-500/30 text-amber-300'}`}>
+              <Headphones size={14} /> Разборы {trend.avg}%
+            </span>
+          )}
         </div>
       </div>
 
@@ -109,6 +119,7 @@ export const Training: React.FC = () => {
         {section === 'never' && <Markdown src={neverDoc} />}
         {section === 'test' && <QuizView result={mine} onDone={onQuizDone} />}
         {section === 'roleplay' && <RolePlays done={mine?.roleplays || {}} onToggle={toggleRoleplay} />}
+        {section === 'review' && <CallReviews />}
         {section === 'team' && <Team />}
       </div>
     </div>
@@ -228,12 +239,34 @@ const QuizView: React.FC<{ result?: TrainingResult; onDone: (score: number, tota
 
 const RolePlays: React.FC<{ done: Record<string, string>; onToggle: (id: string) => void }> = ({ done, onToggle }) => {
   const [open, setOpen] = useState<string | null>(ROLE_PLAYS[0]?.id ?? null);
+  const [showCard, setShowCard] = useState(false);
   return (
     <div className="space-y-4">
       <p className="text-sm text-slate-300 leading-relaxed max-w-3xl">
         Звоните друг другу: один — клиент (читает «Кто звонит» и говорит по-английски), другой — менеджер со скриптом в New Job.
         Потом вместе пройдите чек-лист. Лучше — записать и послушать.
       </p>
+      <div className="rounded-2xl border border-blue-500/25 bg-blue-500/5">
+        <button onClick={() => setShowCard(v => !v)} className="w-full flex items-center gap-3 px-4 py-3 text-left">
+          <Headphones size={16} className="text-blue-300 shrink-0" />
+          <span className="flex-1 min-w-0">
+            <span className="block text-sm font-bold text-white">В каждом звонке — 12 пунктов</span>
+            <span className="block text-[11px] text-slate-400">По ним же слушают ваши настоящие звонки. ★ — провал пункта проваливает звонок.</span>
+          </span>
+          <ChevronDown size={16} className={`text-slate-500 shrink-0 transition-transform ${showCard ? 'rotate-180' : ''}`} />
+        </button>
+        {showCard && (
+          <ol className="px-4 pb-4 grid md:grid-cols-2 gap-x-6 gap-y-2">
+            {SCORECARD.map((item, i) => (
+              <li key={item.id} className="text-sm leading-snug">
+                <span className="font-bold text-white">{i + 1}. {item.label}</span>
+                {item.critical && <Star size={11} className="inline ml-1 -mt-0.5 text-red-400 fill-red-400" />}
+                <span className="block text-xs text-slate-400">{item.hint}</span>
+              </li>
+            ))}
+          </ol>
+        )}
+      </div>
       {ROLE_PLAYS.map((rp, i) => (
         <RolePlayCard key={rp.id} n={i + 1} rp={rp} open={open === rp.id} doneAt={done[rp.id]} onOpen={() => setOpen(open === rp.id ? null : rp.id)} onToggle={() => onToggle(rp.id)} />
       ))}
@@ -295,24 +328,30 @@ const RolePlayCard: React.FC<{ n: number; rp: RolePlay; open: boolean; doneAt?: 
 const Team: React.FC = () => {
   const users = useAuthStore(s => s.users);
   const results = useSettingsStore(s => s.trainingResults);
+  const reviews = useSettingsStore(s => s.callReviews);
   const desk = users.filter(u => u.active && (u.role === 'manager' || u.role === 'owner'));
   return (
     <div className="space-y-3">
-      <p className="text-sm text-slate-400">Кто готов брать звонки: тест сдан на 100% и учебные звонки отработаны.</p>
+      <p className="text-sm text-slate-400">
+        Кто готов брать звонки: тест сдан на 100% и учебные звонки отработаны. Разборы — средний балл последних пяти
+        настоящих звонков (норма {PASS_PCT}%) и пункт, который тренировать следующим.
+      </p>
       <div className="overflow-x-auto -mx-1 px-1">
-        <table className="w-full min-w-[560px] text-sm">
+        <table className="w-full min-w-[680px] text-sm">
           <thead>
             <tr className="text-[10px] font-bold uppercase tracking-widest text-slate-500 border-b border-white/10">
               <th className="text-left py-2.5 px-2">Сотрудник</th>
               <th className="text-left py-2.5 px-2">Тест-допуск</th>
               <th className="text-right py-2.5 px-2">Попыток</th>
               <th className="text-right py-2.5 px-2">Учебные звонки</th>
+              <th className="text-left py-2.5 px-2 pl-5">Разборы</th>
             </tr>
           </thead>
           <tbody>
             {desk.map(u => {
               const r = results[u.id];
               const calls = Object.keys(r?.roleplays || {}).length;
+              const t = deskTrend(reviews, u.id);
               return (
                 <tr key={u.id} className="border-b border-white/5">
                   <td className="py-3 px-2"><span className="font-semibold text-white">{u.name}</span> <span className="text-[11px] text-slate-500">{u.role === 'owner' ? 'owner' : 'manager'}</span></td>
@@ -323,6 +362,15 @@ const Team: React.FC = () => {
                   </td>
                   <td className="py-3 px-2 text-right tabular-nums text-slate-300">{r?.attempts || 0}</td>
                   <td className="py-3 px-2 text-right tabular-nums font-semibold text-white">{calls}/{ROLE_PLAYS.length}</td>
+                  <td className="py-3 px-2 pl-5">
+                    {t.avg == null ? <span className="text-slate-500">нет</span> : (
+                      <>
+                        <span className={`font-bold tabular-nums ${t.avg >= PASS_PCT ? 'text-emerald-300' : 'text-amber-300'}`}>{t.avg}%</span>
+                        <span className="text-[11px] text-slate-500"> · {reviewsRu(t.count)}</span>
+                        {t.weakest && <span className="block text-[11px] text-slate-400">тренировать: {t.weakest}</span>}
+                      </>
+                    )}
+                  </td>
                 </tr>
               );
             })}

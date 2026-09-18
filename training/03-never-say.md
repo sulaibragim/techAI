@@ -1,6 +1,6 @@
 # Что НЕЛЬЗЯ говорить клиенту — и что говорить вместо этого
 
-> Внутренний документ · черновик v0.1 · 2026-09-18
+> Внутренний документ · v0.2 · 2026-09-18
 > Почему это важно: в июле 2026 Google снял наш профиль за **Misrepresentation** (неправду о компании). Если менеджер скажет по телефону то, что неправда, — это вернётся плохим отзывом, жалобой или новым баном. **Одна выдуманная фраза может стоить компании профиля в Google.**
 > Правило: **если не уверен, что это правда, — не говори. Скажи «Let me check that and call you right back.»**
 
@@ -31,6 +31,21 @@
 | «I think…» / «maybe…» / «probably around…» | Неуверенность = клиент звонит дальше | Уверенно: «It's $139.» |
 | «The $60 night fee goes to the tech» | Внутренняя информация | «After 8PM there's a flat $60 night rate on every service.» |
 | Имена владельцев, их личные номера, домашний адрес | Приватность | Компания — TrustKey Locksmith. Адреса офиса нет: «We're mobile — we come to you.» |
+
+## Тон — фразы, которые портят разговор
+
+Это не неправда, но клиент от них уходит. Разговор должен быть приятным — тогда записываются и возвращаются.
+
+| ❌ НЕ ГОВОРИ | Как это слышит клиент | ✅ ГОВОРИ ВМЕСТО |
+|---|---|---|
+| «Calm down» | «Ты ведёшь себя неправильно» — злит ещё больше | «It sounds like it's been a really rough day.» Пауза. «Let's get you sorted — where are you right now?» |
+| «Hold on…» (и тишина) | «Меня бросили» — через 20 секунд кладут трубку | «Can I put you on a quick hold? About 30 seconds.» Вернулся: «Thanks for holding, [name].» |
+| «We'll try to get someone out» | Никто не отвечает, может, и не приедут | «I'm sending [Tech] — about [X–Y] minutes.» |
+| «Do you want us to come out?» | Можно отказаться — и повод подумать | «What's the exact address?» |
+| «It's our policy» | Правило против меня | «To protect you, the tech checks ID before opening.» |
+| «I understand» (на автомате) | Заученная фраза, не слушают | «That sounds really stressful» — одна фраза, и к делу |
+| «At least it's not…» | Мою проблему обесценили | Назови, что случилось, и помоги |
+| «Is there anything else?» в конце вместо прощания | Звонок оборвали на формальности | «Thanks for calling TrustKey, [name]. [Tech] will text you from the road.» |
 
 ## Экстренные ситуации — не наша работа, а 911
 

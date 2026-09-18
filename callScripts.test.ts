@@ -144,3 +144,43 @@ describe('honestyWarnings', () => {
     expect(honestyWarnings('Somewhere between 25 to 35 minutes.')).toEqual([]);
   });
 });
+
+describe('the call reads like a good call', () => {
+  it('says the night surcharge out loud instead of hiding it', () => {
+    const line = "It's {price:r-car-lockout} total{night}.";
+    expect(scriptText(line, day)).toBe("It's $139 total.");
+    expect(scriptText(line, night)).toBe("It's $199 total — our after-8PM rate.");
+  });
+
+  it('uses what the form already knows, and leaves the rest for the manager to say', () => {
+    const ctx: ScriptContext = { ...day, fill: { name: 'Maria', Tech: 'Alex', address: '' } };
+    const segs = resolveScript('Thanks, [name]. [Tech] will text you. [address] — [X–Y] min.', ctx);
+    expect(segs.filter(s => s.kind === 'filled').map(s => s.value)).toEqual(['Maria', 'Alex']);
+    expect(segs.filter(s => s.kind === 'slot').map(s => s.value)).toEqual(['[address]', '[X–Y]']);
+  });
+
+  it('every service script ends with a warm goodbye', () => {
+    for (const s of Object.values(CALL_SCRIPTS).filter(s => s.id !== 'opening')) {
+      const last = s.steps[s.steps.length - 1];
+      expect(last.title, s.id).toBe('Прощание');
+      expect(last.say, s.id).toMatch(/^Thanks/);
+    }
+  });
+
+  it('on an urgent call the caller is asked their name before the price', () => {
+    for (const id of ['car-lockout', 'home-lockout', 'akl', 'broken-key', 'commercial'] as const) {
+      const steps = CALL_SCRIPTS[id].steps;
+      const who = steps.findIndex(st => /who am I speaking with/.test(st.say));
+      const price = steps.findIndex(st => /\{price:/.test(st.say));
+      expect(who, id).toBeGreaterThanOrEqual(0);
+      expect(who, id).toBeLessThan(price);
+    }
+  });
+
+  it('every ready answer moves the call forward with a question — except the one we refuse', () => {
+    for (const [id, o] of Object.entries(OBJECTIONS)) {
+      if (id === 'tenant') continue;
+      expect(o.say, id).toMatch(/\?/);
+    }
+  });
+});

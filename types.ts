@@ -357,6 +357,17 @@ export interface TrainingResult {
   roleplays?: Record<string, string>; // role-play id → ISO when marked practised
 }
 
+// A recorded call scored against the 12-point card (scorecard.ts) — the weekly coaching loop.
+export interface CallReview {
+  id: string;
+  timestamp: string;              // ISO, when it was reviewed
+  managerId: string;              // whose call it was
+  reviewerId?: string;
+  scores: (0 | 1 | 2 | null)[];   // one per SCORECARD point; null = didn't apply
+  note?: string;                  // one thing done well, one to fix
+  callRef?: string;               // how to find the recording (number, time)
+}
+
 export interface LostCall {
   id: string;
   timestamp: string;       // ISO, when it was marked
