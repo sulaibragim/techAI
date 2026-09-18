@@ -4,9 +4,10 @@ import {
   ArrowRight, RotateCcw, MessageCircleQuestion, Ban, TriangleAlert,
 } from 'lucide-react';
 import { useSettingsStore } from '../settingsStore';
+import { isNightInArizona } from '../priceBook';
 import {
   CALL_SCRIPTS, OBJECTIONS, NEVER_SAY, EMERGENCY_911, ScriptId, ObjectionId, ScriptContext,
-  resolveScript, ratePrice, isNightInArizona,
+  resolveScript, ratePrice,
 } from '../callScripts';
 
 interface CallScriptPanelProps {
@@ -48,6 +49,7 @@ export const CallScriptPanel: React.FC<CallScriptPanelProps> = ({ scriptId, onSc
 
   const [stepIdx, setStepIdx] = useState(0);
   const [objection, setObjection] = useState<ObjectionId | null>(null);
+  const [showAllAnswers, setShowAllAnswers] = useState(false);
   const [showNever, setShowNever] = useState(false);
   const bodyRef = useRef<HTMLDivElement>(null);
   const currentRef = useRef<HTMLLIElement>(null);
@@ -56,6 +58,7 @@ export const CallScriptPanel: React.FC<CallScriptPanelProps> = ({ scriptId, onSc
   useLayoutEffect(() => {
     setStepIdx(0);
     setObjection(null);
+    setShowAllAnswers(false);
     bodyRef.current?.scrollTo({ top: 0 });
   }, [scriptId]);
 
@@ -67,7 +70,10 @@ export const CallScriptPanel: React.FC<CallScriptPanelProps> = ({ scriptId, onSc
   const ctx: ScriptContext = { priceBook, night, me: managerName.trim().split(/\s+/)[0] || '' };
   const current = script.steps[stepIdx];
   const answer = objection ? OBJECTIONS[objection] : null;
-  const rateCols = script.rates.length >= 3 ? 'grid-cols-3' : script.rates.length === 2 ? 'grid-cols-2' : 'grid-cols-1';
+  // Callers ask off-script too: every ready answer stays one tap away from any script.
+  const otherAnswers = (Object.keys(OBJECTIONS) as ObjectionId[]).filter(id => !script.objections.includes(id));
+  const answerIds = showAllAnswers ? [...script.objections, ...otherAnswers] : script.objections;
+  const rateCols = script.rates.length === 3 ? 'grid-cols-3' : script.rates.length === 1 ? 'grid-cols-1' : 'grid-cols-2';
 
   return (
     <div className={`flex flex-col min-h-0 overflow-hidden bg-slate-900 border border-white/10 shadow-2xl ${className}`}>
@@ -185,7 +191,7 @@ export const CallScriptPanel: React.FC<CallScriptPanelProps> = ({ scriptId, onSc
         <section>
           <p className={`${labelCls} text-slate-400 mb-2`}><MessageCircleQuestion size={13} /> Клиент говорит…</p>
           <div className="flex flex-wrap gap-1.5">
-            {script.objections.map(id => (
+            {answerIds.map(id => (
               <button
                 key={id}
                 onClick={() => setObjection(o => (o === id ? null : id))}
@@ -194,6 +200,17 @@ export const CallScriptPanel: React.FC<CallScriptPanelProps> = ({ scriptId, onSc
                 {OBJECTIONS[id].label}
               </button>
             ))}
+            {otherAnswers.length > 0 && (
+              <button
+                onClick={() => {
+                  if (showAllAnswers && objection && !script.objections.includes(objection)) setObjection(null);
+                  setShowAllAnswers(!showAllAnswers);
+                }}
+                className="px-2.5 py-1.5 rounded-lg border border-dashed border-white/15 text-[11px] font-semibold text-slate-400 hover:text-white transition-all active:scale-95"
+              >
+                {showAllAnswers ? 'Меньше' : `Ещё ${otherAnswers.length}…`}
+              </button>
+            )}
           </div>
           {answer && (
             <div ref={answerRef} className="mt-3 rounded-2xl border border-blue-500/30 bg-blue-500/5 p-3.5 animate-in fade-in">

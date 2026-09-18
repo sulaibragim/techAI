@@ -15,7 +15,7 @@
 | «We have crews all over the Valley» / «big team» | Не рисуем штат | «We're a local company based right here in Mesa.» |
 | «We're the best / fastest / #1 / top-rated» | Превосходные степени о себе | Не хвалим себя — говорим, как работаем: цена заранее, оплата после |
 | «We have hundreds of 5-star reviews» | Отзывов пока мало/нет | Ничего про количество отзывов |
-| «In business since 2010» / «15 years» / «about a year» | Компания открылась в 2026 (LLC — июнь 2026) | «We're a young local company — TrustKey opened this year — but our team brings solid experience from working in other states.» [формулировку подтвердить с владельцем] |
+| «In business since 2010» / «15 years» / «about a year» | Компания открылась в 2026 (LLC — июнь 2026) | «We're a new local company — TrustKey opened in June 2026.» Дальше — о том, что гарантируем: цена до начала работы, 30 дней гарантии |
 | «We're 30% cheaper than the dealer» / «cheapest in town» | Выдуманное сравнение | «We come to you — no tow to the dealer.» |
 | «Other locksmiths are scammers» / «those $19 guys rip you off» | Не ругаем конкурентов | «Our price is set before we drive out and doesn't change at the door.» |
 | «We never drill» / «no damage guaranteed» | Иногда сверлить нужно | «We always try non-destructive entry first. If a lock ever needs drilling, the tech tells you before he starts.» |

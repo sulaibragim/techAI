@@ -4,7 +4,7 @@ import { API_BASE } from './backendUrl';
 import { authHeaders } from './apiClient';
 import { sendWrite } from './writeQueue';
 import { Expense, ClientProfile, StockMovement, ServiceRate, AiMemory, ClientSmsSettings, CLIENT_SMS_DEFAULTS, StaffNotifySettings, STAFF_NOTIFY_DEFAULTS, ReviewLink } from './types';
-import { PRICE_BOOK_SEED } from './priceBook';
+import { PRICE_BOOK_SEED, PRICE_BOOK_VERSION, planPriceBookUpgrade, applyPriceBookUpgrade, priceBookUpgradePatch } from './priceBook';
 
 export interface SettingsState {
   technicianName: string;
@@ -24,6 +24,7 @@ export interface SettingsState {
   expenses: Expense[]; // business expense ledger (keys & stock, fuel, ads, …)
   stockMovements: StockMovement[]; // inventory ledger — every receive/sale/adjust/return/loss
   priceBook: ServiceRate[]; // standard service rates (seeded from trustkeyaz.com), tap-to-fill on invoices
+  priceBookVersion: number; // PRICE_BOOK_VERSION the server's price book is at — only a sync sets it (0 = not upgraded)
   aiMemories: AiMemory[]; // standing instructions the AI assistant remembers across chat clears
   clientProfiles: Record<string, ClientProfile>; // reputation/meta keyed by normalized phone
   supplierAliases: Record<string, string>; // "<supplier>|<their code>" → partId; learned once at invoice import, auto-matches after
@@ -34,7 +35,7 @@ export interface SettingsState {
   smsTemplates: Record<string, { en?: string; es?: string }>; // owner overrides of the one-tap client texts (template id → texts)
   onboardingComplete: boolean;
   aiAvailable: boolean; // runtime flag: is GEMINI_API_KEY configured on the server?
-  updateSettings: (patch: Partial<Omit<SettingsState, 'updateSettings' | 'resetSettings' | 'setMonthlyTarget' | 'setTechTarget' | 'addExpense' | 'removeExpense' | 'addStockMovement' | 'clearStockLedger' | 'setMovementDispute' | 'addServiceRate' | 'updateServiceRate' | 'removeServiceRate' | 'importServiceRates' | 'upsertClientProfile' | 'addAiMemory' | 'removeAiMemory' | 'setSmsTemplate' | 'resetSmsTemplate' | 'addReviewLink' | 'updateReviewLink' | 'removeReviewLink' | 'syncSettings' | 'checkAiAvailable' | 'aiAvailable'>>) => void;
+  updateSettings: (patch: Partial<Omit<SettingsState, 'updateSettings' | 'resetSettings' | 'setMonthlyTarget' | 'setTechTarget' | 'addExpense' | 'removeExpense' | 'addStockMovement' | 'clearStockLedger' | 'setMovementDispute' | 'addServiceRate' | 'updateServiceRate' | 'removeServiceRate' | 'importServiceRates' | 'upsertClientProfile' | 'addAiMemory' | 'removeAiMemory' | 'setSmsTemplate' | 'resetSmsTemplate' | 'addReviewLink' | 'updateReviewLink' | 'removeReviewLink' | 'syncSettings' | 'upgradePriceBook' | 'checkAiAvailable' | 'aiAvailable'>>) => void;
   setMonthlyTarget: (monthKey: string, value: number) => void;
   setTechTarget: (userId: string, value: number) => void;
   addExpense: (expense: Omit<Expense, 'id'>) => void;
@@ -62,7 +63,10 @@ export interface SettingsState {
   learnSupplierAlias: (supplier: string, code: string, partId: string) => void;
   markInvoiceImported: (invoiceNumber: string) => void;
   resetSettings: () => void;
-  syncSettings: () => Promise<void>;
+  /** Pull the server copy. Resolves to what the server sent — null offline or on an error. */
+  syncSettings: () => Promise<Record<string, unknown> | null>;
+  /** Bring the shared price book to PRICE_BOOK_VERSION. Only on freshly synced data, only by a role that may write settings. */
+  upgradePriceBook: (serverHasPriceBook: boolean) => void;
   checkAiAvailable: () => Promise<void>;
 }
 
@@ -89,6 +93,7 @@ export const SETTINGS_DEFAULTS = {
   expenses: [] as Expense[],
   stockMovements: [] as StockMovement[],
   priceBook: PRICE_BOOK_SEED as ServiceRate[],
+  priceBookVersion: 0,
   aiMemories: [] as AiMemory[],
   clientProfiles: {} as Record<string, ClientProfile>,
   supplierAliases: {} as Record<string, string>,
@@ -354,8 +359,23 @@ export const useSettingsStore = create<SettingsState>()(
                 return merged;
               });
             }
+            return data && typeof data === 'object' ? data : {};
           }
         } catch {}
+        return null;
+      },
+
+      // Same deltas an owner would make by hand in Settings → Service Rates. The version
+      // travels with them, and is NOT marked here: it comes back with the server's copy once
+      // the write lands. Until then every sync re-applies the plan (it only touches old seeded
+      // values, so a repeat is a no-op) — a sync racing this write can't leave the old book on screen.
+      upgradePriceBook: (serverHasPriceBook) => {
+        const { priceBook, priceBookVersion } = get();
+        if (priceBookVersion >= PRICE_BOOK_VERSION) return;
+        const plan = planPriceBookUpgrade(priceBook, priceBookVersion);
+        const next = applyPriceBookUpgrade(priceBook, plan);
+        set({ priceBook: next });
+        pushToServer(priceBookUpgradePatch(plan, next, serverHasPriceBook));
       },
 
       checkAiAvailable: async () => {

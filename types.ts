@@ -166,7 +166,7 @@ export interface ServiceRate {
   name: string;
   category: ServiceCategory;
   price: number;            // daytime / base "from" price
-  nightPrice?: number;      // after-hours price when it differs
+  nightPrice?: number;      // as read from an imported list only — quotes use nightPriceOf(): price + $60 after 8PM
   type: 'part' | 'labor' | 'service_call' | 'maintenance' | 'installation'; // invoice line type it maps to
   note?: string;            // e.g. "+$49 each additional door", "all-in with Schlage"
 }

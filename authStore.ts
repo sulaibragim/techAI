@@ -346,6 +346,7 @@ export const can = {
   viewAnalytics:  (r: Role) => r === 'owner' || r === 'manager' || r === 'accountant',
   viewAccounting: (r: Role) => r === 'owner' || r === 'manager' || r === 'accountant',
   viewCalls:      (r: Role) => r === 'owner' || r === 'manager',
+  editSettings:   (r: Role) => r === 'owner' || r === 'manager', // PUT /api/settings (price book, company…)
   viewMessages:   (r: Role) => r === 'owner' || r === 'manager',
   editInventory:  (r: Role) => r === 'owner' || r === 'manager' || r === 'warehouse',
   // Handing stock to a technician is a warehouse job, not a money or client job.

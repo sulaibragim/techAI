@@ -110,7 +110,14 @@ const App: React.FC = () => {
   useEffect(() => {
     if (!currentUser) return;
     useAuthStore.getState().syncUsers();
-    useSettingsStore.getState().syncSettings();
+    // The price-book upgrade writes shared data: only on a fresh server copy (never on a
+    // stale offline one) and only by a role the server lets write settings.
+    const role = currentUser.role;
+    useSettingsStore.getState().syncSettings().then(server => {
+      if (server && can.editSettings(role)) {
+        useSettingsStore.getState().upgradePriceBook(Array.isArray(server.priceBook) && server.priceBook.length > 0);
+      }
+    });
     useSettingsStore.getState().checkAiAvailable();
     useAppStore.getState().syncJobs();
     useAppStore.getState().syncInventory();

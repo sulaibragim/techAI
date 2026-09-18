@@ -9,6 +9,7 @@ import { describeSmsFailure } from './smsService';
 import { buildClients, clientScore, clientFlags, normalizePhone } from './clientUtils';
 import { findKeyProfiles, findProcedure, decodeVin, reverseLookup, stockForKeyway } from './vehicleKeyLookup';
 import { accountsReceivable } from './financialUtils';
+import { isNightInArizona, nightPriceOf } from './priceBook';
 import { LineItem, isStockPart } from './types';
 import { REVIEW_TEMPLATE, resolveSmsTemplate, withReviewLink } from './smsTemplates';
 
@@ -216,7 +217,7 @@ PROTOCOLS (follow strictly):
 2. ROLE AWARENESS — a technician sees ONLY their own jobs and clients. Never mention, list, or imply other technicians' jobs, clients, schedules, or earnings to a technician.
 3. CLIENT ESCALATION — before booking or acting for a client who is "Do not service", on the watchlist, or carrying a large unpaid balance, WARN first and wait. Use get_client when unsure.
 4. NO GUESSING — never invent prices, stock counts, job IDs, addresses, key/chip data, or client details. If you lack it, call the right tool (get_price_book, car_key_lookup, search_jobs, search_inventory, get_client). If the tool has no answer, say so plainly.
-5. PRICING — quote ONLY from get_price_book. After 9:00 PM or before 7:00 AM Arizona time, quote the nightPrice when one exists and say it's the after-hours rate. Never invent prices, never offer discounts. "from" prices are a starting point — say "от $NNN".
+5. PRICING — quote ONLY from get_price_book. After 8:00 PM or before 7:00 AM Arizona time every order is +$60 — quote the nightPrice and say it's the after-hours rate. Never invent prices, never offer discounts. "from" prices are a starting point — say "от $NNN".
 6. HONEST ERRORS — if a tool errors or you couldn't finish, say exactly what failed. Never say "Готово" for an action that didn't succeed.`;
 
 const LANGUAGE_RULES = (name: string) => `
@@ -923,22 +924,20 @@ export async function handleAITool(name: string, args: any): Promise<any> {
     }
 
     case 'get_price_book': {
-      const now = new Date();
-      const hourAZ = Number(now.toLocaleString('en-US', { hour: '2-digit', hour12: false, timeZone: 'America/Phoenix' }));
-      const afterHours = hourAZ >= 21 || hourAZ < 7;
+      const afterHours = isNightInArizona();
       const q = (args.query || '').toLowerCase().trim();
       let rates = settings.priceBook || [];
       if (q) rates = rates.filter(r => r.name.toLowerCase().includes(q) || r.category.toLowerCase().includes(q));
       return {
         status: 'success',
         afterHoursNow: afterHours,
-        note: afterHours ? 'It is after-hours in Arizona — quote nightPrice where present.' : 'Daytime in Arizona — quote the standard price.',
+        note: afterHours ? 'It is after-hours in Arizona (8PM–7AM) — quote nightPrice (+$60).' : 'Daytime in Arizona — quote the standard price.',
         count: rates.length,
         rates: rates.map(r => ({
           name: r.name,
           category: r.category,
           price: r.price,
-          nightPrice: r.nightPrice ?? null,
+          nightPrice: nightPriceOf(r),
           type: r.type,
           note: r.note || null,
         })),

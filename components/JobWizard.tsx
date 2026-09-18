@@ -23,11 +23,12 @@ import {
   KeySquare,
   ScrollText,
   PanelRightOpen,
+  Unlink,
   type LucideIcon,
 } from 'lucide-react';
 import { Job, Client, LockDetails, LeadChannel, LEAD_CHANNELS, LEAD_CHANNEL_LABELS } from '../types';
 import { BRANDS as INITIAL_BRANDS, LOCK_TYPES } from '../constants';
-import { useAuthStore, useCurrentUser, worksField } from '../authStore';
+import { useAuthStore, useCurrentUser, worksField, can } from '../authStore';
 import { useVisibleJobs } from '../store';
 import { useSettingsStore } from '../settingsStore';
 import { buildClients, findClientByPhone, toE164US, normalizePhone, ClientRecord } from '../clientUtils';
@@ -69,6 +70,7 @@ const JOB_TEMPLATES: JobTemplate[] = [
   { id: 'car-key', icon: Key, label: 'Car Key', lockType: 'Automotive', complaint: 'Customer needs a new / spare car key made (has a working key).', color: 'from-cyan-600/20 to-cyan-800/10 border-cyan-500/30', iconColor: 'text-cyan-400', priority: 'today' },
   { id: 'akl', icon: KeySquare, label: 'All Keys Lost', lockType: 'Automotive', complaint: 'All car keys lost — new key made from scratch on-site.', color: 'from-rose-600/20 to-rose-800/10 border-rose-500/30', iconColor: 'text-rose-400', priority: 'emergency' },
   { id: 'home-lockout', icon: Home, label: 'Home Lockout', lockType: 'Residential', complaint: 'Customer locked out of their home.', color: 'from-green-600/20 to-green-800/10 border-green-500/30', iconColor: 'text-green-400' },
+  { id: 'broken-key', icon: Unlink, label: 'Broken Key', lockType: 'Residential', complaint: 'Key broke off inside the lock — broken piece needs extracting.', color: 'from-orange-600/20 to-orange-800/10 border-orange-500/30', iconColor: 'text-orange-400', priority: 'today' },
   { id: 'rekey', icon: KeyRound, label: 'Rekey', lockType: 'Residential', complaint: 'Customer needs locks rekeyed (moved in / lost key / security).', color: 'from-amber-600/20 to-amber-800/10 border-amber-500/30', iconColor: 'text-amber-400' },
   { id: 'commercial', icon: Building2, label: 'Commercial Lockout', lockType: 'Commercial', complaint: 'Customer locked out of their business premises.', color: 'from-purple-600/20 to-purple-800/10 border-purple-500/30', iconColor: 'text-purple-400' },
   { id: 'safe', icon: Lock, label: 'Safe Opening', lockType: 'Secure / Safe', complaint: 'Customer cannot open safe — combination forgotten or malfunction.', color: 'from-red-600/20 to-red-800/10 border-red-500/30', iconColor: 'text-red-400' },
@@ -121,7 +123,7 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
   const [showSecondAddress, setShowSecondAddress] = useState(false);
 
   // Call script beside the form — for whoever answers the phone, not the techs.
-  const showScript = currentUser?.role === 'owner' || currentUser?.role === 'manager';
+  const showScript = !!currentUser && can.viewCalls(currentUser.role);
   const [scriptId, setScriptId] = useState<ScriptId>('opening');
   const [scriptCollapsed, setScriptCollapsed] = useState(() => {
     try { return localStorage.getItem(SCRIPT_COLLAPSED_KEY) === '1'; } catch { return false; }
@@ -397,7 +399,7 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
                 <h3 className="text-2xl font-bold text-white">Choose a template</h3>
                 <p className="text-sm text-slate-400 mt-2">Pre-fills job type, complaint & priority. You can still edit everything.</p>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 {JOB_TEMPLATES.map(tpl => {
                   const Icon = tpl.icon;
                   return (

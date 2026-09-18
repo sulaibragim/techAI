@@ -24,6 +24,7 @@ import { API_BASE } from '../backendUrl';
 import { authHeaders } from '../apiClient';
 import { normalizePhone, toE164US, formatPhone, buildClients, clientFlags, clientScore, TIER_STYLE, priorVisits } from '../clientUtils';
 import { isRevenueJob } from '../financialUtils';
+import { nightPriceOf } from '../priceBook';
 import { translateCallSummary } from '../translateService';
 import { geocodeAddress } from '../geocoding';
 import { haversineMiles, approxEtaMinutes, formatMiles, LatLng } from '../geoUtils';
@@ -1244,7 +1245,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                           </div>
                           <div className="text-right shrink-0">
                             <p className="font-bold text-green-400">${rate.price}</p>
-                            {rate.nightPrice != null && <p className="text-[10px] text-slate-500">night ${rate.nightPrice}</p>}
+                            <p className="text-[10px] text-slate-500">night ${nightPriceOf(rate)}</p>
                           </div>
                         </button>
                       ))}

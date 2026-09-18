@@ -1,4 +1,5 @@
 import { ServiceRate } from './types';
+import { nightPriceOf } from './priceBook';
 
 // Phone scripts for the intake screen: what the manager says (English, to the caller) and
 // a hint for the manager (Russian). TrustKey-specific — Arizona facts, trustkeyaz.com prices.
@@ -6,7 +7,7 @@ import { ServiceRate } from './types';
 //
 // Tokens inside `say`:
 //   {me}            the manager's first name
-//   {price:<id>}    price-book rate by id — day or night price, whichever is live
+//   {price:<id>}    price-book rate by id — +$60 when the night rate is on
 //   [anything]      a slot the manager fills in out loud (tech name, ETA window, address…)
 
 export type ScriptId =
@@ -15,6 +16,7 @@ export type ScriptId =
   | 'car-key'
   | 'akl'
   | 'home-lockout'
+  | 'broken-key'
   | 'rekey'
   | 'commercial'
   | 'safe'
@@ -31,8 +33,7 @@ export interface ScriptStep {
 export interface ScriptRate {
   id: string;     // price-book id
   label: string;
-  day: number;    // fallback when the rate is missing from the price book
-  night: number;
+  price: number;  // fallback when the rate is missing from the price book
   from?: boolean; // a starting price, confirmed on-site
 }
 
@@ -64,17 +65,19 @@ export const EMERGENCY_911 = {
 };
 
 const RATE = {
-  carLockout:  { id: 'r-car-lockout',   label: 'Car lockout',        day: 139, night: 199 },
-  homeLockout: { id: 'r-home-lockout',  label: 'Home lockout',       day: 159, night: 219 },
-  commLockout: { id: 'r-comm-lockout',  label: 'Commercial lockout', day: 199, night: 259 },
-  rekey:       { id: 'r-rekey',         label: 'Rekey, 1st door',    day: 149, night: 209 },
-  transponder: { id: 'r-transponder',   label: 'Transponder key',    day: 149, night: 209, from: true },
-  remoteFob:   { id: 'r-remote-fob',    label: 'Remote / fob',       day: 199, night: 259, from: true },
-  smartKey:    { id: 'r-smart-key',     label: 'Smart key',          day: 279, night: 339, from: true },
-  akl:         { id: 'r-all-keys-lost', label: 'All keys lost',      day: 349, night: 409, from: true },
-  safe:        { id: 'r-safe-open',     label: 'Safe opening',       day: 179, night: 239, from: true },
-  install:     { id: 'r-lock-install',  label: 'Install your lock',  day: 149, night: 209, from: true },
-  smartLock:   { id: 'r-smart-install', label: 'Install smart lock', day: 189, night: 249, from: true },
+  carLockout:  { id: 'r-car-lockout',    label: 'Car lockout',        price: 139 },
+  homeLockout: { id: 'r-home-lockout',   label: 'Home lockout',       price: 159 },
+  commLockout: { id: 'r-comm-lockout',   label: 'Commercial lockout', price: 199 },
+  extraction:  { id: 'r-key-extraction', label: 'Key extraction',     price: 169 },
+  rekey:       { id: 'r-rekey',          label: 'Rekey, 1st door',    price: 149 },
+  keyNoChip:   { id: 'r-car-key',        label: 'Key, no chip',       price: 149 },
+  transponder: { id: 'r-transponder',    label: 'Transponder key',    price: 149, from: true },
+  remoteFob:   { id: 'r-remote-fob',     label: 'Remote / fob',       price: 199, from: true },
+  smartKey:    { id: 'r-smart-key',      label: 'Smart key',          price: 279, from: true },
+  akl:         { id: 'r-all-keys-lost',  label: 'All keys lost',      price: 349, from: true },
+  safe:        { id: 'r-safe-open',      label: 'Safe opening',       price: 179, from: true },
+  install:     { id: 'r-lock-install',   label: 'Install your lock',  price: 149, from: true },
+  smartLock:   { id: 'r-smart-install',  label: 'Install smart lock', price: 189, from: true },
 } satisfies Record<string, ScriptRate>;
 
 const ETA: ScriptStep = {
@@ -88,7 +91,7 @@ export const CALL_SCRIPTS: Record<ScriptId, CallScript> = {
     id: 'opening',
     label: 'Начало звонка',
     rates: [RATE.carLockout, RATE.homeLockout],
-    objections: ['cheaper', 'eta', 'licensed', 'shop', 'web20'],
+    objections: ['cheaper', 'eta', 'licensed', 'years', 'shop', 'outofarea', 'web20'],
     steps: [
       { title: 'Приветствие', say: `${COMPANY}, this is {me}. Are you locked out, or is it something else?`, hint: 'Название компании и своё имя — сразу доверие. Не «How can I help?» — сразу к делу.' },
       { title: 'Что случилось', say: 'Is it a car, a home, or a business?', hint: 'По ответу выбери шаблон слева — скрипт сам переключится. Непонятно — «Start from scratch».' },
@@ -105,7 +108,7 @@ export const CALL_SCRIPTS: Record<ScriptId, CallScript> = {
     objections: ['cheaper', 'eta', 'damage', 'licensed', 'noid', 'think', 'discount', 'web20'],
     steps: [
       { title: 'Безопасность', say: 'Is anyone or a pet inside the car?', hint: 'ДА → сразу 911, фраза ниже. Жара в Аризоне опасна за минуты.', alert: true, call911: true },
-      { title: 'Где ключи', say: 'Are the keys inside the car, or are they lost?', hint: 'Потеряны → это не lockout, а All Keys Lost: переключи скрипт.' },
+      { title: 'Где ключи', say: 'Are the keys inside the car, or are they lost?', hint: 'Потеряны → это не lockout, а All Keys Lost: переключи скрипт. Сломался в замке → Broken key.' },
       { title: 'Где клиент', say: 'What city are you in — and is this the best number for you?', hint: 'Проверь зону. Другой город → если техник доедет ≤ ~30 мин, берём.' },
       { title: 'Машина', say: "What's the car — year and make?", hint: 'Для техника. Заполни Make / Model в форме.' },
       { title: 'Цена', say: "It's {price:r-car-lockout} total — that's the trip and opening the car, nothing added at the door.", hint: 'Уверенно, одной фразой. После 8PM цена сама станет ночной.' },
@@ -119,13 +122,13 @@ export const CALL_SCRIPTS: Record<ScriptId, CallScript> = {
   'car-key': {
     id: 'car-key',
     label: 'Car key (spare / new)',
-    rates: [RATE.transponder, RATE.remoteFob, RATE.smartKey],
+    rates: [RATE.keyNoChip, RATE.transponder, RATE.remoteFob, RATE.smartKey],
     objections: ['exact', 'dealer', 'ownfob', 'fobdead', 'european', 'eta', 'think', 'warranty'],
     steps: [
       { title: 'Есть ли ключ', say: 'Do you have a working key right now, or are all keys lost?', hint: 'Нет ни одного → переключи на All Keys Lost.' },
       { title: 'Машина', say: "What's the year, make and model?", hint: 'Введи Make / Model — ниже в форме CRM покажет тип ключа и сложность. «Dealer / bench» → честно говорим, что это к дилеру.' },
-      { title: 'Тип ключа', say: 'Is it push-to-start, or do you turn a key? Does your key have buttons on it?', hint: 'Кнопка Start → smart key. Кнопки на ключе → remote / fob. Без кнопок → чиповый (transponder). Старый ключ без чипа — цену пока уточняй у владельца.' },
-      { title: 'Цена', say: "For your [car], a [key type] starts from [price above] — that's the key, cutting and programming, all done at your car. The tech confirms the exact price before any work starts, and the $59 service call is credited toward the job.", hint: 'Цены по типам — вверху панели. Слово «from» обязательно: точную цену подтверждает техник.' },
+      { title: 'Тип ключа', say: 'Is it push-to-start, or do you turn a key? Does your key have buttons on it?', hint: 'Кнопка Start → smart key. Кнопки на ключе → remote / fob. Без кнопок → чиповый (transponder). Старая машина и простой металлический ключ → «no chip»: только нарезка, цена точная.' },
+      { title: 'Цена', say: "For your [car], a [key type] starts from [price above] — that's the key, cutting and programming, all done at your car. The tech confirms the exact price before any work starts, and the $59 service call is credited toward the job.", hint: 'Цены по типам — вверху панели. Для ключей с чипом слово «from» обязательно: точную цену подтверждает техник. Ключ без чипа — без программирования, цена точная.' },
       { title: 'Сколько ключей', say: 'How many keys would you like?' },
       { title: 'Когда', say: 'Would today work, or would you like to schedule it — morning or afternoon?', hint: 'Плановая работа → предлагай выбор, а не «когда вам удобно?».' },
       { title: 'Адрес', say: "What's the address where the car will be?" },
@@ -167,6 +170,23 @@ export const CALL_SCRIPTS: Record<ScriptId, CallScript> = {
       { title: 'Детали', say: "Please have an ID handy when [Tech] arrives. You pay after you're inside.", hint: 'ID — формальность, без нажима.' },
       { title: 'Rekey (если ключи потеряны)', say: "Were the keys lost, or just locked inside? If they're lost, a lot of people have the lock rekeyed while the tech is there — {price:r-rekey} for the first door.", hint: 'Только если ключи ПОТЕРЯНЫ. Один раз, без давления.' },
       { title: 'Повтор', say: "So I have [name], [address], home lockout, {price:r-home-lockout} total, [Tech] in about [X–Y] minutes. You'll get a text with [Tech]'s name and photo." },
+    ],
+  },
+
+  'broken-key': {
+    id: 'broken-key',
+    label: 'Broken key',
+    rates: [RATE.extraction],
+    objections: ['damage', 'eta', 'cheaper', 'licensed', 'noid', 'think', 'discount', 'web20'],
+    steps: [
+      { title: 'Где сломался', say: 'Where did the key break — in a car or a house lock? Is it in the door or the ignition?', hint: 'Машина → Job Type «Auto», дом → «Home». Для техника: дверь или замок зажигания.' },
+      { title: 'Можете войти', say: 'Can you still get in, or are you locked out right now?', hint: 'Заперт снаружи → приоритет Emergency.' },
+      { title: 'Где клиент', say: 'What city are you in — and is this the best number for you?' },
+      { title: 'Цена', say: 'Getting the broken piece out is {price:r-key-extraction}. If you need a new key after that, the tech tells you that price before making it.', hint: 'Извлечение — цена точная. Новый ключ — отдельно: для машины по типу ключа (скрипт Car key).' },
+      ETA,
+      { title: 'Адрес', say: "What's the exact address — and which door, or where is the car parked?" },
+      { title: 'Детали', say: "Can I get your first name? Please have your ID handy — for a car, the registration too. You pay after it's done." },
+      { title: 'Повтор', say: "So I have [name], [address], broken key extraction, {price:r-key-extraction}, [Tech] in about [X–Y] minutes. You'll get a text with [Tech]'s name and photo." },
     ],
   },
 
@@ -253,8 +273,8 @@ export const OBJECTIONS: Record<ObjectionId, Objection> = {
   roc: { label: 'ROC number?', say: "We don't have one — we're not a licensed contractor, so we keep installs under the state's $1,000 limit." },
   years: {
     label: 'How long in business?',
-    say: "We're a young local company — we opened this year — but our team brings solid experience from working in other states.",
-    hint: 'Формулировка ждёт подтверждения владельца. Никаких «since 2010».',
+    say: "We're a new local company — TrustKey opened in June 2026. You get the price before any work starts, and keys we make and locks we install have a 30-day warranty.",
+    hint: 'Только правда: работаем с июня 2026. Не «уже год», не «since 2010».',
   },
   shop: { label: "Where's your shop?", say: "We're based in Mesa and fully mobile — no storefront. The tech comes to you in a marked vehicle." },
   exact: {
@@ -313,13 +333,10 @@ export type ScriptSegment =
   | { kind: 'price'; value: string }
   | { kind: 'slot'; value: string };
 
-/** Day/night price for a script rate: the live price book wins, the script's own number is the fallback. */
-export function ratePrice(ref: Pick<ScriptRate, 'id' | 'day' | 'night'>, priceBook: ServiceRate[], night: boolean): number {
-  const live = priceBook.find(r => r.id === ref.id);
-  if (!live) return night ? ref.night : ref.day;
-  if (!night) return live.price;
-  // "+$60 on every service after 8PM" — the rule the site publishes — when the book has no night price.
-  return live.nightPrice ?? live.price + 60;
+/** The price to quote: the live price book wins, the script's own number is the fallback; +$60 at night. */
+export function ratePrice(ref: Pick<ScriptRate, 'id' | 'price'>, priceBook: ServiceRate[], night: boolean): number {
+  const price = priceBook.find(r => r.id === ref.id)?.price ?? ref.price;
+  return night ? nightPriceOf({ price }) : price;
 }
 
 const TOKEN = /\{me\}|\{price:([a-z0-9-]+)\}|\[[^\]]+\]/g;
@@ -334,12 +351,8 @@ export function resolveScript(text: string, ctx: ScriptContext): ScriptSegment[]
     if (token === '{me}') {
       out.push({ kind: 'text', value: ctx.me || '[your name]' });
     } else if (m[1]) {
-      const ref = allRates().find(r => r.id === m[1]);
-      const live = ctx.priceBook.find(r => r.id === m[1]);
-      const n = ref ? ratePrice(ref, ctx.priceBook, ctx.night)
-        : live ? (ctx.night ? live.nightPrice ?? live.price + 60 : live.price)
-        : null;
-      out.push(n == null ? { kind: 'slot', value: '[price]' } : { kind: 'price', value: `$${n}` });
+      const ref = allRates().find(r => r.id === m[1]) ?? ctx.priceBook.find(r => r.id === m[1]);
+      out.push(ref ? { kind: 'price', value: `$${ratePrice(ref, ctx.priceBook, ctx.night)}` } : { kind: 'slot', value: '[price]' });
     } else {
       out.push({ kind: 'slot', value: token });
     }
@@ -353,9 +366,3 @@ export const scriptText = (text: string, ctx: ScriptContext): string =>
   resolveScript(text, ctx).map(s => s.value).join('');
 
 const allRates = (): ScriptRate[] => Object.values(RATE);
-
-/** Night rate starts at 8PM and ends at 7AM, Arizona time (no DST) — wherever the manager sits. */
-export function isNightInArizona(now: Date = new Date()): boolean {
-  const hour = Number(new Intl.DateTimeFormat('en-US', { hour: 'numeric', hourCycle: 'h23', timeZone: 'America/Phoenix' }).format(now));
-  return hour >= 20 || hour < 7;
-}

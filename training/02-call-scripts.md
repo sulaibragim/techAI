@@ -84,7 +84,7 @@
 
 ### 3.2. 🔑 Car key — запасной ключ / новый ключ (есть рабочий ключ)
 
-**Цены (all-in: выезд + ключ + нарезка + программирование):** простой без чипа $140 [подтвердить] · transponder from $149 · remote / fob / flip from $199 · smart key from $279 · после 8PM +$60.
+**Цены (all-in: выезд + ключ + нарезка + программирование):** простой без чипа $149 (точная) · transponder from $149 · remote / fob / flip from $199 · smart key from $279 · после 8PM +$60.
 **Модель:** стартовая цена по телефону → **$59 service call** (засчитывается в работу) → точная цена у техника **до начала работы**.
 
 | Шаг | Фраза | Подсказка |
@@ -181,6 +181,19 @@ CRM показала «Dealer / bench», или клиент назвал све
 
 > «Safe openings start from **$179** — the tech looks at it first and gives you the exact price **before any work**. What kind of safe is it — dial, keypad, or key? Do you know the brand?»
 
+### 3.11. 🔑 Ключ сломался в замке — извлечение
+
+**Цена:** $169 (после 8PM — $229). Точная. Новый ключ после извлечения — отдельно, техник называет цену до работы.
+
+| Шаг | Фраза | Подсказка |
+|---|---|---|
+| Где | «Where did the key break — in a car or a house lock? Is it in the door or the ignition?» | Машина → Job Type «Auto», дом → «Home» |
+| Может войти? | «Can you still get in, or are you locked out right now?» | Заперт снаружи → приоритет Emergency |
+| Где клиент | «What city are you in — and is this the best number for you?» | |
+| Цена | «Getting the broken piece out is **$169**. If you need a new key after that, the tech tells you that price before making it.» | Для машины новый ключ — по типу ключа (3.2) |
+| Время / адрес | «[Tech] can be there in about [X–Y] minutes. What's the exact address — and which door, or where is the car parked?» | |
+| Детали | «Please have your ID handy — for a car, the registration too. You pay after it's done.» | |
+
 ---
 
 ## Часть 4. Возражения — готовые ответы
@@ -194,7 +207,7 @@ CRM показала «Dealer / bench», или клиент назвал све
 | «Are you licensed?» | «Good question. Arizona doesn't have a state locksmith license. We're TrustKey Locksmith, a registered Arizona company, and we carry liability insurance. For installs we're not a licensed contractor, so those jobs stay under $1,000 — if yours is bigger, I'll tell you up front.» | **Никогда «yes, licensed»**. Проверено: в Аризоне нет лицензии локсмита (ALOA, 2025) |
 | «What's your ROC number?» | «We don't have one — we're not a licensed contractor, so we keep hardware installs under the state's $1,000 limit.» | ROC — лицензия подрядчиков-строителей |
 | «Are you bonded?» | [уточнить у владельца — пока не отвечать «да»] | |
-| «How long have you been in business?» | «We're a young local company — TrustKey opened this year — but our team brings solid experience from working in other states.» | [подтвердить с владельцем] |
+| «How long have you been in business?» | «We're a new local company — TrustKey opened in June 2026. You get the price before any work starts, and keys we make and locks we install have a 30-day warranty.» | Только правда: работаем с июня 2026 (решение владельца 18.09.2026) |
 | «Where's your shop?» | «We're based in Mesa and fully mobile — no storefront. The tech comes to you in a marked vehicle.» | |
 | «Why can't you give an exact price for the key?» | «Every car is different, so I give you the honest starting price now, and the tech confirms the exact number **before touching anything**. You're never surprised.» | |
 | «The dealer is cheaper» | «Some dealers can be. The difference is we come to you — no tow to the dealer.» | Никаких «мы дешевле на 30%» |
