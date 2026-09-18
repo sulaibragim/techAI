@@ -9,11 +9,12 @@ export const settingsRouter = Router();
 // what their UI actually needs (price book for invoices, client profiles for the job
 // card, company identity) — the expense ledger, stock ledger, and revenue targets are
 // the owner's books and must not ship to every tech's phone just because they hold a token.
-const TECH_HIDDEN_KEYS = ['expenses', 'stockMovements', 'monthlyTargets', 'aiMemories', 'lostCalls', 'scriptOverrides', 'trainingResults', 'callReviews'];
+// techHomes are where the team lives — only the people who dispatch need them.
+const TECH_HIDDEN_KEYS = ['expenses', 'stockMovements', 'monthlyTargets', 'aiMemories', 'lostCalls', 'scriptOverrides', 'trainingResults', 'callReviews', 'techHomes'];
 
 // The кладовщик works the shelf: he needs the stock ledger (it IS his work) but has no
-// business holding the expense book, revenue targets or the customer base.
-const WAREHOUSE_HIDDEN_KEYS = ['expenses', 'monthlyTargets', 'techTargets', 'aiMemories', 'lostCalls', 'scriptOverrides', 'trainingResults', 'callReviews'];
+// business holding the expense book, revenue targets, the customer base or home addresses.
+const WAREHOUSE_HIDDEN_KEYS = ['expenses', 'monthlyTargets', 'techTargets', 'aiMemories', 'lostCalls', 'scriptOverrides', 'trainingResults', 'callReviews', 'techHomes'];
 
 // Client profiles are keyed by the last 10 digits of the phone number.
 const last10 = (p) => String(p || '').replace(/\D/g, '').slice(-10);
@@ -100,6 +101,16 @@ function unionById(current, incoming, cap) {
 
 const mergeMap = (current, incoming) => ({ ...(current || {}), ...(incoming || {}) });
 
+// A tech's home: the label the owner sees and the pin the drive to a client starts from.
+// Without real coordinates it can't measure anything, so it isn't kept.
+function cleanTechHome(v) {
+  if (!v || typeof v !== 'object') return null;
+  const { lat, lng } = v;
+  if (typeof lat !== 'number' || typeof lng !== 'number' || !Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  if (Math.abs(lat) > 90 || Math.abs(lng) > 180 || (lat === 0 && lng === 0)) return null;
+  return { address: typeof v.address === 'string' ? v.address.trim().slice(0, 200) : '', lat, lng };
+}
+
 // Order-preserving union for display lists (price book): keep the current order,
 // swap in updated entries by id, append genuinely new ones at the end.
 function unionKeepOrder(current, incoming) {
@@ -183,6 +194,7 @@ settingsRouter.put('/', requireAuth, requireRole('owner', 'manager'), async (req
       if (patch.clientProfiles) merged.clientProfiles = mergeMap(current.clientProfiles, patch.clientProfiles);
       if (patch.monthlyTargets) merged.monthlyTargets = mergeMap(current.monthlyTargets, patch.monthlyTargets);
       if (patch.techTargets) merged.techTargets = mergeMap(current.techTargets, patch.techTargets);
+      if (patch.techHomes) merged.techHomes = mergeMap(current.techHomes, patch.techHomes);
       if (patch.supplierAliases) merged.supplierAliases = mergeMap(current.supplierAliases, patch.supplierAliases);
       if (patch.smsTemplates) merged.smsTemplates = mergeMap(current.smsTemplates, patch.smsTemplates);
       if (patch.scriptOverrides) merged.scriptOverrides = mergeMap(current.scriptOverrides, patch.scriptOverrides);
@@ -238,6 +250,17 @@ settingsRouter.put('/', requireAuth, requireRole('owner', 'manager'), async (req
       for (const [k, v] of Object.entries(merged.techTargets)) {
         if (!(Number(v) > 0)) delete merged.techTargets[k];
       }
+    }
+    // A null home is how a device clears one; anything without a usable pin goes too.
+    if (merged.techHomes !== undefined) {
+      const homes = {};
+      if (merged.techHomes && typeof merged.techHomes === 'object' && !Array.isArray(merged.techHomes)) {
+        for (const [k, v] of Object.entries(merged.techHomes)) {
+          const home = cleanTechHome(v);
+          if (home) homes[k] = home;
+        }
+      }
+      merged.techHomes = homes;
     }
     delete merged.removedExpenseIds; // transport-only keys — never persisted
     delete merged.removedServiceRateIds;

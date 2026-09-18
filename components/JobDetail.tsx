@@ -27,7 +27,9 @@ import { isRevenueJob } from '../financialUtils';
 import { nightPriceOf } from '../priceBook';
 import { translateCallSummary } from '../translateService';
 import { geocodeAddress } from '../geocoding';
-import { haversineMiles, approxEtaMinutes, formatMiles, LatLng } from '../geoUtils';
+import { formatMiles, LatLng } from '../geoUtils';
+import { rankTechs, formatDrive } from '../techRanking';
+import { useTechDrives } from '../useTechDrives';
 import { getDriveEta, getRouteInfo, getWeather, type Weather } from '../dispatchMessage';
 import { SMS_TEMPLATES, REVIEW_TEMPLATE } from '../smsTemplates';
 import { SmsComposeSheet } from './SmsComposeSheet';
@@ -59,6 +61,9 @@ function directionsUrl(c: Pick<Client, 'lat' | 'lng' | 'address' | 'zip' | 'plac
   const pid = c.placeId && !c.placeId.startsWith('osm:') ? `&destination_place_id=${encodeURIComponent(c.placeId)}` : '';
   return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(dest)}${pid}`;
 }
+
+// A GPS fix older than this says where the tech was, not where he is.
+const FRESH_FIX_MS = 30 * 60 * 1000;
 
 export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (job: Job) => void }> = ({ job: initialJob, onClose, onOpenJob }) => {
   const { jobs, updateJob, removeJob, inventory, consumePart, returnPart } = useAppStore();
@@ -224,7 +229,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
   // Which-address-to-drive-to chooser, shown only when the client has a second address.
   const [navPickerOpen, setNavPickerOpen] = useState(false);
   const [clientCoords, setClientCoords] = useState<LatLng | null>(null);
-  const [routeToClient, setRouteToClient] = useState<{ miles: number; minutes: number } | null>(null);
+  const [gpsRoute, setGpsRoute] = useState<{ miles: number; minutes: number } | null>(null);
 
   const [msgSending, setMsgSending] = useState(false);
   // Bumped after every send so the message box refetches and shows the text at once.
@@ -716,22 +721,39 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
     return () => { active = false; };
   }, [localJob.client.lat, localJob.client.lng, localJob.client.address, localJob.client.zip]);
 
+  // Drive from each tech's home to this client — for the assignment picker, and for the
+  // "to client" line when nobody's position is fresh. Road times (a paid lookup when
+  // Google is keyed) only for someone who dispatches, on an open job.
+  const jobOpen = localJob.status !== 'completed' && localJob.status !== 'cancelled';
+  const techDrives = useTechDrives(technicians, clientCoords, { roads: can.assignJobs(role) && jobOpen });
+
+  // Whose drive the "to client" line is about: the assigned tech, or a field worker
+  // looking at an unassigned job for themselves.
+  const drivingTech = users.find(u => u.id === localJob.assignedTo) || (currentUser && worksField(currentUser) ? currentUser : null);
+
   // How far the technician is from the client — shown next to On My Way so they know the drive.
+  // From a real position only: the assigned tech's own live GPS, or a fix that is still fresh
+  // (en route it refreshes every few minutes). A days-old fix put the tech wherever he last
+  // happened to be — without a fresh one the line falls back to the drive from his home.
   useEffect(() => {
     let active = true;
-    if (!clientCoords) { setRouteToClient(null); return; }
+    if (!clientCoords || !drivingTech) { setGpsRoute(null); return; }
     (async () => {
       let techLoc: LatLng | null = null;
       if (currentUser && localJob.assignedTo === currentUser.id) techLoc = await getCurrentLocation(); // assigned tech → live GPS
-      const assignedTech = users.find(u => u.id === localJob.assignedTo);
-      if (!techLoc && assignedTech?.lastLocation) techLoc = { lat: assignedTech.lastLocation.lat, lng: assignedTech.lastLocation.lng };
-      if (!techLoc && currentUser?.lastLocation) techLoc = { lat: currentUser.lastLocation.lat, lng: currentUser.lastLocation.lng };
-      if (!techLoc) { if (active) setRouteToClient(null); return; }
+      const fix = drivingTech.lastLocation;
+      if (!techLoc && fix && Date.now() - Date.parse(fix.updatedAt) < FRESH_FIX_MS) techLoc = { lat: fix.lat, lng: fix.lng };
+      if (!techLoc) { if (active) setGpsRoute(null); return; }
       const r = await getRouteInfo(techLoc, clientCoords);
-      if (active) setRouteToClient(r);
+      if (active) setGpsRoute(r);
     })();
     return () => { active = false; };
   }, [clientCoords, localJob.assignedTo, currentUser?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const homeDrive = drivingTech ? techDrives[drivingTech.id] : undefined;
+  const routeToClient = gpsRoute ? { ...gpsRoute, fromHome: false }
+    : homeDrive ? { miles: homeDrive.miles, minutes: homeDrive.minutes, fromHome: true }
+    : null;
 
   const startCamera = async () => {
     setShowCamera(true);
@@ -869,30 +891,9 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
   const assignedTechName = users.find(u => u.id === localJob.assignedTo)?.name || technicianName;
   const assignedTechSig = users.find(u => u.id === localJob.assignedTo)?.signature;
 
-  // Rank technicians by straight-line distance to the geocoded client address.
-  // Those with a known location sort first (nearest → farthest); the rest follow.
-  const SKILL_FOR_TYPE: Record<string, string[]> = {
-    Automotive: ['Automotive', 'High-end cars'], Residential: ['Residential', 'Smart locks'],
-    Commercial: ['Commercial'], 'Secure / Safe': ['Safes'], Other: [],
-  };
-  const wantSkills = SKILL_FOR_TYPE[localJob.lockDetails?.type || ''] || [];
-  const favTechId = clientRec?.favoriteTechId;
-  const rankedTechs = technicians
-    .map(t => ({
-      tech: t,
-      miles: (clientCoords && t.lastLocation) ? haversineMiles(clientCoords, t.lastLocation) : null,
-      isFavorite: !!favTechId && t.id === favTechId,
-      isSpecialist: wantSkills.length > 0 && (t.skills || []).some(s => wantSkills.includes(s)),
-    }))
-    .sort((a, b) => {
-      if (a.isFavorite !== b.isFavorite) return a.isFavorite ? -1 : 1;
-      if (a.isSpecialist !== b.isSpecialist) return a.isSpecialist ? -1 : 1;
-      if (a.miles == null && b.miles == null) return 0;
-      if (a.miles == null) return 1;
-      if (b.miles == null) return -1;
-      return a.miles - b.miles;
-    });
-  const nearestTech = rankedTechs.find(r => r.miles != null) || null;
+  // Best match first (preferred tech, then specialist), then the shortest drive from home.
+  const rankedTechs = rankTechs(technicians, techDrives, { jobType: localJob.lockDetails?.type, favoriteTechId: clientRec?.favoriteTechId });
+  const nearestTech = rankedTechs.find(r => r.isNearest) || null;
   // Best match = preferred tech, else a matching specialist (only worth suggesting over plain nearest).
   const bestMatch = rankedTechs.find(r => r.isFavorite) || rankedTechs.find(r => r.isSpecialist) || null;
 
@@ -2247,7 +2248,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                     {routeToClient && (
                       <div className="flex items-center justify-center gap-2 text-xs font-bold text-slate-300">
                         <Navigation size={13} className="text-blue-400" />
-                        <span>{formatMiles(routeToClient.miles)} mi · ~{routeToClient.minutes} min to client</span>
+                        <span>{formatMiles(routeToClient.miles)} mi · ~{routeToClient.minutes} min {routeToClient.fromHome ? 'from home' : 'to client'}</span>
                       </div>
                     )}
                     <button
@@ -2310,9 +2311,9 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                         className="w-full bg-slate-800 border border-slate-600 rounded-xl px-4 py-2.5 text-sm font-semibold text-white focus:outline-none focus:border-blue-500/50"
                       >
                         <option value="">Unassigned</option>
-                        {rankedTechs.map(({ tech, miles, isFavorite, isSpecialist }) => (
+                        {rankedTechs.map(({ tech, drive, isFavorite, isSpecialist }) => (
                           <option key={tech.id} value={tech.id}>
-                            {tech.name}{isFavorite ? ' · Preferred' : isSpecialist ? ' · Specialist' : ''}{miles != null ? ` — ${formatMiles(miles)} mi · ~${approxEtaMinutes(miles)} min` : ''}
+                            {tech.name}{isFavorite ? ' · Preferred' : isSpecialist ? ' · Specialist' : ''}{drive ? ` — ${formatDrive(drive)} · ${formatMiles(drive.miles)} mi` : clientCoords ? ' — no home set' : ''}
                           </option>
                         ))}
                       </select>
@@ -2325,7 +2326,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                             {bestMatch.isFavorite ? <Star size={13} /> : <Wrench size={13} />}
                             {bestMatch.isFavorite ? 'Preferred' : 'Specialist'}: {bestMatch.tech.name}
                           </span>
-                          {bestMatch.miles != null && <span className="text-xs font-bold">{formatMiles(bestMatch.miles)} mi</span>}
+                          {bestMatch.drive && <span className="text-xs font-bold">{formatDrive(bestMatch.drive)} · {formatMiles(bestMatch.drive.miles)} mi</span>}
                         </button>
                       )}
                       {nearestTech && nearestTech.tech.id !== localJob.assignedTo && (!bestMatch || bestMatch.tech.id !== nearestTech.tech.id) && (
@@ -2334,7 +2335,7 @@ export const JobDetail: React.FC<{ job: Job; onClose: () => void; onOpenJob?: (j
                           className="mt-2 w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20 transition-all active:scale-95"
                         >
                           <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider"><Navigation size={13} /> Nearest: {nearestTech.tech.name}</span>
-                          <span className="text-xs font-bold">{formatMiles(nearestTech.miles!)} mi · ~{approxEtaMinutes(nearestTech.miles!)} min</span>
+                          <span className="text-xs font-bold">{formatDrive(nearestTech.drive!)} · {formatMiles(nearestTech.drive!.miles)} mi</span>
                         </button>
                       )}
                     </>

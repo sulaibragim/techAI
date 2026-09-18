@@ -3,7 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { API_BASE } from './backendUrl';
 import { authHeaders } from './apiClient';
 import { sendWrite } from './writeQueue';
-import { Expense, ClientProfile, StockMovement, ServiceRate, AiMemory, ClientSmsSettings, CLIENT_SMS_DEFAULTS, StaffNotifySettings, STAFF_NOTIFY_DEFAULTS, ReviewLink, LostCall, TrainingResult, CallReview } from './types';
+import { Expense, ClientProfile, StockMovement, ServiceRate, AiMemory, ClientSmsSettings, CLIENT_SMS_DEFAULTS, StaffNotifySettings, STAFF_NOTIFY_DEFAULTS, ReviewLink, LostCall, TrainingResult, CallReview, TechHome } from './types';
 import { PRICE_BOOK_SEED, PRICE_BOOK_VERSION, planPriceBookUpgrade, applyPriceBookUpgrade, priceBookUpgradePatch } from './priceBook';
 import type { ScriptOverrides } from './callScripts';
 
@@ -22,6 +22,7 @@ export interface SettingsState {
   dailyRevenueTarget: number;
   monthlyTargets: Record<string, number>;
   techTargets: Record<string, number>; // per-technician personal monthly revenue goal (user id → $)
+  techHomes: Record<string, TechHome>; // user id → home; "who's closest" measures the drive to a client from here
   expenses: Expense[]; // business expense ledger (keys & stock, fuel, ads, …)
   stockMovements: StockMovement[]; // inventory ledger — every receive/sale/adjust/return/loss
   priceBook: ServiceRate[]; // standard service rates (seeded from trustkeyaz.com), tap-to-fill on invoices
@@ -40,9 +41,11 @@ export interface SettingsState {
   callReviews: CallReview[]; // recorded calls scored on the 12-point card (newest first, capped)
   onboardingComplete: boolean;
   aiAvailable: boolean; // runtime flag: is GEMINI_API_KEY configured on the server?
-  updateSettings: (patch: Partial<Omit<SettingsState, 'updateSettings' | 'resetSettings' | 'setMonthlyTarget' | 'setTechTarget' | 'addExpense' | 'removeExpense' | 'addStockMovement' | 'clearStockLedger' | 'setMovementDispute' | 'addServiceRate' | 'updateServiceRate' | 'removeServiceRate' | 'importServiceRates' | 'upsertClientProfile' | 'addAiMemory' | 'removeAiMemory' | 'setSmsTemplate' | 'resetSmsTemplate' | 'addReviewLink' | 'updateReviewLink' | 'removeReviewLink' | 'addLostCall' | 'removeLostCall' | 'setScriptOverride' | 'resetScriptOverride' | 'saveTrainingResult' | 'addCallReview' | 'removeCallReview' | 'syncSettings' | 'upgradePriceBook' | 'checkAiAvailable' | 'aiAvailable'>>) => void;
+  updateSettings: (patch: Partial<Omit<SettingsState, 'updateSettings' | 'resetSettings' | 'setMonthlyTarget' | 'setTechTarget' | 'setTechHome' | 'addExpense' | 'removeExpense' | 'addStockMovement' | 'clearStockLedger' | 'setMovementDispute' | 'addServiceRate' | 'updateServiceRate' | 'removeServiceRate' | 'importServiceRates' | 'upsertClientProfile' | 'addAiMemory' | 'removeAiMemory' | 'setSmsTemplate' | 'resetSmsTemplate' | 'addReviewLink' | 'updateReviewLink' | 'removeReviewLink' | 'addLostCall' | 'removeLostCall' | 'setScriptOverride' | 'resetScriptOverride' | 'saveTrainingResult' | 'addCallReview' | 'removeCallReview' | 'syncSettings' | 'upgradePriceBook' | 'checkAiAvailable' | 'aiAvailable'>>) => void;
   setMonthlyTarget: (monthKey: string, value: number) => void;
   setTechTarget: (userId: string, value: number) => void;
+  /** null clears it — that tech then shows no drive time until a home is set again. */
+  setTechHome: (userId: string, home: TechHome | null) => void;
   addExpense: (expense: Omit<Expense, 'id'>) => void;
   removeExpense: (id: string) => void;
   addStockMovement: (movement: Omit<StockMovement, 'id'>) => void;
@@ -106,6 +109,7 @@ export const SETTINGS_DEFAULTS = {
   dailyRevenueTarget: 1500,
   monthlyTargets: {} as Record<string, number>,
   techTargets: {} as Record<string, number>,
+  techHomes: {} as Record<string, TechHome>,
   expenses: [] as Expense[],
   stockMovements: [] as StockMovement[],
   priceBook: PRICE_BOOK_SEED as ServiceRate[],
@@ -150,6 +154,7 @@ function pushToServer(patch: Record<string, any>) {
 const KEY_WORDS: Record<string, string> = {
   expenses: 'expense', stockMovements: 'stock movement', priceBook: 'price book',
   clientProfiles: 'client profile', monthlyTargets: 'monthly target', techTargets: 'technician target',
+  techHomes: 'technician home',
   aiMemories: 'AI instruction', taxRate: 'tax rate', adSpend: 'ad spend',
   smsTemplates: 'SMS template', removedSmsTemplateIds: 'SMS template',
   reviewLinks: 'review link', removedReviewLinkIds: 'review link',
@@ -210,6 +215,17 @@ export const useSettingsStore = create<SettingsState>()(
         });
         // 0 = "clear this goal" — the server drops zeroed keys.
         pushToServer({ techTargets: { [userId]: value > 0 ? value : 0 } });
+      },
+
+      setTechHome: (userId, home) => {
+        set((state) => {
+          const next = { ...state.techHomes };
+          if (home) next[userId] = home;
+          else delete next[userId];
+          return { techHomes: next };
+        });
+        // null = "clear this home" — the server drops the key.
+        pushToServer({ techHomes: { [userId]: home } });
       },
 
       addExpense: (expense) => {

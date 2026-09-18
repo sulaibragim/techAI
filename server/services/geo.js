@@ -112,7 +112,8 @@ async function osrmRoute(from, to) {
 }
 
 // Driving {minutes, miles}. Prefers Google (traffic-aware), then OSRM, then a straight-line
-// estimate, so a caller always gets something usable. Null only if coords are unusable.
+// estimate (flagged approx: true), so a caller always gets something usable. Null only if
+// coords are unusable.
 export async function drivingRoute(from, to) {
   if (!from || !to || [from.lat, from.lng, to.lat, to.lng].some((n) => typeof n !== 'number' || Number.isNaN(n))) {
     return null;
@@ -128,7 +129,7 @@ export async function drivingRoute(from, to) {
     console.error('[geo] OSRM route failed:', e.message);
   }
   const miles = haversineMiles(from, to);
-  return { miles: +miles.toFixed(1), minutes: approxEtaMinutes(miles) };
+  return { miles: +miles.toFixed(1), minutes: approxEtaMinutes(miles), approx: true };
 }
 
 // Friendly arrival phrase from a minute estimate, rounded to a soft 5-minute window.

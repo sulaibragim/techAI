@@ -29,6 +29,15 @@ export interface User {
   lastLocation?: { lat: number; lng: number; updatedAt: string };
 }
 
+// Where a field tech's day starts. "Who's closest" measures the drive to a client from
+// here — not from wherever the phone last reported GPS, which could be hours stale.
+// The owner sets it in Settings → Team; it lives in settings.techHomes keyed by user id.
+export interface TechHome {
+  address: string;
+  lat: number;
+  lng: number;
+}
+
 export interface AuditEntry {
   id: string;
   timestamp: string;

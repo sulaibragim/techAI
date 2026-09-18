@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { MapPin, Check, Loader2 } from 'lucide-react';
+import { MapPin, Check, Loader2, Home } from 'lucide-react';
 import { User } from '../types';
 import { geocodeAddress } from '../geocoding';
-import { haversineMiles, approxEtaMinutes, formatMiles, LatLng } from '../geoUtils';
+import { formatMiles, LatLng } from '../geoUtils';
+import { rankTechs, skillsFor, formatDrive } from '../techRanking';
+import { useTechDrives } from '../useTechDrives';
+import { useSettingsStore } from '../settingsStore';
 
 interface TechPickerProps {
   technicians: User[];
@@ -14,15 +17,6 @@ interface TechPickerProps {
   favoriteTechId?: string;              // client's preferred technician
 }
 
-// Which specialties matter for a given job type (a tech with any of these is a "specialist").
-const SKILL_FOR_TYPE: Record<string, string[]> = {
-  Automotive: ['Automotive', 'High-end cars'],
-  Residential: ['Residential', 'Smart locks'],
-  Commercial: ['Commercial'],
-  'Secure / Safe': ['Safes'],
-  Other: [],
-};
-
 const STATUS: Record<string, { label: string; cls: string; dot: string }> = {
   available: { label: 'Free',     cls: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30', dot: 'bg-emerald-400' },
   onJob:     { label: 'On a job', cls: 'bg-amber-500/15 text-amber-400 border-amber-500/30',       dot: 'bg-amber-400' },
@@ -31,12 +25,14 @@ const STATUS: Record<string, { label: string; cls: string; dot: string }> = {
 
 const initials = (name: string) => name.split(' ').map(w => w[0] || '').join('').slice(0, 2).toUpperCase();
 
-// Picks a technician for a job, ranked by straight-line distance to the client's
-// (geocoded) address. Shows each tech's status and rough ETA. No map / API key.
+// Picks a technician for a job. Each tech is measured by the drive from their home
+// (Settings → Team) to the client — a road time once the router answers — never from a
+// stale GPS fix. Best match first, then nearest; the status chip says who is free.
 export const TechPicker: React.FC<TechPickerProps> = ({ technicians, address, coords: pinnedCoords, value, onChange, jobType, favoriteTechId }) => {
   const [coords, setCoords] = useState<LatLng | null>(null);
   const [geocoding, setGeocoding] = useState(false);
-  const wantSkills = SKILL_FOR_TYPE[jobType || ''] || [];
+  const techHomes = useSettingsStore(s => s.techHomes);
+  const wantSkills = skillsFor(jobType);
 
   useEffect(() => {
     let active = true;
@@ -52,30 +48,23 @@ export const TechPicker: React.FC<TechPickerProps> = ({ technicians, address, co
     return () => { active = false; clearTimeout(t); };
   }, [address, pinnedCoords?.lat, pinnedCoords?.lng]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const ranked = technicians
-    .map(t => ({
-      tech: t,
-      miles: (coords && t.lastLocation) ? haversineMiles(coords, t.lastLocation) : null,
-      isFavorite: !!favoriteTechId && t.id === favoriteTechId,
-      isSpecialist: wantSkills.length > 0 && (t.skills || []).some(s => wantSkills.includes(s)),
-    }))
-    .sort((a, b) => {
-      // The client's preferred tech first, then a matching specialist, then nearest.
-      if (a.isFavorite !== b.isFavorite) return a.isFavorite ? -1 : 1;
-      if (a.isSpecialist !== b.isSpecialist) return a.isSpecialist ? -1 : 1;
-      if (a.miles == null && b.miles == null) return 0;
-      if (a.miles == null) return 1;
-      if (b.miles == null) return -1;
-      return a.miles - b.miles;
-    });
+  const drives = useTechDrives(technicians, coords);
+  const ranked = rankTechs(technicians, drives, { jobType, favoriteTechId });
+  const noHome = technicians.filter(t => !techHomes?.[t.id]).map(t => t.name);
 
   return (
     <div className="space-y-2">
       {address?.trim() && (
         <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
           {geocoding ? <><Loader2 size={11} className="animate-spin" /> Locating address…</>
-            : coords ? <><MapPin size={11} className="text-emerald-400" /> {(wantSkills.length > 0 || favoriteTechId) ? 'Sorted by best match & distance' : 'Sorted by distance to client'}</>
+            : coords ? <><MapPin size={11} className="text-emerald-400" /> {ranked.some(r => r.isFavorite || r.isSpecialist) ? 'Best match first, then the drive from home' : 'Nearest first — drive from each tech’s home'}</>
             : <>Couldn’t locate that address — showing all techs</>}
+        </p>
+      )}
+      {coords && noHome.length > 0 && (
+        <p className="text-[11px] font-semibold text-amber-400/90 flex items-start gap-1.5 leading-snug">
+          <Home size={12} className="shrink-0 mt-px" />
+          <span>No home address for {noHome.join(', ')} — set it in Settings → Team to see the drive.</span>
         </p>
       )}
 
@@ -87,16 +76,9 @@ export const TechPicker: React.FC<TechPickerProps> = ({ technicians, address, co
         Unassigned
       </button>
 
-      {(() => {
-        let nearestId: string | null = null;
-        let nearestMiles = Infinity;
-        for (const r of ranked) {
-          if (r.miles != null && r.miles < nearestMiles) { nearestMiles = r.miles; nearestId = r.tech.id; }
-        }
-        return ranked.map(({ tech, miles, isFavorite, isSpecialist }) => {
+      {ranked.map(({ tech, drive, isFavorite, isSpecialist, isNearest }) => {
         const s = STATUS[tech.techStatus || 'offDuty'];
         const selected = value === tech.id;
-        const isNearest = tech.id === nearestId;
         return (
           <button
             type="button"
@@ -127,21 +109,20 @@ export const TechPicker: React.FC<TechPickerProps> = ({ technicians, address, co
             </div>
             <div className="text-right shrink-0 flex items-center gap-2">
               <div>
-                {miles != null ? (
+                {drive ? (
                   <>
-                    <p className="text-sm font-bold text-white tabular-nums leading-none">{formatMiles(miles)} mi</p>
-                    <p className="text-[10px] font-semibold text-slate-400 mt-0.5">~{approxEtaMinutes(miles)} min</p>
+                    <p className={`text-sm font-bold tabular-nums leading-none ${drive.exact ? 'text-white' : 'text-slate-300'}`}>{formatDrive(drive)}</p>
+                    <p className="text-[10px] font-semibold text-slate-400 mt-0.5 tabular-nums">{formatMiles(drive.miles)} mi</p>
                   </>
                 ) : (
-                  <p className="text-[10px] font-semibold text-slate-500">{coords ? 'No GPS' : '—'}</p>
+                  <p className="text-[10px] font-semibold text-slate-500">{coords ? 'No home set' : '—'}</p>
                 )}
               </div>
               {selected && <Check size={16} className="text-blue-400 shrink-0" />}
             </div>
           </button>
         );
-      });
-      })()}
+      })}
     </div>
   );
 };

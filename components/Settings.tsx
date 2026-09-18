@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { motion } from 'motion/react';
-import { User, Target, Key, RotateCcw, Save, Upload, Info, Building2, AlertTriangle, Users, Plus, Trash2, ShieldCheck, History, Lock, Pencil, Check, X, Tag, BrainCircuit, MessageSquare, BellRing, Wrench, Star, ScrollText } from 'lucide-react';
+import { User, Target, Key, RotateCcw, Save, Upload, Info, Building2, AlertTriangle, Users, Plus, Trash2, ShieldCheck, History, Lock, Pencil, Check, X, Tag, BrainCircuit, MessageSquare, BellRing, Wrench, Star, ScrollText, Home, MapPin } from 'lucide-react';
 import { useSettingsStore, SETTINGS_DEFAULTS, settingsStorageIsEphemeral } from '../settingsStore';
 import { useAuthStore, useCurrentUser, can, worksField, ROLE_LABELS, MIN_PASSWORD_LENGTH } from '../authStore';
 import { useAppStore } from '../store';
@@ -17,6 +17,7 @@ import { smsInfo, sanitizeSms } from '../smsText';
 import { primaryReviewLink } from '../reviewLinks';
 import { ReviewLinksEditor } from './ReviewLinksEditor';
 import { CallScriptsEditor } from './CallScriptsEditor';
+import { AddressAutocomplete, AddressPick } from './AddressAutocomplete';
 
 const VERSION = '1.0.0';
 
@@ -912,6 +913,10 @@ const TeamSection: React.FC = () => {
   const [emailError, setEmailError] = useState('');
   const [newEmail, setNewEmail] = useState('');
   const [newPhone, setNewPhone] = useState('');
+  const techHomes = useSettingsStore(s => s.techHomes);
+  const setTechHome = useSettingsStore(s => s.setTechHome);
+  const [editingHome, setEditingHome] = useState<string | null>(null);
+  const [homeDraft, setHomeDraft] = useState<AddressPick>({ address: '', zip: '' });
 
   const togglePasswordVisibility = (id: string) => setVisiblePasswords(p => ({ ...p, [id]: !p[id] }));
 
@@ -974,6 +979,21 @@ const TeamSection: React.FC = () => {
     updateUser({ ...u, phone: newPhone.trim() || undefined });
     setEditingPhone(null);
     setNewPhone('');
+  };
+
+  // The field starts empty: a prefilled address would fire a search and pop the
+  // suggestion list open before anyone typed. The current home stays on screen above it.
+  const startEditHome = (userId: string) => {
+    setHomeDraft({ address: '', zip: '' });
+    setEditingHome(userId);
+  };
+
+  // Only a picked suggestion carries a pin — typed text alone can't measure a drive.
+  const saveHome = (userId: string) => {
+    const { address, lat, lng } = homeDraft;
+    if (typeof lat !== 'number' || typeof lng !== 'number') return;
+    setTechHome(userId, { address: address.trim(), lat, lng });
+    setEditingHome(null);
   };
 
   const handleAdd = async () => {
@@ -1243,6 +1263,74 @@ const TeamSection: React.FC = () => {
                   </div>
                 </div>
               )}
+
+              {/* Where this tech starts from. New Job ranks techs by the drive from here to
+                  the client — a phone's last GPS fix could be hours old and miles away. */}
+              {worksField(u) && (() => {
+                const home = techHomes?.[u.id];
+                const pinned = typeof homeDraft.lat === 'number' && typeof homeDraft.lng === 'number';
+                // Teammates already living somewhere we know — one tap for a shared home.
+                const sameAs = users.filter(o => o.id !== u.id && techHomes?.[o.id]);
+                return (
+                  <div className="border-t border-white/5 pt-3">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">Home — New Job counts the drive to the client from here</p>
+                    {home && (
+                      <div className="flex items-center gap-2">
+                        <MapPin size={13} className="text-emerald-400 shrink-0" />
+                        <p className="text-xs font-semibold text-white min-w-0 flex-1 truncate">{home.address || 'Pinned location'}</p>
+                        {editingHome !== u.id && (
+                          <button onClick={() => startEditHome(u.id)} className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wide bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-all shrink-0">Change</button>
+                        )}
+                      </div>
+                    )}
+                    {!home && editingHome !== u.id && (
+                      <button
+                        onClick={() => startEditHome(u.id)}
+                        className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 hover:bg-amber-500/15 text-left text-xs font-semibold transition-all active:scale-[0.99]"
+                      >
+                        <Home size={13} className="shrink-0" /> Set home address — until then New Job can’t tell how far {u.name} is
+                      </button>
+                    )}
+                    {editingHome === u.id && (
+                      <div className={`space-y-3 ${home ? 'mt-3' : ''}`}>
+                        <AddressAutocomplete
+                          title="Home address"
+                          required={false}
+                          address={homeDraft.address}
+                          zip={homeDraft.zip}
+                          lat={homeDraft.lat}
+                          lng={homeDraft.lng}
+                          placeId={homeDraft.placeId}
+                          precision={homeDraft.precision}
+                          onChange={setHomeDraft}
+                          autoFocus
+                        />
+                        {sameAs.length > 0 && (
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Same as</span>
+                            {sameAs.map(o => (
+                              <button
+                                key={o.id}
+                                onClick={() => { setTechHome(u.id, techHomes[o.id]); setEditingHome(null); }}
+                                className="px-3 py-1.5 rounded-lg text-xs font-bold border bg-white/5 text-slate-300 border-white/10 hover:text-white hover:border-blue-500/40 transition-all"
+                              >
+                                {o.name}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        <div className="flex gap-2">
+                          <button onClick={() => setEditingHome(null)} className="flex-1 py-2.5 bg-white/5 border border-white/10 rounded-xl text-slate-300 text-xs font-bold uppercase tracking-wider hover:bg-white/10 transition-all">Cancel</button>
+                          {home && (
+                            <button onClick={() => { setTechHome(u.id, null); setEditingHome(null); }} className="px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-slate-400 hover:text-red-400 hover:border-red-500/30 text-xs font-bold uppercase tracking-wider transition-all">Remove</button>
+                          )}
+                          <button onClick={() => saveHome(u.id)} disabled={!pinned} className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 rounded-xl text-white text-xs font-bold uppercase tracking-wider transition-all">Save home</button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
           );
         })}
