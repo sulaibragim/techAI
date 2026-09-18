@@ -342,6 +342,23 @@ export const LEAD_CHANNEL_LABELS: Record<LeadChannel | 'unknown', string> = {
 // show a CAC/ROAS row vs. a plain "free leads" row in the marketing cabinet.
 export const PAID_CHANNELS = new Set<LeadChannel>(['google_ads', 'facebook', 'instagram', 'other']);
 
+// Why a caller didn't book. The manager marks it as the call ends; the weekly spread says
+// what to fix — the price, the speed, the script or the ads.
+export type LostReason = 'price' | 'wait' | 'shopping' | 'self' | 'area' | 'notOurs' | 'dealer' | 'noId' | 'other';
+
+export interface LostCall {
+  id: string;
+  timestamp: string;       // ISO, when it was marked
+  reason: LostReason;
+  note?: string;
+  service?: string;        // call-script id the call was about (car-lockout, rekey…)
+  phone?: string;
+  name?: string;
+  channel?: LeadChannel;
+  callId?: string;         // OpenPhone call id, when marked from the call log
+  by?: string;             // user id of whoever marked it
+}
+
 // Raw tracking params captured at intake (mostly from the website form). Kept as
 // a snapshot so we can re-derive channel or drill into a specific campaign later.
 export interface LeadAttribution {

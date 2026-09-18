@@ -3,8 +3,9 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { API_BASE } from './backendUrl';
 import { authHeaders } from './apiClient';
 import { sendWrite } from './writeQueue';
-import { Expense, ClientProfile, StockMovement, ServiceRate, AiMemory, ClientSmsSettings, CLIENT_SMS_DEFAULTS, StaffNotifySettings, STAFF_NOTIFY_DEFAULTS, ReviewLink } from './types';
+import { Expense, ClientProfile, StockMovement, ServiceRate, AiMemory, ClientSmsSettings, CLIENT_SMS_DEFAULTS, StaffNotifySettings, STAFF_NOTIFY_DEFAULTS, ReviewLink, LostCall } from './types';
 import { PRICE_BOOK_SEED, PRICE_BOOK_VERSION, planPriceBookUpgrade, applyPriceBookUpgrade, priceBookUpgradePatch } from './priceBook';
+import type { ScriptOverrides } from './callScripts';
 
 export interface SettingsState {
   technicianName: string;
@@ -33,9 +34,11 @@ export interface SettingsState {
   clientSms: ClientSmsSettings; // owner switches for automatic client-facing texts
   staffNotify: StaffNotifySettings; // owner switches for automatic messages to US, not clients
   smsTemplates: Record<string, { en?: string; es?: string }>; // owner overrides of the one-tap client texts (template id → texts)
+  lostCalls: LostCall[]; // calls that ended without a booking, and why (newest first, capped)
+  scriptOverrides: ScriptOverrides; // the owner's wording for call-script lines (stepKey/answerKey → texts)
   onboardingComplete: boolean;
   aiAvailable: boolean; // runtime flag: is GEMINI_API_KEY configured on the server?
-  updateSettings: (patch: Partial<Omit<SettingsState, 'updateSettings' | 'resetSettings' | 'setMonthlyTarget' | 'setTechTarget' | 'addExpense' | 'removeExpense' | 'addStockMovement' | 'clearStockLedger' | 'setMovementDispute' | 'addServiceRate' | 'updateServiceRate' | 'removeServiceRate' | 'importServiceRates' | 'upsertClientProfile' | 'addAiMemory' | 'removeAiMemory' | 'setSmsTemplate' | 'resetSmsTemplate' | 'addReviewLink' | 'updateReviewLink' | 'removeReviewLink' | 'syncSettings' | 'upgradePriceBook' | 'checkAiAvailable' | 'aiAvailable'>>) => void;
+  updateSettings: (patch: Partial<Omit<SettingsState, 'updateSettings' | 'resetSettings' | 'setMonthlyTarget' | 'setTechTarget' | 'addExpense' | 'removeExpense' | 'addStockMovement' | 'clearStockLedger' | 'setMovementDispute' | 'addServiceRate' | 'updateServiceRate' | 'removeServiceRate' | 'importServiceRates' | 'upsertClientProfile' | 'addAiMemory' | 'removeAiMemory' | 'setSmsTemplate' | 'resetSmsTemplate' | 'addReviewLink' | 'updateReviewLink' | 'removeReviewLink' | 'addLostCall' | 'removeLostCall' | 'setScriptOverride' | 'resetScriptOverride' | 'syncSettings' | 'upgradePriceBook' | 'checkAiAvailable' | 'aiAvailable'>>) => void;
   setMonthlyTarget: (monthKey: string, value: number) => void;
   setTechTarget: (userId: string, value: number) => void;
   addExpense: (expense: Omit<Expense, 'id'>) => void;
@@ -58,6 +61,13 @@ export interface SettingsState {
   addReviewLink: (link: Omit<ReviewLink, 'id'>) => ReviewLink;
   updateReviewLink: (link: ReviewLink) => void;
   removeReviewLink: (id: string) => void;
+  /** Mark a call that ended without a booking. */
+  addLostCall: (entry: Omit<LostCall, 'id' | 'timestamp'>) => LostCall;
+  removeLostCall: (id: string) => void;
+  /** Reword one call-script line (a step or a ready answer). */
+  setScriptOverride: (key: string, texts: { say?: string; hint?: string }) => void;
+  /** Back to the built-in wording for this line. */
+  resetScriptOverride: (key: string) => void;
   addAiMemory: (text: string) => AiMemory;
   removeAiMemory: (id: string) => void;
   learnSupplierAlias: (supplier: string, code: string, partId: string) => void;
@@ -102,6 +112,8 @@ export const SETTINGS_DEFAULTS = {
   clientSms: { ...CLIENT_SMS_DEFAULTS },
   staffNotify: { ...STAFF_NOTIFY_DEFAULTS },
   smsTemplates: {} as Record<string, { en?: string; es?: string }>,
+  lostCalls: [] as LostCall[],
+  scriptOverrides: {} as ScriptOverrides,
   onboardingComplete: false,
 };
 
@@ -133,6 +145,8 @@ const KEY_WORDS: Record<string, string> = {
   aiMemories: 'AI instruction', taxRate: 'tax rate', adSpend: 'ad spend',
   smsTemplates: 'SMS template', removedSmsTemplateIds: 'SMS template',
   reviewLinks: 'review link', removedReviewLinkIds: 'review link',
+  lostCalls: 'call note', removedLostCallIds: 'call note',
+  scriptOverrides: 'call script', removedScriptOverrideIds: 'call script',
 };
 const humanKey = (k: string) =>
   KEY_WORDS[k] || k.replace(/([A-Z])/g, ' $1').toLowerCase().trim();
@@ -304,6 +318,36 @@ export const useSettingsStore = create<SettingsState>()(
       removeReviewLink: (id) => {
         set((state) => ({ reviewLinks: state.reviewLinks.filter(l => l.id !== id) }));
         pushToServer({ removedReviewLinkIds: [id] });
+      },
+
+      // A ledger like expenses: one entry per write, unioned by id on the server.
+      addLostCall: (lost) => {
+        const entry: LostCall = { ...lost, id: `lost-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, timestamp: new Date().toISOString() };
+        set((state) => ({ lostCalls: [entry, ...state.lostCalls].slice(0, 1000) }));
+        pushToServer({ lostCalls: [entry] });
+        return entry;
+      },
+
+      removeLostCall: (id) => {
+        set((state) => ({ lostCalls: state.lostCalls.filter(l => l.id !== id) }));
+        pushToServer({ removedLostCallIds: [id] });
+      },
+
+      // Keyed map like the SMS templates: the server merges keys, so two edits don't erase each other.
+      setScriptOverride: (key, texts) => {
+        if (!key) return;
+        const entry = { say: (texts.say || '').trim(), hint: (texts.hint ?? '').trim() };
+        set((state) => ({ scriptOverrides: { ...state.scriptOverrides, [key]: entry } }));
+        pushToServer({ scriptOverrides: { [key]: entry } });
+      },
+
+      resetScriptOverride: (key) => {
+        set((state) => {
+          const next = { ...state.scriptOverrides };
+          delete next[key];
+          return { scriptOverrides: next };
+        });
+        pushToServer({ removedScriptOverrideIds: [key] });
       },
 
       addAiMemory: (text) => {

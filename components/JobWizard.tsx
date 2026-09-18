@@ -26,7 +26,7 @@ import {
   Unlink,
   type LucideIcon,
 } from 'lucide-react';
-import { Job, Client, LockDetails, LeadChannel, LEAD_CHANNELS, LEAD_CHANNEL_LABELS } from '../types';
+import { Job, Client, LockDetails, LeadChannel, LEAD_CHANNELS, LEAD_CHANNEL_LABELS, LostReason } from '../types';
 import { BRANDS as INITIAL_BRANDS, LOCK_TYPES } from '../constants';
 import { useAuthStore, useCurrentUser, worksField, can } from '../authStore';
 import { useVisibleJobs } from '../store';
@@ -39,7 +39,8 @@ import { decodeVin } from '../vehicleKeyLookup';
 import { VinScanner } from './VinScanner';
 import { AddressAutocomplete } from './AddressAutocomplete';
 import { CallScriptPanel } from './CallScriptPanel';
-import { ScriptId } from '../callScripts';
+import { LostCallSheet } from './LostCallSheet';
+import { ScriptId, CALL_SCRIPTS } from '../callScripts';
 import { useSwipeBack } from '../useSwipeBack';
 
 interface JobWizardProps {
@@ -322,13 +323,34 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
   const nextStep = () => { setError(''); setStep(s => s + 1); };
   const prevStep = () => { setError(''); setStep(s => s - 1); };
 
+  // Closing an intake that got somewhere (a template picked, a caller's number in) means the
+  // caller didn't book — the phone desk says why before the form goes away.
+  const [askLost, setAskLost] = useState(false);
+  const addLostCall = useSettingsStore(s => s.addLostCall);
+  const requestClose = useCallback(() => {
+    if (showScript && (step > 0 || !!client.phone?.trim())) setAskLost(true);
+    else onCancel();
+  }, [showScript, step, client.phone, onCancel]);
+  const saveLostCall = (reason: LostReason, note: string) => {
+    addLostCall({
+      reason,
+      note: note || undefined,
+      service: scriptId !== 'opening' ? scriptId : undefined,
+      phone: toE164US(client.phone) || client.phone?.trim() || undefined,
+      name: [client.firstName, client.lastName].filter(Boolean).join(' ').trim() || undefined,
+      channel: channel || undefined,
+      by: currentUser?.id,
+    });
+    onCancel();
+  };
+
   // Swipe right to go back a step (or close from the first step) — same reason as JobDetail:
   // the top close button sits under the phone's status bar and is hard to hit.
   const swipeBack = useCallback(() => {
     if (step > 0) prevStep();
-    else onCancel();
-  }, [step, onCancel]);
-  const swipeRef = useSwipeBack<HTMLDivElement>(swipeBack, { enabled: !showCamera && !showVinScan && !scriptSheet });
+    else requestClose();
+  }, [step, requestClose]);
+  const swipeRef = useSwipeBack<HTMLDivElement>(swipeBack, { enabled: !showCamera && !showVinScan && !scriptSheet && !askLost });
 
   // VIN → auto-fill make + model/year (free NHTSA decode) for automotive jobs.
   const decodeVinToFields = async (override?: string) => {
@@ -362,6 +384,14 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
   return (
     <div ref={swipeRef} className="fixed inset-0 bg-slate-950 z-[200] flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-8">
       {showVinScan && <VinScanner onResult={(v) => { setShowVinScan(false); decodeVinToFields(v); }} onClose={() => setShowVinScan(false)} />}
+      {askLost && (
+        <LostCallSheet
+          subtitle={[[client.firstName, client.lastName].filter(Boolean).join(' '), client.phone?.trim(), scriptId !== 'opening' ? CALL_SCRIPTS[scriptId].label : ''].filter(Boolean).join(' · ')}
+          onSave={saveLostCall}
+          onSkip={onCancel}
+          onCancel={() => setAskLost(false)}
+        />
+      )}
       {showCamera && (
         <div className="fixed inset-0 bg-black z-[300] flex flex-col items-center justify-center p-6">
           <div className="relative w-full max-w-lg aspect-[3/4] bg-slate-900 rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
@@ -376,7 +406,7 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onComplete, onCancel, init
       )}
 
       <header className="px-6 pb-6 pt-[max(1.5rem,env(safe-area-inset-top))] flex items-center justify-between border-b border-white/10 bg-slate-950/90 backdrop-blur-md sticky top-0 z-20">
-        <button onClick={onCancel} className="p-3 text-slate-400 hover:text-white transition-colors"><X size={28} /></button>
+        <button onClick={requestClose} className="p-3 text-slate-400 hover:text-white transition-colors"><X size={28} /></button>
         <div className="flex-1 text-center">
           <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">New Job Intake</h2>
           <p className="text-xl font-bold text-blue-500 mt-1">{step === 0 ? 'Quick Start' : `Step ${step} of 2`}</p>

@@ -7,7 +7,7 @@ import { useSettingsStore } from '../settingsStore';
 import { isNightInArizona } from '../priceBook';
 import {
   CALL_SCRIPTS, OBJECTIONS, NEVER_SAY, EMERGENCY_911, ScriptId, ObjectionId, ScriptContext,
-  resolveScript, ratePrice,
+  resolveScript, ratePrice, scriptWithOverrides, answerWithOverrides,
 } from '../callScripts';
 
 interface CallScriptPanelProps {
@@ -20,7 +20,7 @@ interface CallScriptPanelProps {
 }
 
 // A line as the manager says it: live prices in green, [slots] to fill in out loud in amber.
-const Say: React.FC<{ text: string; ctx: ScriptContext }> = ({ text, ctx }) => (
+export const Say: React.FC<{ text: string; ctx: ScriptContext }> = ({ text, ctx }) => (
   <>
     {resolveScript(text, ctx).map((s, i) =>
       s.kind === 'price' ? <span key={i} className="text-emerald-300 font-bold">{s.value}</span>
@@ -36,6 +36,7 @@ const labelCls = 'flex items-center gap-1.5 text-[10px] font-bold uppercase trac
 // the live price-book price (day or after 8PM), ready answers and the never-say list.
 export const CallScriptPanel: React.FC<CallScriptPanelProps> = ({ scriptId, onScriptChange, managerName, onCollapse, onClose, className = '' }) => {
   const priceBook = useSettingsStore(s => s.priceBook);
+  const overrides = useSettingsStore(s => s.scriptOverrides);
 
   // Follows the Arizona clock until the manager flips it — a rekey booked for tomorrow
   // morning is quoted at the day rate even when the call comes in at 9PM.
@@ -66,10 +67,10 @@ export const CallScriptPanel: React.FC<CallScriptPanelProps> = ({ scriptId, onSc
   useEffect(() => { currentRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }, [stepIdx]);
   useEffect(() => { answerRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }, [objection]);
 
-  const script = CALL_SCRIPTS[scriptId];
+  const script = scriptWithOverrides(CALL_SCRIPTS[scriptId], overrides);
   const ctx: ScriptContext = { priceBook, night, me: managerName.trim().split(/\s+/)[0] || '' };
   const current = script.steps[stepIdx];
-  const answer = objection ? OBJECTIONS[objection] : null;
+  const answer = objection ? answerWithOverrides(objection, overrides) : null;
   // Callers ask off-script too: every ready answer stays one tap away from any script.
   const otherAnswers = (Object.keys(OBJECTIONS) as ObjectionId[]).filter(id => !script.objections.includes(id));
   const answerIds = showAllAnswers ? [...script.objections, ...otherAnswers] : script.objections;

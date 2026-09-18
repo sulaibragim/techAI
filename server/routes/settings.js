@@ -9,11 +9,11 @@ export const settingsRouter = Router();
 // what their UI actually needs (price book for invoices, client profiles for the job
 // card, company identity) — the expense ledger, stock ledger, and revenue targets are
 // the owner's books and must not ship to every tech's phone just because they hold a token.
-const TECH_HIDDEN_KEYS = ['expenses', 'stockMovements', 'monthlyTargets', 'aiMemories'];
+const TECH_HIDDEN_KEYS = ['expenses', 'stockMovements', 'monthlyTargets', 'aiMemories', 'lostCalls', 'scriptOverrides'];
 
 // The кладовщик works the shelf: he needs the stock ledger (it IS his work) but has no
 // business holding the expense book, revenue targets or the customer base.
-const WAREHOUSE_HIDDEN_KEYS = ['expenses', 'monthlyTargets', 'techTargets', 'aiMemories'];
+const WAREHOUSE_HIDDEN_KEYS = ['expenses', 'monthlyTargets', 'techTargets', 'aiMemories', 'lostCalls', 'scriptOverrides'];
 
 // Client profiles are keyed by the last 10 digits of the phone number.
 const last10 = (p) => String(p || '').replace(/\D/g, '').slice(-10);
@@ -118,11 +118,13 @@ settingsRouter.put('/', requireAuth, requireRole('owner', 'manager'), async (req
       if (patch.stockMovements) merged.stockMovements = unionById(current.stockMovements, patch.stockMovements, 2000);
       if (patch.priceBook) merged.priceBook = unionKeepOrder(current.priceBook, patch.priceBook);
       if (patch.aiMemories) merged.aiMemories = unionById(current.aiMemories, patch.aiMemories, 100);
+      if (patch.lostCalls) merged.lostCalls = unionById(current.lostCalls, patch.lostCalls, 1000);
       if (patch.clientProfiles) merged.clientProfiles = mergeMap(current.clientProfiles, patch.clientProfiles);
       if (patch.monthlyTargets) merged.monthlyTargets = mergeMap(current.monthlyTargets, patch.monthlyTargets);
       if (patch.techTargets) merged.techTargets = mergeMap(current.techTargets, patch.techTargets);
       if (patch.supplierAliases) merged.supplierAliases = mergeMap(current.supplierAliases, patch.supplierAliases);
       if (patch.smsTemplates) merged.smsTemplates = mergeMap(current.smsTemplates, patch.smsTemplates);
+      if (patch.scriptOverrides) merged.scriptOverrides = mergeMap(current.scriptOverrides, patch.scriptOverrides);
       if (patch.reviewLinks) {
         const incoming = (Array.isArray(patch.reviewLinks) ? patch.reviewLinks : []).map(cleanReviewLink).filter(Boolean);
         merged.reviewLinks = unionKeepOrder(reviewLinksOf(current), incoming);
@@ -143,12 +145,19 @@ settingsRouter.put('/', requireAuth, requireRole('owner', 'manager'), async (req
       const gone = new Set(patch.removedServiceRateIds);
       merged.priceBook = merged.priceBook.filter((r) => !gone.has(r?.id));
     }
+    if (Array.isArray(patch.removedLostCallIds) && merged.lostCalls) {
+      const gone = new Set(patch.removedLostCallIds);
+      merged.lostCalls = merged.lostCalls.filter((l) => !gone.has(l?.id));
+    }
     if (Array.isArray(patch.removedAiMemoryIds) && merged.aiMemories) {
       const gone = new Set(patch.removedAiMemoryIds);
       merged.aiMemories = merged.aiMemories.filter((m) => !gone.has(m?.id));
     }
     if (Array.isArray(patch.removedSmsTemplateIds) && merged.smsTemplates) {
       for (const id of patch.removedSmsTemplateIds) delete merged.smsTemplates[id];
+    }
+    if (Array.isArray(patch.removedScriptOverrideIds) && merged.scriptOverrides) {
+      for (const key of patch.removedScriptOverrideIds) delete merged.scriptOverrides[key];
     }
     if (Array.isArray(patch.removedReviewLinkIds)) {
       const gone = new Set(patch.removedReviewLinkIds);
@@ -167,6 +176,8 @@ settingsRouter.put('/', requireAuth, requireRole('owner', 'manager'), async (req
     delete merged.removedExpenseIds; // transport-only keys — never persisted
     delete merged.removedServiceRateIds;
     delete merged.removedAiMemoryIds;
+    delete merged.removedLostCallIds;
+    delete merged.removedScriptOverrideIds;
     delete merged.removedSmsTemplateIds;
     delete merged.removedReviewLinkIds;
     delete merged.replaceLedgers;

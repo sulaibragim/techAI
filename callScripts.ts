@@ -47,7 +47,7 @@ export interface CallScript {
 }
 
 export type ObjectionId =
-  | 'cheaper' | 'discount' | 'web20' | 'eta' | 'licensed' | 'roc' | 'years' | 'shop'
+  | 'cheaper' | 'discount' | 'web20' | 'eta' | 'licensed' | 'bonded' | 'roc' | 'years' | 'shop'
   | 'exact' | 'dealer' | 'ownfob' | 'fobdead' | 'damage' | 'noid' | 'think' | 'written'
   | 'warranty' | 'receipt' | 'european' | 'outofarea';
 
@@ -91,7 +91,7 @@ export const CALL_SCRIPTS: Record<ScriptId, CallScript> = {
     id: 'opening',
     label: 'Начало звонка',
     rates: [RATE.carLockout, RATE.homeLockout],
-    objections: ['cheaper', 'eta', 'licensed', 'years', 'shop', 'outofarea', 'web20'],
+    objections: ['cheaper', 'eta', 'licensed', 'bonded', 'years', 'shop', 'outofarea', 'web20'],
     steps: [
       { title: 'Приветствие', say: `${COMPANY}, this is {me}. Are you locked out, or is it something else?`, hint: 'Название компании и своё имя — сразу доверие. Не «How can I help?» — сразу к делу.' },
       { title: 'Что случилось', say: 'Is it a car, a home, or a business?', hint: 'По ответу выбери шаблон слева — скрипт сам переключится. Непонятно — «Start from scratch».' },
@@ -211,7 +211,7 @@ export const CALL_SCRIPTS: Record<ScriptId, CallScript> = {
     id: 'commercial',
     label: 'Commercial',
     rates: [RATE.commLockout],
-    objections: ['cheaper', 'eta', 'licensed', 'roc', 'noid', 'think'],
+    objections: ['cheaper', 'eta', 'licensed', 'bonded', 'roc', 'noid', 'think'],
     steps: [
       { title: 'Кто звонит', say: 'Are you the owner or the manager of the business?', hint: 'Техник попросит ID и документ, что человек вправе открыть (аренда, письмо владельца).' },
       { title: 'Где', say: 'What city is the business in — and is this the best number for you?' },
@@ -242,7 +242,7 @@ export const CALL_SCRIPTS: Record<ScriptId, CallScript> = {
     id: 'lock-install',
     label: 'Lock install',
     rates: [RATE.install, RATE.smartLock],
-    objections: ['exact', 'warranty', 'licensed', 'roc', 'think'],
+    objections: ['exact', 'warranty', 'licensed', 'bonded', 'roc', 'think'],
     steps: [
       { title: 'Есть ли замок', say: 'Do you already have the lock, or would you like us to bring one?' },
       { title: 'Какой', say: 'Is it a deadbolt, a handle, or a smart lock?' },
@@ -269,6 +269,11 @@ export const OBJECTIONS: Record<ObjectionId, Objection> = {
     label: 'Are you licensed?',
     say: "Good question. Arizona doesn't have a state locksmith license. We're a registered Arizona company and we carry liability insurance.",
     hint: 'Никогда «yes, licensed». В Аризоне лицензии локсмита не существует.',
+  },
+  bonded: {
+    label: 'Are you bonded?',
+    say: "No, we're not bonded. We're a registered Arizona company and we carry liability insurance — and you only pay after the job is done.",
+    hint: 'Правда: bond у нас нет. Никогда «yes, bonded». Страховка (insured) — есть, это другое.',
   },
   roc: { label: 'ROC number?', say: "We don't have one — we're not a licensed contractor, so we keep installs under the state's $1,000 limit." },
   years: {
@@ -319,6 +324,45 @@ export const NEVER_SAY: { bad: string; good: string }[] = [
   { bad: 'Your key will be exactly $149', good: 'Starts from $149, confirmed before any work' },
   { bad: 'I think… maybe… around…', good: "Уверенно: «It's $139 total.»" },
 ];
+
+// ─── The owner's edits ──────────────────────────────────────────────────────────────
+
+/** Wording the owner changed in Settings, keyed by stepKey() / answerKey(). A blank `say` keeps the built-in line. */
+export type ScriptOverrides = Record<string, { say?: string; hint?: string }>;
+
+export const stepKey = (scriptId: ScriptId, step: Pick<ScriptStep, 'title'>) => `${scriptId}/${step.title}`;
+export const answerKey = (id: ObjectionId) => `answer/${id}`;
+
+export function scriptWithOverrides(script: CallScript, overrides: ScriptOverrides): CallScript {
+  return {
+    ...script,
+    steps: script.steps.map(st => {
+      const o = overrides[stepKey(script.id, st)];
+      return o ? { ...st, say: o.say || st.say, hint: o.hint ?? st.hint } : st;
+    }),
+  };
+}
+
+export function answerWithOverrides(id: ObjectionId, overrides: ScriptOverrides): Objection {
+  const base = OBJECTIONS[id];
+  const o = overrides[answerKey(id)];
+  return o ? { ...base, say: o.say || base.say, hint: o.hint ?? base.hint } : base;
+}
+
+// What an edited line must not claim (training/03-never-say.md). A warning, not a block —
+// the owner decides; but "we're licensed" typed in a hurry should never go out unnoticed.
+const HONESTY_RULES: { re: RegExp; warn: string }[] = [
+  { re: /\b(we'?re|we are|i'?m|fully)\s+(licensed|bonded|certified)\b|\blicensed\s*(&|and)\s*bonded\b/i, warn: 'Лицензии и bond у нас нет — «licensed / bonded» говорить нельзя.' },
+  { re: /(?<!(?:[–-]|to)\s?)\b\d{1,3}\s*min(?:ute)?s?\b/i, warn: 'Время приезда — только окном из CRM («[X–Y] minutes»), не одной цифрой.' },
+  { re: /\b(?!30\b)(\d{1,3}|one|two|three)[- ]?(day|month|year)s?\b[^.]{0,20}\bwarrant|\bwarrant\w*[^.]{0,30}\b(?!30\b)(\d{1,3}|one|two|three)[- ]?(day|month|year)s?\b|\blifetime\b/i, warn: 'Гарантия — ровно 30 дней.' },
+  { re: /\b(we'?re|we are)\s+(the\s+)?(best|#\s?1|number one|top[- ]rated|cheapest)\b|(\bbest|#\s?1|\bnumber one|\btop[- ]rated)\s+(locksmith|company|service|price|in town|in the valley)\b|\bcheapest\b/i, warn: '«Лучшие / №1 / самые дешёвые» — нельзя.' },
+  { re: /\bsince (19|20)\d\d\b|\byears of experience\b/i, warn: 'Возраст бизнеса — только правда: открылись в июне 2026.' },
+  { re: /\bnever drill|\bfree if\b|\bno (charge|fee) if\b/i, warn: '«Никогда не сверлим / бесплатно, если не откроем» — обещать нельзя.' },
+  { re: /\b\d+\s*%\s*(off|cheaper|less|discount)/i, warn: 'Скидки в процентах и сравнения с дилером — нельзя. Скидка только $20 через форму на сайте.' },
+];
+
+export const honestyWarnings = (text: string): string[] =>
+  HONESTY_RULES.filter(r => r.re.test(text)).map(r => r.warn);
 
 // ─── Resolving tokens ───────────────────────────────────────────────────────────────
 

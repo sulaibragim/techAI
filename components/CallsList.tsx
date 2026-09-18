@@ -1,11 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useAppStore, useVisibleJobs } from '../store';
-import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Clock, PhoneCall, RefreshCw, Radio, History, ChevronRight, UserPlus, AlertTriangle, Star, Ban } from 'lucide-react';
+import { Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, Clock, PhoneCall, RefreshCw, Radio, History, ChevronRight, UserPlus, AlertTriangle, Star, Ban, PhoneOff, X } from 'lucide-react';
 import { CallRecord } from '../types';
 import { API_BASE } from '../backendUrl';
 import { authHeaders } from '../apiClient';
 import { buildClients, findClientByPhone, formatPhone, clientFlags, clientScore, TIER_STYLE } from '../clientUtils';
 import { useSettingsStore } from '../settingsStore';
+import { useCurrentUser } from '../authStore';
+import { LOST_REASON, lostInLastDays, countByReason } from '../lostCalls';
+import { LostCallSheet } from './LostCallSheet';
 
 const PHONE_NUMBER_ID = 'PNkhFHiD2G';
 
@@ -48,6 +51,16 @@ export const CallsList: React.FC<{
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isLive, setIsLive] = useState(true);
+
+  // "Didn't book, and why" — marked here after the fact when the call never reached the wizard.
+  const currentUser = useCurrentUser();
+  const lostCalls = useSettingsStore(s => s.lostCalls);
+  const addLostCall = useSettingsStore(s => s.addLostCall);
+  const removeLostCall = useSettingsStore(s => s.removeLostCall);
+  const [markingCall, setMarkingCall] = useState<CallRecord | null>(null);
+  const lostByCall = useMemo(() => new Map(lostCalls.filter(l => l.callId).map(l => [l.callId!, l])), [lostCalls]);
+  const lostWeek = useMemo(() => lostInLastDays(lostCalls, 7), [lostCalls]);
+  const lostWeekReasons = useMemo(() => countByReason(lostWeek), [lostWeek]);
 
   const fetchCalls = async (silent = false) => {
     if (!silent) setLoading(true);
@@ -131,6 +144,39 @@ export const CallsList: React.FC<{
             {error}
           </div>
         </div>
+      )}
+
+      {lostWeek.length > 0 && (
+        <div className="px-2">
+          <div className="flex flex-wrap items-center gap-2 bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5">
+            <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-amber-300 mr-1">
+              <PhoneOff size={12} /> Не записались за 7 дней · {lostWeek.length}
+            </span>
+            {lostWeekReasons.map(r => (
+              <span key={r.reason} className="text-[11px] font-semibold text-slate-300 bg-white/5 border border-white/10 rounded-lg px-2 py-0.5">
+                {LOST_REASON[r.reason].emoji} {LOST_REASON[r.reason].label} <span className="text-white font-bold tabular-nums">{r.count}</span>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {markingCall && (
+        <LostCallSheet
+          subtitle={[markingCall.from !== markingCall.phone ? markingCall.from : '', formatPhone(markingCall.phone), markingCall.timestamp].filter(Boolean).join(' · ')}
+          onSave={(reason, note) => {
+            addLostCall({
+              reason,
+              note: note || undefined,
+              phone: markingCall.phone,
+              name: markingCall.from !== markingCall.phone ? markingCall.from : undefined,
+              callId: markingCall.id,
+              by: currentUser?.id,
+            });
+            setMarkingCall(null);
+          }}
+          onCancel={() => setMarkingCall(null)}
+        />
       )}
 
       <div className="space-y-3 px-2">
@@ -220,6 +266,25 @@ export const CallsList: React.FC<{
                         New caller
                       </span>
                     )}
+                    {/* Answered inbound calls from new callers: one who booked becomes a client, so the question only stays on the ones who didn't. */}
+                    {(() => {
+                      const mark = lostByCall.get(call.id);
+                      if (mark) return (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-amber-300 bg-amber-500/10 border border-amber-500/30 pl-2 pr-1 py-0.5 rounded-full" title={mark.note || undefined}>
+                          {LOST_REASON[mark.reason].emoji} {LOST_REASON[mark.reason].label}
+                          <button onClick={(e) => { e.stopPropagation(); removeLostCall(mark.id); }} aria-label="Снять отметку" className="p-0.5 rounded-full hover:bg-amber-500/20"><X size={10} /></button>
+                        </span>
+                      );
+                      if (client || call.type !== 'incoming') return null;
+                      return (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setMarkingCall(call); }}
+                          className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-amber-300 border border-dashed border-white/15 hover:border-amber-500/40 px-2 py-0.5 rounded-full transition-colors"
+                        >
+                          <PhoneOff size={10} /> Не записался?
+                        </button>
+                      );
+                    })()}
                   </div>
                 </div>
               </div>

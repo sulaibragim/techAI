@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { motion } from 'motion/react';
-import { User, Target, Key, RotateCcw, Save, Upload, Info, Building2, AlertTriangle, Users, Plus, Trash2, ShieldCheck, History, Lock, Pencil, Check, X, Tag, BrainCircuit, MessageSquare, BellRing, Wrench, Star } from 'lucide-react';
+import { User, Target, Key, RotateCcw, Save, Upload, Info, Building2, AlertTriangle, Users, Plus, Trash2, ShieldCheck, History, Lock, Pencil, Check, X, Tag, BrainCircuit, MessageSquare, BellRing, Wrench, Star, ScrollText } from 'lucide-react';
 import { useSettingsStore, SETTINGS_DEFAULTS, settingsStorageIsEphemeral } from '../settingsStore';
 import { useAuthStore, useCurrentUser, can, worksField, ROLE_LABELS, MIN_PASSWORD_LENGTH } from '../authStore';
 import { useAppStore } from '../store';
@@ -16,6 +16,7 @@ import { SMS_TEMPLATES, REVIEW_TEMPLATE, resolveSmsTemplate, fillSmsTemplate, wi
 import { smsInfo, sanitizeSms } from '../smsText';
 import { primaryReviewLink } from '../reviewLinks';
 import { ReviewLinksEditor } from './ReviewLinksEditor';
+import { CallScriptsEditor } from './CallScriptsEditor';
 
 const VERSION = '1.0.0';
 
@@ -460,6 +461,13 @@ export const Settings: React.FC = () => {
           </div>
         </Section>
       </div>
+
+      {/* Owner only: the script is the owner's voice on every call — managers read it, he writes it. */}
+      {currentUser?.role === 'owner' && (
+        <Section icon={ScrollText} title="Call Scripts" id="call-scripts">
+          <CallScriptsEditor />
+        </Section>
+      )}
 
       {currentUser && can.manageUsers(currentUser.role) && (
         <>

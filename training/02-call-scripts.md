@@ -206,7 +206,7 @@ CRM показала «Dealer / bench», или клиент назвал све
 | «How long will it take?» | «Let me check who's closest… about [X–Y] minutes. I'll make sure you get a text when [Tech] is on the way.» | Только из CRM, окном |
 | «Are you licensed?» | «Good question. Arizona doesn't have a state locksmith license. We're TrustKey Locksmith, a registered Arizona company, and we carry liability insurance. For installs we're not a licensed contractor, so those jobs stay under $1,000 — if yours is bigger, I'll tell you up front.» | **Никогда «yes, licensed»**. Проверено: в Аризоне нет лицензии локсмита (ALOA, 2025) |
 | «What's your ROC number?» | «We don't have one — we're not a licensed contractor, so we keep hardware installs under the state's $1,000 limit.» | ROC — лицензия подрядчиков-строителей |
-| «Are you bonded?» | [уточнить у владельца — пока не отвечать «да»] | |
+| «Are you bonded?» | «No, we're not bonded. We're a registered Arizona company and we carry liability insurance — and you only pay after the job is done.» | Правда: bond у нас нет (владелец, 18.09.2026). Bond ≠ страховка |
 | «How long have you been in business?» | «We're a new local company — TrustKey opened in June 2026. You get the price before any work starts, and keys we make and locks we install have a 30-day warranty.» | Только правда: работаем с июня 2026 (решение владельца 18.09.2026) |
 | «Where's your shop?» | «We're based in Mesa and fully mobile — no storefront. The tech comes to you in a marked vehicle.» | |
 | «Why can't you give an exact price for the key?» | «Every car is different, so I give you the honest starting price now, and the tech confirms the exact number **before touching anything**. You're never surprised.» | |

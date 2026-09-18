@@ -4,8 +4,9 @@ import {
 } from 'recharts';
 import {
   Megaphone, TrendingUp, Target as TargetIcon, Users, DollarSign, Coins,
-  ChevronLeft, ChevronRight, Info, Zap, Gift, ArrowRight,
+  ChevronLeft, ChevronRight, Info, Zap, Gift, ArrowRight, PhoneOff,
 } from 'lucide-react';
+import { LOST_REASON, lostInMonths, countByReason, callsRu } from '../lostCalls';
 import { useVisibleJobs } from '../store';
 import { useSettingsStore } from '../settingsStore';
 import {
@@ -78,6 +79,9 @@ export const MarketingDashboard: React.FC = () => {
 
   const rows = useMemo(() => channelMetrics(jobs, expenses, span), [jobs, expenses, span]);
   const funnel = useMemo(() => leadFunnel(jobs, span), [jobs, span]);
+  const lostCalls = useSettingsStore(s => s.lostCalls);
+  const lost = useMemo(() => lostInMonths(lostCalls, span), [lostCalls, span]);
+  const lostReasons = useMemo(() => countByReason(lost), [lost]);
 
   const totals = useMemo(() => {
     const spend = rows.reduce((s, r) => s + r.spend, 0);
@@ -175,6 +179,29 @@ export const MarketingDashboard: React.FC = () => {
         <Kpi label="Blended CAC" value={totals.cac > 0 ? fmt$(totals.cac) : '—'} icon={TargetIcon} accent="text-amber-400"
           sub={totals.cac > 0 ? 'spend ÷ won jobs' : 'no paid wins'} />
       </div>
+
+      {/* Calls that never became a job — the other half of the funnel, with the reason the manager marked. */}
+      {lost.length > 0 && (
+        <Card title={`Почему не записались — ${periodLabel}`} icon={PhoneOff}>
+          <p className="text-sm text-slate-400 -mt-2 mb-4">
+            {callsRu(lost.length)} без записи. Цена — как называем цену; Долго — скорость техников;
+            Вне зоны и Не наша услуга — куда уходит реклама.
+          </p>
+          <div className="space-y-2.5">
+            {lostReasons.map(r => (
+              <div key={r.reason} className="flex items-center gap-3">
+                <span className="w-40 md:w-48 shrink-0 text-sm font-semibold text-slate-200 truncate">{LOST_REASON[r.reason].emoji} {LOST_REASON[r.reason].label}</span>
+                <div className="flex-1 h-2.5 bg-white/5 rounded-full overflow-hidden">
+                  <div className="h-full bg-amber-500/70 rounded-full" style={{ width: `${(r.count / lostReasons[0].count) * 100}%` }} />
+                </div>
+                <span className="w-20 shrink-0 text-right text-sm font-bold text-white tabular-nums">
+                  {r.count} <span className="text-slate-500 font-medium">{fmtPct(r.count / lost.length)}</span>
+                </span>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
 
       {!hasAnyData ? (
         <Card>

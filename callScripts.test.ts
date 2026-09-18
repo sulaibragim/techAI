@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { CALL_SCRIPTS, OBJECTIONS, ratePrice, resolveScript, scriptText, ScriptContext } from './callScripts';
+import {
+  CALL_SCRIPTS, OBJECTIONS, ratePrice, resolveScript, scriptText, ScriptContext,
+  scriptWithOverrides, answerWithOverrides, stepKey, answerKey, honestyWarnings,
+} from './callScripts';
 import { ServiceRate } from './types';
 
 const book: ServiceRate[] = [
@@ -81,6 +84,63 @@ describe('script data', () => {
       ...Object.values(CALL_SCRIPTS).flatMap(s => s.steps.map(st => st.say)),
       ...Object.values(OBJECTIONS).map(o => o.say),
     ].join('\n').toLowerCase();
-    expect(all).not.toMatch(/we're licensed|we are licensed|licensed locksmith|1-year|one year|lifetime|15 minutes|background-checked|since 20|years of experience/);
+    expect(all).not.toMatch(/we're licensed|we are licensed|licensed locksmith|we're bonded|we are bonded|licensed and bonded|licensed & bonded|1-year|one year|lifetime|15 minutes|background-checked|since 20|years of experience/);
+  });
+});
+
+describe('owner edits', () => {
+  it('replace the line and the hint of one step in one script only', () => {
+    const lockout = CALL_SCRIPTS['car-lockout'];
+    const eta = lockout.steps.find(s => s.title === 'Время приезда')!;
+    const edited = scriptWithOverrides(lockout, { [stepKey('car-lockout', eta)]: { say: 'Checking the map… [Tech] is about [X–Y] out.', hint: '' } });
+    const step = edited.steps.find(s => s.title === 'Время приезда')!;
+    expect(step.say).toBe('Checking the map… [Tech] is about [X–Y] out.');
+    expect(step.hint).toBe(''); // a cleared hint stays cleared
+    // The same shared step in another script is untouched.
+    const akl = scriptWithOverrides(CALL_SCRIPTS.akl, { [stepKey('car-lockout', eta)]: { say: 'x' } });
+    expect(akl.steps.find(s => s.title === 'Время приезда')!.say).toBe(eta.say);
+  });
+
+  it('a blank line falls back to the built-in one', () => {
+    const edited = scriptWithOverrides(CALL_SCRIPTS.rekey, { 'rekey/Причина': { say: '', hint: 'Своя подсказка' } });
+    expect(edited.steps[0].say).toBe(CALL_SCRIPTS.rekey.steps[0].say);
+    expect(edited.steps[0].hint).toBe('Своя подсказка');
+  });
+
+  it('edits a ready answer', () => {
+    expect(answerWithOverrides('licensed', { [answerKey('licensed')]: { say: 'Arizona has no locksmith license.' } }).say).toBe('Arizona has no locksmith license.');
+    expect(answerWithOverrides('licensed', {}).say).toBe(OBJECTIONS.licensed.say);
+  });
+});
+
+describe('honestyWarnings', () => {
+  // Only what is said to the caller is checked — hints quote the banned lines on purpose.
+  it('stays quiet on every built-in line', () => {
+    const texts = [
+      ...Object.values(CALL_SCRIPTS).flatMap(s => s.steps.map(st => st.say)),
+      ...Object.values(OBJECTIONS).map(o => o.say),
+    ];
+    for (const t of texts) expect(honestyWarnings(t), t).toEqual([]);
+  });
+
+  it('catches the claims we never make', () => {
+    const bad = [
+      "Yes, we're licensed and insured.",
+      'We are fully bonded.',
+      "He'll be there in 15 minutes.",
+      'All our work has a 1-year warranty.',
+      'The warranty covers you for 90 days.',
+      "We're the best locksmith in Mesa.",
+      'Top-rated service in the valley.',
+      'In business since 2010.',
+      "We never drill, and it's free if we can't open it.",
+      'That is 30% cheaper than the dealer.',
+    ];
+    for (const t of bad) expect(honestyWarnings(t).length, t).toBeGreaterThan(0);
+  });
+
+  it('allows an honest window and the 30-day warranty', () => {
+    expect(honestyWarnings('About 25–35 minutes, and a 30-day warranty on keys we make.')).toEqual([]);
+    expect(honestyWarnings('Somewhere between 25 to 35 minutes.')).toEqual([]);
   });
 });
