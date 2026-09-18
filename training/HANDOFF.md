@@ -59,7 +59,17 @@
 
 ## 3. Следующие шаги (порядок)
 
-### Шаг A. `components/CallScriptPanel.tsx` (ещё НЕ написан)
+> **Статус 2026-09-18 (вторая сессия):** шаги A, B и C сделаны в ветке `claude/call-script-panel-2047f3`: `82433fc` (панель + встраивание, B.1–B.5) и `e4366c3` (B.6, порядок шагов визарда, отдельным коммитом: не одобрит → `git revert e4366c3`). **Шаг D ждёт одобрения владельца**, в main ничего не пушилось.
+>
+> Отличия от плана ниже:
+> - Фраза 911 показывается **прямо в шаге «Безопасность»** (флаг `call911` в `ScriptStep`), потому что на ноутбуке общий блок 911 под шагами уходил за экран. Общий красный блок показывается на остальных шагах.
+> - День/ночь идёт по часам Аризоны (пересчёт раз в минуту), пока менеджер не переключит вручную. Ручной выбор держится до закрытия визарда.
+> - Панель живёт в двух экземплярах (колонка на десктопе и лист на телефоне). Оба не размонтируются при сворачивании/закрытии, чтобы менеджер не терял место в скрипте.
+> - Высота колонки меряется `ResizeObserver` (область скролла − 80), а не `calc(100vh-…)`. Sticky в контейнере с `py-10` считает отступ от края контента, поэтому `top-0`.
+> - Проверено: vitest 227/227, `tsc`, `npm run build`. Раскладка замерена на 1366×640, 1024×680, 1440×810, 1920×950 и 390×844. Техник панель не видит.
+> - ⚠️ Встроенный браузер Claude, когда панель скрыта, не рисует кадры (`visibilityState: hidden`). ResizeObserver и rAF там молчат, и размеры врут. Замеры и скриншоты делались через headless Edge по CDP.
+
+### Шаг A. `components/CallScriptPanel.tsx` ✅
 
 Props: `scriptId: ScriptId`, `onScriptChange(id)`, `managerName: string`, `onCollapse?()`.
 Внутри: `priceBook` из `useSettingsStore`, `night` = `useState(() => isNightInArizona())` + переключатель, `stepIdx`, выбранное возражение, раскрытие «Нельзя говорить». Сброс `stepIdx`/возражения при смене `scriptId`.
@@ -72,7 +82,7 @@ Props: `scriptId: ScriptId`, `onScriptChange(id)`, `managerName: string`, `onCol
 5. **«Клиент говорит…»:** чипы `OBJECTIONS[id].label` → под ними карточка ответа (EN + RU hint), повторный клик закрывает.
 6. **«Нельзя говорить»:** сворачиваемый список `NEVER_SAY` (bad → good).
 
-### Шаг B. Встроить в `components/JobWizard.tsx`
+### Шаг B. Встроить в `components/JobWizard.tsx` ✅
 
 1. **Шаблоны +2** (после Car Lockout): `car-key` («Car Key», иконка `Key`, cyan, lockType Automotive, complaint «Customer needs a new / spare car key made (has a working key).», priority **today**) и `akl` («All Keys Lost», иконка `KeySquare`, rose, Automotive, complaint «All car keys lost — new key made from scratch on-site.», priority **emergency**). Ввести интерфейс `JobTemplate` с необязательным `priority`; в `applyTemplate` — `tpl.priority ?? старая логика`. Tailwind-классы цветов писать литералами.
 2. **Состояние скрипта:** `const [scriptId, setScriptId] = useState<ScriptId>('opening')`; `applyTemplate` → `setScriptId(tpl.id)` (id шаблонов = id скриптов). «Start from scratch» скрипт не меняет.
@@ -81,13 +91,14 @@ Props: `scriptId: ScriptId`, `onScriptChange(id)`, `managerName: string`, `onCol
 5. **Мобильный (< lg):** плавающая кнопка «Script» (`fixed right-4 bottom-28 lg:hidden`, выше футера) → нижний лист `fixed inset-0 z-[260] bg-black/60`, внутри панель `max-h-[85vh] overflow-y-auto rounded-t-3xl`.
 6. **Порядок шагов визарда (предложено владельцу, он не возражал):** сейчас Шаг 1 = Customer & Dispatch, Шаг 2 = The Job. В звонке наоборот (что случилось → машина → цена → адрес → имя). Поменять местами: **Шаг 1 = The Job, Шаг 2 = Customer & Dispatch**; проверки телефона/имени/ZIP/адреса перенести из `nextStep` в кнопку «Create Job». Плюс: тип работы известен до выбора техника (TechPicker получает `jobType`). ⚠️ Это меняет поведение и для техников — показать владельцу отдельно.
 
-### Шаг C. Проверка
+### Шаг C. Проверка ✅
 - `npx vitest run` (все тесты), `npx tsc --noEmit`.
 - Превью: `npm run dev` (Vite :3000, API-прокси на :3001 → `npm run dev:server` нужен `DATABASE_URL` и т.п.). Если вход требует пароль — пароль не вводить за владельца; показать скриншоты через доступный режим или попросить владельца войти.
 - Проверить: десктоп (панель справа, цены день/ночь, переключение скрипта при выборе шаблона, возражения), мобильный (кнопка + лист), техник панель не видит.
 
-### Шаг D. Показать владельцу → одобрение → деплой
+### Шаг D. Показать владельцу → одобрение → деплой ⏳
 Процесс владельца: **сначала показать (скриншоты/превью), потом деплой.** Push в main делает владелец сам (даём одну команду). Не мержить без одобрения.
+Скриншоты показаны 2026-09-18. После «да»: `git fetch origin`, убедиться, что `git log HEAD..origin/main` пуст (иначе rebase), затем из этого worktree `git push origin HEAD:main`. Локальный `main` в `C:\Clodecode\CRM` не трогать.
 
 ### Фаза 2 (после обкатки)
 - Раздел **«Обучение»** для роли manager: база знаний + тест-допуск (100% по ценам/зоне), 10 ролевых звонков.
